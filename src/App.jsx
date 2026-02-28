@@ -1,23 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout'
+import DashboardPage from './pages/DashboardPage'
 import BoardsPage from './pages/BoardsPage'
-
-// Placeholder pages
-function DashboardPage() {
-  return <div className="text-gray-500">Dashboard — coming soon</div>
-}
-function CalendarPage() {
-  return <div className="text-gray-500">Calendar — coming soon</div>
-}
-function NotesPage() {
-  return <div className="text-gray-500">Notes — coming soon</div>
-}
-function AnalyticsPage() {
-  return <div className="text-gray-500">Analytics — coming soon</div>
-}
-function SettingsPage() {
-  return <div className="text-gray-500">Settings — coming soon</div>
-}
+import CalendarPage from './pages/CalendarPage'
+import NotesPage from './pages/NotesPage'
+import AnalyticsPage from './pages/AnalyticsPage'
+import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
   return (
