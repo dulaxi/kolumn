@@ -1,12 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout'
+import BoardsPage from './pages/BoardsPage'
 
 // Placeholder pages
 function DashboardPage() {
   return <div className="text-gray-500">Dashboard — coming soon</div>
-}
-function BoardsPage() {
-  return <div className="text-gray-500">Boards — coming soon</div>
 }
 function CalendarPage() {
   return <div className="text-gray-500">Calendar — coming soon</div>
