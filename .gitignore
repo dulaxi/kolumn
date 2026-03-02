@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Screenshots
+*.png
+*.jpeg
+
 # MCP config (contains PAT)
 .mcp.json
 .playwright-mcp/
