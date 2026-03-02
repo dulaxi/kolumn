@@ -18,12 +18,21 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [activeCardId, setActiveCardId] = useState(null)
   const inputRef = useRef(null)
+  const affectedCardsRef = useRef(new Set())
 
   const board = useBoardStore((s) => s.boards[boardId])
+  const allColumns = useBoardStore((s) => s.columns)
   const cards = useBoardStore((s) => s.cards)
   const addColumn = useBoardStore((s) => s.addColumn)
-  const moveCard = useBoardStore((s) => s.moveCard)
+  const moveCardLocal = useBoardStore((s) => s.moveCardLocal)
+  const persistCardPositions = useBoardStore((s) => s.persistCardPositions)
+  const setDragging = useBoardStore((s) => s.setDragging)
   const completeCard = useBoardStore((s) => s.completeCard)
+
+  // Get columns for this board, sorted by position
+  const boardColumns = Object.values(allColumns)
+    .filter((c) => c.board_id === boardId)
+    .sort((a, b) => a.position - b.position)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -44,15 +53,35 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
 
   const handleDragStart = useCallback((event) => {
     setActiveCardId(event.active.id)
-  }, [])
+    setDragging(true)
+    affectedCardsRef.current = new Set([event.active.id])
+  }, [setDragging])
 
-  const getBoard = useCallback(() => {
-    return useBoardStore.getState().boards[boardId]
+  const getColumns = useCallback(() => {
+    const state = useBoardStore.getState()
+    return Object.values(state.columns)
+      .filter((c) => c.board_id === boardId)
+      .sort((a, b) => a.position - b.position)
   }, [boardId])
 
+  const getColumnCards = useCallback((columnId) => {
+    const state = useBoardStore.getState()
+    return Object.values(state.cards)
+      .filter((c) => c.column_id === columnId)
+      .sort((a, b) => a.position - b.position)
+  }, [])
+
   const findCol = useCallback(
-    (b, cardId) => b.columns.find((col) => col.cardIds.includes(cardId)) || null,
-    []
+    (cardId) => {
+      const cols = getColumns()
+      const state = useBoardStore.getState()
+      const card = state.cards[cardId]
+      if (card) {
+        return cols.find((col) => col.id === card.column_id) || null
+      }
+      return null
+    },
+    [getColumns]
   )
 
   const handleDragOver = useCallback(
@@ -60,66 +89,94 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       const { active, over } = event
       if (!over) return
 
-      const b = getBoard()
-      if (!b) return
-
       const activeId = active.id
       const overId = over.id
+      const cols = getColumns()
 
-      const fromColumn = findCol(b, activeId)
+      const fromColumn = findCol(activeId)
       if (!fromColumn) return
 
-      let toColumn = b.columns.find((col) => col.id === overId)
+      let toColumn = cols.find((col) => col.id === overId)
       if (!toColumn) {
-        toColumn = findCol(b, overId)
+        toColumn = findCol(overId)
       }
       if (!toColumn) return
-
       if (fromColumn.id === toColumn.id) return
 
-      const fromIndex = fromColumn.cardIds.indexOf(activeId)
+      const fromCards = getColumnCards(fromColumn.id)
+      const fromIndex = fromCards.findIndex((c) => c.id === activeId)
+
+      const toCards = getColumnCards(toColumn.id)
       let toIndex
-      if (toColumn.cardIds.includes(overId)) {
-        toIndex = toColumn.cardIds.indexOf(overId)
+      const overCardIndex = toCards.findIndex((c) => c.id === overId)
+      if (overCardIndex !== -1) {
+        toIndex = overCardIndex
       } else {
-        toIndex = toColumn.cardIds.length
+        toIndex = toCards.length
       }
 
-      moveCard(boardId, fromColumn.id, toColumn.id, fromIndex, toIndex)
+      // Track affected cards for persistence on drag end
+      fromCards.forEach((c) => affectedCardsRef.current.add(c.id))
+      toCards.forEach((c) => affectedCardsRef.current.add(c.id))
+
+      // Only update local state during drag (no DB calls)
+      moveCardLocal(boardId, fromColumn.id, toColumn.id, fromIndex, toIndex)
     },
-    [boardId, getBoard, findCol, moveCard]
+    [boardId, getColumns, findCol, getColumnCards, moveCardLocal]
   )
 
   const handleDragEnd = useCallback(
     (event) => {
       const { active, over } = event
       setActiveCardId(null)
+      setDragging(false)
 
-      if (!over) return
-
-      const b = getBoard()
-      if (!b) return
+      if (!over) {
+        // Drag cancelled — still persist any changes from handleDragOver
+        persistCardPositions([...affectedCardsRef.current])
+        affectedCardsRef.current = new Set()
+        return
+      }
 
       const activeId = active.id
+      const activeCardExists = useBoardStore.getState().cards[activeId]
+      if (!activeCardExists) {
+        persistCardPositions([...affectedCardsRef.current])
+        affectedCardsRef.current = new Set()
+        return
+      }
       const overId = over.id
+      const cols = getColumns()
 
-      const fromColumn = findCol(b, activeId)
-      if (!fromColumn) return
+      const fromColumn = findCol(activeId)
+      if (!fromColumn) {
+        persistCardPositions([...affectedCardsRef.current])
+        affectedCardsRef.current = new Set()
+        return
+      }
 
-      let toColumn = b.columns.find((col) => col.id === overId)
+      let toColumn = cols.find((col) => col.id === overId)
       if (!toColumn) {
-        toColumn = findCol(b, overId)
+        toColumn = findCol(overId)
       }
-      if (!toColumn || fromColumn.id !== toColumn.id) return
 
-      const fromIndex = fromColumn.cardIds.indexOf(activeId)
-      const toIndex = toColumn.cardIds.indexOf(overId)
+      // Same-column reorder
+      if (toColumn && fromColumn.id === toColumn.id) {
+        const colCards = getColumnCards(fromColumn.id)
+        const fromIndex = colCards.findIndex((c) => c.id === activeId)
+        const toIndex = colCards.findIndex((c) => c.id === overId)
 
-      if (fromIndex !== toIndex) {
-        moveCard(boardId, fromColumn.id, toColumn.id, fromIndex, toIndex)
+        if (fromIndex !== toIndex && fromIndex !== -1 && toIndex !== -1) {
+          colCards.forEach((c) => affectedCardsRef.current.add(c.id))
+          moveCardLocal(boardId, fromColumn.id, toColumn.id, fromIndex, toIndex)
+        }
       }
+
+      // Persist all affected cards to Supabase
+      persistCardPositions([...affectedCardsRef.current])
+      affectedCardsRef.current = new Set()
     },
-    [boardId, getBoard, findCol, moveCard]
+    [boardId, getColumns, findCol, getColumnCards, moveCardLocal, persistCardPositions, setDragging]
   )
 
   if (!board) {
@@ -159,7 +216,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-5 overflow-x-auto h-full pb-4">
-        {board.columns.map((column) => (
+        {boardColumns.map((column) => (
           <Column
             key={column.id}
             column={column}
@@ -220,7 +277,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       </div>
 
       <DragOverlay>
-        {activeCard ? (
+        {activeCardId && activeCard ? (
           <div className="rotate-2 opacity-90">
             <Card card={activeCard} onClick={() => {}} />
           </div>

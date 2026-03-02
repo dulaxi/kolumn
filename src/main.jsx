@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/mona-sans'
 import './index.css'
 import App from './App.jsx'
-import { useBoardStore } from './store/boardStore'
+import { useAuthStore } from './store/authStore'
 
-// One-time reset of task counters
-useBoardStore.getState().resetTaskCounters()
+// Initialize auth before rendering
+useAuthStore.getState().initialize()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -3,6 +3,7 @@ import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
+import { useAuthStore } from '../../store/authStore'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 
@@ -13,16 +14,20 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const renameRef = useRef(null)
   const menuRef = useRef(null)
 
-  const cards = useBoardStore((s) => s.cards)
+  const allCards = useBoardStore((s) => s.cards)
   const addCard = useBoardStore((s) => s.addCard)
   const renameColumn = useBoardStore((s) => s.renameColumn)
   const deleteColumn = useBoardStore((s) => s.deleteColumn)
+  const profile = useAuthStore((s) => s.profile)
 
   const { setNodeRef: setDroppableRef } = useDroppable({ id: column.id })
 
-  const columnCards = column.cardIds
-    .map((id) => cards[id])
-    .filter(Boolean)
+  // Get cards for this column, sorted by position
+  const columnCards = Object.values(allCards)
+    .filter((c) => c.column_id === column.id)
+    .sort((a, b) => a.position - b.position)
+
+  const cardIds = columnCards.map((c) => c.id)
 
   useEffect(() => {
     if (isRenaming && renameRef.current) {
@@ -42,9 +47,9 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     return () => document.removeEventListener('mousedown', handleClick)
   }, [menuOpen])
 
-  const handleCreateCard = () => {
-    const cardId = addCard(boardId, column.id, { title: 'Untitled task' })
-    if (onCreateCard) onCreateCard(cardId)
+  const handleCreateCard = async () => {
+    const cardId = await addCard(boardId, column.id, { title: 'Untitled task', assignee: profile?.display_name || '' })
+    if (onCreateCard && cardId) onCreateCard(cardId)
   }
 
   const handleRename = () => {
@@ -140,7 +145,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
         className="flex-1 overflow-y-auto pb-2 space-y-2 min-h-[80px]"
       >
         <SortableContext
-          items={column.cardIds}
+          items={cardIds}
           strategy={verticalListSortingStrategy}
         >
           {columnCards.map((card) =>

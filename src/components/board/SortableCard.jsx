@@ -16,6 +16,7 @@ export default function SortableCard({ card, onClick, onComplete, isSelected }) 
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
+    touchAction: 'none',
   }
 
   return (

@@ -14,53 +14,6 @@
   --color-primary-900: #164e63;
 }
 
-/* GitHub Dark theme */
-[data-theme="github"] {
-  color-scheme: dark;
-  color: #F2F5F3;
-  background-color: #101411;
-
-  /* Surfaces: white → dark */
-  --color-white: #232925;
-
-  /* Grays: inverted for dark mode */
-  --color-gray-50: #101411;
-  --color-gray-100: #0A241B;
-  --color-gray-200: #0A241B;
-  --color-gray-300: #909692;
-  --color-gray-400: #909692;
-  --color-gray-500: #B6BFB8;
-  --color-gray-600: #B6BFB8;
-  --color-gray-700: #E4EBE6;
-  --color-gray-800: #E4EBE6;
-  --color-gray-900: #F2F5F3;
-  --color-gray-950: #F2F5F3;
-
-  /* Blues → Greens */
-  --color-blue-50: #0A241B;
-  --color-blue-100: #08872B;
-  --color-blue-200: #08872B;
-  --color-blue-300: #0FBF3E;
-  --color-blue-400: #5FED83;
-  --color-blue-500: #0FBF3E;
-  --color-blue-600: #08872B;
-  --color-blue-700: #0A241B;
-  --color-blue-800: #0A241B;
-  --color-blue-900: #0A241B;
-
-  /* Emerald → palette greens */
-  --color-emerald-100: #0A241B;
-  --color-emerald-200: #08872B;
-  --color-emerald-300: #0FBF3E;
-  --color-emerald-400: #5FED83;
-  --color-emerald-500: #0FBF3E;
-}
-
-/* Preserve light text-white in dark theme */
-[data-theme="github"] .text-white {
-  color: #F2F5F3;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

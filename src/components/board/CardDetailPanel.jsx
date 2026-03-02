@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   X, Trash2, Plus, Check, User, Calendar, Flag, Tag, CheckSquare,
-  Briefcase, LayoutList, CheckCircle2, FileText, Smile,
+  Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus,
 } from 'lucide-react'
 import { useBoardStore } from '../../store/boardStore'
+import { useAuthStore } from '../../store/authStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { supabase } from '../../lib/supabase'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 
@@ -58,6 +61,10 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const deleteCard = useBoardStore((s) => s.deleteCard)
   const completeCard = useBoardStore((s) => s.completeCard)
   const boards = useBoardStore((s) => s.boards)
+  const allColumns = useBoardStore((s) => s.columns)
+  const addBoardMember = useBoardStore((s) => s.addBoardMember)
+  const profile = useAuthStore((s) => s.profile)
+  const font = useSettingsStore((s) => s.font)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -71,53 +78,77 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const [showLabelForm, setShowLabelForm] = useState(false)
   const [newCheckItem, setNewCheckItem] = useState('')
   const [showPriorityPicker, setShowPriorityPicker] = useState(false)
-  const [editingAssignee, setEditingAssignee] = useState(false)
+  const [showAssigneePicker, setShowAssigneePicker] = useState(false)
+  const [assigneeSearch, setAssigneeSearch] = useState('')
   const [editingDueDate, setEditingDueDate] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [boardMemberNames, setBoardMemberNames] = useState([])
 
   useEffect(() => {
     if (card) {
       setTitle(card.title)
       setDescription(card.description || '')
-      setAssignee(card.assignee || '')
+      setAssignee(card.assignee_name || '')
       setPriority(card.priority || 'medium')
-      setDueDate(card.dueDate || '')
+      setDueDate(card.due_date || '')
       setLabels(card.labels ? [...card.labels] : [])
       setChecklist(card.checklist ? card.checklist.map((item) => ({ ...item })) : [])
       setShowLabelForm(false)
       setNewLabelText('')
       setNewCheckItem('')
       setShowPriorityPicker(false)
-      setEditingAssignee(false)
+      setShowAssigneePicker(false)
+      setAssigneeSearch('')
       setEditingDueDate(false)
+
+      // Fetch board members
+      supabase
+        .from('board_members')
+        .select('profiles(display_name)')
+        .eq('board_id', card.board_id)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Failed to fetch board members:', error)
+            return
+          }
+          const names = (data || [])
+            .map((m) => m.profiles?.display_name)
+            .filter(Boolean)
+          setBoardMemberNames(names)
+        })
     }
   }, [cardId])
+
+  const saveAndCloseRef = useRef(handleSaveAndClose)
+  useEffect(() => {
+    saveAndCloseRef.current = handleSaveAndClose
+  })
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        handleSaveAndClose()
+        saveAndCloseRef.current()
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [title, description, assignee, priority, dueDate, labels, checklist])
+  }, [])
 
   if (!card) return null
 
   // Find board name and column (status)
-  const board = boards[card.boardId]
+  const board = boards[card.board_id]
   const boardName = board?.name || '—'
-  const column = board?.columns.find((col) => col.cardIds.includes(cardId))
+  const column = allColumns[card.column_id]
   const statusName = column?.title || '—'
 
   const handleSave = () => {
     updateCard(cardId, {
       title: title.trim() || card.title,
       description,
-      assignee: assignee.trim(),
+      assignee_name: assignee.trim(),
       priority,
-      dueDate: dueDate || null,
+      due_date: dueDate || null,
       labels,
       checklist,
     })
@@ -168,7 +199,36 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
   const checkedCount = checklist.filter((item) => item.done).length
   const currentPriority = PRIORITY_OPTIONS.find((p) => p.value === priority) || PRIORITY_OPTIONS[1]
-  const dueDateDisplay = dueDate ? new Date(dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+
+  const renderAvatar = (name, size = 'w-6 h-6', iconSize = 'w-3.5 h-3.5') => {
+    const isMe = profile?.display_name && name.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
+    if (isMe && profile.icon) {
+      const iconText = profile.color === 'bg-[#A0A0A0]' ? 'text-gray-900' : 'text-white'
+      return (
+        <span className={`${size} rounded-full shrink-0 flex items-center justify-center ${iconText} ${profile.color}`}>
+          <DynamicIcon name={profile.icon} className={iconSize} />
+        </span>
+      )
+    }
+    return (
+      <span className={`${size} rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white ${getAvatarColor(name)}`}>
+        {getInitials(name)}
+      </span>
+    )
+  }
+  const dueDateDisplay = dueDate ? (() => {
+    const d = new Date(dueDate)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    if (sameDay(d, today)) return 'Today'
+    if (sameDay(d, yesterday)) return 'Yesterday'
+    if (sameDay(d, tomorrow)) return 'Tomorrow'
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  })() : null
 
   return (
     <div className="fixed top-16 right-0 bottom-0 w-[420px] bg-white border-l border-gray-200 flex flex-col z-20">
@@ -208,15 +268,16 @@ export default function CardDetailPanel({ cardId, onClose }) {
           <div className="flex items-center gap-2 mb-2">
             <button
               type="button"
-              onClick={() => {
-                if (!card.completed) completeCard(cardId)
-              }}
+              onClick={() => completeCard(cardId)}
               className="shrink-0"
             >
               <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-emerald-400' : 'text-gray-300 hover:text-emerald-300'}`} />
             </button>
-            {card.taskNumber && (
-              <span className="text-xs font-medium text-gray-500">Task #{card.taskNumber}</span>
+            {card.task_number > 0 && (
+              <span className="text-xs font-medium text-gray-500">Task #{card.task_number}</span>
+            )}
+            {card.global_task_number > 0 && (
+              <span className="text-[10px] text-gray-300 bg-gray-50 px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
             )}
           </div>
           <input
@@ -259,43 +320,122 @@ export default function CardDetailPanel({ cardId, onClose }) {
           </div>
 
           {/* Assignee */}
-          <div className="flex items-center py-2.5 border-t border-gray-100">
+          <div className="flex items-center py-2.5 border-t border-gray-100 relative">
             <div className="flex items-center gap-2 w-32 shrink-0 text-gray-400">
               <User className="w-4 h-4" />
               <span className="text-sm">Assignee</span>
             </div>
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {editingAssignee ? (
-                <input
-                  value={assignee}
-                  onChange={(e) => setAssignee(e.target.value)}
-                  onBlur={() => setEditingAssignee(false)}
-                  onKeyDown={(e) => e.key === 'Enter' && setEditingAssignee(false)}
-                  autoFocus
-                  placeholder="Type a name..."
-                  className="flex-1 text-sm text-gray-700 bg-transparent border-none focus:outline-none placeholder-gray-300 min-w-0"
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setEditingAssignee(true)}
-                  className="flex items-center gap-2 text-sm hover:bg-gray-50 px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
-                >
-                  {assignee.trim() ? (
-                    <>
-                      <span
-                        className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white ${getAvatarColor(assignee)}`}
-                      >
-                        {getInitials(assignee)}
-                      </span>
-                      <span className="text-gray-700">{assignee}</span>
-                    </>
-                  ) : (
-                    <span className="text-gray-300">No assignee</span>
-                  )}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAssigneePicker(!showAssigneePicker)
+                  setAssigneeSearch('')
+                }}
+                className="flex items-center gap-2 text-sm hover:bg-gray-50 px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
+              >
+                {assignee.trim() ? (
+                  <>
+                    {renderAvatar(assignee)}
+                    <span className="text-gray-700">{assignee}</span>
+                  </>
+                ) : (
+                  <span className="text-gray-300">No assignee</span>
+                )}
+              </button>
             </div>
+            {showAssigneePicker && (() => {
+              const query = assigneeSearch.trim().toLowerCase()
+              const filtered = query
+                ? boardMemberNames.filter((m) => m.toLowerCase().includes(query))
+                : boardMemberNames
+              const exactMatch = boardMemberNames.some((m) => m.toLowerCase() === query)
+              const showAddOption = query && !exactMatch
+
+              return (
+                <div className="absolute left-32 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 w-56 overflow-hidden">
+                  <div className="p-2 border-b border-gray-100">
+                    <input
+                      value={assigneeSearch}
+                      onChange={(e) => setAssigneeSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && showAddOption) {
+                          const name = assigneeSearch.trim()
+                          addBoardMember(card.board_id, name)
+                          setAssignee(name)
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        } else if (e.key === 'Enter' && filtered.length === 1) {
+                          setAssignee(filtered[0])
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        } else if (e.key === 'Escape') {
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        }
+                      }}
+                      autoFocus
+                      placeholder="Search or add member..."
+                      className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-300"
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto py-1">
+                    {assignee.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignee('')
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-50 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        Unassign
+                      </button>
+                    )}
+                    {filtered.map((member) => (
+                      <button
+                        key={member}
+                        type="button"
+                        onClick={() => {
+                          setAssignee(member)
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        }}
+                        className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm transition-colors ${
+                          assignee === member
+                            ? 'bg-gray-50 text-gray-900 font-medium'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {renderAvatar(member)}
+                        {member}
+                      </button>
+                    ))}
+                    {filtered.length === 0 && !showAddOption && (
+                      <div className="px-3 py-2 text-sm text-gray-300">No members yet</div>
+                    )}
+                    {showAddOption && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const name = assigneeSearch.trim()
+                          addBoardMember(card.board_id, name)
+                          setAssignee(name)
+                          setShowAssigneePicker(false)
+                          setAssigneeSearch('')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors border-t border-gray-100"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Add "{assigneeSearch.trim()}"
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Due date */}
@@ -323,7 +463,13 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 className="text-sm hover:bg-gray-50 px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
               >
                 {dueDateDisplay ? (
-                  <span className="text-gray-700">{dueDateDisplay}</span>
+                  <span className={
+                    dueDateDisplay === 'Yesterday' ? 'text-rose-500 font-medium' :
+                    dueDateDisplay === 'Today' ? 'text-amber-600 font-medium' :
+                    dueDateDisplay === 'Tomorrow' ? 'text-blue-500 font-medium' :
+                    dueDate && new Date(dueDate) < new Date() ? 'text-rose-500 font-medium' :
+                    'text-emerald-500 font-medium'
+                  }>{dueDateDisplay}</span>
                 ) : (
                   <span className="text-gray-300">No due date</span>
                 )}

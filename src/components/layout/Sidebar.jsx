@@ -19,21 +19,18 @@ import { useBoardStore } from '../../store/boardStore'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
 
-function GambitLogo({ className }) {
+function GambitLogo({ size = 28 }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className={className}>
-      <rect width="32" height="32" rx="8" fill="currentColor" />
-      <path
-        d="M14 5.5C14 5.5 14.6 9.4 16 11C17.6 12.6 22 13 22 13C22 13 17.6 13.4 16 15C14.6 16.4 14 21 14 21C14 21 13.4 16.4 12 15C10.4 13.4 6 13 6 13C6 13 10.4 12.6 12 11C13.4 9.4 14 5.5 14 5.5Z"
-        fill="white"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M22 17.5C22 17.5 22.4 19.5 23.2 20.3C24 21.1 27 21.8 27 21.8C27 21.8 24 22.5 23.2 23.3C22.4 24.1 22 27 22 27C22 27 21.6 24.1 20.8 23.3C20 22.5 17 21.8 17 21.8C17 21.8 20 21.1 20.8 20.3C21.6 19.5 22 17.5 22 17.5Z"
-        fill="white"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <span
+      className="material-symbols-outlined text-black shrink-0"
+      style={{
+        fontSize: `${size}px`,
+        lineHeight: `${size}px`,
+        fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+      }}
+    >
+      owl
+    </span>
   )
 }
 
@@ -91,7 +88,7 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 h-16 border-b border-gray-200">
-        <GambitLogo className="w-7 h-7 shrink-0 text-gray-800" />
+        <GambitLogo />
         {!collapsed && (
           <span className="text-lg font-bold text-gray-900 tracking-tight">
             Gambit

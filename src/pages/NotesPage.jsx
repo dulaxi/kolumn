@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNoteStore } from '../store/noteStore'
 import { format, parseISO } from 'date-fns'
 import { Plus, Trash2, FileText } from 'lucide-react'
@@ -8,21 +8,27 @@ export default function NotesPage() {
   const addNote = useNoteStore((s) => s.addNote)
   const updateNote = useNoteStore((s) => s.updateNote)
   const deleteNote = useNoteStore((s) => s.deleteNote)
+  const fetchNotes = useNoteStore((s) => s.fetchNotes)
+  const loading = useNoteStore((s) => s.loading)
   const [selectedNoteId, setSelectedNoteId] = useState(null)
+
+  useEffect(() => {
+    fetchNotes()
+  }, [])
 
   const sortedNotes = useMemo(
     () =>
       Object.values(notes).sort(
-        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
       ),
     [notes]
   )
 
   const selectedNote = selectedNoteId ? notes[selectedNoteId] : null
 
-  const handleNewNote = () => {
-    const id = addNote('Untitled')
-    setSelectedNoteId(id)
+  const handleNewNote = async () => {
+    const id = await addNote('Untitled')
+    if (id) setSelectedNoteId(id)
   }
 
   const handleDeleteNote = (e, noteId) => {
@@ -41,6 +47,14 @@ export default function NotesPage() {
   const handleContentChange = (e) => {
     if (!selectedNoteId) return
     updateNote(selectedNoteId, { content: e.target.value })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+        Loading notes...
+      </div>
+    )
   }
 
   return (
@@ -78,7 +92,7 @@ export default function NotesPage() {
                       {note.title || 'Untitled'}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {format(parseISO(note.updatedAt), 'MMM d, yyyy')}
+                      {note.updated_at && format(parseISO(note.updated_at), 'MMM d, yyyy')}
                     </p>
                   </div>
                   <button
@@ -108,7 +122,7 @@ export default function NotesPage() {
               />
               <p className="text-xs text-gray-400 mt-1">
                 Last edited{' '}
-                {format(parseISO(selectedNote.updatedAt), 'MMM d, yyyy h:mm a')}
+                {selectedNote.updated_at && format(parseISO(selectedNote.updated_at), 'MMM d, yyyy h:mm a')}
               </p>
             </div>
             <textarea

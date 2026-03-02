@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { format, isPast, parseISO } from 'date-fns'
+import { format, isPast, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
 import { Calendar, CheckSquare, AlignLeft, CheckCircle2, FileText } from 'lucide-react'
 import { useBoardStore } from '../../store/boardStore'
+import { useAuthStore } from '../../store/authStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
 
 const LABEL_BG = {
@@ -48,9 +50,11 @@ function getInitials(name) {
 }
 
 export default function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
-  const { title, description, labels, priority, dueDate, checklist, assignee, taskNumber, completed, icon } = card
+  const { title, description, labels, priority, due_date: dueDate, checklist, assignee_name: assignee, task_number: taskNumber, completed, icon } = card
   const displayIcon = iconOverride || icon
   const updateCard = useBoardStore((s) => s.updateCard)
+  const profile = useAuthStore((s) => s.profile)
+  const font = useSettingsStore((s) => s.font)
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   const checkedCount = checklist?.filter((item) => item.done).length || 0
@@ -76,6 +80,7 @@ export default function Card({ card, onClick, onComplete, isSelected, iconOverri
       role="button"
       tabIndex={0}
       onClick={() => onClick(card.id)}
+      style={font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : undefined}
       className={`w-full rounded-xl border shadow-sm transition-all text-left cursor-pointer flex ${
         isSelected
           ? 'bg-blue-50/60 border-blue-100'
@@ -145,13 +150,17 @@ export default function Card({ card, onClick, onComplete, isSelected, iconOverri
             {dueDateObj && (
               <span
                 className={`text-[10px] font-medium flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                  overdue
-                    ? 'bg-rose-100 text-rose-300'
-                    : 'bg-gray-100 text-gray-300'
+                  isYesterday(dueDateObj) || (isPast(dueDateObj) && !isToday(dueDateObj))
+                    ? 'bg-rose-100 text-rose-500'
+                    : isToday(dueDateObj)
+                    ? 'bg-amber-100 text-amber-600'
+                    : isTomorrow(dueDateObj)
+                    ? 'bg-blue-100 text-blue-500'
+                    : 'bg-emerald-100 text-emerald-500'
                 }`}
               >
                 <Calendar className="w-3 h-3" />
-                {format(dueDateObj, 'MMM d')}
+                {isToday(dueDateObj) ? 'Today' : isYesterday(dueDateObj) ? 'Yesterday' : isTomorrow(dueDateObj) ? 'Tomorrow' : format(dueDateObj, 'MMM d')}
               </span>
             )}
 
@@ -181,14 +190,25 @@ export default function Card({ card, onClick, onComplete, isSelected, iconOverri
           </div>
 
           {/* Assignee avatar — bottom right */}
-          {hasAssignee && (
-            <span
-              className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white ${getAvatarColor(assignee)}`}
-              title={assignee}
-            >
-              {getInitials(assignee)}
-            </span>
-          )}
+          {hasAssignee && (() => {
+            const isMe = profile?.display_name && assignee.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
+            const iconText = profile.color === 'bg-[#A0A0A0]' ? 'text-gray-900' : 'text-white'
+            return isMe && profile.icon ? (
+              <span
+                className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center ${iconText} ${profile.color}`}
+                title={assignee}
+              >
+                <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
+              </span>
+            ) : (
+              <span
+                className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white ${getAvatarColor(assignee)}`}
+                title={assignee}
+              >
+                {getInitials(assignee)}
+              </span>
+            )
+          })()}
         </div>
 
         {/* Expandable checklist */}

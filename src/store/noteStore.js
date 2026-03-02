@@ -1,36 +1,61 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { nanoid } from 'nanoid'
+import { supabase } from '../lib/supabase'
 
-export const useNoteStore = create(
-  persist(
-    (set, get) => ({
-      notes: {},
-      addNote: (title) => {
-        const note = {
-          id: nanoid(),
-          title: title || 'Untitled',
-          content: '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        set((state) => ({ notes: { ...state.notes, [note.id]: note } }))
-        return note.id
+export const useNoteStore = create((set, get) => ({
+  notes: {},
+  loading: false,
+
+  fetchNotes: async () => {
+    set({ loading: true })
+    const { data } = await supabase
+      .from('notes')
+      .select('*')
+      .order('updated_at', { ascending: false })
+
+    const noteMap = {}
+    ;(data || []).forEach((n) => { noteMap[n.id] = n })
+    set({ notes: noteMap, loading: false })
+  },
+
+  addNote: async (title) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const { data: note } = await supabase
+      .from('notes')
+      .insert({
+        user_id: user.id,
+        title: title || 'Untitled',
+        content: '',
+      })
+      .select()
+      .single()
+
+    if (note) {
+      set((state) => ({ notes: { ...state.notes, [note.id]: note } }))
+      return note.id
+    }
+    return null
+  },
+
+  updateNote: async (noteId, updates) => {
+    // Optimistic update
+    set((state) => ({
+      notes: {
+        ...state.notes,
+        [noteId]: { ...state.notes[noteId], ...updates, updated_at: new Date().toISOString() },
       },
-      updateNote: (noteId, updates) =>
-        set((state) => ({
-          notes: {
-            ...state.notes,
-            [noteId]: { ...state.notes[noteId], ...updates, updatedAt: new Date().toISOString() },
-          },
-        })),
-      deleteNote: (noteId) =>
-        set((state) => {
-          const { [noteId]: _, ...rest } = state.notes
-          return { notes: rest }
-        }),
-      getAllNotes: () => Object.values(get().notes),
-    }),
-    { name: 'gambit-notes' }
-  )
-)
+    }))
+    await supabase.from('notes').update(updates).eq('id', noteId)
+  },
+
+  deleteNote: async (noteId) => {
+    set((state) => {
+      const { [noteId]: _, ...rest } = state.notes
+      return { notes: rest }
+    })
+    await supabase.from('notes').delete().eq('id', noteId)
+  },
+
+  getAllNotes: () => Object.values(get().notes),
+}))

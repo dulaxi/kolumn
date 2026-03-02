@@ -1,17 +1,30 @@
 import { useState, useRef } from 'react'
-import { Download, Upload, Trash2, AlertTriangle, Palette } from 'lucide-react'
+import { Download, Upload, Trash2, AlertTriangle, Palette, User, Type } from 'lucide-react'
 import { useSettingsStore } from '../store/settingsStore'
+import { useAuthStore } from '../store/authStore'
+import DynamicIcon from '../components/board/DynamicIcon'
+import IconPicker from '../components/board/IconPicker'
+
+const PROFILE_COLORS = [
+  { value: 'bg-[#7EB8DA]', hex: '#7EB8DA' },
+  { value: 'bg-[#81C9A3]', hex: '#81C9A3' },
+  { value: 'bg-[#B8A9D4]', hex: '#B8A9D4' },
+  { value: 'bg-[#F2A7B3]', hex: '#F2A7B3' },
+  { value: 'bg-[#F6C97E]', hex: '#F6C97E' },
+  { value: 'bg-[#E8A0C8]', hex: '#E8A0C8' },
+  { value: 'bg-[#7DC4C4]', hex: '#7DC4C4' },
+  { value: 'bg-[#9BA8D4]', hex: '#9BA8D4' },
+  { value: 'bg-[#F4B183]', hex: '#F4B183' },
+  { value: 'bg-[#A8D8B9]', hex: '#A8D8B9' },
+  { value: 'bg-[#A0A0A0]', hex: '#A0A0A0' },
+  { value: 'bg-[#2C2C2C]', hex: '#2C2C2C' },
+]
 
 const themes = [
   {
     id: 'default',
     label: 'Default',
     swatches: ['#ffffff', '#e5e7eb', '#3b82f6', '#2563eb'],
-  },
-  {
-    id: 'github',
-    label: 'GitHub Dark',
-    swatches: ['#232925', '#0A241B', '#0FBF3E', '#5FED83'],
   },
 ]
 
@@ -21,6 +34,15 @@ export default function SettingsPage() {
   const [confirmingClear, setConfirmingClear] = useState(false)
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const font = useSettingsStore((s) => s.font)
+  const setFont = useSettingsStore((s) => s.setFont)
+  const profile = useAuthStore((s) => s.profile)
+  const updateProfile = useAuthStore((s) => s.updateProfile)
+  const [showProfileIconPicker, setShowProfileIconPicker] = useState(false)
+
+  const handleProfileUpdate = (updates) => {
+    updateProfile(updates)
+  }
 
   const handleExport = () => {
     const data = {}
@@ -81,8 +103,6 @@ export default function SettingsPage() {
       }
     }
     reader.readAsText(file)
-
-    // Reset file input so the same file can be selected again
     e.target.value = ''
   }
 
@@ -100,6 +120,91 @@ export default function SettingsPage() {
         <p className="text-gray-500 text-sm mt-1">
           Manage your data and preferences
         </p>
+      </div>
+
+      {/* My Profile */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <User className="w-4 h-4 text-gray-500" />
+          <h2 className="text-sm font-semibold text-gray-900">My Profile</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Set your name, avatar icon, and color. This appears on cards assigned to you.
+        </p>
+
+        <div className="space-y-4">
+          {/* Preview */}
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${(profile?.color || 'bg-gray-300') === 'bg-[#A0A0A0]' ? 'text-gray-900' : 'text-white'} ${profile?.color || 'bg-gray-300'}`}>
+              {profile?.icon ? (
+                <DynamicIcon name={profile.icon} className="w-5 h-5" />
+              ) : (
+                <User className="w-5 h-5" />
+              )}
+            </div>
+            <span className="text-sm font-medium text-gray-700">{profile?.display_name || 'No name set'}</span>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Display name</label>
+            <input
+              value={profile?.display_name || ''}
+              onChange={(e) => handleProfileUpdate({ display_name: e.target.value })}
+              placeholder="Your name..."
+              className="w-full text-sm rounded-xl px-3 py-2 border border-gray-200 focus:border-blue-200 focus:outline-none"
+            />
+          </div>
+
+          {/* Icon */}
+          <div className="relative">
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Icon</label>
+            <button
+              type="button"
+              onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${(profile?.color || 'bg-gray-300') === 'bg-[#A0A0A0]' ? 'text-gray-900' : 'text-white'} ${profile?.color || 'bg-gray-300'}`}>
+                {profile?.icon ? (
+                  <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
+                ) : (
+                  <User className="w-3.5 h-3.5" />
+                )}
+              </div>
+              <span className="text-gray-600">{profile?.icon || 'Choose icon'}</span>
+            </button>
+            {showProfileIconPicker && (
+              <IconPicker
+                value={profile?.icon}
+                onChange={(iconName) => {
+                  handleProfileUpdate({ icon: iconName })
+                  setShowProfileIconPicker(false)
+                }}
+                onClose={() => setShowProfileIconPicker(false)}
+              />
+            )}
+          </div>
+
+          {/* Color */}
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Color</label>
+            <div className="flex gap-2 flex-wrap">
+              {PROFILE_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => handleProfileUpdate({ color: c.value })}
+                  className={`w-7 h-7 rounded-full transition-all ${
+                    profile?.color === c.value
+                      ? 'ring-2 ring-offset-2 ring-gray-400 scale-110'
+                      : 'hover:scale-110'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Theme */}
@@ -136,6 +241,41 @@ export default function SettingsPage() {
               </span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Font */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Type className="w-4 h-4 text-gray-500" />
+          <h2 className="text-sm font-semibold text-gray-900">Font</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Choose a typeface for cards.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setFont('mona-sans')}
+            className={`flex flex-col items-center gap-2 px-5 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
+              font === 'mona-sans'
+                ? 'border-blue-400 bg-blue-50/60'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <span style={{ fontFamily: "'Mona Sans Variable', sans-serif" }} className="text-lg font-semibold text-gray-800">Aa</span>
+            <span className="text-xs font-medium text-gray-700">Mona Sans</span>
+          </button>
+          <button
+            onClick={() => setFont('sf-mono')}
+            className={`flex flex-col items-center gap-2 px-5 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
+              font === 'sf-mono'
+                ? 'border-blue-400 bg-blue-50/60'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <span style={{ fontFamily: "'SF Mono', 'Menlo', monospace" }} className="text-lg font-semibold text-gray-800">Aa</span>
+            <span className="text-xs font-medium text-gray-700">SF Mono</span>
+          </button>
         </div>
       </div>
 

@@ -1,0 +1,366 @@
+-- Gambit Kanban: Full database schema
+-- Run this in the Supabase SQL Editor (Dashboard > SQL Editor > New Query)
+
+-- ============================================================
+-- 1. PROFILES (extends auth.users)
+-- ============================================================
+create table public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  display_name text not null default '',
+  icon text,
+  color text default 'bg-[#7EB8DA]',
+  created_at timestamptz default now()
+);
+
+alter table public.profiles enable row level security;
+
+create policy "Profiles readable by authenticated users"
+  on public.profiles for select
+  to authenticated
+  using (true);
+
+create policy "Users can update own profile"
+  on public.profiles for update
+  to authenticated
+  using (id = auth.uid());
+
+create policy "Users can insert own profile"
+  on public.profiles for insert
+  to authenticated
+  with check (id = auth.uid());
+
+-- ============================================================
+-- 2. BOARDS
+-- ============================================================
+create table public.boards (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default 'Untitled Board',
+  icon text,
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  next_task_number int not null default 1,
+  created_at timestamptz default now()
+);
+
+alter table public.boards enable row level security;
+
+-- ============================================================
+-- 3. BOARD_MEMBERS (join table for board access)
+-- ============================================================
+create table public.board_members (
+  board_id uuid not null references public.boards(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member' check (role in ('owner', 'member')),
+  created_at timestamptz default now(),
+  primary key (board_id, user_id)
+);
+
+alter table public.board_members enable row level security;
+
+-- Board RLS: users can see boards they're members of
+create policy "Members can view boards"
+  on public.boards for select
+  to authenticated
+  using (
+    id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Authenticated users can create boards"
+  on public.boards for insert
+  to authenticated
+  with check (owner_id = auth.uid());
+
+create policy "Board owners can update boards"
+  on public.boards for update
+  to authenticated
+  using (owner_id = auth.uid());
+
+create policy "Board owners can delete boards"
+  on public.boards for delete
+  to authenticated
+  using (owner_id = auth.uid());
+
+-- Board members RLS
+create policy "Members can view board_members"
+  on public.board_members for select
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Board owners can manage members"
+  on public.board_members for insert
+  to authenticated
+  with check (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+    or user_id = auth.uid()
+  );
+
+create policy "Board owners can remove members"
+  on public.board_members for delete
+  to authenticated
+  using (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+    or user_id = auth.uid()
+  );
+
+-- ============================================================
+-- 4. COLUMNS
+-- ============================================================
+create table public.columns (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  title text not null default 'Untitled',
+  position int not null default 0,
+  created_at timestamptz default now()
+);
+
+alter table public.columns enable row level security;
+
+create policy "Members can view columns"
+  on public.columns for select
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can create columns"
+  on public.columns for insert
+  to authenticated
+  with check (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can update columns"
+  on public.columns for update
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can delete columns"
+  on public.columns for delete
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+-- ============================================================
+-- 5. CARDS
+-- ============================================================
+create table public.cards (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  column_id uuid not null references public.columns(id) on delete cascade,
+  position int not null default 0,
+  task_number int not null default 0,
+  global_task_number int not null default 0,
+  title text not null default 'Untitled task',
+  description text default '',
+  assignee_id uuid references auth.users(id) on delete set null,
+  assignee_name text default '',
+  priority text default 'medium' check (priority in ('low', 'medium', 'high')),
+  due_date timestamptz,
+  icon text,
+  completed boolean default false,
+  labels jsonb default '[]'::jsonb,
+  checklist jsonb default '[]'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.cards enable row level security;
+
+create policy "Members can view cards"
+  on public.cards for select
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can create cards"
+  on public.cards for insert
+  to authenticated
+  with check (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can update cards"
+  on public.cards for update
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+create policy "Members can delete cards"
+  on public.cards for delete
+  to authenticated
+  using (
+    board_id in (select board_id from public.board_members where user_id = auth.uid())
+  );
+
+-- ============================================================
+-- 6. NOTES (private per user)
+-- ============================================================
+create table public.notes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null default 'Untitled',
+  content text default '',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.notes enable row level security;
+
+create policy "Users can view own notes"
+  on public.notes for select
+  to authenticated
+  using (user_id = auth.uid());
+
+create policy "Users can create own notes"
+  on public.notes for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+create policy "Users can update own notes"
+  on public.notes for update
+  to authenticated
+  using (user_id = auth.uid());
+
+create policy "Users can delete own notes"
+  on public.notes for delete
+  to authenticated
+  using (user_id = auth.uid());
+
+-- ============================================================
+-- 7. BOARD_INVITATIONS
+-- ============================================================
+create table public.board_invitations (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  invited_email text not null,
+  invited_by uuid not null references auth.users(id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined')),
+  created_at timestamptz default now(),
+  unique(board_id, invited_email)
+);
+
+alter table public.board_invitations enable row level security;
+
+create policy "Board owners can view invitations"
+  on public.board_invitations for select
+  to authenticated
+  using (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+    or invited_email = (select email from auth.users where id = auth.uid())
+  );
+
+create policy "Board owners can create invitations"
+  on public.board_invitations for insert
+  to authenticated
+  with check (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+  );
+
+create policy "Board owners can update invitations"
+  on public.board_invitations for update
+  to authenticated
+  using (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+    or invited_email = (select email from auth.users where id = auth.uid())
+  );
+
+create policy "Board owners can delete invitations"
+  on public.board_invitations for delete
+  to authenticated
+  using (
+    board_id in (select id from public.boards where owner_id = auth.uid())
+  );
+
+-- ============================================================
+-- 8. TRIGGERS
+-- ============================================================
+
+-- Auto-create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, display_name)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1))
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Auto-add owner to board_members on board creation
+create or replace function public.handle_new_board()
+returns trigger as $$
+begin
+  insert into public.board_members (board_id, user_id, role)
+  values (new.id, new.owner_id, 'owner');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_board_created
+  after insert on public.boards
+  for each row execute function public.handle_new_board();
+
+-- Auto-accept pending invitations when new user signs up
+create or replace function public.handle_invitation_on_signup()
+returns trigger as $$
+declare
+  inv record;
+begin
+  for inv in
+    select * from public.board_invitations
+    where invited_email = new.email and status = 'pending'
+  loop
+    insert into public.board_members (board_id, user_id, role)
+    values (inv.board_id, new.id, 'member')
+    on conflict do nothing;
+
+    update public.board_invitations
+    set status = 'accepted'
+    where id = inv.id;
+  end loop;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_signup_accept_invitations
+  after insert on auth.users
+  for each row execute function public.handle_invitation_on_signup();
+
+-- Auto-update updated_at on cards
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger set_cards_updated_at
+  before update on public.cards
+  for each row execute function public.handle_updated_at();
+
+create trigger set_notes_updated_at
+  before update on public.notes
+  for each row execute function public.handle_updated_at();
+
+-- ============================================================
+-- 9. ENABLE REALTIME
+-- ============================================================
+alter publication supabase_realtime add table public.boards;
+alter publication supabase_realtime add table public.columns;
+alter publication supabase_realtime add table public.cards;
+alter publication supabase_realtime add table public.board_members;

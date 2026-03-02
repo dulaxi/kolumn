@@ -1,0 +1,246 @@
+import { useState, useEffect } from 'react'
+import { X, UserPlus, Trash2, Mail, Crown, Users } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import { useAuthStore } from '../../store/authStore'
+
+export default function BoardShareModal({ board, onClose }) {
+  const [members, setMembers] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const user = useAuthStore((s) => s.user)
+
+  useEffect(() => {
+    fetchMembers()
+    fetchInvitations()
+  }, [board.id])
+
+  const fetchMembers = async () => {
+    const { data } = await supabase
+      .from('board_members')
+      .select('user_id, role, profiles(id, email, display_name, icon, color)')
+      .eq('board_id', board.id)
+    setMembers(data || [])
+  }
+
+  const fetchInvitations = async () => {
+    const { data } = await supabase
+      .from('board_invitations')
+      .select('*')
+      .eq('board_id', board.id)
+      .eq('status', 'pending')
+    setInvitations(data || [])
+  }
+
+  const handleInvite = async (e) => {
+    e.preventDefault()
+    setError('')
+    const trimmed = email.trim().toLowerCase()
+    if (!trimmed) return
+
+    // Check if already a member
+    const alreadyMember = members.some(
+      (m) => m.profiles?.email?.toLowerCase() === trimmed
+    )
+    if (alreadyMember) {
+      setError('This user is already a member')
+      return
+    }
+
+    // Check if already invited
+    const alreadyInvited = invitations.some(
+      (inv) => inv.invited_email.toLowerCase() === trimmed
+    )
+    if (alreadyInvited) {
+      setError('This email has already been invited')
+      return
+    }
+
+    setLoading(true)
+
+    // Check if user already exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', trimmed)
+      .single()
+
+    if (existingProfile) {
+      // Add directly as member
+      const { error: memberError } = await supabase
+        .from('board_members')
+        .insert({ board_id: board.id, user_id: existingProfile.id, role: 'member' })
+
+      if (memberError) {
+        setError(memberError.message)
+      } else {
+        await fetchMembers()
+        setEmail('')
+      }
+    } else {
+      // Create invitation
+      const { error: invError } = await supabase
+        .from('board_invitations')
+        .insert({
+          board_id: board.id,
+          invited_email: trimmed,
+          invited_by: user.id,
+        })
+
+      if (invError) {
+        setError(invError.message)
+      } else {
+        await fetchInvitations()
+        setEmail('')
+      }
+    }
+
+    setLoading(false)
+  }
+
+  const handleRemoveMember = async (userId) => {
+    if (userId === board.owner_id) return
+    await supabase
+      .from('board_members')
+      .delete()
+      .eq('board_id', board.id)
+      .eq('user_id', userId)
+    await fetchMembers()
+  }
+
+  const handleCancelInvitation = async (invId) => {
+    await supabase.from('board_invitations').delete().eq('id', invId)
+    await fetchInvitations()
+  }
+
+  const isOwner = user?.id === board.owner_id
+
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-gray-500" />
+            <h2 className="text-base font-semibold text-gray-900">Share "{board.name}"</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Invite form */}
+        {isOwner && (
+          <form onSubmit={handleInvite} className="px-5 py-3 border-b border-gray-100">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError('') }}
+                  placeholder="Invite by email..."
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-gray-200 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !email.trim()}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Invite
+              </button>
+            </div>
+            {error && (
+              <p className="text-xs text-red-500 mt-1.5">{error}</p>
+            )}
+          </form>
+        )}
+
+        {/* Members list */}
+        <div className="px-5 py-3 max-h-64 overflow-y-auto">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+            Members ({members.length})
+          </p>
+          <div className="space-y-1">
+            {members.map((m) => (
+              <div
+                key={m.user_id}
+                className="flex items-center justify-between py-2 group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${m.profiles?.color || 'bg-gray-300'}`}>
+                    {(m.profiles?.display_name || '?')[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {m.profiles?.display_name || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{m.profiles?.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {m.role === 'owner' ? (
+                    <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      <Crown className="w-3 h-3" />
+                      Owner
+                    </span>
+                  ) : isOwner ? (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMember(m.user_id)}
+                      className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-400">Member</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pending invitations */}
+          {invitations.length > 0 && (
+            <>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mt-4 mb-2">
+                Pending Invitations ({invitations.length})
+              </p>
+              <div className="space-y-1">
+                {invitations.map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center justify-between py-2 group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                        <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      </div>
+                      <p className="text-sm text-gray-500">{inv.invited_email}</p>
+                    </div>
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancelInvitation(inv.id)}
+                        className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

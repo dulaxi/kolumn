@@ -46,8 +46,8 @@ export default function CalendarPage() {
   const cardsByDate = useMemo(() => {
     const map = {}
     Object.values(cards).forEach((card) => {
-      if (!card.dueDate) return
-      const dateKey = format(parseISO(card.dueDate), 'yyyy-MM-dd')
+      if (!card.due_date) return
+      const dateKey = format(parseISO(card.due_date), 'yyyy-MM-dd')
       if (!map[dateKey]) map[dateKey] = []
       map[dateKey].push(card)
     })

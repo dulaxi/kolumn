@@ -19,53 +19,49 @@ const PRIORITY_COLORS = {
 export default function DashboardPage() {
   const navigate = useNavigate()
   const boards = useBoardStore((s) => s.boards)
+  const columns = useBoardStore((s) => s.columns)
   const cards = useBoardStore((s) => s.cards)
+  const loading = useBoardStore((s) => s.loading)
 
   const stats = useMemo(() => {
     const allCards = Object.values(cards)
-    const allBoards = Object.values(boards)
+    const allColumns = Object.values(columns)
 
     // Find all column IDs that are "Done" (case-insensitive)
-    const doneCardIds = new Set()
-    allBoards.forEach((board) => {
-      board.columns.forEach((col) => {
-        if (col.title.toLowerCase() === 'done') {
-          col.cardIds.forEach((id) => doneCardIds.add(id))
-        }
-      })
-    })
+    const doneColumnIds = new Set(
+      allColumns.filter((col) => col.title.toLowerCase() === 'done').map((col) => col.id)
+    )
+    const doneCardIds = new Set(
+      allCards.filter((c) => doneColumnIds.has(c.column_id)).map((c) => c.id)
+    )
 
     const totalTasks = allCards.length
 
-    // In Progress = cards in columns titled "In Progress" (case-insensitive)
-    const inProgressCardIds = new Set()
-    allBoards.forEach((board) => {
-      board.columns.forEach((col) => {
-        if (col.title.toLowerCase() === 'in progress') {
-          col.cardIds.forEach((id) => inProgressCardIds.add(id))
-        }
-      })
-    })
-    const inProgress = inProgressCardIds.size
+    // In Progress = cards in columns titled "In Progress"
+    const inProgressColumnIds = new Set(
+      allColumns.filter((col) => col.title.toLowerCase() === 'in progress').map((col) => col.id)
+    )
+    const inProgress = allCards.filter((c) => inProgressColumnIds.has(c.column_id)).length
 
-    // Completed today = done cards where updatedAt is today
-    const completedToday = allCards.filter(
-      (card) => doneCardIds.has(card.id) && isToday(parseISO(card.updatedAt))
-    ).length
+    // Completed today = done cards where updated_at is today
+    const completedToday = allCards.filter((card) => {
+      if (!doneCardIds.has(card.id)) return false
+      return card.updated_at && isToday(parseISO(card.updated_at))
+    }).length
 
-    // Overdue = cards with dueDate in past (not today) and NOT in "Done"
+    // Overdue = cards with due_date in past (not today) and NOT in "Done"
     const overdue = allCards.filter((card) => {
-      if (!card.dueDate || doneCardIds.has(card.id)) return false
-      const due = parseISO(card.dueDate)
+      if (!card.due_date || doneCardIds.has(card.id)) return false
+      const due = parseISO(card.due_date)
       return isPast(due) && !isToday(due)
     }).length
 
     return { totalTasks, inProgress, completedToday, overdue }
-  }, [boards, cards])
+  }, [columns, cards])
 
   const recentActivity = useMemo(() => {
     return Object.values(cards)
-      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
       .slice(0, 8)
   }, [cards])
 
@@ -95,6 +91,14 @@ export default function DashboardPage() {
       color: 'text-red-600 bg-red-50',
     },
   ]
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+        Loading...
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -156,11 +160,14 @@ export default function DashboardPage() {
                     PRIORITY_COLORS[card.priority] || PRIORITY_COLORS.medium
                   }`}
                 />
+                <span className="text-[11px] font-medium text-gray-400 shrink-0">
+                  #{card.global_task_number || card.task_number}
+                </span>
                 <span className="text-sm text-gray-900 font-medium flex-1 truncate">
                   {card.title}
                 </span>
                 <span className="text-xs text-gray-400 shrink-0">
-                  {format(parseISO(card.updatedAt), 'MMM d, h:mm a')}
+                  {card.updated_at && format(parseISO(card.updated_at), 'MMM d, h:mm a')}
                 </span>
               </div>
             ))}

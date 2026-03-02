@@ -1,307 +1,542 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { nanoid } from 'nanoid'
+import { supabase } from '../lib/supabase'
 
-const createDefaultBoard = () => {
-  const boardId = nanoid()
-  return {
-    id: boardId,
-    name: 'My Tasks',
-    icon: 'ClipboardList',
-    nextTaskNumber: 1,
-    columns: [
-      { id: nanoid(), title: 'To Do', cardIds: [] },
-      { id: nanoid(), title: 'In Progress', cardIds: [] },
-      { id: nanoid(), title: 'Review', cardIds: [] },
-      { id: nanoid(), title: 'Done', cardIds: [] },
-    ],
-  }
-}
+export const useBoardStore = create((set, get) => ({
+  boards: {},
+  columns: {},
+  cards: {},
+  activeBoardId: null,
+  loading: true,
+  subscriptions: [],
+  _isDragging: false,
 
-const defaultBoard = createDefaultBoard()
+  // ============================================================
+  // FETCH (load all boards the user has access to)
+  // ============================================================
+  fetchBoards: async () => {
+    set({ loading: true })
 
-export const useBoardStore = create(
-  persist(
-    (set, get) => ({
-      boards: { [defaultBoard.id]: defaultBoard },
-      cards: {},
-      activeBoardId: defaultBoard.id,
+    const { data: boards } = await supabase
+      .from('boards')
+      .select('*')
+      .order('created_at')
 
-      // Board actions
-      setActiveBoard: (boardId) => set({ activeBoardId: boardId }),
+    const { data: columns } = await supabase
+      .from('columns')
+      .select('*')
+      .order('position')
 
-      addBoard: (name, icon) => {
-        const board = {
-          id: nanoid(),
-          name,
-          icon: icon || null,
-          nextTaskNumber: 1,
-          columns: [
-            { id: nanoid(), title: 'To Do', cardIds: [] },
-            { id: nanoid(), title: 'In Progress', cardIds: [] },
-            { id: nanoid(), title: 'Review', cardIds: [] },
-            { id: nanoid(), title: 'Done', cardIds: [] },
-          ],
-        }
-        set((state) => ({
-          boards: { ...state.boards, [board.id]: board },
-          activeBoardId: board.id,
-        }))
-        return board.id
-      },
+    const { data: cards } = await supabase
+      .from('cards')
+      .select('*')
+      .order('position')
 
-      updateBoardIcon: (boardId, icon) =>
-        set((state) => ({
-          boards: {
-            ...state.boards,
-            [boardId]: { ...state.boards[boardId], icon },
-          },
-        })),
+    const boardMap = {}
+    ;(boards || []).forEach((b) => { boardMap[b.id] = b })
 
-      renameBoard: (boardId, name) =>
-        set((state) => ({
-          boards: {
-            ...state.boards,
-            [boardId]: { ...state.boards[boardId], name },
-          },
-        })),
+    const columnMap = {}
+    ;(columns || []).forEach((c) => { columnMap[c.id] = c })
 
-      deleteBoard: (boardId) =>
-        set((state) => {
-          const { [boardId]: deleted, ...rest } = state.boards
-          const cards = { ...state.cards }
-          Object.keys(cards).forEach((cardId) => {
-            if (cards[cardId].boardId === boardId) delete cards[cardId]
-          })
-          const remainingIds = Object.keys(rest)
-          return {
-            boards: rest,
-            cards,
-            activeBoardId:
-              state.activeBoardId === boardId
-                ? remainingIds[0] || null
-                : state.activeBoardId,
-          }
-        }),
+    const cardMap = {}
+    ;(cards || []).forEach((c) => { cardMap[c.id] = c })
 
-      // Column actions
-      addColumn: (boardId, title) =>
-        set((state) => {
-          const board = state.boards[boardId]
-          return {
-            boards: {
-              ...state.boards,
-              [boardId]: {
-                ...board,
-                columns: [...board.columns, { id: nanoid(), title, cardIds: [] }],
-              },
-            },
-          }
-        }),
+    const firstBoardId = boards?.length ? boards[0].id : null
+    const current = get().activeBoardId
 
-      renameColumn: (boardId, columnId, title) =>
-        set((state) => {
-          const board = state.boards[boardId]
-          return {
-            boards: {
-              ...state.boards,
-              [boardId]: {
-                ...board,
-                columns: board.columns.map((col) =>
-                  col.id === columnId ? { ...col, title } : col
-                ),
-              },
-            },
-          }
-        }),
+    set({
+      boards: boardMap,
+      columns: columnMap,
+      cards: cardMap,
+      activeBoardId: current && boardMap[current] ? current : firstBoardId,
+      loading: false,
+    })
+  },
 
-      deleteColumn: (boardId, columnId) =>
-        set((state) => {
-          const board = state.boards[boardId]
-          const column = board.columns.find((c) => c.id === columnId)
-          const cards = { ...state.cards }
-          column.cardIds.forEach((cardId) => delete cards[cardId])
-          return {
-            boards: {
-              ...state.boards,
-              [boardId]: {
-                ...board,
-                columns: board.columns.filter((col) => col.id !== columnId),
-              },
-            },
-            cards,
-          }
-        }),
+  // ============================================================
+  // BOARD ACTIONS
+  // ============================================================
+  setActiveBoard: (boardId) => set({ activeBoardId: boardId }),
 
-      // Card actions
-      addCard: (boardId, columnId, cardData) => {
-        const board = get().boards[boardId]
-        const taskNumber = board.nextTaskNumber || 1
-        const card = {
-          id: nanoid(),
-          boardId,
-          taskNumber,
-          title: cardData.title,
-          description: cardData.description || '',
-          assignee: cardData.assignee || 'Abdullah H.',
-          labels: cardData.labels || [],
-          dueDate: cardData.dueDate || null,
-          priority: cardData.priority || 'medium',
-          icon: cardData.icon || null,
-          completed: cardData.completed || false,
-          checklist: cardData.checklist || [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        set((state) => {
-          const board = state.boards[boardId]
-          return {
-            cards: { ...state.cards, [card.id]: card },
-            boards: {
-              ...state.boards,
-              [boardId]: {
-                ...board,
-                nextTaskNumber: taskNumber + 1,
-                columns: board.columns.map((col) =>
-                  col.id === columnId
-                    ? { ...col, cardIds: [...col.cardIds, card.id] }
-                    : col
-                ),
-              },
-            },
-          }
-        })
-        return card.id
-      },
+  addBoard: async (name, icon) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
 
-      updateCard: (cardId, updates) =>
-        set((state) => ({
-          cards: {
-            ...state.cards,
-            [cardId]: {
-              ...state.cards[cardId],
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            },
-          },
-        })),
+    // Generate ID client-side to avoid .select() on insert
+    // (PostgREST can't return the row because the SELECT RLS policy
+    // depends on board_members, which is populated by an AFTER INSERT trigger)
+    const boardId = crypto.randomUUID()
 
-      completeCard: (cardId) =>
-        set((state) => {
-          const card = state.cards[cardId]
-          if (!card) return state
-          const board = state.boards[card.boardId]
-          if (!board) return state
+    const { error } = await supabase
+      .from('boards')
+      .insert({ id: boardId, name, icon: icon || null, owner_id: user.id })
 
-          const currentColIndex = board.columns.findIndex((col) =>
-            col.cardIds.includes(cardId)
-          )
-          if (currentColIndex === -1) return state
+    if (error) return null
 
-          const nextColIndex = Math.min(currentColIndex + 1, board.columns.length - 1)
-          const columns = board.columns.map((col, i) => {
-            if (i === currentColIndex) {
-              return { ...col, cardIds: col.cardIds.filter((id) => id !== cardId) }
-            }
-            if (i === nextColIndex && nextColIndex !== currentColIndex) {
-              return { ...col, cardIds: [...col.cardIds, cardId] }
-            }
-            return col
-          })
+    // Fetch the board back (trigger has committed board_members by now)
+    const { data: board } = await supabase
+      .from('boards')
+      .select()
+      .eq('id', boardId)
+      .single()
 
-          return {
-            cards: {
-              ...state.cards,
-              [cardId]: {
-                ...card,
-                completed: true,
-                updatedAt: new Date().toISOString(),
-              },
-            },
-            boards: {
-              ...state.boards,
-              [card.boardId]: { ...board, columns },
-            },
-          }
-        }),
+    if (!board) return null
 
-      deleteCard: (cardId) =>
-        set((state) => {
-          const card = state.cards[cardId]
-          const { [cardId]: deleted, ...restCards } = state.cards
-          const board = state.boards[card.boardId]
-          // If this was the last created task, reclaim its number
-          const reclaimNumber = card.taskNumber === (board.nextTaskNumber || 1) - 1
-          return {
-            cards: restCards,
-            boards: {
-              ...state.boards,
-              [card.boardId]: {
-                ...board,
-                nextTaskNumber: reclaimNumber ? card.taskNumber : board.nextTaskNumber,
-                columns: board.columns.map((col) => ({
-                  ...col,
-                  cardIds: col.cardIds.filter((id) => id !== cardId),
-                })),
-              },
-            },
-          }
-        }),
+    // Create default columns
+    const defaultColumns = ['To Do', 'In Progress', 'Review', 'Done']
+    const colInserts = defaultColumns.map((title, i) => ({
+      board_id: board.id,
+      title,
+      position: i,
+    }))
 
-      moveCard: (boardId, fromColumnId, toColumnId, fromIndex, toIndex) =>
-        set((state) => {
-          const board = state.boards[boardId]
-          const columns = board.columns.map((col) => ({ ...col, cardIds: [...col.cardIds] }))
-          const fromCol = columns.find((c) => c.id === fromColumnId)
-          const toCol = columns.find((c) => c.id === toColumnId)
-          const [movedCardId] = fromCol.cardIds.splice(fromIndex, 1)
-          toCol.cardIds.splice(toIndex, 0, movedCardId)
-          return {
-            boards: {
-              ...state.boards,
-              [boardId]: { ...board, columns },
-            },
-          }
-        }),
+    const { data: cols } = await supabase
+      .from('columns')
+      .insert(colInserts)
+      .select()
 
-      getActiveBoard: () => {
-        const state = get()
-        return state.boards[state.activeBoardId] || null
-      },
+    set((state) => {
+      const columnMap = { ...state.columns }
+      ;(cols || []).forEach((c) => { columnMap[c.id] = c })
+      return {
+        boards: { ...state.boards, [board.id]: board },
+        columns: columnMap,
+        activeBoardId: board.id,
+      }
+    })
 
-      getBoardCards: (boardId) => {
-        const state = get()
-        const board = state.boards[boardId]
-        if (!board) return []
-        return board.columns.flatMap((col) =>
-          col.cardIds.map((id) => state.cards[id]).filter(Boolean)
-        )
-      },
+    return board.id
+  },
 
-      resetTaskCounters: () =>
-        set((state) => {
-          const boards = {}
-          for (const [id, board] of Object.entries(state.boards)) {
-            boards[id] = { ...board, nextTaskNumber: 1 }
-          }
-          // Also reset taskNumber on all existing cards
-          const cards = {}
-          let boardCounters = {}
-          for (const [cid, card] of Object.entries(state.cards)) {
-            if (!boardCounters[card.boardId]) boardCounters[card.boardId] = 1
-            cards[cid] = { ...card, taskNumber: boardCounters[card.boardId]++ }
-          }
-          // Update boards with correct next number
-          for (const [bid, next] of Object.entries(boardCounters)) {
-            if (boards[bid]) boards[bid].nextTaskNumber = next
-          }
-          return { boards, cards }
-        }),
+  updateBoardIcon: async (boardId, icon) => {
+    // Optimistic
+    set((state) => ({
+      boards: { ...state.boards, [boardId]: { ...state.boards[boardId], icon } },
+    }))
+    await supabase.from('boards').update({ icon }).eq('id', boardId)
+  },
 
-      getAllCards: () => Object.values(get().cards),
-    }),
-    {
-      name: 'gambit-boards',
+  renameBoard: async (boardId, name) => {
+    set((state) => ({
+      boards: { ...state.boards, [boardId]: { ...state.boards[boardId], name } },
+    }))
+    await supabase.from('boards').update({ name }).eq('id', boardId)
+  },
+
+  deleteBoard: async (boardId) => {
+    set((state) => {
+      const { [boardId]: _, ...restBoards } = state.boards
+      const columns = {}
+      const cards = {}
+      Object.values(state.columns).forEach((c) => {
+        if (c.board_id !== boardId) columns[c.id] = c
+      })
+      Object.values(state.cards).forEach((c) => {
+        if (c.board_id !== boardId) cards[c.id] = c
+      })
+      const remainingIds = Object.keys(restBoards)
+      return {
+        boards: restBoards,
+        columns,
+        cards,
+        activeBoardId:
+          state.activeBoardId === boardId
+            ? remainingIds[0] || null
+            : state.activeBoardId,
+      }
+    })
+    await supabase.from('boards').delete().eq('id', boardId)
+  },
+
+  // Board members (kept as simple name strings on cards for display,
+  // actual members managed through board_members table)
+  addBoardMember: async (boardId, name) => {
+    // For now, this just adds name as assignee_name on the card level
+    // Real member management is in BoardShareModal
+  },
+
+  removeBoardMember: async (boardId, name) => {
+    // Handled through board_members table
+  },
+
+  // ============================================================
+  // COLUMN ACTIONS
+  // ============================================================
+  addColumn: async (boardId, title) => {
+    const boardColumns = Object.values(get().columns)
+      .filter((c) => c.board_id === boardId)
+    const position = boardColumns.length
+
+    const { data: col } = await supabase
+      .from('columns')
+      .insert({ board_id: boardId, title, position })
+      .select()
+      .single()
+
+    if (col) {
+      set((state) => ({
+        columns: { ...state.columns, [col.id]: col },
+      }))
     }
-  )
-)
+  },
+
+  renameColumn: async (boardId, columnId, title) => {
+    set((state) => ({
+      columns: { ...state.columns, [columnId]: { ...state.columns[columnId], title } },
+    }))
+    await supabase.from('columns').update({ title }).eq('id', columnId)
+  },
+
+  deleteColumn: async (boardId, columnId) => {
+    set((state) => {
+      const { [columnId]: _, ...restColumns } = state.columns
+      const cards = {}
+      Object.values(state.cards).forEach((c) => {
+        if (c.column_id !== columnId) cards[c.id] = c
+      })
+      return { columns: restColumns, cards }
+    })
+    await supabase.from('columns').delete().eq('id', columnId)
+  },
+
+  // ============================================================
+  // CARD ACTIONS
+  // ============================================================
+  addCard: async (boardId, columnId, cardData) => {
+    const state = get()
+    const board = state.boards[boardId]
+
+    // Calculate positions
+    const columnCards = Object.values(state.cards)
+      .filter((c) => c.column_id === columnId)
+    const position = columnCards.length
+
+    const allCards = Object.values(state.cards)
+    const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+    const taskNumber = board?.next_task_number || 1
+
+    const cardInsert = {
+      board_id: boardId,
+      column_id: columnId,
+      position,
+      task_number: taskNumber,
+      global_task_number: globalNumber,
+      title: cardData.title || 'Untitled task',
+      description: cardData.description || '',
+      assignee_name: cardData.assignee || '',
+      labels: cardData.labels || [],
+      due_date: cardData.dueDate || null,
+      priority: cardData.priority || 'medium',
+      icon: cardData.icon || null,
+      completed: cardData.completed || false,
+      checklist: cardData.checklist || [],
+    }
+
+    const { data: card } = await supabase
+      .from('cards')
+      .insert(cardInsert)
+      .select()
+      .single()
+
+    if (!card) return null
+
+    // Increment board task number
+    const { error: numError } = await supabase
+      .from('boards')
+      .update({ next_task_number: taskNumber + 1 })
+      .eq('id', boardId)
+
+    if (numError) {
+      console.error('Failed to increment task number:', numError)
+    }
+
+    set((state) => ({
+      cards: { ...state.cards, [card.id]: card },
+      boards: {
+        ...state.boards,
+        [boardId]: { ...state.boards[boardId], next_task_number: taskNumber + 1 },
+      },
+    }))
+
+    return card.id
+  },
+
+  updateCard: async (cardId, updates) => {
+    // Map frontend field names to DB column names
+    const dbUpdates = {}
+    if ('title' in updates) dbUpdates.title = updates.title
+    if ('description' in updates) dbUpdates.description = updates.description
+    if ('assignee' in updates) dbUpdates.assignee_name = updates.assignee
+    if ('assignee_name' in updates) dbUpdates.assignee_name = updates.assignee_name
+    if ('priority' in updates) dbUpdates.priority = updates.priority
+    if ('dueDate' in updates) dbUpdates.due_date = updates.dueDate
+    if ('due_date' in updates) dbUpdates.due_date = updates.due_date
+    if ('labels' in updates) dbUpdates.labels = updates.labels
+    if ('checklist' in updates) dbUpdates.checklist = updates.checklist
+    if ('icon' in updates) dbUpdates.icon = updates.icon
+    if ('completed' in updates) dbUpdates.completed = updates.completed
+    if ('column_id' in updates) dbUpdates.column_id = updates.column_id
+    if ('position' in updates) dbUpdates.position = updates.position
+
+    // Optimistic update
+    set((state) => ({
+      cards: {
+        ...state.cards,
+        [cardId]: { ...state.cards[cardId], ...dbUpdates, updated_at: new Date().toISOString() },
+      },
+    }))
+
+    await supabase.from('cards').update(dbUpdates).eq('id', cardId)
+  },
+
+  completeCard: async (cardId) => {
+    const card = get().cards[cardId]
+    if (!card) return
+
+    const newCompleted = !card.completed
+
+    set((state) => ({
+      cards: {
+        ...state.cards,
+        [cardId]: { ...state.cards[cardId], completed: newCompleted, updated_at: new Date().toISOString() },
+      },
+    }))
+
+    await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
+  },
+
+  deleteCard: async (cardId) => {
+    const prevCard = get().cards[cardId]
+
+    // Optimistic delete
+    set((state) => {
+      const { [cardId]: _, ...restCards } = state.cards
+      return { cards: restCards }
+    })
+
+    const { error } = await supabase.from('cards').delete().eq('id', cardId)
+
+    // Rollback on failure
+    if (error && prevCard) {
+      set((state) => ({
+        cards: { ...state.cards, [cardId]: prevCard },
+      }))
+    }
+  },
+
+  moveCard: async (boardId, fromColumnId, toColumnId, fromIndex, toIndex) => {
+    const state = get()
+
+    // Get cards sorted by position for each column
+    const fromCards = Object.values(state.cards)
+      .filter((c) => c.column_id === fromColumnId)
+      .sort((a, b) => a.position - b.position)
+
+    const movedCard = fromCards[fromIndex]
+    if (!movedCard) return
+
+    if (fromColumnId === toColumnId) {
+      // Reorder within same column
+      const cards = [...fromCards]
+      cards.splice(fromIndex, 1)
+      cards.splice(toIndex, 0, movedCard)
+
+      const updates = {}
+      const dbBatch = []
+      cards.forEach((card, i) => {
+        if (card.position !== i) {
+          updates[card.id] = { ...card, position: i }
+          dbBatch.push({ id: card.id, position: i })
+        }
+      })
+
+      if (Object.keys(updates).length > 0) {
+        set((state) => ({
+          cards: { ...state.cards, ...updates },
+        }))
+        // Update positions in DB
+        for (const { id, position } of dbBatch) {
+          const { error } = await supabase.from('cards').update({ position }).eq('id', id)
+          if (error) console.error('Failed to update card position:', error)
+        }
+      }
+    } else {
+      // Move between columns
+      const toCards = Object.values(state.cards)
+        .filter((c) => c.column_id === toColumnId)
+        .sort((a, b) => a.position - b.position)
+
+      const newFromCards = fromCards.filter((c) => c.id !== movedCard.id)
+      const newToCards = [...toCards]
+      newToCards.splice(toIndex, 0, { ...movedCard, column_id: toColumnId })
+
+      const updates = {}
+      const dbBatch = []
+
+      newFromCards.forEach((card, i) => {
+        if (card.position !== i) {
+          updates[card.id] = { ...card, position: i }
+          dbBatch.push({ id: card.id, position: i })
+        }
+      })
+
+      newToCards.forEach((card, i) => {
+        const isMovedCard = card.id === movedCard.id
+        updates[card.id] = { ...card, column_id: toColumnId, position: i, ...(isMovedCard ? { completed: false } : {}) }
+        dbBatch.push({ id: card.id, position: i, column_id: toColumnId, ...(isMovedCard ? { completed: false } : {}) })
+      })
+
+      set((state) => ({
+        cards: { ...state.cards, ...updates },
+      }))
+
+      for (const update of dbBatch) {
+        const { id, ...rest } = update
+        const { error } = await supabase.from('cards').update(rest).eq('id', id)
+        if (error) console.error('Failed to update card position:', error)
+      }
+    }
+  },
+
+  // ============================================================
+  // DRAG HELPERS (local state only, no DB calls)
+  // ============================================================
+  setDragging: (isDragging) => set({ _isDragging: isDragging }),
+
+  moveCardLocal: (boardId, fromColumnId, toColumnId, fromIndex, toIndex) => {
+    const state = get()
+
+    const fromCards = Object.values(state.cards)
+      .filter((c) => c.column_id === fromColumnId)
+      .sort((a, b) => a.position - b.position)
+
+    const movedCard = fromCards[fromIndex]
+    if (!movedCard) return
+
+    if (fromColumnId === toColumnId) {
+      const cards = [...fromCards]
+      cards.splice(fromIndex, 1)
+      cards.splice(toIndex, 0, movedCard)
+      const updates = {}
+      cards.forEach((card, i) => {
+        if (card.position !== i) {
+          updates[card.id] = { ...card, position: i }
+        }
+      })
+      if (Object.keys(updates).length > 0) {
+        set((s) => ({ cards: { ...s.cards, ...updates } }))
+      }
+    } else {
+      const toCards = Object.values(state.cards)
+        .filter((c) => c.column_id === toColumnId)
+        .sort((a, b) => a.position - b.position)
+
+      const newFromCards = fromCards.filter((c) => c.id !== movedCard.id)
+      const newToCards = [...toCards]
+      newToCards.splice(toIndex, 0, { ...movedCard, column_id: toColumnId })
+
+      const updates = {}
+      newFromCards.forEach((card, i) => {
+        if (card.position !== i) {
+          updates[card.id] = { ...card, position: i }
+        }
+      })
+      newToCards.forEach((card, i) => {
+        const isMovedCard = card.id === movedCard.id
+        updates[card.id] = { ...card, column_id: toColumnId, position: i, ...(isMovedCard ? { completed: false } : {}) }
+      })
+      set((s) => ({ cards: { ...s.cards, ...updates } }))
+    }
+  },
+
+  // Persist the current card positions to Supabase after drag ends
+  persistCardPositions: async (cardIds) => {
+    const state = get()
+    for (const cardId of cardIds) {
+      const card = state.cards[cardId]
+      if (card) {
+        const { error } = await supabase.from('cards').update({
+          column_id: card.column_id,
+          position: card.position,
+          completed: card.completed,
+        }).eq('id', cardId)
+        if (error) console.error('Failed to persist card position:', error)
+      }
+    }
+  },
+
+  // ============================================================
+  // GETTERS
+  // ============================================================
+  getActiveBoard: () => {
+    const state = get()
+    return state.boards[state.activeBoardId] || null
+  },
+
+  getBoardColumns: (boardId) => {
+    return Object.values(get().columns)
+      .filter((c) => c.board_id === boardId)
+      .sort((a, b) => a.position - b.position)
+  },
+
+  getColumnCards: (columnId) => {
+    return Object.values(get().cards)
+      .filter((c) => c.column_id === columnId)
+      .sort((a, b) => a.position - b.position)
+  },
+
+  getBoardCards: (boardId) => {
+    return Object.values(get().cards)
+      .filter((c) => c.board_id === boardId)
+  },
+
+  getAllCards: () => Object.values(get().cards),
+
+  // ============================================================
+  // REAL-TIME SUBSCRIPTIONS
+  // ============================================================
+  subscribeToBoards: () => {
+    const boardsSub = supabase
+      .channel('boards-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, (payload) => {
+        set((state) => {
+          if (payload.eventType === 'DELETE') {
+            const { [payload.old.id]: _, ...rest } = state.boards
+            return { boards: rest }
+          }
+          const board = payload.new
+          return { boards: { ...state.boards, [board.id]: board } }
+        })
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'columns' }, (payload) => {
+        set((state) => {
+          if (payload.eventType === 'DELETE') {
+            const { [payload.old.id]: _, ...rest } = state.columns
+            return { columns: rest }
+          }
+          const col = payload.new
+          return { columns: { ...state.columns, [col.id]: col } }
+        })
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, (payload) => {
+        // Skip card position updates during drag to prevent interference
+        if (get()._isDragging && payload.eventType !== 'DELETE') return
+        set((state) => {
+          if (payload.eventType === 'DELETE') {
+            const { [payload.old.id]: _, ...rest } = state.cards
+            return { cards: rest }
+          }
+          const card = payload.new
+          return { cards: { ...state.cards, [card.id]: card } }
+        })
+      })
+      .subscribe()
+
+    set({ subscriptions: [boardsSub] })
+  },
+
+  unsubscribeAll: () => {
+    const { subscriptions } = get()
+    subscriptions.forEach((sub) => supabase.removeChannel(sub))
+    set({ subscriptions: [] })
+  },
+}))

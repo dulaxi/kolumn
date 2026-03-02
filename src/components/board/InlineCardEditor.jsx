@@ -55,9 +55,9 @@ export default function InlineCardEditor({ cardId, onDone }) {
   useEffect(() => {
     if (card) {
       setTitle(card.title === 'Untitled task' ? '' : card.title)
-      setAssignee(card.assignee || '')
+      setAssignee(card.assignee_name || '')
       setPriority(card.priority || 'medium')
-      setDueDate(card.dueDate || '')
+      setDueDate(card.due_date || '')
       setLabels(card.labels ? [...card.labels] : [])
     }
   }, [cardId])
@@ -71,16 +71,17 @@ export default function InlineCardEditor({ cardId, onDone }) {
   const handleSave = () => {
     const trimmedTitle = title.trim()
     if (!trimmedTitle) {
-      deleteCard(cardId)
-    } else {
-      updateCard(cardId, {
-        title: trimmedTitle,
-        assignee: assignee.trim(),
-        priority,
-        dueDate: dueDate || null,
-        labels,
-      })
+      // Keep the card with its existing title (or 'Untitled task' for new cards)
+      onDone()
+      return
     }
+    updateCard(cardId, {
+      title: trimmedTitle,
+      assignee_name: assignee.trim(),
+      priority,
+      due_date: dueDate || null,
+      labels,
+    })
     onDone()
   }
 
@@ -129,8 +130,8 @@ export default function InlineCardEditor({ cardId, onDone }) {
             />
           )}
         </div>
-        {card.taskNumber && (
-          <span className="text-[11px] font-medium text-gray-500">Task #{card.taskNumber}</span>
+        {card.task_number > 0 && (
+          <span className="text-[11px] font-medium text-gray-500">Task #{card.task_number}</span>
         )}
       </div>
 
