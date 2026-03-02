@@ -23,14 +23,14 @@ const PRIORITY_DOT = {
 }
 
 const SEGMENT_COLORS = [
-  'bg-blue-400',
-  'bg-amber-400',
-  'bg-emerald-400',
-  'bg-purple-400',
-  'bg-rose-400',
-  'bg-teal-400',
-  'bg-pink-400',
-  'bg-orange-400',
+  'bg-gray-300',
+  'bg-gray-400',
+  'bg-gray-500',
+  'bg-gray-600',
+  'bg-gray-700',
+  'bg-gray-800',
+  'bg-gray-900',
+  'bg-gray-950',
 ]
 
 function getGreeting() {
