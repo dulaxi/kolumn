@@ -1,4 +1,4 @@
-import { Search, User, LogOut, Settings, Menu } from 'lucide-react'
+import { Search, User, LogOut, Settings, LayoutGrid } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
@@ -33,31 +33,48 @@ export default function Header({ title }) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6">
-      <div className="flex items-center gap-3">
+    <header className="relative h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6">
+      {/* Left: grid button (mobile) + title (mobile) / title (desktop) */}
+      <div className="flex items-center gap-2.5 min-w-0">
         {!isDesktop && (
           <button
             type="button"
             onClick={toggleMobileMenu}
-            className="p-1.5 -ml-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 -ml-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           >
-            <Menu className="w-5 h-5" />
+            <LayoutGrid className="w-[18px] h-[18px]" />
           </button>
         )}
-        <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+        {isDesktop ? (
+          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+        ) : (
+          <span className="text-sm font-medium text-gray-500 truncate">{title}</span>
+        )}
       </div>
 
-      {/* Search */}
-      <div className="relative hidden sm:block sm:w-64 lg:w-80">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search tasks, notes..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 text-sm rounded-xl bg-gray-100 border border-gray-200 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
-        />
-      </div>
+      {/* Center: logo (mobile) / search (desktop) */}
+      {isDesktop ? (
+        <div className="relative hidden sm:block sm:w-64 lg:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search tasks, notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl bg-gray-100 border border-gray-200 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+          />
+        </div>
+      ) : (
+        <div className="flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
+          <span
+            className="material-symbols-outlined text-gray-900"
+            style={{ fontSize: '20px', lineHeight: '20px', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+          >
+            owl
+          </span>
+          <span className="text-sm font-semibold text-gray-900 tracking-tight">Gambit</span>
+        </div>
+      )}
 
       {/* Avatar + Dropdown */}
       <div className="relative" ref={menuRef}>
