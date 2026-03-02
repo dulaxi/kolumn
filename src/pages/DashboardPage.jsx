@@ -5,7 +5,6 @@ import { useAuthStore } from '../store/authStore'
 import { isToday, isPast, parseISO, format, formatDistanceToNow } from 'date-fns'
 import { ArrowRight, CheckCircle2, Plus } from 'lucide-react'
 import DynamicIcon from '../components/board/DynamicIcon'
-import SplitFlapTile from '../components/dashboard/SplitFlapTile'
 
 const LABEL_BG = {
   red: 'bg-[#FFE0DB] text-[#CF222E]',
@@ -273,12 +272,19 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* 2. Split-Flap Stat Tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-10">
-        <SplitFlapTile value={dueToday} label="Due Today" delay={0} />
-        <SplitFlapTile value={overdue} label="Overdue" danger delay={100} />
-        <SplitFlapTile value={inProgress} label="In Progress" delay={200} />
-        <SplitFlapTile value={completed} label="Completed" delay={300} />
+      {/* 2. Stat tiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+        {[
+          { label: 'Due Today', value: dueToday, color: 'text-gray-900' },
+          { label: 'Overdue', value: overdue, color: overdue > 0 ? 'text-red-600' : 'text-gray-900' },
+          { label: 'In Progress', value: inProgress, color: 'text-gray-900' },
+          { label: 'Completed', value: completed, color: 'text-gray-900' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-xl border border-gray-200/80 px-4 py-3">
+            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{stat.label}</p>
+            <p className={`text-2xl font-bold mt-0.5 ${stat.color}`}>{stat.value}</p>
+          </div>
+        ))}
       </div>
 
       {/* 3. Focus Cards - Due Today */}
