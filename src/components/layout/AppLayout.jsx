@@ -8,6 +8,7 @@ import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useAuthStore } from '../../store/authStore'
 import { useBoardStore } from '../../store/boardStore'
 import { useNoteStore } from '../../store/noteStore'
+import { useWorkspaceStore } from '../../store/workspaceStore'
 import { hasLocalData, migrateLocalData } from '../../lib/migrateLocalData'
 
 const pageTitles = {
@@ -15,6 +16,7 @@ const pageTitles = {
   '/boards': 'Boards',
   '/calendar': 'Calendar',
   '/notes': 'Notes',
+  '/workspace': 'Workspace',
   '/settings': 'Settings',
 }
 
@@ -30,6 +32,8 @@ export default function AppLayout() {
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
   const unsubscribeAll = useBoardStore((s) => s.unsubscribeAll)
   const fetchNotes = useNoteStore((s) => s.fetchNotes)
+  const fetchInvitations = useWorkspaceStore((s) => s.fetchInvitations)
+  const fetchSharedBoards = useWorkspaceStore((s) => s.fetchSharedBoards)
   const [showMigration, setShowMigration] = useState(false)
   const [migrating, setMigrating] = useState(false)
 
@@ -52,6 +56,8 @@ export default function AppLayout() {
     if (user) {
       fetchBoards().then(() => spawnRecurringTasks())
       fetchNotes()
+      fetchInvitations()
+      fetchSharedBoards()
       subscribeToBoards()
 
       // Check for local data migration
@@ -63,7 +69,7 @@ export default function AppLayout() {
         unsubscribeAll()
       }
     }
-  }, [user, fetchBoards, spawnRecurringTasks, fetchNotes, subscribeToBoards])
+  }, [user, fetchBoards, spawnRecurringTasks, fetchNotes, fetchInvitations, fetchSharedBoards, subscribeToBoards])
 
   const handleMigrate = async () => {
     setMigrating(true)

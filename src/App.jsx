@@ -9,6 +9,7 @@ import BoardsPage from './pages/BoardsPage'
 import CalendarPage from './pages/CalendarPage'
 import NotesPage from './pages/NotesPage'
 import SettingsPage from './pages/SettingsPage'
+import WorkspacePage from './pages/WorkspacePage'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
         >
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="boards/*" element={<BoardsPage />} />
+          <Route path="workspace" element={<WorkspacePage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="notes" element={<NotesPage />} />
           <Route path="settings" element={<SettingsPage />} />

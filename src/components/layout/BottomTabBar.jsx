@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Columns3, Calendar, StickyNote, Settings } from 'lucide-react'
+import { LayoutDashboard, Columns3, Calendar, StickyNote, Settings, Users } from 'lucide-react'
 
 const tabs = [
   { to: '/boards', icon: Columns3, label: 'Board' },
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
+  { to: '/workspace', icon: Users, label: 'Workspace' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/notes', icon: StickyNote, label: 'Notes' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 export default function BottomTabBar() {

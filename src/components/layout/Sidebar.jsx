@@ -13,10 +13,12 @@ import {
   Plus,
   Trash2,
   Layers,
+  Users,
 } from 'lucide-react'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useBoardStore } from '../../store/boardStore'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
+import { useWorkspaceStore } from '../../store/workspaceStore'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
 
@@ -38,10 +40,12 @@ function GambitLogo({ size = 28 }) {
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
+  { to: '/workspace', icon: Users, label: 'Workspace', badge: true },
   { to: '/notes', icon: StickyNote, label: 'Notes' },
 ]
 
 export default function Sidebar() {
+  const invitationCount = useWorkspaceStore((s) => s.invitations.length)
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed)
   const toggle = useSettingsStore((s) => s.toggleSidebar)
   const mobileMenuOpen = useSettingsStore((s) => s.mobileMenuOpen)
@@ -303,7 +307,7 @@ export default function Sidebar() {
         )}
 
         {/* Other nav items */}
-        {navItems.slice(1).map(({ to, icon: Icon, label }) => (
+        {navItems.slice(1).map(({ to, icon: Icon, label, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -316,7 +320,14 @@ export default function Sidebar() {
               } ${showCollapsed ? 'justify-center' : ''}`
             }
           >
-            <Icon className="w-5 h-5 shrink-0" />
+            <span className="relative">
+              <Icon className="w-5 h-5 shrink-0" />
+              {badge && invitationCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {invitationCount > 9 ? '9+' : invitationCount}
+                </span>
+              )}
+            </span>
             {!showCollapsed && <span>{label}</span>}
           </NavLink>
         ))}
