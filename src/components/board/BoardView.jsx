@@ -216,7 +216,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 sm:gap-5 overflow-x-auto h-full pb-4 snap-x snap-mandatory sm:snap-none">
+      <div className="flex gap-3 sm:gap-5 overflow-x-auto h-full pb-4 snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
         {boardColumns.map((column) => (
           <Column
             key={column.id}
@@ -232,7 +232,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         ))}
 
         {/* Add section */}
-        <div className="shrink-0 w-[85vw] sm:w-[260px] lg:w-[290px] snap-start">
+        <div className="shrink-0 w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] snap-start">
           {isAddingColumn ? (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2">
               <input

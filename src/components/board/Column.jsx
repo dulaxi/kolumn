@@ -71,7 +71,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   }
 
   return (
-    <div className="flex flex-col w-[85vw] sm:w-[260px] lg:w-[290px] shrink-0 snap-start">
+    <div className="flex flex-col w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] shrink-0 snap-start">
       {/* Header */}
       <div className="flex items-center justify-between px-0.5 pb-3">
         <div className="flex items-baseline gap-2">
