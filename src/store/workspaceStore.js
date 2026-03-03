@@ -28,7 +28,7 @@ export const useWorkspaceStore = create((set, get) => ({
           status,
           created_at,
           boards(id, name, icon),
-          inviter:profiles!board_invitations_invited_by_fkey(id, display_name, email, color)
+          inviter:profiles!board_invitations_invited_by_profiles_fkey(id, display_name, email, color)
         `)
         .eq('invited_email', profile.email)
         .eq('status', 'pending')
@@ -110,12 +110,15 @@ export const useWorkspaceStore = create((set, get) => ({
       // Enrich shared boards
       const sharedBoards = memberships
         .filter((m) => m.boards) // skip if board was deleted
-        .map((m) => ({
-          ...m.boards,
-          joined_at: m.created_at,
-          owner: ownerMap[m.boards.owner_id] || null,
-          member_count: countMap[m.board_id] || 0,
-        }))
+        .map((m) => {
+          const ownerProfile = ownerMap[m.boards.owner_id]
+          return {
+            ...m.boards,
+            ownerName: ownerProfile?.display_name || 'Unknown',
+            ownerColor: ownerProfile?.color || 'bg-gray-300',
+            memberCount: countMap[m.board_id] || 0,
+          }
+        })
 
       set({ sharedBoards, loading: false })
     } catch (err) {
