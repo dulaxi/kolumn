@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, Kanban, Check, X, UserPlus, Mail, ArrowRight } from 'lucide-react'
+import { Users, Kanban, Check, X, UserPlus, Mail } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspaceStore'
 import { useBoardStore } from '../store/boardStore'
 import DynamicIcon from '../components/board/DynamicIcon'
@@ -35,8 +35,6 @@ export default function WorkspacePage() {
     navigate('/boards')
   }
 
-  const allEmpty = invitations.length === 0 && sharedBoards.length === 0
-
   const steps = [
     { icon: Kanban, color: 'bg-blue-50 text-blue-500', label: 'Open a board', desc: 'Navigate to one of your boards' },
     { icon: UserPlus, color: 'bg-violet-50 text-violet-500', label: 'Click Share', desc: 'Hit the Share button in the top bar' },
@@ -47,62 +45,40 @@ export default function WorkspacePage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       {/* ============================================================ */}
-      {/*  Full empty state — step-by-step guide                       */}
+      {/*  Step-by-step guide — always visible                         */}
       {/* ============================================================ */}
-      {allEmpty && (
-        <section className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gray-100 mb-3">
-              <Users className="w-6 h-6 text-gray-400" />
-            </div>
-            <h2 className="text-base font-semibold text-gray-900 mb-1">How collaboration works</h2>
-            <p className="text-sm text-gray-400">Invite teammates to your boards in four simple steps</p>
+      <section className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+            <Users className="w-4 h-4 text-gray-400" />
           </div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">How collaboration works</h2>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-3">
-            {steps.map((step, i) => (
-              <div key={i} className="flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0 sm:text-center">
-                {/* Step number + icon */}
-                <div className="relative shrink-0">
-                  <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${step.color} flex items-center justify-center`}>
-                    <step.icon className="w-5 h-5" />
-                  </div>
-                  <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-gray-900 text-white text-[10px] font-bold flex items-center justify-center">
-                    {i + 1}
-                  </span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {steps.map((step, i) => (
+            <div key={i} className="text-center">
+              <div className="relative inline-flex mb-2">
+                <div className={`w-10 h-10 rounded-xl ${step.color} flex items-center justify-center`}>
+                  <step.icon className="w-4.5 h-4.5" />
                 </div>
-
-                {/* Connector arrow (desktop only, between steps) */}
-                {i < steps.length - 1 && (
-                  <ArrowRight className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
-                )}
-
-                {/* Text */}
-                <div className="sm:mt-3">
-                  <p className="text-sm font-medium text-gray-900">{step.label}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{step.desc}</p>
-                </div>
+                <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-gray-900 text-white text-[9px] font-bold flex items-center justify-center">
+                  {i + 1}
+                </span>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => navigate('/boards')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-            >
-              Go to your boards
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </section>
-      )}
+              <p className="text-xs font-medium text-gray-900">{step.label}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ============================================================ */}
       {/*  1. Pending Invitations                                       */}
       {/* ============================================================ */}
-      {!allEmpty && (
-        <section>
+      <section>
           <div className="flex items-center gap-2 mb-4">
             <UserPlus className="w-4 h-4 text-gray-400" />
             <h2 className="text-sm font-semibold text-gray-900">Invitations</h2>
@@ -169,13 +145,11 @@ export default function WorkspacePage() {
             </div>
           )}
         </section>
-      )}
 
       {/* ============================================================ */}
       {/*  2. Shared With Me                                            */}
       {/* ============================================================ */}
-      {!allEmpty && (
-        <section>
+      <section>
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-4 h-4 text-gray-400" />
             <h2 className="text-sm font-semibold text-gray-900">Shared with me</h2>
@@ -231,7 +205,6 @@ export default function WorkspacePage() {
             </div>
           )}
         </section>
-      )}
     </div>
   )
 }
