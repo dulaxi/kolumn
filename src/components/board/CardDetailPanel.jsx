@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   X, Trash2, Plus, Check, User, Calendar, Flag, Tag, CheckSquare,
-  Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus, ArrowLeft, MessageSquare,
+  Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus, ArrowLeft, MessageSquare, Repeat,
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, addDays, addMonths, parseISO, format } from 'date-fns'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -57,6 +57,11 @@ function getInitials(name) {
   return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
 }
 
+function addRecurrenceInterval(date, interval, unit) {
+  if (unit === 'months') return addMonths(date, interval)
+  return addDays(date, interval)
+}
+
 export default function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
   const updateCard = useBoardStore((s) => s.updateCard)
@@ -93,6 +98,9 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const [assigneeSearch, setAssigneeSearch] = useState('')
   const [editingDueDate, setEditingDueDate] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [showRecurrencePicker, setShowRecurrencePicker] = useState(false)
+  const [customInterval, setCustomInterval] = useState(1)
+  const [customUnit, setCustomUnit] = useState('days')
   const [boardMemberNames, setBoardMemberNames] = useState([])
 
   // Dirty flag — ONLY set by user interactions, never by effects
@@ -281,6 +289,28 @@ export default function CardDetailPanel({ cardId, onClose }) {
     if (sameDay(d, tomorrow)) return 'Tomorrow'
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   })() : null
+
+  const recurrenceLabel = card?.recurrence_interval
+    ? card.recurrence_unit === 'months'
+      ? card.recurrence_interval === 1 ? 'Monthly' : `Every ${card.recurrence_interval} months`
+      : card.recurrence_interval === 1 ? 'Daily'
+      : card.recurrence_interval === 7 ? 'Weekly'
+      : card.recurrence_interval === 14 ? 'Biweekly'
+      : `Every ${card.recurrence_interval} days`
+    : null
+
+  const handleRecurrenceChange = (interval, unit) => {
+    if (!interval) {
+      updateCard(cardId, { recurrence_interval: null, recurrence_unit: null, recurrence_next_due: null })
+    } else {
+      const nextDue = dueDate ? addRecurrenceInterval(parseISO(dueDate), interval, unit) : null
+      updateCard(cardId, {
+        recurrence_interval: interval,
+        recurrence_unit: unit,
+        recurrence_next_due: nextDue ? format(nextDue, 'yyyy-MM-dd') : null,
+      })
+    }
+  }
 
   return (
     <div className={`fixed bg-white border-l border-gray-200 flex flex-col z-20 ${
@@ -550,6 +580,75 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 )}
               </button>
             )}
+          </div>
+
+          {/* Repeat */}
+          <div className="flex items-center py-2.5 border-t border-gray-100">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+              <Repeat className="w-4 h-4" />
+              <span className="text-sm">Repeat</span>
+            </div>
+            <div className="relative flex-1">
+              <button
+                type="button"
+                onClick={() => setShowRecurrencePicker(!showRecurrencePicker)}
+                className="text-sm text-gray-700 hover:bg-gray-50 px-2 py-0.5 rounded-lg transition-colors"
+              >
+                {recurrenceLabel || 'None'}
+              </button>
+              {showRecurrencePicker && (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-20 w-52">
+                  {[
+                    { label: 'No repeat', interval: null, unit: null },
+                    { label: 'Daily', interval: 1, unit: 'days' },
+                    { label: 'Weekly', interval: 7, unit: 'days' },
+                    { label: 'Biweekly', interval: 14, unit: 'days' },
+                    { label: 'Monthly', interval: 1, unit: 'months' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => {
+                        handleRecurrenceChange(opt.interval, opt.unit)
+                        setShowRecurrencePicker(false)
+                      }}
+                      className="w-full px-3 py-1.5 text-sm text-left text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                  <div className="border-t border-gray-100 px-3 py-2 flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Every</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={customInterval}
+                      onChange={(e) => setCustomInterval(parseInt(e.target.value) || 1)}
+                      className="w-12 text-sm px-1.5 py-0.5 border border-gray-200 rounded-lg text-center focus:outline-none focus:border-blue-200"
+                    />
+                    <select
+                      value={customUnit}
+                      onChange={(e) => setCustomUnit(e.target.value)}
+                      className="text-sm px-1.5 py-0.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-200"
+                    >
+                      <option value="days">days</option>
+                      <option value="weeks">weeks</option>
+                      <option value="months">months</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleRecurrenceChange(customUnit === 'weeks' ? customInterval * 7 : customInterval, customUnit === 'weeks' ? 'days' : customUnit)
+                        setShowRecurrencePicker(false)
+                      }}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Set
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Projects */}

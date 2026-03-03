@@ -1,8 +1,14 @@
 import { create } from 'zustand'
+import { addDays, addMonths, format } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 
 const ACTIVE_BOARD_KEY = 'gambit_active_board'
+
+function addRecurrenceInterval(date, interval, unit) {
+  if (unit === 'months') return addMonths(date, interval)
+  return addDays(date, interval)
+}
 
 export const useBoardStore = create((set, get) => ({
   boards: {},
@@ -301,6 +307,9 @@ export const useBoardStore = create((set, get) => ({
     if ('completed' in updates) dbUpdates.completed = updates.completed
     if ('column_id' in updates) dbUpdates.column_id = updates.column_id
     if ('position' in updates) dbUpdates.position = updates.position
+    if ('recurrence_interval' in updates) dbUpdates.recurrence_interval = updates.recurrence_interval
+    if ('recurrence_unit' in updates) dbUpdates.recurrence_unit = updates.recurrence_unit
+    if ('recurrence_next_due' in updates) dbUpdates.recurrence_next_due = updates.recurrence_next_due
 
     // Optimistic update
     const prevCard = get().cards[cardId]
@@ -589,6 +598,78 @@ export const useBoardStore = create((set, get) => ({
         [cardId]: (state.comments[cardId] || []).filter((c) => c.id !== commentId),
       },
     }))
+  },
+
+  // ============================================================
+  // RECURRING TASKS
+  // ============================================================
+  spawnRecurringTasks: async () => {
+    const today = new Date().toISOString().split('T')[0]
+
+    const { data: dueTasks, error } = await supabase
+      .from('cards')
+      .select('*')
+      .eq('completed', true)
+      .not('recurrence_next_due', 'is', null)
+      .lte('recurrence_next_due', today)
+
+    if (error || !dueTasks?.length) return
+
+    for (const task of dueTasks) {
+      const newDueDate = task.recurrence_next_due + 'T23:59:59'
+      const nextDue = addRecurrenceInterval(
+        new Date(task.recurrence_next_due),
+        task.recurrence_interval,
+        task.recurrence_unit
+      )
+
+      const newCard = {
+        board_id: task.board_id,
+        column_id: task.column_id,
+        position: task.position,
+        task_number: 0,
+        global_task_number: 0,
+        title: task.title,
+        description: task.description || '',
+        assignee_name: task.assignee_name || '',
+        priority: task.priority || 'medium',
+        due_date: newDueDate,
+        icon: task.icon,
+        completed: false,
+        labels: task.labels || [],
+        checklist: (task.checklist || []).map((item) => ({ ...item, done: false })),
+        recurrence_interval: task.recurrence_interval,
+        recurrence_unit: task.recurrence_unit,
+        recurrence_next_due: format(nextDue, 'yyyy-MM-dd'),
+      }
+
+      const { data: created } = await supabase.from('cards').insert(newCard).select().single()
+
+      if (created) {
+        set((state) => ({
+          cards: { ...state.cards, [created.id]: created },
+        }))
+      }
+
+      // Clear recurrence on the completed original
+      await supabase.from('cards').update({
+        recurrence_interval: null,
+        recurrence_unit: null,
+        recurrence_next_due: null,
+      }).eq('id', task.id)
+
+      set((state) => ({
+        cards: {
+          ...state.cards,
+          [task.id]: {
+            ...state.cards[task.id],
+            recurrence_interval: null,
+            recurrence_unit: null,
+            recurrence_next_due: null,
+          },
+        },
+      }))
+    }
   },
 
   // ============================================================

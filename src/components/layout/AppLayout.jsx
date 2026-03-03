@@ -26,6 +26,7 @@ export default function AppLayout() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const fetchBoards = useBoardStore((s) => s.fetchBoards)
+  const spawnRecurringTasks = useBoardStore((s) => s.spawnRecurringTasks)
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
   const unsubscribeAll = useBoardStore((s) => s.unsubscribeAll)
   const fetchNotes = useNoteStore((s) => s.fetchNotes)
@@ -49,7 +50,7 @@ export default function AppLayout() {
   // Including store functions in deps so HMR re-creates trigger a re-fetch
   useEffect(() => {
     if (user) {
-      fetchBoards()
+      fetchBoards().then(() => spawnRecurringTasks())
       fetchNotes()
       subscribeToBoards()
 
@@ -62,7 +63,7 @@ export default function AppLayout() {
         unsubscribeAll()
       }
     }
-  }, [user, fetchBoards, fetchNotes, subscribeToBoards])
+  }, [user, fetchBoards, spawnRecurringTasks, fetchNotes, subscribeToBoards])
 
   const handleMigrate = async () => {
     setMigrating(true)
