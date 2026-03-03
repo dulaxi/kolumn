@@ -128,41 +128,19 @@ export const useWorkspaceStore = create((set, get) => ({
   },
 
   // ============================================================
-  // ACCEPT INVITATION
+  // ACCEPT INVITATION (via RPC — atomic, bypasses RLS complexity)
   // ============================================================
   acceptInvitation: async (invitationId) => {
-    const user = useAuthStore.getState().user
-    if (!user) return
-
-    const invitation = get().invitations.find((inv) => inv.id === invitationId)
-    if (!invitation) {
-      console.error('acceptInvitation: invitation not found in local state', invitationId)
-      return
-    }
-
     try {
-      // Add user as board member
-      const { error: memberError } = await supabase
-        .from('board_members')
-        .insert({ board_id: invitation.board_id, user_id: user.id, role: 'member' })
+      const { error } = await supabase.rpc('accept_invitation', {
+        invitation_id: invitationId,
+      })
 
-      if (memberError) {
-        console.error('Failed to add board member:', memberError)
+      if (error) {
+        console.error('Failed to accept invitation:', error)
         return
       }
 
-      // Update invitation status to accepted
-      const { error: updateError } = await supabase
-        .from('board_invitations')
-        .update({ status: 'accepted' })
-        .eq('id', invitationId)
-
-      if (updateError) {
-        console.error('Failed to update invitation status:', updateError)
-        return
-      }
-
-      // Refetch invitations, shared boards, and board store
       await Promise.all([
         get().fetchInvitations(),
         get().fetchSharedBoards(),
@@ -174,14 +152,13 @@ export const useWorkspaceStore = create((set, get) => ({
   },
 
   // ============================================================
-  // DECLINE INVITATION
+  // DECLINE INVITATION (via RPC)
   // ============================================================
   declineInvitation: async (invitationId) => {
     try {
-      const { error } = await supabase
-        .from('board_invitations')
-        .update({ status: 'declined' })
-        .eq('id', invitationId)
+      const { error } = await supabase.rpc('decline_invitation', {
+        invitation_id: invitationId,
+      })
 
       if (error) {
         console.error('Failed to decline invitation:', error)
