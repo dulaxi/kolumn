@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check } from 'lucide-react'
+import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown } from 'lucide-react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
@@ -191,7 +191,15 @@ function DueFilter({ filters, setFilters }) {
   )
 }
 
-export default function BoardSelector({ filters, setFilters }) {
+const SORT_OPTIONS = [
+  { value: 'manual', label: 'Manual' },
+  { value: 'due_date', label: 'Due date' },
+  { value: 'priority', label: 'Priority' },
+  { value: 'created', label: 'Newest first' },
+  { value: 'alpha', label: 'Alphabetical' },
+]
+
+export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }) {
   const [open, setOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [newName, setNewName] = useState('')
@@ -430,6 +438,25 @@ export default function BoardSelector({ filters, setFilters }) {
               <Users className="w-4 h-4" />
               Share
             </button>
+          )}
+
+          {/* Sort dropdown */}
+          {activeBoardId && activeBoardId !== '__all__' && (
+            <FilterPill label={sortBy === 'manual' ? 'Sort' : SORT_OPTIONS.find((o) => o.value === sortBy)?.label} active={sortBy !== 'manual'}>
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setSortBy(opt.value)}
+                  className={`flex items-center justify-between gap-2 w-full px-3 py-1.5 text-sm transition-colors ${
+                    sortBy === opt.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {opt.label}
+                  {sortBy === opt.value && <Check className="w-3.5 h-3.5" />}
+                </button>
+              ))}
+            </FilterPill>
           )}
 
           {/* Filter toggle button */}

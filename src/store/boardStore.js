@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { format } from 'date-fns'
+import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
@@ -118,6 +119,7 @@ export const useBoardStore = create((set, get) => ({
       }
     })
 
+    toast.success(`Board "${name}" created`)
     return board.id
   },
 
@@ -160,6 +162,7 @@ export const useBoardStore = create((set, get) => ({
       }
     })
     await supabase.from('boards').delete().eq('id', boardId)
+    toast.success('Board deleted')
   },
 
   // Board members (kept as simple name strings on cards for display,
@@ -211,6 +214,7 @@ export const useBoardStore = create((set, get) => ({
       return { columns: restColumns, cards }
     })
     await supabase.from('columns').delete().eq('id', columnId)
+    toast.success('Section deleted')
   },
 
   // ============================================================
@@ -360,6 +364,9 @@ export const useBoardStore = create((set, get) => ({
       set((state) => ({
         cards: { ...state.cards, [cardId]: prevCard },
       }))
+      toast.error('Failed to delete task')
+    } else {
+      toast.success('Task deleted')
     }
   },
 

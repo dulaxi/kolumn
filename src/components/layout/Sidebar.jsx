@@ -15,6 +15,7 @@ import {
   Layers,
   Users,
   Briefcase,
+  Star,
 } from 'lucide-react'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useBoardStore } from '../../store/boardStore'
@@ -72,10 +73,22 @@ export default function Sidebar() {
   const [renamingBoardId, setRenamingBoardId] = useState(null)
   const [renameValue, setRenameValue] = useState('')
 
+  const favoriteBoards = useSettingsStore((s) => s.favoriteBoards)
+  const toggleFavorite = useSettingsStore((s) => s.toggleFavorite)
+
   // Only show boards the user owns in the Boards dropdown (shared boards go under Workspace)
   const ownedBoards = Object.fromEntries(
     Object.entries(allBoards).filter(([, b]) => b.owner_id === user?.id)
   )
+
+  // Sort boards: favorites first, then the rest
+  const sortedOwnedBoards = Object.values(ownedBoards).sort((a, b) => {
+    const aFav = favoriteBoards.includes(a.id)
+    const bFav = favoriteBoards.includes(b.id)
+    if (aFav && !bFav) return -1
+    if (!aFav && bFav) return 1
+    return 0
+  })
 
   const isBoardsActive = location.pathname.startsWith('/boards')
 
@@ -198,84 +211,100 @@ export default function Sidebar() {
                   </span>
                 </div>
 
-                {Object.values(ownedBoards).map((board) => (
-                  <div
-                    key={board.id}
-                    onClick={() => handleSelectBoard(board.id)}
-                    className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors group cursor-pointer relative ${
-                      isBoardsActive && activeBoardId === board.id
-                        ? 'text-gray-900 font-medium bg-blue-50'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2 truncate">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setIconPickerBoardId(iconPickerBoardId === board.id ? null : board.id)
-                        }}
-                        className="shrink-0 hover:bg-gray-200 rounded p-0.5 transition-colors"
-                        title="Change icon"
-                      >
-                        {board.icon ? (
-                          <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-500" />
-                        ) : (
-                          <Kanban className="w-4 h-4 text-gray-500" />
-                        )}
-                      </button>
-                      {renamingBoardId === board.id ? (
-                        <input
-                          autoFocus
-                          value={renameValue}
-                          onChange={(e) => setRenameValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                {sortedOwnedBoards.map((board) => {
+                  const isFav = favoriteBoards.includes(board.id)
+                  return (
+                    <div
+                      key={board.id}
+                      onClick={() => handleSelectBoard(board.id)}
+                      className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors group cursor-pointer relative ${
+                        isBoardsActive && activeBoardId === board.id
+                          ? 'text-gray-900 font-medium bg-blue-50'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setIconPickerBoardId(iconPickerBoardId === board.id ? null : board.id)
+                          }}
+                          className="shrink-0 hover:bg-gray-200 rounded p-0.5 transition-colors"
+                          title="Change icon"
+                        >
+                          {board.icon ? (
+                            <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-500" />
+                          ) : (
+                            <Kanban className="w-4 h-4 text-gray-500" />
+                          )}
+                        </button>
+                        {renamingBoardId === board.id ? (
+                          <input
+                            autoFocus
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const trimmed = renameValue.trim()
+                                if (trimmed) renameBoard(board.id, trimmed)
+                                setRenamingBoardId(null)
+                              } else if (e.key === 'Escape') {
+                                setRenamingBoardId(null)
+                              }
+                            }}
+                            onBlur={() => {
                               const trimmed = renameValue.trim()
                               if (trimmed) renameBoard(board.id, trimmed)
                               setRenamingBoardId(null)
-                            } else if (e.key === 'Escape') {
-                              setRenamingBoardId(null)
-                            }
-                          }}
-                          onBlur={() => {
-                            const trimmed = renameValue.trim()
-                            if (trimmed) renameBoard(board.id, trimmed)
-                            setRenamingBoardId(null)
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex-1 text-sm bg-white border border-blue-400 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-100 min-w-0"
-                        />
-                      ) : (
-                        <span
-                          onDoubleClick={(e) => {
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 text-sm bg-white border border-blue-400 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-100 min-w-0"
+                          />
+                        ) : (
+                          <span
+                            onDoubleClick={(e) => {
+                              e.stopPropagation()
+                              setRenamingBoardId(board.id)
+                              setRenameValue(board.name)
+                            }}
+                            className="truncate"
+                          >
+                            {board.name}
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex items-center gap-0.5 shrink-0">
+                        <Star
+                          className={`w-3.5 h-3.5 transition-all cursor-pointer ${
+                            isFav
+                              ? 'text-amber-400 fill-amber-400'
+                              : 'text-gray-500 opacity-0 group-hover:opacity-100 hover:text-amber-400'
+                          }`}
+                          onClick={(e) => {
                             e.stopPropagation()
-                            setRenamingBoardId(board.id)
-                            setRenameValue(board.name)
+                            toggleFavorite(board.id)
                           }}
-                          className="truncate"
-                        >
-                          {board.name}
-                        </span>
-                      )}
-                    </span>
-                    {Object.keys(ownedBoards).length > 1 && (
-                      <Trash2
-                        className="w-3.5 h-3.5 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 shrink-0"
-                        onClick={(e) => handleDeleteBoard(e, board.id)}
-                      />
-                    )}
-                    {iconPickerBoardId === board.id && (
-                      <div className="absolute left-0 top-full z-40" onClick={(e) => e.stopPropagation()}>
-                        <IconPicker
-                          value={board.icon}
-                          onChange={(icon) => updateBoardIcon(board.id, icon)}
-                          onClose={() => setIconPickerBoardId(null)}
                         />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        {Object.keys(ownedBoards).length > 1 && (
+                          <Trash2
+                            className="w-3.5 h-3.5 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 shrink-0"
+                            onClick={(e) => handleDeleteBoard(e, board.id)}
+                          />
+                        )}
+                      </span>
+                      {iconPickerBoardId === board.id && (
+                        <div className="absolute left-0 top-full z-40" onClick={(e) => e.stopPropagation()}>
+                          <IconPicker
+                            value={board.icon}
+                            onChange={(icon) => updateBoardIcon(board.id, icon)}
+                            onClose={() => setIconPickerBoardId(null)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
 
                 {creating ? (
                   <div className="px-1 py-1">

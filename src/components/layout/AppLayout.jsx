@@ -84,6 +84,41 @@ export default function AppLayout() {
     setShowMigration(false)
   }
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = e.target.tagName
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable
+
+      // Cmd/Ctrl+K — focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        const searchInput = document.querySelector('header input[type="text"]')
+        if (searchInput) searchInput.focus()
+        return
+      }
+
+      // Esc — close detail panel / blur search
+      if (e.key === 'Escape') {
+        window.dispatchEvent(new CustomEvent('gambit:close-panel'))
+        const active = document.activeElement
+        if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA') {
+          active.blur()
+        }
+        return
+      }
+
+      if (isTyping) return
+
+      // N — new card (only on boards page)
+      if (e.key === 'n' && location.pathname.startsWith('/boards')) {
+        window.dispatchEvent(new CustomEvent('gambit:new-card'))
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [location.pathname])
+
   // Match the base path for title
   const basePath = '/' + (location.pathname.split('/')[1] || '')
   const title = pageTitles[basePath] || 'Gambit'

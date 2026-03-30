@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Download, Upload, Trash2, AlertTriangle, Palette, User, Type } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
 import DynamicIcon from '../components/board/DynamicIcon'
@@ -42,6 +43,7 @@ export default function SettingsPage() {
 
   const handleProfileUpdate = (updates) => {
     updateProfile(updates)
+    toast.success('Profile updated')
   }
 
   const handleExport = () => {
@@ -65,6 +67,7 @@ export default function SettingsPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    toast.success('Data exported')
   }
 
   const handleImport = (e) => {
@@ -86,20 +89,14 @@ export default function SettingsPage() {
         })
 
         if (imported === 0) {
-          setImportMessage({ type: 'error', text: 'No valid data found in file.' })
+          toast.error('No valid data found in file')
           return
         }
 
-        setImportMessage({
-          type: 'success',
-          text: `Imported ${imported} data key(s). Reloading...`,
-        })
+        toast.success(`Imported ${imported} data key(s). Reloading...`)
         setTimeout(() => window.location.reload(), 1000)
       } catch {
-        setImportMessage({
-          type: 'error',
-          text: 'Invalid JSON file. Please check the file format.',
-        })
+        toast.error('Invalid JSON file')
       }
     }
     reader.readAsText(file)

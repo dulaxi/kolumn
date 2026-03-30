@@ -8,7 +8,31 @@ import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import { filterCards } from '../../utils/cardFilters'
 
-export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters }) {
+const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
+
+function sortCards(cards, sortBy) {
+  if (!sortBy || sortBy === 'manual') return cards
+  return [...cards].sort((a, b) => {
+    if (sortBy === 'due_date') {
+      if (!a.due_date && !b.due_date) return 0
+      if (!a.due_date) return 1
+      if (!b.due_date) return -1
+      return a.due_date.localeCompare(b.due_date)
+    }
+    if (sortBy === 'priority') {
+      return (PRIORITY_ORDER[a.priority] ?? 3) - (PRIORITY_ORDER[b.priority] ?? 3)
+    }
+    if (sortBy === 'created') {
+      return (b.created_at || '').localeCompare(a.created_at || '')
+    }
+    if (sortBy === 'alpha') {
+      return (a.title || '').localeCompare(b.title || '')
+    }
+    return 0
+  })
+}
+
+export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState(column.title)
@@ -28,8 +52,8 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     .filter((c) => c.column_id === column.id)
     .sort((a, b) => a.position - b.position)
 
-  // Apply filters (keep columnCards intact for DnD)
-  const filteredCards = filterCards(columnCards, filters)
+  // Apply filters then sort (keep columnCards intact for DnD)
+  const filteredCards = sortCards(filterCards(columnCards, filters), sortBy)
 
   const cardIds = columnCards.map((c) => c.id)
 

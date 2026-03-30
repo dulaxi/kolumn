@@ -14,7 +14,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery'
 import Column from './Column'
 import Card from './Card'
 
-export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCardId, onInlineDone, selectedCardId, filters }) {
+export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy }) {
   const [isAddingColumn, setIsAddingColumn] = useState(false)
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [activeCardId, setActiveCardId] = useState(null)
@@ -229,6 +229,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             onInlineDone={onInlineDone}
             selectedCardId={selectedCardId}
             filters={filters}
+            sortBy={sortBy}
           />
         ))}
 

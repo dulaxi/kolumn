@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Users, Kanban, Check, X, UserPlus, Mail, LogOut } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useWorkspaceStore } from '../store/workspaceStore'
 import { useBoardStore } from '../store/boardStore'
 import DynamicIcon from '../components/board/DynamicIcon'
@@ -25,10 +26,12 @@ export default function WorkspacePage() {
 
   function handleAccept(id) {
     acceptInvitation(id)
+    toast.success('Invitation accepted')
   }
 
   function handleDecline(id) {
     declineInvitation(id)
+    toast.success('Invitation declined')
   }
 
   function handleBoardClick(boardId) {

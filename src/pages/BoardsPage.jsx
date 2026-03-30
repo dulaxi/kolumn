@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useBoardStore } from '../store/boardStore'
 import BoardSelector from '../components/board/BoardSelector'
 import BoardView from '../components/board/BoardView'
@@ -9,7 +9,34 @@ export default function BoardsPage() {
   const [editingCardId, setEditingCardId] = useState(null)
   const [inlineCardId, setInlineCardId] = useState(null)
   const [filters, setFilters] = useState({ priority: [], assignee: null, label: [], due: null })
+  const [sortBy, setSortBy] = useState('manual')
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
+
+  const addCard = useBoardStore((s) => s.addCard)
+  const columns = useBoardStore((s) => s.columns)
+
+  // Listen for global events (search navigation, keyboard shortcuts)
+  useEffect(() => {
+    const openCard = (e) => setEditingCardId(e.detail.cardId)
+    const closePanel = () => setEditingCardId(null)
+    const newCard = async () => {
+      if (!activeBoardId || activeBoardId === '__all__') return
+      const firstCol = Object.values(columns)
+        .filter((c) => c.board_id === activeBoardId)
+        .sort((a, b) => a.position - b.position)[0]
+      if (!firstCol) return
+      const cardId = await addCard(activeBoardId, firstCol.id, { title: '' })
+      if (cardId) setInlineCardId(cardId)
+    }
+    window.addEventListener('gambit:open-card', openCard)
+    window.addEventListener('gambit:close-panel', closePanel)
+    window.addEventListener('gambit:new-card', newCard)
+    return () => {
+      window.removeEventListener('gambit:open-card', openCard)
+      window.removeEventListener('gambit:close-panel', closePanel)
+      window.removeEventListener('gambit:new-card', newCard)
+    }
+  }, [activeBoardId, columns, addCard])
 
   const handleCardClick = (cardId) => {
     setInlineCardId(null)
@@ -32,7 +59,7 @@ export default function BoardsPage() {
       }`}
     >
       <div className="mb-4 shrink-0">
-        <BoardSelector filters={filters} setFilters={setFilters} />
+        <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} />
       </div>
 
       <div className="flex-1 min-h-0">
@@ -50,6 +77,7 @@ export default function BoardsPage() {
             onInlineDone={handleInlineDone}
             selectedCardId={editingCardId}
             filters={filters}
+            sortBy={sortBy}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
