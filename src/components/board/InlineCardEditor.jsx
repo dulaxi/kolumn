@@ -121,7 +121,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           <button
             type="button"
             onClick={() => setShowIconPicker(!showIconPicker)}
-            className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors"
+            className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
           >
             {card.icon ? (
               <DynamicIcon name={card.icon} className="w-4 h-4" />
@@ -138,7 +138,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           )}
         </div>
         {card.task_number > 0 && (
-          <span className="text-[11px] font-medium text-gray-500">Task #{card.task_number}</span>
+          <span className="text-[11px] font-medium text-gray-600">Task #{card.task_number}</span>
         )}
       </div>
 
@@ -149,7 +149,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Task name..."
-        className="w-full text-[13px] font-medium text-gray-900 bg-transparent border-none focus:outline-none placeholder-gray-300"
+        className="w-full text-[13px] font-medium text-gray-900 bg-transparent border-none focus:outline-none placeholder-gray-500"
       />
 
       {/* Quick fields row */}
@@ -159,7 +159,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           <button
             type="button"
             onClick={() => setShowPriority(!showPriority)}
-            className="flex items-center gap-1 text-[11px] text-gray-500 hover:bg-gray-100 px-1.5 py-1 rounded-lg transition-colors"
+            className="flex items-center gap-1 text-[11px] text-gray-600 hover:bg-gray-100 px-1.5 py-1 rounded-lg transition-colors"
           >
             <span className={`w-2 h-2 rounded-full ${currentPriority.dot}`} />
             {currentPriority.label}
@@ -185,18 +185,18 @@ export default function InlineCardEditor({ cardId, onDone }) {
 
         {/* Assignee */}
         <div className="flex items-center gap-1">
-          <User className="w-3 h-3 text-gray-300" />
+          <User className="w-3 h-3 text-gray-500" />
           <input
             value={assignee}
             onChange={(e) => setAssignee(e.target.value)}
             placeholder="Assignee"
-            className="text-[11px] text-gray-600 bg-transparent border-none focus:outline-none placeholder-gray-300 w-16"
+            className="text-[11px] text-gray-600 bg-transparent border-none focus:outline-none placeholder-gray-500 w-16"
           />
         </div>
 
         {/* Due date */}
         <div className="flex items-center gap-1">
-          <Calendar className="w-3 h-3 text-gray-300" />
+          <Calendar className="w-3 h-3 text-gray-500" />
           <input
             type="date"
             value={dueDate ? dueDate.split('T')[0] : ''}
@@ -238,10 +238,10 @@ export default function InlineCardEditor({ cardId, onDone }) {
                 />
               ))}
             </div>
-            <button type="button" onClick={addLabel} className="text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={addLabel} className="text-gray-500 hover:text-gray-600">
               <Check className="w-3 h-3" />
             </button>
-            <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="text-gray-500 hover:text-gray-600">
               <X className="w-3 h-3" />
             </button>
           </div>
@@ -249,7 +249,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           <button
             type="button"
             onClick={() => setShowLabelForm(true)}
-            className="text-gray-300 hover:text-gray-500"
+            className="text-gray-500 hover:text-gray-600"
           >
             <Tag className="w-3 h-3" />
           </button>
@@ -262,13 +262,13 @@ export default function InlineCardEditor({ cardId, onDone }) {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Add description..."
         rows={2}
-        className="w-full text-[11px] text-gray-600 bg-gray-50 rounded-lg border border-gray-100 focus:border-blue-200 focus:outline-none px-2 py-1.5 resize-none placeholder-gray-300"
+        className="w-full text-[11px] text-gray-600 bg-gray-50 rounded-lg border border-gray-100 focus:border-blue-200 focus:outline-none px-2 py-1.5 resize-none placeholder-gray-500"
       />
 
       {/* Checklist */}
       <div className="space-y-1">
         {checklist.length > 0 && (
-          <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+          <div className="flex items-center gap-1 text-[10px] text-gray-500 font-medium">
             <ListChecks className="w-3 h-3" />
             <span>{checklist.filter((i) => i.done).length}/{checklist.length}</span>
           </div>
@@ -288,20 +288,20 @@ export default function InlineCardEditor({ cardId, onDone }) {
             >
               {item.done && <Check className="w-2.5 h-2.5" />}
             </button>
-            <span className={`text-[11px] flex-1 ${item.done ? 'line-through text-gray-300' : 'text-gray-600'}`}>
+            <span className={`text-[11px] flex-1 ${item.done ? 'line-through text-gray-500' : 'text-gray-600'}`}>
               {item.text}
             </span>
             <button
               type="button"
               onClick={() => setChecklist(checklist.filter((_, i) => i !== idx))}
-              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+              className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all"
             >
               <Trash2 className="w-3 h-3" />
             </button>
           </div>
         ))}
         <div className="flex items-center gap-1.5">
-          <Plus className="w-3 h-3 text-gray-300 shrink-0" />
+          <Plus className="w-3 h-3 text-gray-500 shrink-0" />
           <input
             value={newCheckItem}
             onChange={(e) => setNewCheckItem(e.target.value)}
@@ -317,7 +317,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
               }
             }}
             placeholder="Add checklist item..."
-            className="text-[11px] text-gray-600 bg-transparent border-none focus:outline-none placeholder-gray-300 flex-1"
+            className="text-[11px] text-gray-600 bg-transparent border-none focus:outline-none placeholder-gray-500 flex-1"
           />
         </div>
       </div>
@@ -327,7 +327,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
         <button
           type="button"
           onClick={() => { deleteCard(cardId); onDone() }}
-          className="text-[11px] text-gray-400 hover:text-red-500 px-2 py-1 rounded-lg transition-colors"
+          className="text-[11px] text-gray-500 hover:text-red-500 px-2 py-1 rounded-lg transition-colors"
         >
           Discard
         </button>

@@ -91,7 +91,7 @@ function AssigneeFilter({ filters, setFilters, assignees }) {
   return (
     <FilterPill label="Assignee" active={!!selected}>
       {assignees.length === 0 ? (
-        <div className="px-3 py-2 text-xs text-gray-400">No assignees</div>
+        <div className="px-3 py-2 text-xs text-gray-500">No assignees</div>
       ) : (
         assignees.map((name) => (
           <button
@@ -102,7 +102,7 @@ function AssigneeFilter({ filters, setFilters, assignees }) {
               selected === name ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-medium text-gray-500 shrink-0">
+            <span className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-medium text-gray-600 shrink-0">
               {name.charAt(0).toUpperCase()}
             </span>
             {name}
@@ -136,7 +136,7 @@ function LabelFilter({ filters, setFilters, labels }) {
   return (
     <FilterPill label="Label" active={selected.length > 0}>
       {labels.length === 0 ? (
-        <div className="px-3 py-2 text-xs text-gray-400">No labels</div>
+        <div className="px-3 py-2 text-xs text-gray-500">No labels</div>
       ) : (
         labels.map((lbl) => (
           <button
@@ -307,7 +307,7 @@ export default function BoardSelector({ filters, setFilters }) {
               onClick={() => setOpen(!open)}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
             >
-              <span className="w-5 h-5 flex items-center justify-center text-gray-400">
+              <span className="w-5 h-5 flex items-center justify-center text-gray-500">
                 {activeBoardId === '__all__' ? (
                   <Layers className="w-4 h-4" />
                 ) : activeBoard?.icon ? (
@@ -318,7 +318,7 @@ export default function BoardSelector({ filters, setFilters }) {
               </span>
               <span>{activeBoardId === '__all__' ? 'All Tasks' : activeBoard?.name || 'Select board'}</span>
               <ChevronDown
-                className={`w-4 h-4 text-gray-500 transition-transform ${
+                className={`w-4 h-4 text-gray-600 transition-transform ${
                   open ? 'rotate-180' : ''
                 }`}
               />
@@ -336,10 +336,10 @@ export default function BoardSelector({ filters, setFilters }) {
                   className={`flex items-center gap-2.5 w-full text-left px-3 py-2 text-sm transition-colors ${
                     activeBoardId === '__all__'
                       ? 'bg-blue-50 text-gray-900 font-medium'
-                      : 'text-gray-500 hover:bg-gray-50'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="w-5 h-5 flex items-center justify-center text-gray-400 shrink-0">
+                  <span className="w-5 h-5 flex items-center justify-center text-gray-500 shrink-0">
                     <Layers className="w-4 h-4" />
                   </span>
                   All Tasks
@@ -356,10 +356,10 @@ export default function BoardSelector({ filters, setFilters }) {
                     className={`flex items-center gap-2.5 w-full text-left px-3 py-2 text-sm transition-colors ${
                       board.id === activeBoardId
                         ? 'bg-blue-50 text-gray-900 font-medium'
-                        : 'text-gray-500 hover:bg-gray-50'
+                        : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="w-5 h-5 flex items-center justify-center text-gray-400 shrink-0">
+                    <span className="w-5 h-5 flex items-center justify-center text-gray-500 shrink-0">
                       {board.icon ? (
                         <DynamicIcon name={board.icon} className="w-4 h-4" />
                       ) : (
@@ -379,7 +379,7 @@ export default function BoardSelector({ filters, setFilters }) {
                           <button
                             type="button"
                             onClick={() => setShowIconPicker(!showIconPicker)}
-                            className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors shrink-0"
+                            className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors shrink-0"
                           >
                             {newIcon ? (
                               <DynamicIcon name={newIcon} className="w-4 h-4" />
@@ -409,7 +409,7 @@ export default function BoardSelector({ filters, setFilters }) {
                     <button
                       type="button"
                       onClick={() => setIsCreating(true)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-900"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                     >
                       <Plus className="w-4 h-4" />
                       New board
@@ -425,7 +425,7 @@ export default function BoardSelector({ filters, setFilters }) {
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
             >
               <Users className="w-4 h-4" />
               Share
@@ -440,7 +440,7 @@ export default function BoardSelector({ filters, setFilters }) {
               className={`relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border transition-colors ${
                 showFilters || activeFilterCount > 0
                   ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
-                  : 'text-gray-500 bg-white border-gray-200 hover:bg-gray-50'
+                  : 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function BoardSelector({ filters, setFilters }) {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-gray-500 hover:text-gray-600 transition-colors"
               >
                 <X className="w-3 h-3" />
                 Clear all

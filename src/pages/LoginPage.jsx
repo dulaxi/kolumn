@@ -34,7 +34,7 @@ export default function LoginPage() {
             style={{ fontSize: '40px', lineHeight: '40px', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
           >owl</span>
           <h1 className="text-2xl font-bold text-gray-900">Gambit</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
+          <p className="text-sm text-gray-600 mt-1">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
@@ -45,7 +45,7 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Email</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Email</label>
             <input
               type="email"
               value={email}
@@ -58,7 +58,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Password</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Password</label>
             <input
               type="password"
               value={password}
@@ -79,7 +79,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-gray-600 mt-4">
           Don't have an account?{' '}
           <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
             Sign up

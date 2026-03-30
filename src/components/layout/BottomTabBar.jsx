@@ -18,7 +18,7 @@ export default function BottomTabBar() {
           to={to}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors ${
-              isActive ? 'text-gray-900' : 'text-gray-400'
+              isActive ? 'text-gray-900' : 'text-gray-500'
             }`
           }
         >

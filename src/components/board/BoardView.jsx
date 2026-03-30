@@ -182,7 +182,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
 
   if (!board) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
+      <div className="flex items-center justify-center h-full text-gray-500">
         No board selected
       </div>
     )
@@ -259,7 +259,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
                     setNewColumnTitle('')
                     setIsAddingColumn(false)
                   }}
-                  className="p-1 rounded hover:bg-gray-100 text-gray-400"
+                  className="p-1 rounded hover:bg-gray-100 text-gray-500"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -269,7 +269,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             <button
               type="button"
               onClick={() => setIsAddingColumn(true)}
-              className="flex items-center gap-2 w-full px-0.5 py-2 text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
+              className="flex items-center gap-2 w-full px-0.5 py-2 text-[13px] text-gray-500 hover:text-gray-600 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add section

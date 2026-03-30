@@ -117,7 +117,7 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-600 text-sm mt-1">
           Manage your data and preferences
         </p>
       </div>
@@ -125,10 +125,10 @@ export default function SettingsPage() {
       {/* My Profile */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <User className="w-4 h-4 text-gray-500" />
+          <User className="w-4 h-4 text-gray-600" />
           <h2 className="text-sm font-semibold text-gray-900">My Profile</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Set your name, avatar icon, and color. This appears on cards assigned to you.
         </p>
 
@@ -147,7 +147,7 @@ export default function SettingsPage() {
 
           {/* Name */}
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Display name</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Display name</label>
             <input
               value={profile?.display_name || ''}
               onChange={(e) => handleProfileUpdate({ display_name: e.target.value })}
@@ -158,7 +158,7 @@ export default function SettingsPage() {
 
           {/* Icon */}
           <div className="relative">
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Icon</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Icon</label>
             <button
               type="button"
               onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
@@ -187,7 +187,7 @@ export default function SettingsPage() {
 
           {/* Color */}
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Color</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Color</label>
             <div className="flex gap-2 flex-wrap">
               {PROFILE_COLORS.map((c) => (
                 <button
@@ -210,10 +210,10 @@ export default function SettingsPage() {
       {/* Theme */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Palette className="w-4 h-4 text-gray-500" />
+          <Palette className="w-4 h-4 text-gray-600" />
           <h2 className="text-sm font-semibold text-gray-900">Theme</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Choose a color theme for the interface.
         </p>
         <div className="flex gap-3">
@@ -247,10 +247,10 @@ export default function SettingsPage() {
       {/* Font */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Type className="w-4 h-4 text-gray-500" />
+          <Type className="w-4 h-4 text-gray-600" />
           <h2 className="text-sm font-semibold text-gray-900">Font</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Choose a typeface for cards.
         </p>
         <div className="flex gap-3">
@@ -284,7 +284,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold text-gray-900 mb-1">
           Export Data
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Download all your boards, notes, and settings as a JSON backup file.
         </p>
         <button
@@ -301,7 +301,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold text-gray-900 mb-1">
           Import Data
         </h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Restore from a previously exported JSON backup. This will replace your
           current data.
         </p>
@@ -340,7 +340,7 @@ export default function SettingsPage() {
           <AlertTriangle className="w-4 h-4 text-red-400" />
           <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Permanently delete all your boards, notes, and settings. This action
           cannot be undone.
         </p>

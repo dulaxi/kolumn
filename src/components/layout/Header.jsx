@@ -40,7 +40,7 @@ export default function Header({ title }) {
           <button
             type="button"
             onClick={toggleMobileMenu}
-            className="p-1.5 -ml-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            className="p-1.5 -ml-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <LayoutGrid className="w-[18px] h-[18px]" />
           </button>
@@ -48,14 +48,14 @@ export default function Header({ title }) {
         {isDesktop ? (
           <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
         ) : (
-          <span className="text-sm font-medium text-gray-500 truncate">{title}</span>
+          <span className="text-sm font-medium text-gray-600 truncate">{title}</span>
         )}
       </div>
 
       {/* Center: search (desktop only) */}
       {isDesktop && (
         <div className="relative hidden sm:block sm:w-64 lg:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
             placeholder="Search tasks, notes..."
@@ -95,7 +95,7 @@ export default function Header({ title }) {
           <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-30 w-48">
             <div className="px-3 py-2 border-b border-gray-100">
               <p className="text-sm font-medium text-gray-900 truncate">{profile?.display_name || 'User'}</p>
-              <p className="text-xs text-gray-400 truncate">{profile?.email || ''}</p>
+              <p className="text-xs text-gray-500 truncate">{profile?.email || ''}</p>
             </div>
             <button
               type="button"

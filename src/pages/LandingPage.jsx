@@ -192,13 +192,13 @@ function MockCard({ card }) {
   return (
     <div className="bg-white rounded-lg p-2.5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
       <div className="flex items-start justify-between gap-2">
-        <p className={`text-[11px] font-medium leading-snug ${card.done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+        <p className={`text-[11px] font-medium leading-snug ${card.done ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
           {card.title}
         </p>
         <PriorityDot priority={card.priority} />
       </div>
       {card.desc && (
-        <p className="text-[9px] text-gray-400 leading-snug mt-1 line-clamp-1">{card.desc}</p>
+        <p className="text-[9px] text-gray-500 leading-snug mt-1 line-clamp-1">{card.desc}</p>
       )}
       <div className="flex items-center justify-between mt-2 gap-2">
         <div className="flex items-center gap-1 flex-wrap min-w-0">
@@ -210,7 +210,7 @@ function MockCard({ card }) {
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {card.dueDate && (
-            <span className="text-[8px] text-gray-400 font-medium flex items-center gap-0.5">
+            <span className="text-[8px] text-gray-500 font-medium flex items-center gap-0.5">
               <Clock className="w-2.5 h-2.5" />
               {card.dueDate}
             </span>
@@ -230,7 +230,7 @@ function MockCard({ card }) {
               style={{ width: `${(card.checklist.done / card.checklist.total) * 100}%` }}
             />
           </div>
-          <span className={`text-[8px] font-semibold ${card.checklist.done === card.checklist.total ? 'text-emerald-500' : 'text-gray-400'}`}>
+          <span className={`text-[8px] font-semibold ${card.checklist.done === card.checklist.total ? 'text-emerald-500' : 'text-gray-500'}`}>
             {card.checklist.done}/{card.checklist.total}
           </span>
         </div>
@@ -246,7 +246,7 @@ function MockColumn({ column }) {
       <div className="flex items-center gap-2 mb-2.5 px-1">
         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: column.color }} />
         <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">{column.title}</span>
-        <span className="text-[10px] text-gray-400 font-medium ml-auto">{column.cards.length}</span>
+        <span className="text-[10px] text-gray-500 font-medium ml-auto">{column.cards.length}</span>
       </div>
       <div className="space-y-2">
         {column.cards.map((card) => (
@@ -265,7 +265,7 @@ function MockDetailPanel() {
     <div className="rounded-2xl border border-gray-200/80 bg-white shadow-2xl shadow-gray-200/60 overflow-hidden w-full max-w-sm" style={{ fontFamily: "'Mona Sans Variable', 'Mona Sans', sans-serif" }}>
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-gray-100">
-        <div className="text-[10px] text-gray-400 font-medium mb-1">{card.taskNumber}</div>
+        <div className="text-[10px] text-gray-500 font-medium mb-1">{card.taskNumber}</div>
         <h3 className="text-sm font-bold text-gray-900 leading-snug">{card.title}</h3>
       </div>
 
@@ -274,28 +274,28 @@ function MockDetailPanel() {
         {/* Meta row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <div className="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-1">Assignee</div>
+            <div className="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-1">Assignee</div>
             <div className="flex items-center gap-1.5">
               <span className="w-5 h-5 rounded-full bg-gray-900 text-white text-[9px] font-bold flex items-center justify-center">{card.assignee.initial}</span>
               <span className="text-[11px] text-gray-700 font-medium">{card.assignee.name}</span>
             </div>
           </div>
           <div>
-            <div className="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-1">Due Date</div>
+            <div className="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-1">Due Date</div>
             <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-gray-400" />
+              <Calendar className="w-3 h-3 text-gray-500" />
               <span className="text-[11px] text-gray-700 font-medium">{card.dueDate}</span>
             </div>
           </div>
           <div>
-            <div className="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-1">Priority</div>
+            <div className="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-1">Priority</div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-rose-400" />
               <span className="text-[11px] text-gray-700 font-medium capitalize">{card.priority}</span>
             </div>
           </div>
           <div>
-            <div className="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-1">Labels</div>
+            <div className="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-1">Labels</div>
             <div className="flex items-center gap-1">
               {card.labels.map((l) => (
                 <span key={l.text} className={`text-[8px] font-semibold px-1.5 py-0.5 rounded-full ${l.bg} ${l.fg}`}>
@@ -309,8 +309,8 @@ function MockDetailPanel() {
         {/* Description */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
-            <AlignLeft className="w-3 h-3 text-gray-400" />
-            <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Description</span>
+            <AlignLeft className="w-3 h-3 text-gray-500" />
+            <span className="text-[9px] text-gray-500 font-medium uppercase tracking-wider">Description</span>
           </div>
           <p className="text-[11px] text-gray-600 leading-relaxed">{card.desc}</p>
         </div>
@@ -319,10 +319,10 @@ function MockDetailPanel() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
-              <CheckSquare className="w-3 h-3 text-gray-400" />
-              <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Checklist</span>
+              <CheckSquare className="w-3 h-3 text-gray-500" />
+              <span className="text-[9px] text-gray-500 font-medium uppercase tracking-wider">Checklist</span>
             </div>
-            <span className="text-[9px] font-semibold text-gray-500">{checkDone}/{card.checklist.length}</span>
+            <span className="text-[9px] font-semibold text-gray-600">{checkDone}/{card.checklist.length}</span>
           </div>
           <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-2.5">
             <div
@@ -338,9 +338,9 @@ function MockDetailPanel() {
                     <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                   </div>
                 ) : (
-                  <Square className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                  <Square className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                 )}
-                <span className={`text-[11px] ${item.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                <span className={`text-[11px] ${item.done ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
                   {item.text}
                 </span>
               </div>
@@ -406,7 +406,7 @@ export default function LandingPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-sm text-gray-400">Loading...</div>
+        <div className="text-sm text-gray-500">Loading...</div>
       </div>
     )
   }
@@ -431,7 +431,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
             >
               Sign in
             </Link>
@@ -449,7 +449,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div className="px-6 sm:px-10 pt-16 pb-8 max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-500 mb-6 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-600 mb-6 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Real-time collaboration, built in
             </div>
@@ -459,7 +459,7 @@ export default function LandingPage() {
               that feels{' '}
               <span className="bg-gradient-to-r from-[#103783] to-[#9BAFD9] bg-clip-text text-transparent">effortless</span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-500 max-w-lg mx-auto mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 max-w-lg mx-auto mb-8 leading-relaxed">
               A clean Kanban workspace for teams that value focus over features.
               Organize, collaborate, and ship — without the clutter.
             </p>
@@ -491,7 +491,7 @@ export default function LandingPage() {
                   <span className="w-3 h-3 rounded-full bg-[#28C840]" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1 rounded-md bg-white border border-gray-200 text-[10px] text-gray-400 font-medium">
+                  <div className="px-4 py-1 rounded-md bg-white border border-gray-200 text-[10px] text-gray-500 font-medium">
                     gambit.app/boards/product-launch
                   </div>
                 </div>
@@ -503,24 +503,24 @@ export default function LandingPage() {
                 {/* Mini sidebar */}
                 <div className="hidden sm:flex w-12 bg-gray-50 border-r border-gray-100 py-4 flex-col items-center gap-3 shrink-0 min-h-[380px]">
                   <span
-                    className="material-symbols-outlined text-gray-400"
+                    className="material-symbols-outlined text-gray-500"
                     style={{ fontSize: '18px', lineHeight: '18px', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
                   >owl</span>
                   <div className="w-5 h-[1px] bg-gray-200 my-1" />
                   <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center">
-                    <Columns3 className="w-3.5 h-3.5 text-gray-500" />
+                    <Columns3 className="w-3.5 h-3.5 text-gray-600" />
                   </div>
                   <div className="w-6 h-6 rounded-md flex items-center justify-center">
-                    <Calendar className="w-3.5 h-3.5 text-gray-300" />
+                    <Calendar className="w-3.5 h-3.5 text-gray-500" />
                   </div>
                   <div className="w-6 h-6 rounded-md flex items-center justify-center">
-                    <StickyNote className="w-3.5 h-3.5 text-gray-300" />
+                    <StickyNote className="w-3.5 h-3.5 text-gray-500" />
                   </div>
                   <div className="w-6 h-6 rounded-md flex items-center justify-center">
-                    <BarChart3 className="w-3.5 h-3.5 text-gray-300" />
+                    <BarChart3 className="w-3.5 h-3.5 text-gray-500" />
                   </div>
                   <div className="mt-auto w-6 h-6 rounded-md flex items-center justify-center">
-                    <User className="w-3.5 h-3.5 text-gray-300" />
+                    <User className="w-3.5 h-3.5 text-gray-500" />
                   </div>
                 </div>
 
@@ -545,7 +545,7 @@ export default function LandingPage() {
           {stats.map((s) => (
             <div key={s.label} className="text-center">
               <div className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{s.value}</div>
-              <div className="text-xs text-gray-400 font-medium mt-1 uppercase tracking-wider">{s.label}</div>
+              <div className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
         </div>
@@ -560,7 +560,7 @@ export default function LandingPage() {
               Every detail,{' '}
               <span className="bg-gradient-to-r from-[#103783] to-[#9BAFD9] bg-clip-text text-transparent">one click away</span>
             </h2>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
               Click any card to open a rich detail panel. Add descriptions, track progress with checklists,
               assign teammates, set priorities, and manage due dates — all without leaving your board.
             </p>
@@ -592,7 +592,7 @@ export default function LandingPage() {
       <section className="px-6 sm:px-10 py-16 max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Built for how teams actually work</h2>
-          <p className="text-sm text-gray-500 max-w-md mx-auto">No bloat, no learning curve. Just the tools that matter — designed to feel invisible.</p>
+          <p className="text-sm text-gray-600 max-w-md mx-auto">No bloat, no learning curve. Just the tools that matter — designed to feel invisible.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((f) => (
@@ -604,7 +604,7 @@ export default function LandingPage() {
                 <f.icon className="w-4.5 h-4.5 text-[#103783] group-hover:text-white transition-colors duration-300" />
               </div>
               <h3 className="text-sm font-bold text-gray-900 mb-1">{f.title}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed">{f.desc}</p>
+              <p className="text-[13px] text-gray-600 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -616,11 +616,11 @@ export default function LandingPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Everything you need</h2>
-              <p className="text-xs text-gray-400 mt-0.5">All the tools, none of the complexity.</p>
+              <p className="text-xs text-gray-500 mt-0.5">All the tools, none of the complexity.</p>
             </div>
             <Link
               to="/signup"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors"
             >
               Try it free
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -637,7 +637,7 @@ export default function LandingPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-gray-900 truncate">{t.title}</div>
-                  <div className="text-[10px] text-gray-400 truncate">{t.desc}</div>
+                  <div className="text-[10px] text-gray-500 truncate">{t.desc}</div>
                 </div>
               </div>
             ))}
@@ -653,7 +653,7 @@ export default function LandingPage() {
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-3">
           Your team's next move starts here
         </h2>
-        <p className="text-sm text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed">
+        <p className="text-sm text-gray-600 max-w-sm mx-auto mb-8 leading-relaxed">
           Set up your first board in under 60 seconds. No credit card, no setup wizard.
         </p>
         <Link
@@ -669,18 +669,18 @@ export default function LandingPage() {
       {/* ─── Footer ─── */}
       <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-5xl mx-auto">
         <div className="border-t border-gray-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
             <span
               className="material-symbols-outlined"
               style={{ fontSize: '16px', lineHeight: '16px', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
             >owl</span>
             <span className="font-medium">Gambit</span>
-            <span className="text-gray-300 mx-1">&middot;</span>
+            <span className="text-gray-500 mx-1">&middot;</span>
             <span>Built for teams that ship.</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-300">
-            <Link to="/login" className="hover:text-gray-500 transition-colors">Sign in</Link>
-            <Link to="/signup" className="hover:text-gray-500 transition-colors">Sign up</Link>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <Link to="/login" className="hover:text-gray-600 transition-colors">Sign in</Link>
+            <Link to="/signup" className="hover:text-gray-600 transition-colors">Sign up</Link>
           </div>
         </div>
       </footer>

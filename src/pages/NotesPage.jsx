@@ -61,7 +61,7 @@ export default function NotesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
         Loading notes...
       </div>
     )
@@ -75,7 +75,7 @@ export default function NotesPage() {
           <h2 className="text-sm font-semibold text-gray-900">Notes</h2>
           <button
             onClick={handleNewNote}
-            className="p-1.5 hover:bg-gray-100 rounded-lg cursor-pointer text-gray-500 hover:text-gray-900"
+            className="p-1.5 hover:bg-gray-100 rounded-lg cursor-pointer text-gray-600 hover:text-gray-900"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -83,7 +83,7 @@ export default function NotesPage() {
 
         <div className="flex-1 overflow-y-auto">
           {sortedNotes.length === 0 ? (
-            <p className="text-sm text-gray-400 p-4 text-center">
+            <p className="text-sm text-gray-500 p-4 text-center">
               No notes yet
             </p>
           ) : (
@@ -101,13 +101,13 @@ export default function NotesPage() {
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {note.title || 'Untitled'}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-0.5">
                       {note.updated_at && format(parseISO(note.updated_at), 'MMM d, yyyy')}
                     </p>
                   </div>
                   <button
                     onClick={(e) => handleDeleteNote(e, note.id)}
-                    className="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-red-500 rounded text-gray-400 cursor-pointer transition-opacity"
+                    className="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-red-500 rounded text-gray-500 cursor-pointer transition-opacity"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -125,7 +125,7 @@ export default function NotesPage() {
             <div className="p-4 border-b border-gray-200 flex items-center">
               {isMobile && (
                 <button onClick={handleBackToList} className="p-1.5 rounded-lg hover:bg-gray-100 mr-2">
-                  <ArrowLeft className="w-5 h-5 text-gray-500" />
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
               )}
               <div className="flex-1">
@@ -136,7 +136,7 @@ export default function NotesPage() {
                 className="text-xl font-bold text-gray-900 w-full outline-none bg-transparent placeholder-gray-400"
                 placeholder="Note title..."
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Last edited{' '}
                 {selectedNote.updated_at && format(parseISO(selectedNote.updated_at), 'MMM d, yyyy h:mm a')}
               </p>
@@ -150,7 +150,7 @@ export default function NotesPage() {
             />
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
             <FileText className="w-12 h-12 mb-3" />
             <p className="text-sm">Select a note or create a new one</p>
           </div>

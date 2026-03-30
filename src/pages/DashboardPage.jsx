@@ -39,7 +39,7 @@ function TaskRow({ card, boardName, isOverdue, onClick }) {
       />
 
       {/* Task number */}
-      <span className="text-[11px] font-mono font-medium text-gray-400 shrink-0">
+      <span className="text-[11px] font-mono font-medium text-gray-500 shrink-0">
         #GB-{card.global_task_number || card.task_number}
       </span>
 
@@ -64,12 +64,12 @@ function TaskRow({ card, boardName, isOverdue, onClick }) {
 
       {/* Board name pill (hidden on mobile) */}
       {boardName && (
-        <span className="hidden sm:inline-block text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
+        <span className="hidden sm:inline-block text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
           {boardName}
         </span>
       )}
 
-      <ArrowRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+      <ArrowRight className="w-3.5 h-3.5 text-gray-500 shrink-0" />
     </button>
   )
 }
@@ -128,7 +128,7 @@ export default function DashboardPage() {
   // ---- Loading state ------------------------------------------------
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
         Loading...
       </div>
     )
@@ -147,7 +147,7 @@ export default function DashboardPage() {
             {displayName}
           </span>
         </h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           {format(new Date(), 'EEEE, MMMM d')}
         </p>
 
@@ -182,7 +182,7 @@ export default function DashboardPage() {
           { label: 'Completed', value: completed, color: 'text-gray-900' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-gray-200/80 px-4 py-3">
-            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{stat.label}</p>
+            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{stat.label}</p>
             <p className={`text-2xl font-bold mt-0.5 ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
@@ -193,7 +193,7 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <h2 className="text-sm font-semibold text-gray-900">Due Today</h2>
-            <span className="text-[10px] font-semibold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
               {dueTodayCards.length}
             </span>
           </div>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
       {/* 5. Empty state */}
       {!hasFocusCards && (
-        <div className="flex items-center justify-center gap-2 mb-10 py-6 text-gray-400 text-sm">
+        <div className="flex items-center justify-center gap-2 mb-10 py-6 text-gray-500 text-sm">
           <CheckCircle2 className="w-4 h-4" />
           <span>Nothing due today &mdash; you&rsquo;re all clear</span>
         </div>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
         {boardSummaries.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-500 text-sm mb-4">
               Create your first board to get started
             </p>
             <button
@@ -283,7 +283,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {board.name}
                     </p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] text-gray-500">
                       {board.totalCards} task{board.totalCards !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                     {board.columns.map((col, i) => (
                       <span
                         key={col.id}
-                        className="flex items-center gap-1 text-[10px] text-gray-400"
+                        className="flex items-center gap-1 text-[10px] text-gray-500"
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
@@ -327,7 +327,7 @@ export default function DashboardPage() {
 
                 {/* Updated ago */}
                 {board.lastUpdated && (
-                  <p className="text-[10px] text-gray-300">
+                  <p className="text-[10px] text-gray-500">
                     Updated{' '}
                     {formatDistanceToNow(new Date(board.lastUpdated), {
                       addSuffix: true,

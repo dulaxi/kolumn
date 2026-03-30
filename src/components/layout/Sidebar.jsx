@@ -189,11 +189,11 @@ export default function Sidebar() {
                   className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors group cursor-pointer ${
                     isBoardsActive && activeBoardId === '__all__'
                       ? 'text-gray-900 font-medium bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <Layers className="w-4 h-4 text-gray-400 shrink-0" />
+                    <Layers className="w-4 h-4 text-gray-500 shrink-0" />
                     <span className="truncate">All Tasks</span>
                   </span>
                 </div>
@@ -205,7 +205,7 @@ export default function Sidebar() {
                     className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors group cursor-pointer relative ${
                       isBoardsActive && activeBoardId === board.id
                         ? 'text-gray-900 font-medium bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     <span className="flex items-center gap-2 truncate">
@@ -219,9 +219,9 @@ export default function Sidebar() {
                         title="Change icon"
                       >
                         {board.icon ? (
-                          <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-400" />
+                          <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-500" />
                         ) : (
-                          <Kanban className="w-4 h-4 text-gray-400" />
+                          <Kanban className="w-4 h-4 text-gray-500" />
                         )}
                       </button>
                       {renamingBoardId === board.id ? (
@@ -261,7 +261,7 @@ export default function Sidebar() {
                     </span>
                     {Object.keys(ownedBoards).length > 1 && (
                       <Trash2
-                        className="w-3.5 h-3.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 shrink-0"
+                        className="w-3.5 h-3.5 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 shrink-0"
                         onClick={(e) => handleDeleteBoard(e, board.id)}
                       />
                     )}
@@ -304,7 +304,7 @@ export default function Sidebar() {
                 ) : (
                   <button
                     onClick={() => setCreating(true)}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>New board</span>
@@ -370,11 +370,11 @@ export default function Sidebar() {
                   className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
                     location.pathname === '/workspace' && !activeBoardId?.startsWith('ws_')
                       ? 'text-gray-900 font-medium bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <Briefcase className="w-4 h-4 text-gray-400 shrink-0" />
+                    <Briefcase className="w-4 h-4 text-gray-500 shrink-0" />
                     <span className="truncate">Overview</span>
                   </span>
                   {invitationCount > 0 && (
@@ -392,14 +392,14 @@ export default function Sidebar() {
                     className={`flex items-center w-full px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
                       isBoardsActive && activeBoardId === board.id
                         ? 'text-gray-900 font-medium bg-blue-50'
-                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     <span className="flex items-center gap-2 truncate">
                       {board.icon ? (
-                        <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-400 shrink-0" />
+                        <DynamicIcon name={board.icon} className="w-4 h-4 text-gray-500 shrink-0" />
                       ) : (
-                        <Kanban className="w-4 h-4 text-gray-400 shrink-0" />
+                        <Kanban className="w-4 h-4 text-gray-500 shrink-0" />
                       )}
                       <span className="truncate">{board.name}</span>
                     </span>

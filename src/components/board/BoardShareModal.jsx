@@ -107,13 +107,13 @@ export default function BoardShareModal({ board, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-gray-500" />
+            <Users className="w-5 h-5 text-gray-600" />
             <h2 className="text-base font-semibold text-gray-900">Share "{board.name}"</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -124,7 +124,7 @@ export default function BoardShareModal({ board, onClose }) {
           <form onSubmit={handleInvite} className="px-5 py-3 border-b border-gray-100">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type="email"
                   value={email}
@@ -150,7 +150,7 @@ export default function BoardShareModal({ board, onClose }) {
 
         {/* Members list */}
         <div className="px-5 py-3 max-h-64 overflow-y-auto">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
             Members ({members.length})
           </p>
           <div className="space-y-1">
@@ -167,7 +167,7 @@ export default function BoardShareModal({ board, onClose }) {
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {m.profiles?.display_name || 'Unknown'}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">{m.profiles?.email}</p>
+                    <p className="text-xs text-gray-500 truncate">{m.profiles?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -180,12 +180,12 @@ export default function BoardShareModal({ board, onClose }) {
                     <button
                       type="button"
                       onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   ) : (
-                    <span className="text-xs text-gray-400">Member</span>
+                    <span className="text-xs text-gray-500">Member</span>
                   )}
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function BoardShareModal({ board, onClose }) {
           {/* Pending invitations */}
           {invitations.length > 0 && (
             <>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mt-4 mb-2">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-4 mb-2">
                 Pending Invitations ({invitations.length})
               </p>
               <div className="space-y-1">
@@ -206,15 +206,15 @@ export default function BoardShareModal({ board, onClose }) {
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                        <Mail className="w-3.5 h-3.5 text-gray-400" />
+                        <Mail className="w-3.5 h-3.5 text-gray-500" />
                       </div>
-                      <p className="text-sm text-gray-500">{inv.invited_email}</p>
+                      <p className="text-sm text-gray-600">{inv.invited_email}</p>
                     </div>
                     {isOwner && (
                       <button
                         type="button"
                         onClick={() => handleCancelInvitation(inv.id)}
-                        className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>

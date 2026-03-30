@@ -93,7 +93,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
               {column.title}
             </h3>
           )}
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500">
             {filteredCards.length}
           </span>
         </div>
@@ -101,7 +101,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           <button
             type="button"
             onClick={handleCreateCard}
-            className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -109,7 +109,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
@@ -168,7 +168,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
         <button
           type="button"
           onClick={handleCreateCard}
-          className="flex items-center gap-1.5 text-[13px] text-gray-400 hover:text-gray-600 px-0.5 py-1.5 w-full transition-colors"
+          className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-600 px-0.5 py-1.5 w-full transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add task

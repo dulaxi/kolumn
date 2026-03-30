@@ -299,13 +299,13 @@ export default function CardDetailPanel({ cardId, onClose }) {
               onClick={handleSaveAndClose}
               className="p-1.5 rounded-lg hover:bg-gray-100"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-500" />
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
           )}
           <button
             type="button"
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Check className="w-3.5 h-3.5" />
             Save
@@ -315,7 +315,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
           <button
             type="button"
             onClick={handleDelete}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 transition-colors"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />
@@ -324,7 +324,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             <button
               type="button"
               onClick={handleSaveAndClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -342,19 +342,19 @@ export default function CardDetailPanel({ cardId, onClose }) {
               onClick={() => completeCard(cardId)}
               className="shrink-0"
             >
-              <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-emerald-400' : 'text-gray-300 hover:text-emerald-300'}`} />
+              <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-emerald-400' : 'text-gray-500 hover:text-emerald-300'}`} />
             </button>
             {card.task_number > 0 && (
-              <span className="text-xs font-medium text-gray-500">Task #{card.task_number}</span>
+              <span className="text-xs font-medium text-gray-600">Task #{card.task_number}</span>
             )}
             {card.global_task_number > 0 && (
-              <span className="text-[10px] text-gray-300 bg-gray-50 px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
+              <span className="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
             )}
           </div>
           <input
             value={title}
             onChange={(e) => { setTitle(e.target.value); scheduleSave() }}
-            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-gray-300 ${card.completed ? 'text-gray-400 line-through' : 'text-gray-900'}`}
+            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-gray-500 ${card.completed ? 'text-gray-500 line-through' : 'text-gray-900'}`}
             placeholder="Task name"
           />
         </div>
@@ -363,7 +363,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
         <div className="px-5 space-y-0">
           {/* Icon */}
           <div className="flex items-center py-2.5 border-t border-gray-100 relative">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <Smile className="w-4 h-4" />
               <span className="text-sm">Icon</span>
             </div>
@@ -372,14 +372,14 @@ export default function CardDetailPanel({ cardId, onClose }) {
               onClick={() => setShowIconPicker(!showIconPicker)}
               className="flex items-center gap-2 text-sm hover:bg-gray-50 px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
             >
-              <div className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+              <div className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
                 {card.icon ? (
                   <DynamicIcon name={card.icon} className="w-3.5 h-3.5" />
                 ) : (
                   <FileText className="w-3.5 h-3.5" />
                 )}
               </div>
-              <span className="text-gray-500">{card.icon || 'Default'}</span>
+              <span className="text-gray-600">{card.icon || 'Default'}</span>
             </button>
             {showIconPicker && (
               <IconPicker
@@ -392,7 +392,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Assignee */}
           <div className="flex items-center py-2.5 border-t border-gray-100 relative">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <User className="w-4 h-4" />
               <span className="text-sm">Assignee</span>
             </div>
@@ -411,7 +411,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                     <span className="text-gray-700">{assignee}</span>
                   </>
                 ) : (
-                  <span className="text-gray-300">No assignee</span>
+                  <span className="text-gray-500">No assignee</span>
                 )}
               </button>
             </div>
@@ -449,7 +449,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                       }}
                       autoFocus
                       placeholder="Search or add member..."
-                      className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-300"
+                      className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-500"
                     />
                   </div>
                   <div className="max-h-48 overflow-y-auto py-1">
@@ -462,7 +462,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                           setAssigneeSearch('')
                           scheduleSave()
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
                         Unassign
@@ -489,7 +489,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                       </button>
                     ))}
                     {filtered.length === 0 && !showAddOption && (
-                      <div className="px-3 py-2 text-sm text-gray-300">No members yet</div>
+                      <div className="px-3 py-2 text-sm text-gray-500">No members yet</div>
                     )}
                     {showAddOption && (
                       <button
@@ -516,7 +516,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Due date */}
           <div className="flex items-center py-2.5 border-t border-gray-100">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">Due date</span>
             </div>
@@ -548,7 +548,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                     'text-emerald-500 font-medium'
                   }>{dueDateDisplay}</span>
                 ) : (
-                  <span className="text-gray-300">No due date</span>
+                  <span className="text-gray-500">No due date</span>
                 )}
               </button>
             )}
@@ -556,7 +556,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Repeat */}
           <div className="flex items-center py-2.5 border-t border-gray-100">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <Repeat className="w-4 h-4" />
               <span className="text-sm">Repeat</span>
             </div>
@@ -590,7 +590,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                     </button>
                   ))}
                   <div className="border-t border-gray-100 px-3 py-2 flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Every</span>
+                    <span className="text-xs text-gray-500">Every</span>
                     <input
                       type="number"
                       min="1"
@@ -625,7 +625,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Projects */}
           <div className="flex items-center py-2.5 border-t border-gray-100">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <Briefcase className="w-4 h-4" />
               <span className="text-sm">Projects</span>
             </div>
@@ -635,12 +635,12 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Fields section header */}
           <div className="pt-4 pb-1 border-t border-gray-100">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Fields</span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Fields</span>
           </div>
 
           {/* Priority */}
           <div className="flex items-center py-2.5 relative">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <Flag className="w-4 h-4" />
               <span className="text-sm">Priority</span>
             </div>
@@ -679,7 +679,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Status */}
           <div className="flex items-center py-2.5 border-t border-gray-100">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500">
               <LayoutList className="w-4 h-4" />
               <span className="text-sm">Status</span>
             </div>
@@ -688,14 +688,14 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
           {/* Labels */}
           <div className="flex items-start py-2.5 border-t border-gray-100">
-            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-400 pt-0.5">
+            <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-gray-500 pt-0.5">
               <Tag className="w-4 h-4" />
               <span className="text-sm">Labels</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-1.5">
                 {labels.length === 0 && !showLabelForm && (
-                  <span className="text-sm text-gray-300">—</span>
+                  <span className="text-sm text-gray-500">—</span>
                 )}
                 {labels.map((label, idx) => (
                   <span
@@ -744,7 +744,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                         <button type="button" onClick={addLabel} className="p-1 bg-blue-300 text-white rounded hover:bg-blue-400">
                           <Check className="w-3.5 h-3.5" />
                         </button>
-                        <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="p-1 text-gray-400 hover:text-gray-600">
+                        <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="p-1 text-gray-500 hover:text-gray-600">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -754,7 +754,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                   <button
                     type="button"
                     onClick={() => setShowLabelForm(true)}
-                    className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-gray-600 px-1.5 py-0.5"
+                    className="flex items-center gap-0.5 text-xs text-gray-500 hover:text-gray-600 px-1.5 py-0.5"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -766,19 +766,19 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
         {/* Description */}
         <div className="px-5 pt-5 pb-2 border-t border-gray-100 mt-1">
-          <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Description</label>
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">Description</label>
           <textarea
             value={description}
             onChange={(e) => { setDescription(e.target.value); scheduleSave() }}
             rows={4}
             placeholder="Add details about this task..."
-            className="w-full text-sm text-gray-700 rounded-lg px-3 py-2 resize-none border border-gray-200 focus:border-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-50 placeholder-gray-300"
+            className="w-full text-sm text-gray-700 rounded-lg px-3 py-2 resize-none border border-gray-200 focus:border-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-50 placeholder-gray-500"
           />
         </div>
 
         {/* Comments */}
         <div className="px-5 pt-4 pb-4 border-t border-gray-100">
-          <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3 block">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 block">
             Comments
           </label>
           <div className="space-y-3 mb-3">
@@ -787,14 +787,14 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs font-medium text-gray-700">{comment.author_name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-gray-500">
                       {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                     </span>
                     {comment.user_id === user?.id && (
                       <button
                         type="button"
                         onClick={() => deleteComment(comment.id, cardId)}
-                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -816,7 +816,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 }
               }}
               placeholder="Add a comment..."
-              className="flex-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-300"
+              className="flex-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-500"
             />
             <button
               type="button"
@@ -836,12 +836,12 @@ export default function CardDetailPanel({ cardId, onClose }) {
         {/* Checklist */}
         <div className="px-5 pt-3 pb-5">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-gray-500">
               <CheckSquare className="w-4 h-4" />
               <span className="text-xs font-medium uppercase tracking-wider">Checklist</span>
             </div>
             {checklist.length > 0 && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500">
                 {checkedCount}/{checklist.length}
               </span>
             )}
@@ -869,7 +869,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 />
                 <span
                   className={`flex-1 text-sm ${
-                    item.done ? 'line-through text-gray-400' : 'text-gray-700'
+                    item.done ? 'line-through text-gray-500' : 'text-gray-700'
                   }`}
                 >
                   {item.text}
@@ -877,7 +877,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 <button
                   type="button"
                   onClick={() => removeCheckItem(idx)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-red-500 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-500 hover:text-red-500 transition-opacity"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -891,7 +891,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
               onChange={(e) => setNewCheckItem(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addCheckItem()}
               placeholder="Add an item..."
-              className="flex-1 text-sm rounded-lg px-2.5 py-1.5 border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-300"
+              className="flex-1 text-sm rounded-lg px-2.5 py-1.5 border border-gray-200 focus:border-blue-200 focus:outline-none placeholder-gray-500"
             />
             <button
               type="button"

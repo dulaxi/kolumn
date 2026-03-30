@@ -51,7 +51,7 @@ export default function WorkspacePage() {
       <section className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
-            <Users className="w-4 h-4 text-gray-400" />
+            <Users className="w-4 h-4 text-gray-500" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">How collaboration works</h2>
@@ -70,7 +70,7 @@ export default function WorkspacePage() {
                 </span>
               </div>
               <p className="text-xs font-medium text-gray-900">{step.label}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{step.desc}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -81,7 +81,7 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       <section>
           <div className="flex items-center gap-2 mb-4">
-            <UserPlus className="w-4 h-4 text-gray-400" />
+            <UserPlus className="w-4 h-4 text-gray-500" />
             <h2 className="text-sm font-semibold text-gray-900">Invitations</h2>
             {invitations.length > 0 && (
               <span className="text-[11px] font-semibold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">
@@ -92,8 +92,8 @@ export default function WorkspacePage() {
 
           {invitations.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 py-10 flex flex-col items-center justify-center">
-              <UserPlus className="w-10 h-10 text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400">No pending invitations</p>
+              <UserPlus className="w-10 h-10 text-gray-500 mb-2" />
+              <p className="text-sm text-gray-500">No pending invitations</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -106,16 +106,16 @@ export default function WorkspacePage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
                       {inv.boards?.icon ? (
-                        <DynamicIcon name={inv.boards.icon} className="w-5 h-5 text-gray-500" />
+                        <DynamicIcon name={inv.boards.icon} className="w-5 h-5 text-gray-600" />
                       ) : (
-                        <Kanban className="w-5 h-5 text-gray-400" />
+                        <Kanban className="w-5 h-5 text-gray-500" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {inv.boards?.name || 'Unknown Board'}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">
+                      <p className="text-xs text-gray-500 truncate">
                         Invited by{' '}
                         <span className="text-gray-600 font-medium">
                           {inv.inviter?.display_name || inv.inviter?.email || 'Someone'}
@@ -130,7 +130,7 @@ export default function WorkspacePage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleDecline(inv.id)}
-                      className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors"
+                      className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -152,14 +152,14 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       <section>
           <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-gray-400" />
+            <Users className="w-4 h-4 text-gray-500" />
             <h2 className="text-sm font-semibold text-gray-900">Shared with me</h2>
           </div>
 
           {sharedBoards.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 py-10 flex flex-col items-center justify-center">
-              <Users className="w-10 h-10 text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400">No shared boards yet</p>
+              <Users className="w-10 h-10 text-gray-500 mb-2" />
+              <p className="text-sm text-gray-500">No shared boards yet</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -177,7 +177,7 @@ export default function WorkspacePage() {
                         leaveBoard(board.id)
                       }
                     }}
-                    className="absolute top-2.5 right-2.5 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    className="absolute top-2.5 right-2.5 p-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     title="Leave board"
                   >
                     <LogOut className="w-3.5 h-3.5" />
@@ -187,9 +187,9 @@ export default function WorkspacePage() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                       {board.icon ? (
-                        <DynamicIcon name={board.icon} className="w-4.5 h-4.5 text-gray-500" />
+                        <DynamicIcon name={board.icon} className="w-4.5 h-4.5 text-gray-600" />
                       ) : (
-                        <Kanban className="w-4.5 h-4.5 text-gray-400" />
+                        <Kanban className="w-4.5 h-4.5 text-gray-500" />
                       )}
                     </div>
                     <p className="text-sm font-medium text-gray-900 truncate pr-6">
@@ -207,11 +207,11 @@ export default function WorkspacePage() {
                           {(board.ownerName || '?')[0].toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-400 truncate">
+                      <span className="text-xs text-gray-500 truncate">
                         {board.ownerName || 'Unknown'}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0">
+                    <span className="text-xs text-gray-500 shrink-0">
                       {board.memberCount} member{board.memberCount !== 1 ? 's' : ''}
                     </span>
                   </div>

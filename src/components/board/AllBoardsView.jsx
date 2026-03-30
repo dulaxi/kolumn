@@ -13,7 +13,7 @@ export default function AllBoardsView({ onCardClick, selectedCardId }) {
 
   if (columnEntries.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
+      <div className="flex items-center justify-center h-full text-gray-500">
         No boards yet
       </div>
     )
@@ -26,7 +26,7 @@ export default function AllBoardsView({ onCardClick, selectedCardId }) {
           {/* Header */}
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
             <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-            <span className="text-xs text-gray-400">{items.length}</span>
+            <span className="text-xs text-gray-500">{items.length}</span>
           </div>
 
           {/* Cards list */}

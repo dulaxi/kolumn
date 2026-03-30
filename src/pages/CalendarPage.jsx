@@ -59,13 +59,13 @@ export default function CalendarPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -91,7 +91,7 @@ export default function CalendarPage() {
             {DAY_NAMES.map((name, i) => (
               <div
                 key={name}
-                className={`text-center text-[11px] font-semibold uppercase tracking-wider py-2.5 text-gray-400 ${
+                className={`text-center text-[11px] font-semibold uppercase tracking-wider py-2.5 text-gray-500 ${
                   i < 6 ? 'border-r border-gray-100' : ''
                 }`}
               >
@@ -126,7 +126,7 @@ export default function CalendarPage() {
                           ? 'bg-red-500 text-white font-semibold'
                           : inMonth
                             ? 'text-gray-800 font-medium'
-                            : 'text-gray-300'
+                            : 'text-gray-500'
                       }`}
                     >
                       {format(day, 'd')}
@@ -161,14 +161,14 @@ export default function CalendarPage() {
               </span>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-xs text-gray-500 hover:text-gray-600 transition-colors"
               >
                 Close
               </button>
             </div>
 
             {selectedDayCards.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+              <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
                 No tasks scheduled
               </div>
             ) : (
@@ -177,12 +177,12 @@ export default function CalendarPage() {
                   <div key={card.id} className={`flex flex-col gap-1 px-4 py-3 border-l-[3px] ${EVENT_ACCENT[card.priority] || EVENT_ACCENT.medium}`}>
                     <p className="text-sm font-medium text-gray-900">{card.title}</p>
                     {card.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2">{card.description}</p>
+                      <p className="text-xs text-gray-600 line-clamp-2">{card.description}</p>
                     )}
                     {card.labels && card.labels.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {card.labels.map((label, idx) => (
-                          <span key={idx} className="text-[10px] font-medium text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+                          <span key={idx} className="text-[10px] font-medium text-gray-600 bg-gray-100 rounded-full px-2 py-0.5">
                             {label.text}
                           </span>
                         ))}
@@ -194,7 +194,7 @@ export default function CalendarPage() {
             )}
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
             Select a day
           </div>
         )}
