@@ -3,7 +3,7 @@ import {
   X, Trash2, Plus, Check, User, Calendar, Flag, Tag, CheckSquare,
   Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus, ArrowLeft, MessageSquare, Repeat,
 } from 'lucide-react'
-import { formatDistanceToNow, addDays, addMonths, parseISO, format } from 'date-fns'
+import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -11,18 +11,12 @@ import { supabase } from '../../lib/supabase'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 import { useIsMobile } from '../../hooks/useMediaQuery'
+import { LABEL_BG, getAvatarColor, getInitials } from '../../utils/formatting'
+import { addRecurrenceInterval } from '../../utils/dateUtils'
 
 const LABEL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray']
 
-const LABEL_COLOR_CLASSES = {
-  red: 'bg-[#FFE0DB] text-[#CF222E]',
-  blue: 'bg-[#DAF0FF] text-[#3094FF]',
-  green: 'bg-[#D1FDE0] text-[#08872B]',
-  yellow: 'bg-[#FFF4D4] text-[#9A6700]',
-  purple: 'bg-[#EDD8FD] text-[#8534F3]',
-  pink: 'bg-[#FFD6EA] text-[#BF3989]',
-  gray: 'bg-[#E4EBE6] text-[#909692]',
-}
+const LABEL_COLOR_CLASSES = LABEL_BG
 
 const COLOR_DOT_CLASSES = {
   red: 'bg-[#CF222E]',
@@ -39,28 +33,6 @@ const PRIORITY_OPTIONS = [
   { value: 'medium', label: 'Medium', dot: 'bg-amber-200' },
   { value: 'high', label: 'High', dot: 'bg-rose-200' },
 ]
-
-const AVATAR_COLORS = [
-  'bg-blue-200', 'bg-emerald-200', 'bg-purple-200', 'bg-pink-200',
-  'bg-amber-200', 'bg-rose-200', 'bg-teal-200',
-]
-
-function getAvatarColor(name) {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
-}
-
-function getInitials(name) {
-  return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
-}
-
-function addRecurrenceInterval(date, interval, unit) {
-  if (unit === 'months') return addMonths(date, interval)
-  return addDays(date, interval)
-}
 
 export default function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])

@@ -1,5 +1,6 @@
 import { useBoardStore } from '../../store/boardStore'
 import Card from './Card'
+import { buildColumnMap } from '../../utils/columnGrouping'
 
 export default function AllBoardsView({ onCardClick, selectedCardId }) {
   const boards = useBoardStore((s) => s.boards)
@@ -7,27 +8,7 @@ export default function AllBoardsView({ onCardClick, selectedCardId }) {
   const cards = useBoardStore((s) => s.cards)
   const completeCard = useBoardStore((s) => s.completeCard)
 
-  // Collect unique column titles in order of first appearance across boards
-  const columnMap = new Map() // title -> [{ card, boardIcon }]
-
-  const sortedColumns = Object.values(columns).sort((a, b) => a.position - b.position)
-
-  for (const column of sortedColumns) {
-    const board = boards[column.board_id]
-    if (!board) continue
-    if (!columnMap.has(column.title)) {
-      columnMap.set(column.title, [])
-    }
-    const bucket = columnMap.get(column.title)
-    const columnCards = Object.values(cards)
-      .filter((c) => c.column_id === column.id)
-      .sort((a, b) => a.position - b.position)
-
-    for (const card of columnCards) {
-      bucket.push({ card, boardIcon: board.icon })
-    }
-  }
-
+  const columnMap = buildColumnMap(columns, boards, cards)
   const columnEntries = Array.from(columnMap.entries())
 
   if (columnEntries.length === 0) {

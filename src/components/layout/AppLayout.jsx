@@ -51,7 +51,6 @@ export default function AppLayout() {
   }, [font])
 
   // Fetch data and set up real-time when authenticated
-  // Including store functions in deps so HMR re-creates trigger a re-fetch
   useEffect(() => {
     if (user) {
       fetchBoards().then(() => spawnRecurringTasks())
@@ -69,7 +68,8 @@ export default function AppLayout() {
         unsubscribeAll()
       }
     }
-  }, [user, fetchBoards, spawnRecurringTasks, fetchNotes, fetchInvitations, fetchSharedBoards, subscribeToBoards])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   const handleMigrate = async () => {
     setMigrating(true)

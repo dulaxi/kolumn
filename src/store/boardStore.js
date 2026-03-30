@@ -1,14 +1,10 @@
 import { create } from 'zustand'
-import { addDays, addMonths, format } from 'date-fns'
+import { format } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
+import { addRecurrenceInterval } from '../utils/dateUtils'
 
 const ACTIVE_BOARD_KEY = 'gambit_active_board'
-
-function addRecurrenceInterval(date, interval, unit) {
-  if (unit === 'months') return addMonths(date, interval)
-  return addDays(date, interval)
-}
 
 export const useBoardStore = create((set, get) => ({
   boards: {},
@@ -676,6 +672,12 @@ export const useBoardStore = create((set, get) => ({
   // REAL-TIME SUBSCRIPTIONS
   // ============================================================
   subscribeToBoards: () => {
+    // Clean up any existing subscriptions first to prevent duplicates
+    const existing = get().subscriptions
+    if (existing.length > 0) {
+      existing.forEach((sub) => supabase.removeChannel(sub))
+    }
+
     const boardsSub = supabase
       .channel('boards-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, (payload) => {

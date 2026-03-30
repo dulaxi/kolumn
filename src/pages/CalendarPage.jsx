@@ -12,9 +12,9 @@ import {
   isToday,
   addMonths,
   subMonths,
-  parseISO,
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { groupCardsByDate, getCardsForDate } from '../utils/dateUtils'
 
 const DOT_COLORS = {
   high: 'bg-red-500',
@@ -43,22 +43,12 @@ export default function CalendarPage() {
     return eachDayOfInterval({ start: calStart, end: calEnd })
   }, [currentMonth])
 
-  const cardsByDate = useMemo(() => {
-    const map = {}
-    Object.values(cards).forEach((card) => {
-      if (!card.due_date) return
-      const dateKey = format(parseISO(card.due_date), 'yyyy-MM-dd')
-      if (!map[dateKey]) map[dateKey] = []
-      map[dateKey].push(card)
-    })
-    return map
-  }, [cards])
+  const cardsByDate = useMemo(() => groupCardsByDate(cards), [cards])
 
-  const selectedDayCards = useMemo(() => {
-    if (!selectedDay) return []
-    const key = format(selectedDay, 'yyyy-MM-dd')
-    return cardsByDate[key] || []
-  }, [selectedDay, cardsByDate])
+  const selectedDayCards = useMemo(
+    () => getCardsForDate(cardsByDate, selectedDay),
+    [selectedDay, cardsByDate]
+  )
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-7rem)]">

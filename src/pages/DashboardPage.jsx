@@ -2,25 +2,11 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../store/boardStore'
 import { useAuthStore } from '../store/authStore'
-import { isToday, isPast, parseISO, format, formatDistanceToNow } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { ArrowRight, CheckCircle2, Plus } from 'lucide-react'
 import DynamicIcon from '../components/board/DynamicIcon'
-
-const LABEL_BG = {
-  red: 'bg-[#FFE0DB] text-[#CF222E]',
-  blue: 'bg-[#DAF0FF] text-[#3094FF]',
-  green: 'bg-[#D1FDE0] text-[#08872B]',
-  yellow: 'bg-[#FFF4D4] text-[#9A6700]',
-  purple: 'bg-[#EDD8FD] text-[#8534F3]',
-  pink: 'bg-[#FFD6EA] text-[#BF3989]',
-  gray: 'bg-[#E4EBE6] text-[#909692]',
-}
-
-const PRIORITY_DOT = {
-  low: 'bg-emerald-400',
-  medium: 'bg-amber-400',
-  high: 'bg-rose-400',
-}
+import { LABEL_BG, PRIORITY_DOT, getGreeting } from '../utils/formatting'
+import { computeTaskStats, computeBoardSummaries } from '../utils/cardStats'
 
 const SEGMENT_COLORS = [
   'bg-[#9BAFD9]',
@@ -33,12 +19,6 @@ const SEGMENT_COLORS = [
   'bg-[#103783]',
 ]
 
-function getGreeting() {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
-}
 
 /* ------------------------------------------------------------------ */
 /*  TaskRow                                                            */
@@ -117,98 +97,15 @@ export default function DashboardPage() {
     completed,
     dueTodayCards,
     overdueCards,
-  } = useMemo(() => {
-    const myName = profile?.display_name
-    const allCards = Object.values(cards).filter(
-      (c) => c.assignee_name && c.assignee_name === myName
-    )
-    const allColumns = Object.values(columns)
+  } = useMemo(
+    () => computeTaskStats(cards, columns, profile?.display_name),
+    [cards, columns, profile]
+  )
 
-    const doneColumnIds = new Set(
-      allColumns
-        .filter((col) => col.title.toLowerCase() === 'done')
-        .map((col) => col.id)
-    )
-    const inProgressColumnIds = new Set(
-      allColumns
-        .filter((col) => col.title.toLowerCase() === 'in progress')
-        .map((col) => col.id)
-    )
-
-    let dueTodayCount = 0
-    let overdueCount = 0
-    let inProgressCount = 0
-    let completedCount = 0
-    const dueTodayArr = []
-    const overdueArr = []
-
-    for (const card of allCards) {
-      const isDone = doneColumnIds.has(card.column_id)
-
-      if (isDone) {
-        completedCount++
-        continue
-      }
-
-      if (inProgressColumnIds.has(card.column_id)) {
-        inProgressCount++
-      }
-
-      if (card.due_date) {
-        const due = parseISO(card.due_date)
-        if (isToday(due)) {
-          dueTodayCount++
-          dueTodayArr.push(card)
-        } else if (isPast(due)) {
-          overdueCount++
-          overdueArr.push(card)
-        }
-      }
-    }
-
-    return {
-      dueToday: dueTodayCount,
-      overdue: overdueCount,
-      inProgress: inProgressCount,
-      completed: completedCount,
-      dueTodayCards: dueTodayArr,
-      overdueCards: overdueArr,
-    }
-  }, [cards, columns, profile])
-
-  const boardSummaries = useMemo(() => {
-    const allBoards = Object.values(boards)
-    return allBoards.map((board) => {
-      const boardCols = Object.values(columns)
-        .filter((c) => c.board_id === board.id)
-        .sort((a, b) => a.position - b.position)
-      const myName = profile?.display_name
-      const boardCards = Object.values(cards).filter(
-        (c) => c.board_id === board.id && c.assignee_name && c.assignee_name === myName
-      )
-      const totalCards = boardCards.length
-
-      // Per-column card counts
-      const colCounts = boardCols.map((col) => ({
-        id: col.id,
-        title: col.title,
-        count: boardCards.filter((c) => c.column_id === col.id).length,
-      }))
-
-      // Last activity
-      const lastUpdated = boardCards.reduce((latest, c) => {
-        const ts = c.updated_at ? new Date(c.updated_at).getTime() : 0
-        return ts > latest ? ts : latest
-      }, 0)
-
-      return {
-        ...board,
-        columns: colCounts,
-        totalCards,
-        lastUpdated: lastUpdated || null,
-      }
-    })
-  }, [boards, columns, cards, profile])
+  const boardSummaries = useMemo(
+    () => computeBoardSummaries(boards, columns, cards, profile?.display_name),
+    [boards, columns, cards, profile]
+  )
 
   // ---- Helpers -------------------------------------------------------
   function navigateToCard(card) {

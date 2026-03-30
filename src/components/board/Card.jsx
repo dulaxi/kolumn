@@ -5,49 +5,7 @@ import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
-
-const LABEL_BG = {
-  red: 'bg-[#FFE0DB] text-[#CF222E]',
-  blue: 'bg-[#DAF0FF] text-[#3094FF]',
-  green: 'bg-[#D1FDE0] text-[#08872B]',
-  yellow: 'bg-[#FFF4D4] text-[#9A6700]',
-  purple: 'bg-[#EDD8FD] text-[#8534F3]',
-  pink: 'bg-[#FFD6EA] text-[#BF3989]',
-  gray: 'bg-[#E4EBE6] text-[#909692]',
-}
-
-const PRIORITY_DOT = {
-  low: 'bg-emerald-400',
-  medium: 'bg-amber-400',
-  high: 'bg-rose-400',
-}
-
-const AVATAR_COLORS = [
-  'bg-blue-200',
-  'bg-emerald-200',
-  'bg-purple-200',
-  'bg-pink-200',
-  'bg-amber-200',
-  'bg-rose-200',
-  'bg-teal-200',
-]
-
-function getAvatarColor(name) {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
-}
-
-function getInitials(name) {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
+import { LABEL_BG, PRIORITY_DOT, getAvatarColor, getInitials } from '../../utils/formatting'
 
 export default function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
   const { title, description, labels, priority, due_date: dueDate, checklist, assignee_name: assignee, task_number: taskNumber, completed, icon } = card
