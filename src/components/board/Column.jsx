@@ -52,7 +52,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
 
   // Get cards for this column, sorted by position
   const columnCards = Object.values(allCards)
-    .filter((c) => c.column_id === column.id)
+    .filter((c) => c.column_id === column.id && !c.archived)
     .sort((a, b) => a.position - b.position)
 
   // Apply filters then sort (keep columnCards intact for DnD)

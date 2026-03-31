@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown } from 'lucide-react'
+import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown, Archive, ArchiveRestore, Trash2 } from 'lucide-react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
@@ -207,6 +207,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
   const [savingBoard, setSavingBoard] = useState(false)
   const dropdownRef = useRef(null)
   const createInputRef = useRef(null)
@@ -216,6 +217,9 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const addBoard = useBoardStore((s) => s.addBoard)
   const cards = useBoardStore((s) => s.cards)
+  const columns = useBoardStore((s) => s.columns)
+  const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
+  const deleteCard = useBoardStore((s) => s.deleteCard)
   const user = useAuthStore((s) => s.user)
 
   const boardList = Object.values(boards)
@@ -225,7 +229,12 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
   // Derive unique assignees and labels from cards on the current board
   const boardCards = useMemo(() => {
     if (!activeBoardId || activeBoardId === '__all__') return []
-    return Object.values(cards).filter((c) => c.board_id === activeBoardId)
+    return Object.values(cards).filter((c) => c.board_id === activeBoardId && !c.archived)
+  }, [cards, activeBoardId])
+
+  const archivedCards = useMemo(() => {
+    if (!activeBoardId || activeBoardId === '__all__') return []
+    return Object.values(cards).filter((c) => c.board_id === activeBoardId && c.archived)
   }, [cards, activeBoardId])
 
   const uniqueAssignees = useMemo(() => {
@@ -481,6 +490,22 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
               )}
             </button>
           )}
+
+          {/* Archive toggle */}
+          {activeBoardId && activeBoardId !== '__all__' && archivedCards.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowArchived(!showArchived)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border transition-colors ${
+                showArchived
+                  ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                  : 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <Archive className="w-4 h-4" />
+              Archived ({archivedCards.length})
+            </button>
+          )}
         </div>
 
         {/* Filter bar */}
@@ -500,6 +525,45 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
                 Clear all
               </button>
             )}
+          </div>
+        )}
+        {/* Archived cards panel */}
+        {showArchived && archivedCards.length > 0 && (
+          <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-amber-700 uppercase tracking-wider">Archived Tasks</span>
+              <button type="button" onClick={() => setShowArchived(false)} className="text-amber-500 hover:text-amber-700">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {archivedCards.map((card) => (
+                <div key={card.id} className="flex items-center justify-between py-1.5 px-2 bg-white rounded-lg group">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-700 truncate">{card.title}</p>
+                    <p className="text-[10px] text-gray-400">{columns[card.column_id]?.title || 'Unknown section'}</p>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => unarchiveCard(card.id)}
+                      className="p-1 text-gray-400 hover:text-emerald-500 transition-colors"
+                      title="Restore"
+                    >
+                      <ArchiveRestore className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteCard(card.id)}
+                      className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                      title="Delete permanently"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

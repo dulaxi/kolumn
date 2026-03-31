@@ -2,7 +2,7 @@ import { isToday, isPast, parseISO } from 'date-fns'
 
 export function computeTaskStats(cards, columns, displayName) {
   const allCards = Object.values(cards).filter(
-    (c) => c.assignee_name && c.assignee_name === displayName
+    (c) => !c.archived && c.assignee_name && c.assignee_name === displayName
   )
   const allColumns = Object.values(columns)
 

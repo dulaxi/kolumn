@@ -3,6 +3,7 @@ import {
   X, Trash2, Plus, Check, User, Calendar, Flag, Tag, CheckSquare,
   Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus, ArrowLeft, MessageSquare, Repeat,
   History, ArrowRight, PencilLine, CircleCheck, CircleDot, Paperclip, Download, Upload, File, Image,
+  Archive, ArchiveRestore,
 } from 'lucide-react'
 import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -97,6 +98,8 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
+  const archiveCard = useBoardStore((s) => s.archiveCard)
+  const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
   const completeCard = useBoardStore((s) => s.completeCard)
   const boards = useBoardStore((s) => s.boards)
   const allColumns = useBoardStore((s) => s.columns)
@@ -280,6 +283,15 @@ export default function CardDetailPanel({ cardId, onClose }) {
     onClose()
   }
 
+  const handleArchive = () => {
+    if (card?.archived) {
+      unarchiveCard(cardId)
+    } else {
+      archiveCard(cardId)
+      onClose()
+    }
+  }
+
   const addLabel = () => {
     const trimmed = newLabelText.trim()
     if (trimmed) {
@@ -403,6 +415,14 @@ export default function CardDetailPanel({ cardId, onClose }) {
         <div className="flex items-center gap-0.5">
           <button
             type="button"
+            onClick={handleArchive}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-gray-100 transition-colors"
+            title={card?.archived ? 'Unarchive' : 'Archive'}
+          >
+            {card?.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+          </button>
+          <button
+            type="button"
             onClick={handleDelete}
             className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 transition-colors"
             title="Delete"
@@ -438,6 +458,9 @@ export default function CardDetailPanel({ cardId, onClose }) {
             )}
             {card.global_task_number > 0 && (
               <span className="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
+            )}
+            {card.archived && (
+              <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">Archived</span>
             )}
           </div>
           <input

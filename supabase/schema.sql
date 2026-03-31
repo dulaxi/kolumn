@@ -566,3 +566,8 @@ create policy "Users can delete own notifications"
   on public.notifications for delete
   to authenticated
   using (user_id = auth.uid());
+
+-- ============================================================
+-- 15. CARD ARCHIVING
+-- ============================================================
+alter table public.cards add column archived boolean not null default false;

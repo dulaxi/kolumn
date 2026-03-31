@@ -483,6 +483,47 @@ export const useBoardStore = create((set, get) => ({
     }
   },
 
+  archiveCard: async (cardId) => {
+    const card = get().cards[cardId]
+    if (!card) return
+
+    // Optimistic — mark archived
+    set((state) => ({
+      cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
+    }))
+
+    const { error } = await supabase.from('cards').update({ archived: true }).eq('id', cardId)
+    if (error) {
+      console.error('Failed to archive card:', error)
+      set((state) => ({
+        cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
+      }))
+    } else {
+      logActivity(cardId, 'archived', null)
+      toast.success('Task archived')
+    }
+  },
+
+  unarchiveCard: async (cardId) => {
+    const card = get().cards[cardId]
+    if (!card) return
+
+    set((state) => ({
+      cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
+    }))
+
+    const { error } = await supabase.from('cards').update({ archived: false }).eq('id', cardId)
+    if (error) {
+      console.error('Failed to unarchive card:', error)
+      set((state) => ({
+        cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
+      }))
+    } else {
+      logActivity(cardId, 'unarchived', null)
+      toast.success('Task restored from archive')
+    }
+  },
+
   moveCard: async (boardId, fromColumnId, toColumnId, fromIndex, toIndex) => {
     const state = get()
 

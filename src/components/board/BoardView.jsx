@@ -69,7 +69,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const getColumnCards = useCallback((columnId) => {
     const state = useBoardStore.getState()
     return Object.values(state.cards)
-      .filter((c) => c.column_id === columnId)
+      .filter((c) => c.column_id === columnId && !c.archived)
       .sort((a, b) => a.position - b.position)
   }, [])
 

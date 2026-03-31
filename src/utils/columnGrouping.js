@@ -11,7 +11,7 @@ export function buildColumnMap(columns, boards, cards) {
     }
     const bucket = columnMap.get(column.title)
     const columnCards = Object.values(cards)
-      .filter((c) => c.column_id === column.id)
+      .filter((c) => c.column_id === column.id && !c.archived)
       .sort((a, b) => a.position - b.position)
 
     for (const card of columnCards) {
