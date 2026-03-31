@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, Gauge } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, Gauge, ChevronDown, Bookmark, X } from 'lucide-react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
@@ -8,6 +8,7 @@ import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import { filterCards } from '../../utils/cardFilters'
 import ConfirmModal from './ConfirmModal'
+import { useTemplateStore } from '../../store/templateStore'
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
@@ -41,6 +42,9 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const [renameValue, setRenameValue] = useState(column.title)
   const [editingWip, setEditingWip] = useState(false)
   const [wipValue, setWipValue] = useState(column.wip_limit || '')
+  const [showTemplates, setShowTemplates] = useState(false)
+  const templates = useTemplateStore((s) => s.templates)
+  const deleteTemplate = useTemplateStore((s) => s.deleteTemplate)
   const renameRef = useRef(null)
   const menuRef = useRef(null)
 
@@ -83,13 +87,25 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     return () => document.removeEventListener('mousedown', handleClick)
   }, [menuOpen])
 
-  const handleCreateCard = async () => {
+  const handleCreateCard = async (template) => {
     if (creating) return
     setCreating(true)
     const today = new Date().toISOString().split('T')[0] + 'T23:59:59'
-    const cardId = await addCard(boardId, column.id, { title: 'Untitled task', assignee: profile?.display_name || '', dueDate: today })
+    const cardData = template
+      ? {
+          title: template.title || 'Untitled task',
+          description: template.description || '',
+          assignee: profile?.display_name || '',
+          dueDate: today,
+          priority: template.priority || 'medium',
+          labels: template.labels || [],
+          checklist: (template.checklist || []).map((item) => ({ text: item.text, checked: false })),
+        }
+      : { title: 'Untitled task', assignee: profile?.display_name || '', dueDate: today }
+    const cardId = await addCard(boardId, column.id, cardData)
     if (onCreateCard && cardId) onCreateCard(cardId)
     setCreating(false)
+    setShowTemplates(false)
   }
 
   const handleRename = () => {
@@ -215,16 +231,58 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       </div>
 
       {/* Add card */}
-      <div className="pt-1">
-        <button
-          type="button"
-          onClick={handleCreateCard}
-          disabled={creating}
-          className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-600 px-0.5 py-1.5 w-full transition-colors disabled:opacity-50"
-        >
-          <Plus className="w-4 h-4" />
-          {creating ? 'Adding...' : 'Add task'}
-        </button>
+      <div className="pt-1 relative">
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => handleCreateCard()}
+            disabled={creating}
+            className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-600 px-0.5 py-1.5 flex-1 transition-colors disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            {creating ? 'Adding...' : 'Add task'}
+          </button>
+          {templates.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowTemplates(!showTemplates)}
+              className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              title="From template"
+            >
+              <Bookmark className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        {showTemplates && (
+          <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
+              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Templates</span>
+              <button type="button" onClick={() => setShowTemplates(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="max-h-40 overflow-y-auto py-1">
+              {templates.map((t) => (
+                <div key={t.id} className="flex items-center group">
+                  <button
+                    type="button"
+                    onClick={() => handleCreateCard(t)}
+                    className="flex-1 text-left px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 truncate transition-colors"
+                  >
+                    {t.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteTemplate(t.id)}
+                    className="p-1 mr-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {confirmDelete && (

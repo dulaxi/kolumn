@@ -3,7 +3,7 @@ import {
   X, Trash2, Plus, Check, User, Calendar, Flag, Tag, CheckSquare,
   Briefcase, LayoutList, CheckCircle2, FileText, Smile, UserPlus, ArrowLeft, MessageSquare, Repeat,
   History, ArrowRight, PencilLine, CircleCheck, CircleDot, Paperclip, Download, Upload, File, Image,
-  Archive, ArchiveRestore,
+  Archive, ArchiveRestore, Bookmark,
 } from 'lucide-react'
 import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -16,6 +16,7 @@ import IconPicker from './IconPicker'
 import MentionInput from './MentionInput'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { useNotificationStore } from '../../store/notificationStore'
+import { useTemplateStore } from '../../store/templateStore'
 import { LABEL_BG, getAvatarColor, getInitials } from '../../utils/formatting'
 import { addRecurrenceInterval } from '../../utils/dateUtils'
 
@@ -117,6 +118,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const activityItems = useBoardStore((s) => s.activity[cardId])
   const fetchActivity = useBoardStore((s) => s.fetchActivity)
   const notify = useNotificationStore((s) => s.notify)
+  const addTemplate = useTemplateStore((s) => s.addTemplate)
   const attachmentItems = useBoardStore((s) => s.attachments[cardId])
   const fetchAttachments = useBoardStore((s) => s.fetchAttachments)
   const uploadAttachment = useBoardStore((s) => s.uploadAttachment)
@@ -413,6 +415,24 @@ export default function CardDetailPanel({ cardId, onClose }) {
           </button>
         </div>
         <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              addTemplate({
+                name: card.title,
+                title: card.title,
+                description: card.description || '',
+                priority: card.priority || 'medium',
+                labels: card.labels || [],
+                checklist: (card.checklist || []).map((item) => ({ text: item.text, checked: false })),
+              })
+              toast.success('Saved as template')
+            }}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+            title="Save as template"
+          >
+            <Bookmark className="w-4 h-4" />
+          </button>
           <button
             type="button"
             onClick={handleArchive}
