@@ -4,8 +4,16 @@ import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
+import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
 
 const ACTIVE_BOARD_KEY = 'gambit_active_board'
+
+// Rate limiters for mutation actions
+const cardCreateLimiter = createRateLimiter(10, 10000)   // 10 cards per 10s
+const boardCreateLimiter = createRateLimiter(5, 30000)   // 5 boards per 30s
+const columnCreateLimiter = createRateLimiter(10, 10000) // 10 columns per 10s
+const commentLimiter = createRateLimiter(10, 10000)      // 10 comments per 10s
+const uploadLimiter = createRateLimiter(5, 30000)        // 5 uploads per 30s
 
 // Undo-able delete: removes from UI, shows a toast with an Undo button,
 // waits 5s, then commits the DB delete unless the user clicks Undo.
@@ -141,6 +149,8 @@ export const useBoardStore = create((set, get) => ({
   },
 
   addBoard: async (name, icon, customColumns) => {
+    if (!boardCreateLimiter()) { toast.error('Too many boards created — slow down'); return null }
+    const sanitizedName = sanitizeTitle(name) || 'Untitled Board'
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
@@ -151,7 +161,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { error } = await supabase
       .from('boards')
-      .insert({ id: boardId, name, icon: icon || null, owner_id: user.id })
+      .insert({ id: boardId, name: sanitizedName, icon: icon || null, owner_id: user.id })
 
     if (error) return null
 
@@ -344,13 +354,15 @@ export const useBoardStore = create((set, get) => ({
   // COLUMN ACTIONS
   // ============================================================
   addColumn: async (boardId, title) => {
+    if (!columnCreateLimiter()) { toast.error('Too many columns — slow down'); return }
+    const sanitizedCol = sanitizeTitle(title) || 'Untitled'
     const boardColumns = Object.values(get().columns)
       .filter((c) => c.board_id === boardId)
     const position = boardColumns.length
 
     const { data: col } = await supabase
       .from('columns')
-      .insert({ board_id: boardId, title, position })
+      .insert({ board_id: boardId, title: sanitizedCol, position })
       .select()
       .single()
 
@@ -407,6 +419,7 @@ export const useBoardStore = create((set, get) => ({
   // CARD ACTIONS
   // ============================================================
   addCard: async (boardId, columnId, cardData) => {
+    if (!cardCreateLimiter()) { toast.error('Too many tasks created — slow down'); return null }
     const state = get()
     const board = state.boards[boardId]
     if (!board) {
@@ -429,9 +442,9 @@ export const useBoardStore = create((set, get) => ({
       position,
       task_number: taskNumber,
       global_task_number: globalNumber,
-      title: cardData.title || 'Untitled task',
-      description: cardData.description || '',
-      assignee_name: cardData.assignee || '',
+      title: sanitizeTitle(cardData.title) || 'Untitled task',
+      description: sanitizeDescription(cardData.description),
+      assignee_name: sanitizeTitle(cardData.assignee),
       labels: cardData.labels || [],
       due_date: cardData.dueDate || null,
       priority: cardData.priority || 'medium',
@@ -481,10 +494,10 @@ export const useBoardStore = create((set, get) => ({
   updateCard: async (cardId, updates) => {
     // Map frontend field names to DB column names
     const dbUpdates = {}
-    if ('title' in updates) dbUpdates.title = updates.title
-    if ('description' in updates) dbUpdates.description = updates.description
-    if ('assignee' in updates) dbUpdates.assignee_name = updates.assignee
-    if ('assignee_name' in updates) dbUpdates.assignee_name = updates.assignee_name
+    if ('title' in updates) dbUpdates.title = sanitizeTitle(updates.title) || 'Untitled task'
+    if ('description' in updates) dbUpdates.description = sanitizeDescription(updates.description)
+    if ('assignee' in updates) dbUpdates.assignee_name = sanitizeTitle(updates.assignee)
+    if ('assignee_name' in updates) dbUpdates.assignee_name = sanitizeTitle(updates.assignee_name)
     if ('priority' in updates) dbUpdates.priority = updates.priority
     if ('dueDate' in updates) dbUpdates.due_date = updates.dueDate
     if ('due_date' in updates) dbUpdates.due_date = updates.due_date
@@ -811,6 +824,9 @@ export const useBoardStore = create((set, get) => ({
   },
 
   addComment: async (cardId, text) => {
+    if (!commentLimiter()) { toast.error('Too many comments — slow down'); return }
+    const sanitizedText = sanitizeText(text, 2000)
+    if (!sanitizedText) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
@@ -819,7 +835,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { data, error } = await supabase
       .from('card_comments')
-      .insert({ card_id: cardId, user_id: user.id, author_name: authorName, text })
+      .insert({ card_id: cardId, user_id: user.id, author_name: authorName, text: sanitizedText })
       .select()
       .single()
 
@@ -894,6 +910,7 @@ export const useBoardStore = create((set, get) => ({
   },
 
   uploadAttachment: async (cardId, file) => {
+    if (!uploadLimiter()) { toast.error('Too many uploads — slow down'); return null }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
