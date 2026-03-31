@@ -43,6 +43,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const [editingWip, setEditingWip] = useState(false)
   const [wipValue, setWipValue] = useState(column.wip_limit || '')
   const [showTemplates, setShowTemplates] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(20)
   const templates = useTemplateStore((s) => s.templates)
   const deleteTemplate = useTemplateStore((s) => s.deleteTemplate)
   const renameRef = useRef(null)
@@ -220,7 +221,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           items={cardIds}
           strategy={verticalListSortingStrategy}
         >
-          {filteredCards.map((card) =>
+          {filteredCards.slice(0, visibleCount).map((card) =>
             card.id === inlineCardId ? (
               <InlineCardEditor key={card.id} cardId={card.id} onDone={onInlineDone} />
             ) : (
@@ -228,6 +229,15 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
             )
           )}
         </SortableContext>
+        {filteredCards.length > visibleCount && (
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => c + 20)}
+            className="w-full py-1.5 text-[12px] font-medium text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            Show {Math.min(filteredCards.length - visibleCount, 20)} more ({filteredCards.length - visibleCount} remaining)
+          </button>
+        )}
       </div>
 
       {/* Add card */}
