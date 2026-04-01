@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, UserPlus, Trash2, Mail, Crown, Users } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { showToast } from '../../utils/toast'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
 import { useIsMobile } from '../../hooks/useMediaQuery'
@@ -76,7 +76,7 @@ export default function BoardShareModal({ board, onClose }) {
     } else {
       await fetchInvitations()
       setEmail('')
-      toast.success('Invitation sent')
+      showToast.success('Invitation sent')
     }
 
     setLoading(false)

@@ -130,7 +130,7 @@ export default function Sidebar() {
         />
       )}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-white border-r border-[#E0DBD5] flex flex-col transition-all duration-200 z-40 ${
+        className={`fixed top-0 left-0 h-screen bg-[#FAF8F6] border-r border-[#E0DBD5] flex flex-col transition-all duration-200 z-40 ${
           isDesktop
             ? collapsed
               ? 'w-16'
@@ -152,8 +152,7 @@ export default function Sidebar() {
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {/* Dashboard */}
         <NavLink
-          to="/"
-          end
+          to="/dashboard"
           onClick={closeMobileMenu}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${

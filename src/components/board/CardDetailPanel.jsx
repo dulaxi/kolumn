@@ -6,7 +6,7 @@ import {
   Archive, ArchiveRestore, Bookmark,
 } from 'lucide-react'
 import { formatDistanceToNow, parseISO, format } from 'date-fns'
-import toast from 'react-hot-toast'
+import { showToast } from '../../utils/toast'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -426,7 +426,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 labels: card.labels || [],
                 checklist: (card.checklist || []).map((item) => ({ text: item.text, checked: false })),
               })
-              toast.success('Saved as template')
+              showToast.success('Saved as template')
             }}
             className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#A8BA32] hover:bg-[#E8E2DB] transition-colors"
             title="Save as template"
@@ -981,7 +981,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
                 const file = e.target.files?.[0]
                 if (!file) return
                 if (file.size > 10 * 1024 * 1024) {
-                  toast.error('File must be under 10 MB')
+                  showToast.error('File must be under 10 MB')
                   return
                 }
                 setUploading(true)

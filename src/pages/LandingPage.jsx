@@ -262,7 +262,7 @@ function MockDetailPanel() {
   const card = mockDetailCard
   const checkDone = card.checklist.filter((c) => c.done).length
   return (
-    <div className="rounded-2xl border border-[#E0DBD5]/80 bg-white shadow-2xl shadow-[#E0DBD5]/60 overflow-hidden w-full max-w-sm" style={{ fontFamily: "'Mona Sans Variable', 'Mona Sans', sans-serif" }}>
+    <div className="rounded-2xl border border-[#E0DBD5]/80 bg-white shadow-2xl shadow-[#E0DBD5]/60 overflow-hidden w-full max-w-sm">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-[#E8E2DB]">
         <div className="text-[10px] text-[#8E8E89] font-medium mb-1">{card.taskNumber}</div>
@@ -457,7 +457,7 @@ export default function LandingPage() {
               Project management
               <br />
               that feels{' '}
-              <span className="bg-gradient-to-r from-[#1B1B18] to-[#C2D64A] bg-clip-text text-transparent">effortless</span>
+              <span className="text-[#8BA32E] font-heading text-[1.09em]">effortless</span>
             </h1>
             <p className="text-base sm:text-lg text-[#5C5C57] max-w-lg mx-auto mb-8 leading-relaxed">
               A clean Kanban workspace for teams that value focus over features.
@@ -482,7 +482,7 @@ export default function LandingPage() {
 
           {/* ─── Mock Board Preview ─── */}
           <div className="relative max-w-5xl mx-auto">
-            <div className="rounded-2xl border border-[#E0DBD5]/80 bg-white shadow-2xl shadow-[#E0DBD5]/60 overflow-hidden" style={{ fontFamily: "'Mona Sans Variable', 'Mona Sans', sans-serif" }}>
+            <div className="rounded-2xl border border-[#E0DBD5]/80 bg-white shadow-2xl shadow-[#E0DBD5]/60 overflow-hidden">
               {/* Browser title bar */}
               <div className="flex items-center gap-2 px-4 py-2.5 bg-[#F2EDE8] border-b border-[#E8E2DB]">
                 <div className="flex items-center gap-1.5">
@@ -544,7 +544,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           {stats.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#1B1B18] tracking-tight">{s.value}</div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#8BA32E] tracking-tight font-heading">{s.value}</div>
               <div className="text-xs text-[#8E8E89] font-medium mt-1 uppercase tracking-wider">{s.label}</div>
             </div>
           ))}
@@ -558,7 +558,7 @@ export default function LandingPage() {
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#1B1B18] tracking-tight mb-3">
               Every detail,{' '}
-              <span className="bg-gradient-to-r from-[#1B1B18] to-[#C2D64A] bg-clip-text text-transparent">one click away</span>
+              <span className="text-[#8BA32E] font-heading text-[1.09em]">one click away</span>
             </h2>
             <p className="text-sm text-[#5C5C57] leading-relaxed mb-6">
               Click any card to open a rich detail panel. Add descriptions, track progress with checklists,
@@ -591,7 +591,7 @@ export default function LandingPage() {
       {/* ─── Features Grid ─── */}
       <section className="px-6 sm:px-10 py-16 max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1B1B18] tracking-tight mb-2">Built for how teams actually work</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#1B1B18] tracking-tight mb-2">Built for how teams <span className="text-[#8BA32E] font-heading text-[1.09em]">actually work</span></h2>
           <p className="text-sm text-[#5C5C57] max-w-md mx-auto">No bloat, no learning curve. Just the tools that matter — designed to feel invisible.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -615,7 +615,7 @@ export default function LandingPage() {
         <div className="bg-white border border-[#E0DBD5]/80 rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-[#1B1B18]">Everything you need</h2>
+              <h2 className="text-lg font-bold text-[#1B1B18]">Everything you <span className="text-[#8BA32E] font-heading text-[1.09em]">need</span></h2>
               <p className="text-xs text-[#8E8E89] mt-0.5">All the tools, none of the complexity.</p>
             </div>
             <Link
@@ -651,7 +651,7 @@ export default function LandingPage() {
         <div className="relative">
         <div className="w-10 h-[1px] bg-[#E0DBD5] mx-auto mb-10" />
         <h2 className="text-2xl sm:text-3xl font-bold text-[#1B1B18] tracking-tight mb-3">
-          Your team's next move starts here
+          Your team's <span className="text-[#8BA32E] font-heading text-[1.09em]">next move</span> starts here
         </h2>
         <p className="text-sm text-[#5C5C57] max-w-sm mx-auto mb-8 leading-relaxed">
           Set up your first board in under 60 seconds. No credit card, no setup wizard.

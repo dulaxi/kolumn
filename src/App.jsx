@@ -39,16 +39,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster
-        position="bottom-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
-          style: {
-            background: '#1B1B18',
-            color: '#F2EDE8',
-            fontSize: '13px',
-            borderRadius: '12px',
-            padding: '10px 16px',
-          },
         }}
       />
       <UndoListener />

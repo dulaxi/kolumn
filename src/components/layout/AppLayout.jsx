@@ -11,7 +11,7 @@ import { useNoteStore } from '../../store/noteStore'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { useNotificationStore } from '../../store/notificationStore'
 import { hasLocalData, migrateLocalData } from '../../lib/migrateLocalData'
-import toast from 'react-hot-toast'
+import { showToast } from '../../utils/toast'
 import OfflineBanner from './OfflineBanner'
 
 const pageTitles = {
@@ -89,10 +89,10 @@ export default function AppLayout() {
         })
 
         if (overdue > 0) {
-          toast(`You have ${overdue} overdue task${overdue > 1 ? 's' : ''}`, { icon: '🔴', duration: 5000 })
+          showToast.overdue(`You have ${overdue} overdue task${overdue > 1 ? 's' : ''}`)
         }
         if (dueToday > 0) {
-          toast(`${dueToday} task${dueToday > 1 ? 's' : ''} due today`, { icon: '🟡', duration: 5000 })
+          showToast.warn(`${dueToday} task${dueToday > 1 ? 's' : ''} due today`)
         }
       })
       fetchNotes()
@@ -168,7 +168,7 @@ export default function AppLayout() {
   const title = pageTitles[basePath] || 'Gambit'
 
   return (
-    <div className="min-h-screen bg-[#F2EDE8]">
+    <div className="min-h-screen bg-white">
       <OfflineBanner />
       <Sidebar />
       <div

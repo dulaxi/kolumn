@@ -134,7 +134,7 @@ export default function Header({ title }) {
   }, [mobileSearchOpen])
 
   return (
-    <header className="relative h-16 bg-white border-b border-[#E0DBD5] flex items-center justify-between px-4 sm:px-6">
+    <header className="relative h-16 bg-[#FAF8F6] border-b border-[#E0DBD5] flex items-center justify-between px-4 sm:px-6">
       {/* Mobile search overlay */}
       {!isDesktop && mobileSearchOpen ? (
         <div className="absolute inset-0 bg-white flex items-center gap-2 px-4 z-40" ref={searchRef}>

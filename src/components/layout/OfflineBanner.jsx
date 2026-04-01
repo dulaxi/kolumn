@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { WifiOff } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { showToast } from '../../utils/toast'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { useBoardStore } from '../../store/boardStore'
 import { useNoteStore } from '../../store/noteStore'
@@ -16,7 +16,7 @@ export default function OfflineBanner() {
       wasOffline.current = true
     } else if (wasOffline.current) {
       wasOffline.current = false
-      toast.success('Back online — syncing data')
+      showToast.success('Back online — syncing data')
       fetchBoards()
       fetchNotes()
     }

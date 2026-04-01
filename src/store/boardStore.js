@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { showToast } from '../utils/toast'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
@@ -22,7 +23,7 @@ function undoableDelete(message) {
     let settled = false
     const id = String(Date.now())
 
-    toast.success(message, { duration: 5000, id })
+    showToast.delete(message, { duration: 5000, id })
 
     // Inject an Undo button into the toast after it renders using safe DOM methods
     setTimeout(() => {
@@ -31,7 +32,7 @@ function undoableDelete(message) {
         if (c.textContent.includes(message) && !c.querySelector(`[data-undo-id]`)) {
           const btn = document.createElement('button')
           btn.setAttribute('data-undo-id', id)
-          btn.style.cssText = 'color:#C2D64A;font-weight:600;font-size:13px;background:none;border:none;cursor:pointer;margin-left:8px;white-space:nowrap'
+          btn.style.cssText = 'color:#FAF8F6;font-weight:700;font-size:12px;font-family:SF Mono,Menlo,monospace;background:none;border:none;cursor:pointer;margin-left:auto;white-space:nowrap;text-decoration:underline'
           btn.textContent = 'Undo'
           c.style.display = 'flex'
           c.style.alignItems = 'center'
@@ -132,9 +133,9 @@ export const useBoardStore = create((set, get) => ({
     } catch (err) {
       console.error('fetchBoards failed:', err)
       if (!navigator.onLine) {
-        toast.error('You\'re offline — showing cached data')
+        showToast.warn('You\'re offline — showing cached data')
       } else {
-        toast.error('Failed to load boards — check your connection')
+        showToast.error('Failed to load boards — check your connection')
       }
       set({ loading: false })
     }
@@ -149,7 +150,7 @@ export const useBoardStore = create((set, get) => ({
   },
 
   addBoard: async (name, icon, customColumns) => {
-    if (!boardCreateLimiter()) { toast.error('Too many boards created — slow down'); return null }
+    if (!boardCreateLimiter()) { showToast.warn('Too many boards created — slow down'); return null }
     const sanitizedName = sanitizeTitle(name) || 'Untitled Board'
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
@@ -198,7 +199,7 @@ export const useBoardStore = create((set, get) => ({
       }
     })
 
-    toast.success(`Board "${name}" created`)
+    showToast.success(`Board "${name}" created`)
     return board.id
   },
 
@@ -335,7 +336,7 @@ export const useBoardStore = create((set, get) => ({
         return { boards: { ...s.boards, [boardId]: prevBoard }, columns, cards, activeBoardId: prevActiveId }
       })
       localStorage.setItem(ACTIVE_BOARD_KEY, prevActiveId || '')
-      toast.success('Board restored')
+      showToast.restore('Board restored')
     }
   },
 
@@ -354,7 +355,7 @@ export const useBoardStore = create((set, get) => ({
   // COLUMN ACTIONS
   // ============================================================
   addColumn: async (boardId, title) => {
-    if (!columnCreateLimiter()) { toast.error('Too many columns — slow down'); return }
+    if (!columnCreateLimiter()) { showToast.warn('Too many columns — slow down'); return }
     const sanitizedCol = sanitizeTitle(title) || 'Untitled'
     const boardColumns = Object.values(get().columns)
       .filter((c) => c.board_id === boardId)
@@ -411,7 +412,7 @@ export const useBoardStore = create((set, get) => ({
         prevCards.forEach((c) => { cards[c.id] = c })
         return { columns: { ...s.columns, [columnId]: prevColumn }, cards }
       })
-      toast.success('Section restored')
+      showToast.restore('Section restored')
     }
   },
 
@@ -419,7 +420,7 @@ export const useBoardStore = create((set, get) => ({
   // CARD ACTIONS
   // ============================================================
   addCard: async (boardId, columnId, cardData) => {
-    if (!cardCreateLimiter()) { toast.error('Too many tasks created — slow down'); return null }
+    if (!cardCreateLimiter()) { showToast.warn('Too many tasks created — slow down'); return null }
     const state = get()
     const board = state.boards[boardId]
     if (!board) {
@@ -581,11 +582,11 @@ export const useBoardStore = create((set, get) => ({
       const { error } = await supabase.from('cards').delete().eq('id', cardId)
       if (error) {
         set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
-        toast.error('Failed to delete task')
+        showToast.error('Failed to delete task')
       }
     } else {
       set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
-      toast.success('Task restored')
+      showToast.restore('Task restored')
     }
   },
 
@@ -606,7 +607,7 @@ export const useBoardStore = create((set, get) => ({
       }))
     } else {
       logActivity(cardId, 'archived', null)
-      toast.success('Task archived')
+      showToast.archive('Task archived')
     }
   },
 
@@ -626,7 +627,7 @@ export const useBoardStore = create((set, get) => ({
       }))
     } else {
       logActivity(cardId, 'unarchived', null)
-      toast.success('Task restored from archive')
+      showToast.restore('Task restored from archive')
     }
   },
 
@@ -824,7 +825,7 @@ export const useBoardStore = create((set, get) => ({
   },
 
   addComment: async (cardId, text) => {
-    if (!commentLimiter()) { toast.error('Too many comments — slow down'); return }
+    if (!commentLimiter()) { showToast.warn('Too many comments — slow down'); return }
     const sanitizedText = sanitizeText(text, 2000)
     if (!sanitizedText) return
     const { data: { user } } = await supabase.auth.getUser()
@@ -910,7 +911,7 @@ export const useBoardStore = create((set, get) => ({
   },
 
   uploadAttachment: async (cardId, file) => {
-    if (!uploadLimiter()) { toast.error('Too many uploads — slow down'); return null }
+    if (!uploadLimiter()) { showToast.warn('Too many uploads — slow down'); return null }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
@@ -924,7 +925,7 @@ export const useBoardStore = create((set, get) => ({
 
     if (uploadError) {
       console.error('Failed to upload file:', uploadError)
-      toast.error('Failed to upload file')
+      showToast.error('Failed to upload file')
       return null
     }
 
