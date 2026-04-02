@@ -47,7 +47,6 @@ export default function Sidebar() {
   const allBoards = useBoardStore((s) => s.boards)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
-  const addBoard = useBoardStore((s) => s.addBoard)
   const deleteBoard = useBoardStore((s) => s.deleteBoard)
   const renameBoard = useBoardStore((s) => s.renameBoard)
   const updateBoardIcon = useBoardStore((s) => s.updateBoardIcon)
@@ -57,8 +56,6 @@ export default function Sidebar() {
   const sharedBoards = useWorkspaceStore((s) => s.sharedBoards)
   const [boardsOpen, setBoardsOpen] = useState(true)
   const [workspaceOpen, setWorkspaceOpen] = useState(true)
-  const [creating, setCreating] = useState(false)
-  const [newName, setNewName] = useState('')
   const [iconPickerBoardId, setIconPickerBoardId] = useState(null)
   const [renamingBoardId, setRenamingBoardId] = useState(null)
   const [renameValue, setRenameValue] = useState('')
@@ -72,18 +69,6 @@ export default function Sidebar() {
   const sortedOwnedBoards = Object.values(ownedBoards)
 
   const isBoardsActive = location.pathname.startsWith('/boards')
-
-  const [savingBoard, setSavingBoard] = useState(false)
-
-  const handleCreate = async () => {
-    if (!newName.trim() || savingBoard) return
-    setSavingBoard(true)
-    await addBoard(newName.trim())
-    setSavingBoard(false)
-    setNewName('')
-    setCreating(false)
-    navigate('/boards')
-  }
 
   const handleSelectBoard = (boardId) => {
     setActiveBoard(boardId)
@@ -272,39 +257,18 @@ export default function Sidebar() {
                   )
                 })}
 
-                {creating ? (
-                  <div className="px-1 py-1">
-                    <input
-                      autoFocus
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleCreate()
-                        if (e.key === 'Escape') {
-                          setCreating(false)
-                          setNewName('')
-                        }
-                      }}
-                      onBlur={() => {
-                        if (!newName.trim()) {
-                          setCreating(false)
-                          setNewName('')
-                        }
-                      }}
-                      placeholder="Board name..."
-                      className="w-full px-2 py-1 text-sm rounded-md border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6]"
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setCreating(true)}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>New board</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('kolumn:create-board'))
+                    navigate('/boards')
+                    closeMobileMenu()
+                  }}
+                  className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New board</span>
+                </button>
               </div>
             )}
           </div>
