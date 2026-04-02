@@ -210,15 +210,23 @@ export const useBoardStore = create((set, get) => ({
   },
 
   createSampleBoard: async () => {
+    if (localStorage.getItem('kolumn_sample_board_created')) return null
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
+
+    // Mark immediately to prevent concurrent calls from racing
+    localStorage.setItem('kolumn_sample_board_created', '1')
 
     const boardId = crypto.randomUUID()
     const { error } = await supabase
       .from('boards')
       .insert({ id: boardId, name: 'My First Project', icon: 'Rocket', owner_id: user.id })
 
-    if (error) return null
+    if (error) {
+      localStorage.removeItem('kolumn_sample_board_created')
+      return null
+    }
 
     const { data: board } = await supabase
       .from('boards')
@@ -295,18 +303,28 @@ export const useBoardStore = create((set, get) => ({
   },
 
   updateBoardIcon: async (boardId, icon) => {
-    // Optimistic
+    const prevBoard = get().boards[boardId]
     set((state) => ({
       boards: { ...state.boards, [boardId]: { ...state.boards[boardId], icon } },
     }))
-    await supabase.from('boards').update({ icon }).eq('id', boardId)
+    const { error } = await supabase.from('boards').update({ icon }).eq('id', boardId)
+    if (error) {
+      console.error('Failed to update board icon:', error)
+      if (prevBoard) set((state) => ({ boards: { ...state.boards, [boardId]: prevBoard } }))
+    }
   },
 
   renameBoard: async (boardId, name) => {
+    const prevBoard = get().boards[boardId]
     set((state) => ({
       boards: { ...state.boards, [boardId]: { ...state.boards[boardId], name } },
     }))
-    await supabase.from('boards').update({ name }).eq('id', boardId)
+    const { error } = await supabase.from('boards').update({ name }).eq('id', boardId)
+    if (error) {
+      console.error('Failed to rename board:', error)
+      if (prevBoard) set((state) => ({ boards: { ...state.boards, [boardId]: prevBoard } }))
+      showToast.error('Failed to rename board')
+    }
   },
 
   deleteBoard: async (boardId) => {
@@ -367,11 +385,17 @@ export const useBoardStore = create((set, get) => ({
       .filter((c) => c.board_id === boardId)
     const position = boardColumns.length
 
-    const { data: col } = await supabase
+    const { data: col, error } = await supabase
       .from('columns')
       .insert({ board_id: boardId, title: sanitizedCol, position })
       .select()
       .single()
+
+    if (error) {
+      console.error('Failed to add column:', error)
+      showToast.error('Failed to add section')
+      return
+    }
 
     if (col) {
       set((state) => ({
@@ -381,18 +405,29 @@ export const useBoardStore = create((set, get) => ({
   },
 
   renameColumn: async (boardId, columnId, title) => {
+    const prevColumn = get().columns[columnId]
     set((state) => ({
       columns: { ...state.columns, [columnId]: { ...state.columns[columnId], title } },
     }))
-    await supabase.from('columns').update({ title }).eq('id', columnId)
+    const { error } = await supabase.from('columns').update({ title }).eq('id', columnId)
+    if (error) {
+      console.error('Failed to rename column:', error)
+      if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
+      showToast.error('Failed to rename section')
+    }
   },
 
   updateColumnWipLimit: async (columnId, wipLimit) => {
+    const prevColumn = get().columns[columnId]
     const value = wipLimit || null
     set((state) => ({
       columns: { ...state.columns, [columnId]: { ...state.columns[columnId], wip_limit: value } },
     }))
-    await supabase.from('columns').update({ wip_limit: value }).eq('id', columnId)
+    const { error } = await supabase.from('columns').update({ wip_limit: value }).eq('id', columnId)
+    if (error) {
+      console.error('Failed to update WIP limit:', error)
+      if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
+    }
   },
 
   deleteColumn: async (boardId, columnId) => {
@@ -469,6 +504,7 @@ export const useBoardStore = create((set, get) => ({
 
       if (error || !card) {
         console.error('Failed to create card:', error)
+        showToast.error('Failed to create task')
         return null
       }
 
@@ -494,6 +530,7 @@ export const useBoardStore = create((set, get) => ({
       return card.id
     } catch (err) {
       console.error('addCard failed:', err)
+      showToast.error('Failed to create task')
       return null
     }
   },
@@ -568,7 +605,14 @@ export const useBoardStore = create((set, get) => ({
       },
     }))
 
-    await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
+    const { error } = await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
+    if (error) {
+      console.error('Failed to toggle card completion:', error)
+      set((state) => ({
+        cards: { ...state.cards, [cardId]: card },
+      }))
+      return
+    }
     logActivity(cardId, newCompleted ? 'completed' : 'reopened', null)
   },
 
@@ -1122,7 +1166,16 @@ export const useBoardStore = create((set, get) => ({
           return { cards: { ...state.cards, [card.id]: card } }
         })
       })
-      .subscribe()
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Realtime subscription error:', err)
+          showToast.warn('Live updates disconnected — refresh to resync')
+        }
+        if (status === 'TIMED_OUT') {
+          console.error('Realtime subscription timed out')
+          showToast.warn('Live updates timed out — refresh to resync')
+        }
+      })
 
     set({ subscriptions: [boardsSub] })
   },
