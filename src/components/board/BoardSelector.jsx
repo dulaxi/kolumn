@@ -1,18 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown, Archive, ArchiveRestore, Trash2, Copy } from 'lucide-react'
 
-const BOARD_TEMPLATES = [
-  { name: 'Blank', icon: null, columns: ['To Do', 'In Progress', 'Review', 'Done'] },
-  { name: 'Bug Tracker', icon: 'Bug', columns: ['Triage', 'Investigating', 'Fix In Progress', 'Verified'] },
-  { name: 'Sprint Board', icon: 'Zap', columns: ['Backlog', 'Sprint', 'In Progress', 'Done'] },
-  { name: 'Content Pipeline', icon: 'PenTool', columns: ['Ideas', 'Drafting', 'Editing', 'Published'] },
-  { name: 'Hiring Pipeline', icon: 'UserPlus', columns: ['Applied', 'Phone Screen', 'Interview', 'Offer'] },
-  { name: 'Simple', icon: null, columns: ['To Do', 'Done'] },
-]
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
-import IconPicker from './IconPicker'
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
 function FilterPill({ label, active, children }) {
@@ -208,24 +199,16 @@ const SORT_OPTIONS = [
   { value: 'alpha', label: 'Alphabetical' },
 ]
 
-export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }) {
+export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, onCreateBoard }) {
   const [open, setOpen] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newIcon, setNewIcon] = useState(null)
-  const [showIconPicker, setShowIconPicker] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
-  const [savingBoard, setSavingBoard] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState(BOARD_TEMPLATES[0])
   const dropdownRef = useRef(null)
-  const createInputRef = useRef(null)
 
   const boards = useBoardStore((s) => s.boards)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
-  const addBoard = useBoardStore((s) => s.addBoard)
   const cards = useBoardStore((s) => s.cards)
   const columns = useBoardStore((s) => s.columns)
   const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
@@ -286,48 +269,11 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
     const handleClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false)
-        setIsCreating(false)
-        setNewName('')
-        setNewIcon(null)
-        setShowIconPicker(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
-
-  useEffect(() => {
-    if (isCreating && createInputRef.current) {
-      createInputRef.current.focus()
-    }
-  }, [isCreating])
-
-  const handleCreate = async () => {
-    const trimmed = newName.trim()
-    if (!trimmed || savingBoard) return
-    setSavingBoard(true)
-    const icon = newIcon || selectedTemplate.icon
-    const cols = selectedTemplate.name === 'Blank' ? undefined : selectedTemplate.columns
-    await addBoard(trimmed, icon, cols)
-    setSavingBoard(false)
-    setNewName('')
-    setNewIcon(null)
-    setSelectedTemplate(BOARD_TEMPLATES[0])
-    setIsCreating(false)
-    setShowIconPicker(false)
-    setOpen(false)
-  }
-
-  const handleCreateKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleCreate()
-    } else if (e.key === 'Escape') {
-      setNewName('')
-      setNewIcon(null)
-      setIsCreating(false)
-      setShowIconPicker(false)
-    }
-  }
 
   return (
     <>
@@ -403,69 +349,14 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
                 ))}
 
                 <div className="border-t border-[#E0DBD5] mt-1 pt-1">
-                  {isCreating ? (
-                    <div className="px-3 py-1.5 space-y-2">
-                      <div className="flex items-center gap-2">
-                        {/* Icon pick button */}
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setShowIconPicker(!showIconPicker)}
-                            className="w-8 h-8 rounded-lg bg-[#E8E2DB] flex items-center justify-center text-[#8E8E89] hover:bg-[#E0DBD5] transition-colors shrink-0"
-                          >
-                            {newIcon ? (
-                              <DynamicIcon name={newIcon} className="w-4 h-4" />
-                            ) : (
-                              <LayoutGrid className="w-4 h-4" />
-                            )}
-                          </button>
-                          {showIconPicker && (
-                            <IconPicker
-                              value={newIcon}
-                              onChange={(icon) => setNewIcon(icon)}
-                              onClose={() => setShowIconPicker(false)}
-                            />
-                          )}
-                        </div>
-                        <input
-                          ref={createInputRef}
-                          value={newName}
-                          onChange={(e) => setNewName(e.target.value)}
-                          onKeyDown={handleCreateKeyDown}
-                          placeholder="Board name..."
-                          className="flex-1 text-sm rounded-lg px-2 py-1.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6]"
-                        />
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {BOARD_TEMPLATES.map((t) => (
-                          <button
-                            key={t.name}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTemplate(t)
-                              if (t.icon && !newIcon) setNewIcon(t.icon)
-                            }}
-                            className={`px-2 py-0.5 text-[11px] rounded-md border transition-colors ${
-                              selectedTemplate.name === t.name
-                                ? 'bg-[#EEF2D6] border-[#C2D64A] text-[#A8BA32] font-medium'
-                                : 'border-[#E0DBD5] text-[#8E8E89] hover:bg-[#F2EDE8]'
-                            }`}
-                          >
-                            {t.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setIsCreating(true)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#8E8E89] hover:bg-[#F2EDE8] hover:text-[#1B1B18]"
-                    >
-                      <Plus className="w-4 h-4" />
-                      New board
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setOpen(false); onCreateBoard() }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#8E8E89] hover:bg-[#F2EDE8] hover:text-[#1B1B18]"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New board
+                  </button>
                 </div>
               </div>
             )}
