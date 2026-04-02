@@ -352,7 +352,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                   <button
                     type="button"
                     onClick={() => { setOpen(false); onCreateBoard() }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#8E8E89] hover:bg-[#F2EDE8] hover:text-[#1B1B18]"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#8E8E89] hover:bg-[#F2EDE8] hover:text-[#1B1B18] cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     New board

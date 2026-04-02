@@ -264,7 +264,7 @@ export default function Sidebar() {
                     navigate('/boards')
                     closeMobileMenu()
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>New board</span>
