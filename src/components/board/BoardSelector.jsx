@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown, Archive, ArchiveRestore, Trash2, Copy } from 'lucide-react'
 
 const BOARD_TEMPLATES = [
@@ -13,7 +13,7 @@ import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
-import BoardShareModal from './BoardShareModal'
+const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
 function FilterPill({ label, active, children }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -602,10 +602,12 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
 
       {/* Share modal */}
       {showShareModal && activeBoard && (
-        <BoardShareModal
-          board={activeBoard}
-          onClose={() => setShowShareModal(false)}
-        />
+        <Suspense fallback={null}>
+          <BoardShareModal
+            board={activeBoard}
+            onClose={() => setShowShareModal(false)}
+          />
+        </Suspense>
       )}
     </>
   )

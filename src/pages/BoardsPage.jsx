@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useBoardStore } from '../store/boardStore'
 import BoardSelector from '../components/board/BoardSelector'
 import BoardView from '../components/board/BoardView'
 import AllBoardsView from '../components/board/AllBoardsView'
-import CardDetailPanel from '../components/board/CardDetailPanel'
+
+const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
 
 export default function BoardsPage() {
   const [editingCardId, setEditingCardId] = useState(null)
@@ -87,11 +88,13 @@ export default function BoardsPage() {
       </div>
 
       {editingCardId && (
-        <CardDetailPanel
-          key={editingCardId}
-          cardId={editingCardId}
-          onClose={() => setEditingCardId(null)}
-        />
+        <Suspense fallback={<div className="fixed right-0 top-0 h-full w-[340px] lg:w-[420px] bg-white border-l border-gray-200 flex items-center justify-center"><div className="text-sm text-[#8E8E89]">Loading...</div></div>}>
+          <CardDetailPanel
+            key={editingCardId}
+            cardId={editingCardId}
+            onClose={() => setEditingCardId(null)}
+          />
+        </Suspense>
       )}
     </div>
   )

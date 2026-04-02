@@ -7,6 +7,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'board-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          'date-fns': ['date-fns'],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

@@ -1,20 +1,21 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import toast, { Toaster, useToasterStore } from 'react-hot-toast'
 import AppLayout from './components/layout/AppLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
-import LandingPage from './pages/LandingPage'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import UpdatePasswordPage from './pages/UpdatePasswordPage'
-import DashboardPage from './pages/DashboardPage'
-import BoardsPage from './pages/BoardsPage'
-import CalendarPage from './pages/CalendarPage'
-import NotesPage from './pages/NotesPage'
-import SettingsPage from './pages/SettingsPage'
-import WorkspacePage from './pages/WorkspacePage'
+
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const SignupPage = lazy(() => import('./pages/SignupPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const BoardsPage = lazy(() => import('./pages/BoardsPage'))
+const CalendarPage = lazy(() => import('./pages/CalendarPage'))
+const NotesPage = lazy(() => import('./pages/NotesPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const WorkspacePage = lazy(() => import('./pages/WorkspacePage'))
 
 function UndoListener() {
   const { toasts } = useToasterStore()
@@ -45,27 +46,29 @@ export default function App() {
         }}
       />
       <UndoListener />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/update-password" element={<UpdatePasswordPage />} />
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
-          <Route path="boards/*" element={<ErrorBoundary><BoardsPage /></ErrorBoundary>} />
-          <Route path="workspace" element={<ErrorBoundary><WorkspacePage /></ErrorBoundary>} />
-          <Route path="calendar" element={<ErrorBoundary><CalendarPage /></ErrorBoundary>} />
-          <Route path="notes" element={<ErrorBoundary><NotesPage /></ErrorBoundary>} />
-          <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
-        </Route>
-      </Routes>
+      <Suspense fallback={<div className="min-h-screen bg-[#F2EDE8] flex items-center justify-center"><div className="text-sm text-[#8E8E89]">Loading...</div></div>}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/update-password" element={<UpdatePasswordPage />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+            <Route path="boards/*" element={<ErrorBoundary><BoardsPage /></ErrorBoundary>} />
+            <Route path="workspace" element={<ErrorBoundary><WorkspacePage /></ErrorBoundary>} />
+            <Route path="calendar" element={<ErrorBoundary><CalendarPage /></ErrorBoundary>} />
+            <Route path="notes" element={<ErrorBoundary><NotesPage /></ErrorBoundary>} />
+            <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
