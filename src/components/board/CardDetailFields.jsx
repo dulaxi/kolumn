@@ -13,13 +13,13 @@ import { addRecurrenceInterval } from '../../utils/dateUtils'
 const LABEL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray']
 
 const COLOR_DOT_CLASSES = {
-  red: 'bg-[#CF222E]',
-  blue: 'bg-[#3094FF]',
-  green: 'bg-[#08872B]',
-  yellow: 'bg-[#9A6700]',
-  purple: 'bg-[#8534F3]',
-  pink: 'bg-[#BF3989]',
-  gray: 'bg-[#909692]',
+  red: 'bg-[#F2D9C7]',
+  blue: 'bg-[#DAE0F0]',
+  green: 'bg-[#EEF2D6]',
+  yellow: 'bg-[#F5EDCF]',
+  purple: 'bg-[#E8DDE2]',
+  pink: 'bg-[#F0E0D2]',
+  gray: 'bg-[#E8E2DB]',
 }
 
 const PRIORITY_OPTIONS = [

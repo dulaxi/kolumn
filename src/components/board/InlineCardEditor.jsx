@@ -19,13 +19,13 @@ const LABEL_COLOR_CLASSES = {
 }
 
 const COLOR_DOT_CLASSES = {
-  red: 'bg-[#8B5A33]',
-  blue: 'bg-[#4A5578]',
-  green: 'bg-[#6B7A12]',
-  yellow: 'bg-[#8B7322]',
-  purple: 'bg-[#6E5A65]',
-  pink: 'bg-[#7A5C44]',
-  gray: 'bg-[#5C5C57]',
+  red: 'bg-[#F2D9C7]',
+  blue: 'bg-[#DAE0F0]',
+  green: 'bg-[#EEF2D6]',
+  yellow: 'bg-[#F5EDCF]',
+  purple: 'bg-[#E8DDE2]',
+  pink: 'bg-[#F0E0D2]',
+  gray: 'bg-[#E8E2DB]',
 }
 
 const PRIORITY_OPTIONS = [
