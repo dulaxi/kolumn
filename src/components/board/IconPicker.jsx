@@ -5,6 +5,22 @@ import { createPortal } from 'react-dom'
 import DynamicIcon from './DynamicIcon'
 import { PHOSPHOR_CATEGORIES, ALL_PHOSPHOR_ICONS } from '../../data/phosphorIcons'
 
+// Lazy-load Material data only when the user switches to the Material tab.
+// This keeps the 139KB file out of the main JS chunk.
+let _materialCache = null
+async function loadMaterialIcons() {
+  if (!_materialCache) {
+    const mod = await import('../../data/materialSymbolsIcons')
+    _materialCache = { categories: mod.MATERIAL_CATEGORIES, names: mod.MATERIAL_ICON_NAMES }
+  }
+  return _materialCache
+}
+
+const LIBRARY_TABS = [
+  { key: 'phosphor', label: 'Phosphor' },
+  { key: 'material', label: 'Material' },
+]
+
 function IconGrid({ icons: iconList, value, onChange, onClose }) {
   return (
     <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-10 gap-1">
@@ -14,7 +30,7 @@ function IconGrid({ icons: iconList, value, onChange, onClose }) {
           type="button"
           onClick={() => { onChange(name); onClose() }}
           title={name}
-          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
+          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
             value === name
               ? 'bg-[#EEF2D6] text-[#A8BA32] ring-1 ring-[#C2D64A]'
               : 'text-[#5C5C57] hover:bg-[#E8E2DB] hover:text-[#5C5C57]'
@@ -31,7 +47,22 @@ export default function IconPicker({ value, onChange, onClose }) {
   const isMobile = useIsMobile()
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('popular')
+  const [activeTab, setActiveTab] = useState('phosphor')
   const inputRef = useRef(null)
+
+  const [materialData, setMaterialData] = useState(null)
+
+  const categories = activeTab === 'phosphor' ? PHOSPHOR_CATEGORIES : (materialData?.categories || [])
+  const allIcons = activeTab === 'phosphor' ? ALL_PHOSPHOR_ICONS : (materialData?.names || [])
+  const iconCount = allIcons.length
+
+  // Reset category when switching tabs; lazy-load Material data on first switch
+  useEffect(() => {
+    setActiveCategory('popular')
+    if (activeTab === 'material' && !materialData) {
+      loadMaterialIcons().then(setMaterialData)
+    }
+  }, [activeTab, materialData])
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus()
@@ -47,11 +78,11 @@ export default function IconPicker({ value, onChange, onClose }) {
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return null
-    const q = search.toLowerCase().replace(/\s+/g, '-')
-    return ALL_PHOSPHOR_ICONS.filter((name) => name.includes(q))
-  }, [search])
+    const q = search.toLowerCase().replace(/\s+/g, activeTab === 'material' ? '_' : '-')
+    return allIcons.filter((name) => name.includes(q))
+  }, [search, allIcons, activeTab])
 
-  const currentCategory = PHOSPHOR_CATEGORIES.find((c) => c.key === activeCategory)
+  const currentCategory = categories.find((c) => c.key === activeCategory)
   const displayIcons = !searchResults ? (currentCategory ? currentCategory.icons : []) : null
 
   return createPortal(
@@ -64,9 +95,27 @@ export default function IconPicker({ value, onChange, onClose }) {
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header with tabs */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8E2DB]">
-          <h2 className="text-sm font-semibold text-[#1B1B18]">Choose an icon</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-sm font-semibold text-[#1B1B18]">Choose an icon</h2>
+            <div className="flex items-center bg-[#E8E2DB] rounded-lg p-0.5">
+              {LIBRARY_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer ${
+                    activeTab === tab.key
+                      ? 'bg-white text-[#1B1B18] shadow-sm'
+                      : 'text-[#5C5C57] hover:text-[#5C5C57]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <button type="button" onClick={onClose} className="p-1 text-[#8E8E89] hover:text-[#5C5C57] rounded-lg hover:bg-[#E8E2DB]">
             <X className="w-5 h-5" />
           </button>
@@ -93,12 +142,12 @@ export default function IconPicker({ value, onChange, onClose }) {
           {/* Category sidebar */}
           {!searchResults && (
             <div className="hidden sm:block w-44 shrink-0 border-r border-[#E8E2DB] overflow-y-auto py-2">
-              {PHOSPHOR_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button
                   key={cat.key}
                   type="button"
                   onClick={() => setActiveCategory(cat.key)}
-                  className={`w-full text-left px-4 py-1.5 text-xs transition-colors ${
+                  className={`w-full text-left px-4 py-1.5 text-xs transition-colors cursor-pointer ${
                     activeCategory === cat.key
                       ? 'text-[#1B1B18] font-medium bg-[#F2EDE8]'
                       : 'text-[#5C5C57] hover:text-[#5C5C57] hover:bg-[#F2EDE8]'
@@ -118,7 +167,7 @@ export default function IconPicker({ value, onChange, onClose }) {
               <button
                 type="button"
                 onClick={() => { onChange(null); onClose() }}
-                className="mb-3 text-xs text-[#8E8E89] hover:text-[#7A5C44] transition-colors"
+                className="mb-3 text-xs text-[#8E8E89] hover:text-[#7A5C44] transition-colors cursor-pointer"
               >
                 Remove icon
               </button>
@@ -145,8 +194,8 @@ export default function IconPicker({ value, onChange, onClose }) {
 
         {/* Footer */}
         <div className="px-5 py-2.5 border-t border-[#E8E2DB] flex items-center justify-between">
-          <span className="text-[11px] text-[#8E8E89]">{ALL_PHOSPHOR_ICONS.length} icons available</span>
-          <button type="button" onClick={onClose} className="text-xs text-[#5C5C57] hover:text-[#5C5C57] px-3 py-1 rounded-lg hover:bg-[#E8E2DB]">
+          <span className="text-[11px] text-[#8E8E89]">{iconCount} icons available</span>
+          <button type="button" onClick={onClose} className="text-xs text-[#5C5C57] hover:text-[#5C5C57] px-3 py-1 rounded-lg hover:bg-[#E8E2DB] cursor-pointer">
             Cancel
           </button>
         </div>
