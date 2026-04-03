@@ -62,11 +62,6 @@ export const useAuthStore = create((set, get) => ({
       },
     })
     if (error) throw error
-    // Set user/session immediately from the response so navigation
-    // can happen without waiting for onAuthStateChange + fetchProfile
-    if (data.session) {
-      set({ user: data.session.user, session: data.session })
-    }
     return data
   },
 
@@ -76,10 +71,6 @@ export const useAuthStore = create((set, get) => ({
       password,
     })
     if (error) throw error
-    // Set user/session immediately so ProtectedRoute allows navigation
-    if (data.session) {
-      set({ user: data.session.user, session: data.session })
-    }
     return data
   },
 
