@@ -15,18 +15,7 @@ import {
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { groupCardsByDate, getCardsForDate } from '../utils/dateUtils'
-
-const DOT_COLORS = {
-  high: 'bg-[#7A5C44]',
-  medium: 'bg-[#C2D64A]',
-  low: 'bg-[#A8BA32]',
-}
-
-const EVENT_ACCENT = {
-  high: 'border-l-[#7A5C44]',
-  medium: 'border-l-[#C2D64A]',
-  low: 'border-l-[#A8BA32]',
-}
+import { DOT_COLORS, EVENT_ACCENT } from '../constants/colors'
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -34,7 +23,6 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const cards = useBoardStore((s) => s.cards)
-  const loading = useBoardStore((s) => s.loading)
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth)
@@ -50,14 +38,6 @@ export default function CalendarPage() {
     () => getCardsForDate(cardsByDate, selectedDay),
     [selectedDay, cardsByDate]
   )
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-7rem)]">
-        <div className="text-sm text-[#8E8E89]">Loading calendar...</div>
-      </div>
-    )
-  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-7rem)]">

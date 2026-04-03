@@ -5,8 +5,7 @@ import {
 import { useBoardStore } from '../../store/boardStore'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
-
-const LABEL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray']
+import { LABEL_COLORS, COLOR_DOT_CLASSES, PRIORITY_OPTIONS } from '../../constants/colors'
 
 const LABEL_COLOR_CLASSES = {
   red: 'bg-[#F2D9C7] text-[#8B5A33]',
@@ -17,22 +16,6 @@ const LABEL_COLOR_CLASSES = {
   pink: 'bg-[#F0E0D2] text-[#7A5C44]',
   gray: 'bg-[#E8E2DB] text-[#5C5C57]',
 }
-
-const COLOR_DOT_CLASSES = {
-  red: 'bg-[#F2D9C7]',
-  blue: 'bg-[#DAE0F0]',
-  green: 'bg-[#EEF2D6]',
-  yellow: 'bg-[#F5EDCF]',
-  purple: 'bg-[#E8DDE2]',
-  pink: 'bg-[#F0E0D2]',
-  gray: 'bg-[#E8E2DB]',
-}
-
-const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low', dot: 'bg-[#A8BA32]' },
-  { value: 'medium', label: 'Medium', dot: 'bg-[#D4A843]' },
-  { value: 'high', label: 'High', dot: 'bg-[#C27A4A]' },
-]
 
 export default function InlineCardEditor({ cardId, onDone }) {
   const card = useBoardStore((s) => s.cards[cardId])

@@ -142,6 +142,7 @@ export default function Header({ title }) {
           <input
             ref={mobileSearchRef}
             type="text"
+            aria-label="Search tasks and notes"
             placeholder="Search tasks, notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -238,6 +239,7 @@ export default function Header({ title }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E89]" />
           <input
             type="text"
+            aria-label="Search tasks and notes"
             placeholder="Search tasks, notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

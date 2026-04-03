@@ -4,6 +4,7 @@ import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUp
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
+import { PRIORITY_OPTIONS } from '../../constants/colors'
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
 function FilterPill({ label, active, children }) {
@@ -45,11 +46,7 @@ function FilterPill({ label, active, children }) {
 }
 
 function PriorityFilter({ filters, setFilters }) {
-  const priorities = [
-    { value: 'low', label: 'Low', color: 'bg-[#A8BA32]' },
-    { value: 'medium', label: 'Medium', color: 'bg-[#D4A843]' },
-    { value: 'high', label: 'High', color: 'bg-[#C27A4A]' },
-  ]
+  const priorities = PRIORITY_OPTIONS.map((o) => ({ value: o.value, label: o.label, color: o.dot }))
   const selected = filters?.priority || []
 
   const toggle = (value) => {

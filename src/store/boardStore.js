@@ -8,6 +8,7 @@ import { useNotificationStore } from './notificationStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
 import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
 import { logError } from '../utils/logger'
+import { cardInsertSchema, cardUpdateSchema, boardInsertSchema, columnInsertSchema, commentInsertSchema } from '../utils/schemas'
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
@@ -91,17 +92,21 @@ export const useBoardStore = create((set, get) => ({
   cards: {},
   activeBoardId: null,
   loading: true,
+  error: null,
   subscriptions: [],
   _isDragging: false,
   comments: {},
   activity: {},
   attachments: {},
 
+  clearError: () => set({ error: null }),
+
   // ============================================================
   // FETCH (load all boards the user has access to)
   // ============================================================
   fetchBoards: async () => {
-    set({ loading: true })
+    // Only show loading spinner on first fetch — refetches update silently
+    if (Object.keys(get().boards).length === 0) set({ loading: true })
 
     try {
       const [boardsRes, columnsRes, cardsRes] = await Promise.all([
@@ -113,6 +118,9 @@ export const useBoardStore = create((set, get) => ({
       if (boardsRes.error) logError('Failed to fetch boards:', boardsRes.error)
       if (columnsRes.error) logError('Failed to fetch columns:', columnsRes.error)
       if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
+
+      // Surface first error to UI but continue with whatever data we got
+      const fetchError = boardsRes.error || columnsRes.error || cardsRes.error
 
       const boardMap = {}
       ;(boardsRes.data || []).forEach((b) => { boardMap[b.id] = b })
@@ -136,6 +144,7 @@ export const useBoardStore = create((set, get) => ({
         cards: cardMap,
         activeBoardId: restoredId,
         loading: false,
+        error: fetchError ? { message: fetchError.message, action: 'fetchBoards' } : null,
       })
     } catch (err) {
       logError('fetchBoards failed:', err)
@@ -144,7 +153,7 @@ export const useBoardStore = create((set, get) => ({
       } else {
         showToast.error('Failed to load boards — check your connection')
       }
-      set({ loading: false })
+      set({ loading: false, error: { message: err.message || 'Network error', action: 'fetchBoards' } })
     }
   },
 
@@ -170,10 +179,17 @@ export const useBoardStore = create((set, get) => ({
 
     const boardId = crypto.randomUUID()
 
+    const validated = boardInsertSchema.safeParse({ id: boardId, name: sanitizedName, icon: icon || null, owner_id: user.id })
+    if (!validated.success) {
+      logError('Board validation failed:', validated.error.flatten())
+      showToast.error('Invalid board data')
+      return null
+    }
+
     // Step 1: Insert board (trigger auto-adds owner to board_members)
     const { error } = await supabase
       .from('boards')
-      .insert({ id: boardId, name: sanitizedName, icon: icon || null, owner_id: user.id })
+      .insert(validated.data)
 
     if (error) return null
 
@@ -282,9 +298,16 @@ export const useBoardStore = create((set, get) => ({
       .filter((c) => c.board_id === boardId)
     const position = boardColumns.length
 
+    const validated = columnInsertSchema.safeParse({ board_id: boardId, title: sanitizedCol, position })
+    if (!validated.success) {
+      logError('Column validation failed:', validated.error.flatten())
+      showToast.error('Invalid section data')
+      return
+    }
+
     const { data: col, error } = await supabase
       .from('columns')
-      .insert({ board_id: boardId, title: sanitizedCol, position })
+      .insert(validated.data)
       .select()
       .single()
 
@@ -375,7 +398,7 @@ export const useBoardStore = create((set, get) => ({
     const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
     const taskNumber = board.next_task_number || 1
 
-    const cardInsert = {
+    const rawInsert = {
       board_id: boardId,
       column_id: columnId,
       position,
@@ -391,6 +414,14 @@ export const useBoardStore = create((set, get) => ({
       completed: cardData.completed || false,
       checklist: cardData.checklist || [],
     }
+
+    const validated = cardInsertSchema.safeParse(rawInsert)
+    if (!validated.success) {
+      logError('Card validation failed:', validated.error.flatten())
+      showToast.error('Invalid task data')
+      return null
+    }
+    const cardInsert = validated.data
 
     try {
       // Run card insert and task number increment in parallel (independent operations)
@@ -836,9 +867,15 @@ export const useBoardStore = create((set, get) => ({
     const profile = useAuthStore.getState().profile
     const authorName = profile?.display_name || user.email || 'Unknown'
 
+    const commentData = commentInsertSchema.safeParse({ card_id: cardId, user_id: user.id, author_name: authorName, text: sanitizedText })
+    if (!commentData.success) {
+      logError('Comment validation failed:', commentData.error.flatten())
+      return
+    }
+
     const { data, error } = await supabase
       .from('card_comments')
-      .insert({ card_id: cardId, user_id: user.id, author_name: authorName, text: sanitizedText })
+      .insert(commentData.data)
       .select()
       .single()
 
@@ -1105,9 +1142,12 @@ export const useBoardStore = create((set, get) => ({
         })
       })
       .subscribe((status, err) => {
-        if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           logError('Realtime boards subscription error:', err)
-          showToast.warn('Live updates disconnected — refresh to resync')
+          // Auto-reconnect after 3 seconds
+          setTimeout(() => {
+            if (get().subscriptions.length > 0) get().subscribeToBoards()
+          }, 3000)
         }
       })
 
@@ -1144,12 +1184,12 @@ export const useBoardStore = create((set, get) => ({
           })
         })
         .subscribe((status, err) => {
-          if (status === 'CHANNEL_ERROR') {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             logError('Realtime board detail subscription error:', err)
-          }
-          if (status === 'TIMED_OUT') {
-            logError('Realtime board detail subscription timed out')
-            showToast.warn('Live updates timed out — refresh to resync')
+            // Auto-reconnect after 3 seconds
+            setTimeout(() => {
+              if (get().subscriptions.length > 0) get().subscribeToBoards()
+            }, 3000)
           }
         })
       subs.push(boardDetailSub)
@@ -1178,7 +1218,14 @@ export const useBoardStore = create((set, get) => ({
             return { cards: { ...state.cards, [card.id]: card } }
           })
         })
-        .subscribe()
+        .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logError('Realtime all-detail subscription error:', err)
+            setTimeout(() => {
+              if (get().subscriptions.length > 0) get().subscribeToBoards()
+            }, 3000)
+          }
+        })
       subs.push(allDetailSub)
     }
 

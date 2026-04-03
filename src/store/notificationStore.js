@@ -5,6 +5,9 @@ import { logError } from '../utils/logger'
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
   unreadCount: 0,
+  error: null,
+
+  clearError: () => set({ error: null }),
 
   fetchNotifications: async () => {
     const { data, error } = await supabase
@@ -15,6 +18,7 @@ export const useNotificationStore = create((set, get) => ({
 
     if (error) {
       logError('Failed to fetch notifications:', error)
+      set({ error: { message: error.message, action: 'fetchNotifications' } })
       return
     }
 
@@ -22,6 +26,7 @@ export const useNotificationStore = create((set, get) => ({
     set({
       notifications: items,
       unreadCount: items.filter((n) => !n.read).length,
+      error: null,
     })
   },
 

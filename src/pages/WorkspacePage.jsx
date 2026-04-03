@@ -12,7 +12,6 @@ export default function WorkspacePage() {
 
   const invitations = useWorkspaceStore((s) => s.invitations)
   const sharedBoards = useWorkspaceStore((s) => s.sharedBoards)
-  const wsLoading = useWorkspaceStore((s) => s.loading)
   const fetchInvitations = useWorkspaceStore((s) => s.fetchInvitations)
   const fetchSharedBoards = useWorkspaceStore((s) => s.fetchSharedBoards)
   const acceptInvitation = useWorkspaceStore((s) => s.acceptInvitation)
@@ -46,14 +45,6 @@ export default function WorkspacePage() {
     { icon: Mail, color: 'bg-[#F5EDCF] text-[#D4A843]', label: 'Invite by email', desc: "Enter your teammate's email" },
     { icon: Check, color: 'bg-[#EEF2D6] text-[#A8BA32]', label: 'They accept here', desc: 'Invitations appear in their Workspace' },
   ]
-
-  if (wsLoading && invitations.length === 0 && sharedBoards.length === 0) {
-    return (
-      <div className="max-w-3xl mx-auto flex items-center justify-center py-24">
-        <div className="text-sm text-[#8E8E89]">Loading workspace...</div>
-      </div>
-    )
-  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">

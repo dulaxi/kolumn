@@ -9,24 +9,7 @@ import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 import { LABEL_BG, getAvatarColor, getInitials } from '../../utils/formatting'
 import { addRecurrenceInterval } from '../../utils/dateUtils'
-
-const LABEL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray']
-
-const COLOR_DOT_CLASSES = {
-  red: 'bg-[#F2D9C7]',
-  blue: 'bg-[#DAE0F0]',
-  green: 'bg-[#EEF2D6]',
-  yellow: 'bg-[#F5EDCF]',
-  purple: 'bg-[#E8DDE2]',
-  pink: 'bg-[#F0E0D2]',
-  gray: 'bg-[#E8E2DB]',
-}
-
-const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Low', dot: 'bg-[#EEF2D6]' },
-  { value: 'medium', label: 'Medium', dot: 'bg-[#F5EDCF]' },
-  { value: 'high', label: 'High', dot: 'bg-[#F2D9C7]' },
-]
+import { LABEL_COLORS, COLOR_DOT_CLASSES, PRIORITY_OPTIONS } from '../../constants/colors'
 
 export default function CardDetailFields({
   card, cardId, assignee, setAssignee, priority, setPriority,

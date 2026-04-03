@@ -34,13 +34,12 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const priDot = PRIORITY_DOT[priority] || PRIORITY_DOT.medium
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       aria-label={`Task: ${title}`}
       onClick={() => onClick(card.id)}
       style={font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : undefined}
-      className={`w-full rounded-xl border shadow-sm transition-all text-left cursor-pointer flex ${
+      className={`w-full rounded-xl border shadow-sm transition-all text-left cursor-pointer flex focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C2D64A] focus-visible:ring-offset-1 ${
         isSelected
           ? 'bg-[#EEF2D6]/60 border-[#EEF2D6]'
           : 'bg-white border-[#E0DBD5] hover:shadow-md'
@@ -199,6 +198,6 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           </div>
         )}
       </div>
-    </div>
+    </button>
   )
 })

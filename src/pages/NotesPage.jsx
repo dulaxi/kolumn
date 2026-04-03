@@ -10,7 +10,6 @@ export default function NotesPage() {
   const updateNote = useNoteStore((s) => s.updateNote)
   const deleteNote = useNoteStore((s) => s.deleteNote)
   const fetchNotes = useNoteStore((s) => s.fetchNotes)
-  const loading = useNoteStore((s) => s.loading)
   const [selectedNoteId, setSelectedNoteId] = useState(null)
   const isMobile = useIsMobile()
   const [showEditor, setShowEditor] = useState(false)
@@ -59,13 +58,6 @@ export default function NotesPage() {
     updateNote(selectedNoteId, { content: e.target.value })
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-[#8E8E89] text-sm">
-        Loading notes...
-      </div>
-    )
-  }
 
   return (
     <div className="flex gap-0 h-[calc(100vh-7rem)]">

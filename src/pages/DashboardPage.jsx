@@ -7,6 +7,7 @@ import { Plus, Target, LayoutGrid, Users, BarChart3, Kanban } from 'lucide-react
 import DynamicIcon from '../components/board/DynamicIcon'
 import { getGreeting } from '../utils/formatting'
 import { computeBoardSummaries } from '../utils/cardStats'
+import { SEGMENT_COLORS } from '../constants/colors'
 
 // Prefetch the boards route during idle time — users almost always navigate here next
 const prefetchBoards = () => { import('./BoardsPage') }
@@ -20,8 +21,6 @@ const QUOTES = [
   { text: "You don't have to see the whole staircase, just take the first step.", author: "Martin Luther King Jr." },
 ]
 
-const SEGMENT_COLORS = ['#d2d6c5', '#a4b55b', '#8BA32E', '#7A5C44', '#5C5C57', '#3c402b', '#1B1B18']
-
 function getDailyIndex(arr) {
   const day = Math.floor(Date.now() / 86400000)
   return day % arr.length
@@ -32,7 +31,6 @@ export default function DashboardPage() {
   const boards = useBoardStore((s) => s.boards)
   const columns = useBoardStore((s) => s.columns)
   const cards = useBoardStore((s) => s.cards)
-  const loading = useBoardStore((s) => s.loading)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const profile = useAuthStore((s) => s.profile)
   const displayName = profile?.display_name || 'there'
@@ -52,14 +50,6 @@ export default function DashboardPage() {
       return () => clearTimeout(id)
     }
   }, [])
-
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center" style={{ height: 'calc(100vh - 7rem)' }}>
-        <div className="text-sm text-[#8E8E89]">Loading dashboard...</div>
-      </div>
-    )
-  }
 
   const quote = QUOTES[getDailyIndex(QUOTES)]
   const boardCount = Object.keys(boards).length

@@ -5,21 +5,7 @@ import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
 import DynamicIcon from '../components/board/DynamicIcon'
 import IconPicker from '../components/board/IconPicker'
-
-const PROFILE_COLORS = [
-  { value: 'bg-[#C2D64A]', hex: '#C2D64A' },
-  { value: 'bg-[#A8BA32]', hex: '#A8BA32' },
-  { value: 'bg-[#D4A843]', hex: '#D4A843' },
-  { value: 'bg-[#C27A4A]', hex: '#C27A4A' },
-  { value: 'bg-[#A8969E]', hex: '#A8969E' },
-  { value: 'bg-[#8B7355]', hex: '#8B7355' },
-  { value: 'bg-[#7A5C44]', hex: '#7A5C44' },
-  { value: 'bg-[#E0DBD5]', hex: '#E0DBD5' },
-  { value: 'bg-[#E8E2DB]', hex: '#E8E2DB' },
-  { value: 'bg-[#8E8E89]', hex: '#8E8E89' },
-  { value: 'bg-[#5C5C57]', hex: '#5C5C57' },
-  { value: 'bg-[#1B1B18]', hex: '#1B1B18' },
-]
+import { PROFILE_COLORS } from '../constants/colors'
 
 const themes = [
   {

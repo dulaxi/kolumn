@@ -13,6 +13,7 @@ import { useNotificationStore } from '../../store/notificationStore'
 import { hasLocalData, migrateLocalData } from '../../lib/migrateLocalData'
 import { showToast } from '../../utils/toast'
 import OfflineBanner from './OfflineBanner'
+import InlineErrorBoundary from '../InlineErrorBoundary'
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
@@ -62,15 +63,17 @@ export default function AppLayout() {
 
     let cancelled = false
 
-    // Fire all independent fetches in parallel
-    Promise.all([
+    // Each fetch is independent — use allSettled so one failure doesn't block others
+    const loadAllData = () => Promise.allSettled([
       fetchBoards(),
       fetchNotes(),
       fetchInvitations(),
       fetchSharedBoards(),
       fetchNotifications(),
-    ]).then(() => {
-      // If user logged out while fetches were in flight, discard results
+    ])
+
+    // Initial fetch + subscriptions
+    loadAllData().then(() => {
       if (cancelled) return
 
       // Subscribe to realtime AFTER data is loaded to avoid stale overwrites
@@ -179,13 +182,17 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-white">
       <OfflineBanner />
-      <Sidebar />
+      <InlineErrorBoundary name="sidebar">
+        <Sidebar />
+      </InlineErrorBoundary>
       <div
         className={`transition-all duration-200 ${
           isDesktop ? (collapsed ? 'ml-16' : 'ml-60') : 'ml-0'
         }`}
       >
-        <Header title={title} />
+        <InlineErrorBoundary name="header">
+          <Header title={title} />
+        </InlineErrorBoundary>
         <main className={`p-4 sm:p-6 ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (

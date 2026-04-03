@@ -9,6 +9,9 @@ export const useWorkspaceStore = create((set, get) => ({
   invitations: [],
   sharedBoards: [],
   loading: false,
+  error: null,
+
+  clearError: () => set({ error: null }),
 
   // ============================================================
   // FETCH INVITATIONS
@@ -17,7 +20,7 @@ export const useWorkspaceStore = create((set, get) => ({
     const profile = useAuthStore.getState().profile
     if (!profile?.email) return
 
-    set({ loading: true })
+    if (get().invitations.length === 0 && get().sharedBoards.length === 0) set({ loading: true })
 
     try {
       const { data, error } = await supabase
@@ -57,7 +60,7 @@ export const useWorkspaceStore = create((set, get) => ({
     const user = useAuthStore.getState().user
     if (!user) return
 
-    set({ loading: true })
+    if (get().invitations.length === 0 && get().sharedBoards.length === 0) set({ loading: true })
 
     try {
       // Get boards where the user is a member but NOT the owner

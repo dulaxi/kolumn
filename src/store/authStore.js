@@ -37,6 +37,18 @@ export const useAuthStore = create((set, get) => ({
       // Skip INITIAL_SESSION — we already handled it via getSession() above
       if (event === 'INITIAL_SESSION') return
 
+      // Only update session (not user reference) if the same user is still logged in.
+      // Changing user triggers AppLayout's useEffect [user] dependency, which
+      // re-fetches all data and sets loading: true — causing the white flash.
+      const currentUser = get().user
+      if (session?.user && currentUser?.id === session.user.id) {
+        set({ session })
+        if (event !== 'TOKEN_REFRESHED') {
+          try { await get().fetchProfile() } catch {}
+        }
+        return
+      }
+
       set({ user: session?.user || null, session })
       if (session?.user) {
         try {

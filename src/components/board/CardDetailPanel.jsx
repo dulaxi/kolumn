@@ -335,6 +335,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             value={title}
             onChange={(e) => { setTitle(e.target.value); scheduleSave() }}
             maxLength={200}
+            aria-label="Task name"
             className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[#8E8E89] ${card.completed ? 'text-[#8E8E89] line-through' : 'text-[#1B1B18]'}`}
             placeholder="Task name"
           />
