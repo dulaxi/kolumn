@@ -21,24 +21,27 @@ const LIBRARY_TABS = [
   { key: 'material', label: 'Material' },
 ]
 
-function IconGrid({ icons: iconList, value, onChange, onClose }) {
+function IconGrid({ icons: iconList, value, onChange, onClose, namePrefix = '' }) {
   return (
     <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-10 gap-1">
-      {iconList.map((name) => (
-        <button
-          key={name}
-          type="button"
-          onClick={() => { onChange(name); onClose() }}
-          title={name}
-          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-            value === name
-              ? 'bg-[#EEF2D6] text-[#A8BA32] ring-1 ring-[#C2D64A]'
-              : 'text-[#5C5C57] hover:bg-[#E8E2DB] hover:text-[#5C5C57]'
-          }`}
-        >
-          <DynamicIcon name={name} className="w-5 h-5" />
-        </button>
-      ))}
+      {iconList.map((name) => {
+        const storedName = namePrefix + name
+        return (
+          <button
+            key={name}
+            type="button"
+            onClick={() => { onChange(storedName); onClose() }}
+            title={name}
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
+              value === storedName
+                ? 'bg-[#EEF2D6] text-[#A8BA32] ring-1 ring-[#C2D64A]'
+                : 'text-[#5C5C57] hover:bg-[#E8E2DB] hover:text-[#5C5C57]'
+            }`}
+          >
+            <DynamicIcon name={storedName} className="w-5 h-5" />
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -176,14 +179,14 @@ export default function IconPicker({ value, onChange, onClose }) {
             {searchResults ? (
               <>
                 <p className="text-xs text-[#8E8E89] mb-3">{searchResults.length} results for &ldquo;{search}&rdquo;</p>
-                <IconGrid icons={searchResults} value={value} onChange={onChange} onClose={onClose} />
+                <IconGrid icons={searchResults} value={value} onChange={onChange} onClose={onClose} namePrefix={activeTab === 'material' ? 'material:' : ''} />
                 {searchResults.length === 0 && (
                   <p className="text-center text-sm text-[#8E8E89] py-8">No icons found</p>
                 )}
               </>
             ) : (
               <>
-                <IconGrid icons={displayIcons} value={value} onChange={onChange} onClose={onClose} />
+                <IconGrid icons={displayIcons} value={value} onChange={onChange} onClose={onClose} namePrefix={activeTab === 'material' ? 'material:' : ''} />
                 {displayIcons.length === 0 && (
                   <p className="text-center text-sm text-[#8E8E89] py-8">No icons found</p>
                 )}
