@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../store/boardStore'
 import { useAuthStore } from '../store/authStore'
 import { format, formatDistanceToNow } from 'date-fns'
-import { Plus, Target, LayoutGrid, Users, BarChart3 } from 'lucide-react'
+import { Plus, Target, LayoutGrid, Users, BarChart3, Kanban } from 'lucide-react'
 import DynamicIcon from '../components/board/DynamicIcon'
 import { getGreeting } from '../utils/formatting'
 import { computeBoardSummaries } from '../utils/cardStats'
@@ -108,7 +108,11 @@ export default function DashboardPage() {
                   className="bg-white border border-[#E0DBD5] rounded-xl p-4 text-left cursor-pointer hover:shadow-sm hover:border-[#C4BFB8] transition-all"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <DynamicIcon name={board.icon || 'kanban'} className="w-4 h-4 text-[#5C5C57]" />
+                    {board.icon ? (
+                      <DynamicIcon name={board.icon} className="w-4 h-4 text-[#5C5C57]" />
+                    ) : (
+                      <Kanban className="w-4 h-4 text-[#8E8E89]" />
+                    )}
                     <span className="text-[13px] font-bold text-[#1B1B18] flex-1 truncate">{board.name}</span>
                     <span className="text-[11px] text-[#8E8E89]">{board.totalCards}</span>
                   </div>
