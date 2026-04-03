@@ -75,10 +75,11 @@ export const useAuthStore = create((set, get) => ({
   },
 
   signOut: () => {
-    // Clear state immediately so the UI redirects instantly,
-    // then fire the API call in the background to invalidate server-side
+    // Clear state immediately so the UI redirects instantly.
+    // Use scope:'local' to only clear the local session (no network call),
+    // avoiding conflicts with a subsequent signIn.
     set({ user: null, session: null, profile: null })
-    supabase.auth.signOut().catch((err) => {
+    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
       console.error('Sign out error:', err)
     })
   },
