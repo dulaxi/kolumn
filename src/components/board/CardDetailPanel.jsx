@@ -236,7 +236,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
     <div className={`fixed bg-white border-l border-[#E0DBD5] flex flex-col z-20 ${
       isMobile
         ? 'inset-0'
-        : 'top-16 right-0 bottom-0 w-[340px] lg:w-[420px]'
+        : 'top-16 right-0 bottom-0 w-[340px] lg:w-[420px] animate-slide-in-right'
     }`}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-2.5 border-b border-[#E8E2DB]">
@@ -334,6 +334,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
           <input
             value={title}
             onChange={(e) => { setTitle(e.target.value); scheduleSave() }}
+            maxLength={200}
             className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[#8E8E89] ${card.completed ? 'text-[#8E8E89] line-through' : 'text-[#1B1B18]'}`}
             placeholder="Task name"
           />
@@ -365,6 +366,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             value={description}
             onChange={(e) => { setDescription(e.target.value); scheduleSave() }}
             rows={4}
+            maxLength={5000}
             placeholder="Add details about this task..."
             className="w-full text-sm text-[#5C5C57] rounded-lg px-3 py-2 resize-none border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6] placeholder-[#8E8E89]"
           />

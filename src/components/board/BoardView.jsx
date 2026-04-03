@@ -167,6 +167,17 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         toColumn = findCol(overId)
       }
 
+      // Reject drop if target column is at WIP limit (cross-column moves only)
+      if (toColumn && fromColumn.id !== toColumn.id && toColumn.wip_limit) {
+        const toCards = getColumnCards(toColumn.id)
+        if (toCards.length >= toColumn.wip_limit) {
+          // Revert: persist whatever state we have without the rejected move
+          persistCardPositions([...affectedCardsRef.current])
+          affectedCardsRef.current = new Set()
+          return
+        }
+      }
+
       // Same-column reorder
       if (toColumn && fromColumn.id === toColumn.id) {
         const colCards = getColumnCards(fromColumn.id)

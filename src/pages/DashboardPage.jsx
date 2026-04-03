@@ -53,6 +53,14 @@ export default function DashboardPage() {
     }
   }, [])
 
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center" style={{ height: 'calc(100vh - 7rem)' }}>
+        <div className="text-sm text-[#8E8E89]">Loading dashboard...</div>
+      </div>
+    )
+  }
+
   const quote = QUOTES[getDailyIndex(QUOTES)]
   const boardCount = Object.keys(boards).length
 

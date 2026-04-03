@@ -223,6 +223,8 @@ export default function CreateBoardModal({ onClose }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    autoFocus
+                    maxLength={200}
                     placeholder="e.g. Product Roadmap"
                     className="flex-1 h-10 px-3 text-sm rounded-xl border border-[#E0DBD5] bg-white text-[#1B1B18] placeholder-[#8E8E89] focus:outline-none focus:ring-2 focus:ring-[#C2D64A] focus:border-transparent transition-shadow"
                   />

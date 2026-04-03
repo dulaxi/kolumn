@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { useBoardStore } from './boardStore'
 import { logError } from '../utils/logger'
+import { showToast } from '../utils/toast'
 
 export const useWorkspaceStore = create((set, get) => ({
   invitations: [],
@@ -37,6 +38,7 @@ export const useWorkspaceStore = create((set, get) => ({
 
       if (error) {
         logError('Failed to fetch invitations:', error)
+        showToast.error('Failed to load invitations')
         set({ loading: false })
         return
       }
@@ -139,6 +141,7 @@ export const useWorkspaceStore = create((set, get) => ({
 
       if (error) {
         logError('Failed to accept invitation:', error)
+        showToast.error('Failed to accept invitation')
         return
       }
 
@@ -163,6 +166,7 @@ export const useWorkspaceStore = create((set, get) => ({
 
       if (error) {
         logError('Failed to decline invitation:', error)
+        showToast.error('Failed to decline invitation')
         return
       }
 
@@ -183,6 +187,7 @@ export const useWorkspaceStore = create((set, get) => ({
 
       if (error) {
         logError('Failed to leave board:', error)
+        showToast.error('Failed to leave board')
         return
       }
 

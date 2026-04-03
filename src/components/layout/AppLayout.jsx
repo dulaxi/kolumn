@@ -168,9 +168,13 @@ export default function AppLayout() {
     return () => document.removeEventListener('keydown', handler)
   }, [location.pathname])
 
-  // Match the base path for title
+  // Match the base path for title — on /boards, show the active board name
   const basePath = '/' + (location.pathname.split('/')[1] || '')
-  const title = pageTitles[basePath] || 'Kolumn'
+  const activeBoardId = useBoardStore((s) => s.activeBoardId)
+  const activeBoardName = useBoardStore((s) => s.boards[s.activeBoardId]?.name)
+  const title = basePath === '/boards' && activeBoardName
+    ? activeBoardName
+    : pageTitles[basePath] || 'Kolumn'
 
   return (
     <div className="min-h-screen bg-white">

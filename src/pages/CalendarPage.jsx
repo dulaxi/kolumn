@@ -34,6 +34,7 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const cards = useBoardStore((s) => s.cards)
+  const loading = useBoardStore((s) => s.loading)
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth)
@@ -49,6 +50,14 @@ export default function CalendarPage() {
     () => getCardsForDate(cardsByDate, selectedDay),
     [selectedDay, cardsByDate]
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-7rem)]">
+        <div className="text-sm text-[#8E8E89]">Loading calendar...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-7rem)]">

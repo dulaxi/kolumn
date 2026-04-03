@@ -505,9 +505,14 @@ export const useBoardStore = create((set, get) => ({
     }
   },
 
+  _completingCards: new Set(),
   completeCard: async (cardId) => {
+    // Prevent rapid double-clicks from toggling multiple times
+    if (get()._completingCards.has(cardId)) return
+    get()._completingCards.add(cardId)
+
     const card = get().cards[cardId]
-    if (!card) return
+    if (!card) { get()._completingCards.delete(cardId); return }
 
     const newCompleted = !card.completed
 
@@ -519,6 +524,7 @@ export const useBoardStore = create((set, get) => ({
     }))
 
     const { error } = await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
+    get()._completingCards.delete(cardId)
     if (error) {
       logError('Failed to toggle card completion:', error)
       set((state) => ({
