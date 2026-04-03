@@ -74,13 +74,13 @@ export const useAuthStore = create((set, get) => ({
     return data
   },
 
-  signOut: async () => {
-    try {
-      await supabase.auth.signOut()
-    } catch (err) {
-      console.error('Sign out error:', err)
-    }
+  signOut: () => {
+    // Clear state immediately so the UI redirects instantly,
+    // then fire the API call in the background to invalidate server-side
     set({ user: null, session: null, profile: null })
+    supabase.auth.signOut().catch((err) => {
+      console.error('Sign out error:', err)
+    })
   },
 
   resetPassword: async (email) => {
