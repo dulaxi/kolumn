@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../store/boardStore'
 import { useAuthStore } from '../store/authStore'
@@ -31,10 +31,7 @@ export default function DashboardPage() {
   const cards = useBoardStore((s) => s.cards)
   const loading = useBoardStore((s) => s.loading)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
-  const addBoard = useBoardStore((s) => s.addBoard)
   const profile = useAuthStore((s) => s.profile)
-
-  const [creatingBoard, setCreatingBoard] = useState(false)
   const displayName = profile?.display_name || 'there'
 
   const boardSummaries = useMemo(
@@ -46,18 +43,9 @@ export default function DashboardPage() {
   const quote = QUOTES[getDailyIndex(QUOTES)]
   const boardCount = Object.keys(boards).length
 
-  async function handleNewBoard() {
-    if (creatingBoard) return
-    setCreatingBoard(true)
-    try {
-      const id = await addBoard('New Board')
-      if (id) {
-        setActiveBoard(id)
-        navigate('/boards')
-      }
-    } finally {
-      setCreatingBoard(false)
-    }
+  function handleNewBoard() {
+    navigate('/boards')
+    setTimeout(() => window.dispatchEvent(new CustomEvent('kolumn:create-board')), 100)
   }
 
   return (
@@ -87,11 +75,10 @@ export default function DashboardPage() {
             </p>
             <button
               onClick={handleNewBoard}
-              disabled={creatingBoard}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B1B18] text-white text-sm font-medium rounded-xl hover:bg-[#333] transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B1B18] text-white text-sm font-medium rounded-xl hover:bg-[#333] transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              {creatingBoard ? 'Creating...' : 'Create your first board'}
+              Create your first board
             </button>
           </>
         ) : (
@@ -101,7 +88,7 @@ export default function DashboardPage() {
               Jump into a board, or create a new one.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg w-full mb-6">
-              {boardSummaries.map((board) => (
+              {boardSummaries.slice(0, 4).map((board) => (
                 <button
                   key={board.id}
                   onClick={() => { setActiveBoard(board.id); navigate('/boards') }}
@@ -131,11 +118,10 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={handleNewBoard}
-              disabled={creatingBoard}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#5C5C57] bg-white border border-[#E0DBD5] rounded-xl hover:border-[#C4BFB8] transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#5C5C57] bg-white border border-[#E0DBD5] rounded-xl hover:border-[#C4BFB8] transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              {creatingBoard ? 'Creating...' : 'New Board'}
+              New Board
             </button>
           </>
         )}
