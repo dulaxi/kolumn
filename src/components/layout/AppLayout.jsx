@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import BottomTabBar from './BottomTabBar'
@@ -29,6 +29,7 @@ export default function AppLayout() {
   const font = useSettingsStore((s) => s.font)
   const isDesktop = useIsDesktop()
   const location = useLocation()
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const fetchBoards = useBoardStore((s) => s.fetchBoards)
   const createSampleBoard = useBoardStore((s) => s.createSampleBoard)
@@ -65,7 +66,9 @@ export default function AppLayout() {
         // Create sample board for first-time users
         const boards = useBoardStore.getState().boards
         if (Object.keys(boards).length === 0) {
-          createSampleBoard()
+          createSampleBoard().then((id) => {
+            if (id) navigate('/boards')
+          })
           return
         }
 

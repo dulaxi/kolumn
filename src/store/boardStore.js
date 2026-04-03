@@ -211,17 +211,19 @@ export const useBoardStore = create((set, get) => ({
 
   createSampleBoard: async () => {
     if (localStorage.getItem('kolumn_sample_board_created')) return null
+    // Mark immediately BEFORE any async work to prevent double-creation (React StrictMode)
+    localStorage.setItem('kolumn_sample_board_created', '1')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
-
-    // Mark immediately to prevent concurrent calls from racing
-    localStorage.setItem('kolumn_sample_board_created', '1')
+    if (!user) {
+      localStorage.removeItem('kolumn_sample_board_created')
+      return null
+    }
 
     const boardId = crypto.randomUUID()
     const { error } = await supabase
       .from('boards')
-      .insert({ id: boardId, name: 'My First Project', icon: 'Rocket', owner_id: user.id })
+      .insert({ id: boardId, name: 'Getting Started with Kolumn', icon: 'Target', owner_id: user.id })
 
     if (error) {
       localStorage.removeItem('kolumn_sample_board_created')
@@ -236,7 +238,7 @@ export const useBoardStore = create((set, get) => ({
 
     if (!board) return null
 
-    const columnTitles = ['To Do', 'In Progress', 'Review', 'Done']
+    const columnTitles = ['Try These', 'In Progress', 'Almost There', 'Done']
     const { data: cols } = await supabase
       .from('columns')
       .insert(columnTitles.map((title, i) => ({ board_id: board.id, title, position: i })))
@@ -248,21 +250,23 @@ export const useBoardStore = create((set, get) => ({
     const assignee = profile?.display_name || ''
     const today = new Date()
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
-    const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7)
     const fmtDate = (d) => d.toISOString().split('T')[0] + 'T23:59:59'
 
-    const toDoCol = cols.find((c) => c.title === 'To Do')
+    const tryCol = cols.find((c) => c.title === 'Try These')
     const inProgressCol = cols.find((c) => c.title === 'In Progress')
-    const reviewCol = cols.find((c) => c.title === 'Review')
+    const almostCol = cols.find((c) => c.title === 'Almost There')
     const doneCol = cols.find((c) => c.title === 'Done')
 
     const sampleCards = [
-      { column_id: toDoCol.id, position: 0, task_number: 1, global_task_number: 1, title: 'Set up project structure', description: 'Organize the codebase and create initial folder structure', assignee_name: assignee, priority: 'high', due_date: fmtDate(tomorrow), labels: [{ text: 'Setup', color: 'blue' }], checklist: [{ text: 'Create folder structure', checked: true }, { text: 'Install dependencies', checked: false }, { text: 'Configure environment', checked: false }] },
-      { column_id: toDoCol.id, position: 1, task_number: 2, global_task_number: 2, title: 'Design the landing page', description: 'Create wireframes and mockups for the main landing page', assignee_name: assignee, priority: 'medium', due_date: fmtDate(nextWeek), labels: [{ text: 'Design', color: 'purple' }] },
-      { column_id: toDoCol.id, position: 2, task_number: 3, global_task_number: 3, title: 'Write API documentation', priority: 'low', labels: [{ text: 'Docs', color: 'green' }] },
-      { column_id: inProgressCol.id, position: 0, task_number: 4, global_task_number: 4, title: 'Build authentication flow', description: 'Implement sign up, sign in, and password reset', assignee_name: assignee, priority: 'high', due_date: fmtDate(today), labels: [{ text: 'Feature', color: 'blue' }] },
-      { column_id: reviewCol.id, position: 0, task_number: 5, global_task_number: 5, title: 'Review onboarding screens', assignee_name: assignee, priority: 'medium', labels: [{ text: 'Review', color: 'yellow' }] },
-      { column_id: doneCol.id, position: 0, task_number: 6, global_task_number: 6, title: 'Create project board', completed: true, priority: 'low', labels: [{ text: 'Setup', color: 'blue' }] },
+      { column_id: tryCol.id, position: 0, task_number: 1, global_task_number: 1, title: 'Drag me to In Progress →', description: 'Click and drag cards between columns to update their status. Try moving this card to the next column.', assignee_name: assignee, priority: 'high', due_date: fmtDate(tomorrow), labels: [{ text: 'Start Here', color: 'blue' }] },
+      { column_id: tryCol.id, position: 1, task_number: 2, global_task_number: 2, title: 'Click me to see the detail panel', description: 'Cards expand into a detail panel where you can edit everything — description, labels, due dates, checklists, and more.', labels: [{ text: 'Explore', color: 'purple' }] },
+      { column_id: tryCol.id, position: 2, task_number: 3, global_task_number: 3, title: 'Try checking off items below', labels: [{ text: 'Checklist', color: 'green' }], checklist: [{ text: 'Check this item off', done: true }, { text: 'Then this one', done: false }, { text: 'And this one too', done: false }] },
+      { column_id: tryCol.id, position: 3, task_number: 4, global_task_number: 4, title: 'Create your own card', description: 'Hit the + button at the bottom of any column, or press N anywhere on the board.', labels: [{ text: 'Your Turn', color: 'yellow' }] },
+      { column_id: inProgressCol.id, position: 0, task_number: 5, global_task_number: 5, title: 'Invite a teammate', description: 'Click "Share" in the top bar to invite someone by email. You can collaborate on boards in real time.', assignee_name: assignee, priority: 'medium', labels: [{ text: 'Collaborate', color: 'pink' }] },
+      { column_id: inProgressCol.id, position: 1, task_number: 6, global_task_number: 6, title: 'Set a due date on this card', description: 'Open this card and pick a date — it will show up on the calendar and dashboard timeline.', labels: [{ text: 'Your Turn', color: 'yellow' }] },
+      { column_id: almostCol.id, position: 0, task_number: 7, global_task_number: 7, title: 'Visit the Dashboard', description: 'Check out your stats, calendar heatmap, and daily streak. It updates as you complete tasks.', labels: [{ text: 'Explore', color: 'purple' }] },
+      { column_id: almostCol.id, position: 1, task_number: 8, global_task_number: 8, title: 'Add a label to any card', description: 'Open a card, scroll to Labels, pick a color and type a name. Labels help you filter tasks.', labels: [{ text: 'Feature', color: 'blue' }, { text: 'Labels', color: 'green' }, { text: 'Like These', color: 'red' }] },
+      { column_id: doneCol.id, position: 0, task_number: 9, global_task_number: 9, title: 'Sign up for Kolumn', completed: true, labels: [{ text: 'Setup', color: 'green' }] },
     ]
 
     const cardInserts = sampleCards.map((c) => ({
@@ -283,7 +287,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { data: cards } = await supabase.from('cards').insert(cardInserts).select()
 
-    await supabase.from('boards').update({ next_task_number: 7 }).eq('id', board.id)
+    await supabase.from('boards').update({ next_task_number: 10 }).eq('id', board.id)
 
     // Update local state
     const columnMap = {}
@@ -293,7 +297,7 @@ export const useBoardStore = create((set, get) => ({
 
     localStorage.setItem(ACTIVE_BOARD_KEY, board.id)
     set((state) => ({
-      boards: { ...state.boards, [board.id]: { ...board, next_task_number: 7 } },
+      boards: { ...state.boards, [board.id]: { ...board, next_task_number: 10 } },
       columns: { ...state.columns, ...columnMap },
       cards: { ...state.cards, ...cardMap },
       activeBoardId: board.id,
