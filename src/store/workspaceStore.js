@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { useBoardStore } from './boardStore'
+import { logError } from '../utils/logger'
 
 export const useWorkspaceStore = create((set, get) => ({
   invitations: [],
@@ -35,14 +36,14 @@ export const useWorkspaceStore = create((set, get) => ({
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.error('Failed to fetch invitations:', error)
+        logError('Failed to fetch invitations:', error)
         set({ loading: false })
         return
       }
 
       set({ invitations: data || [], loading: false })
     } catch (err) {
-      console.error('fetchInvitations failed:', err)
+      logError('fetchInvitations failed:', err)
       set({ loading: false })
     }
   },
@@ -70,7 +71,7 @@ export const useWorkspaceStore = create((set, get) => ({
         .neq('role', 'owner')
 
       if (memberError) {
-        console.error('Failed to fetch shared boards:', memberError)
+        logError('Failed to fetch shared boards:', memberError)
         set({ loading: false })
         return
       }
@@ -95,8 +96,8 @@ export const useWorkspaceStore = create((set, get) => ({
           .in('board_id', boardIds),
       ])
 
-      if (profilesRes.error) console.error('Failed to fetch owner profiles:', profilesRes.error)
-      if (countsRes.error) console.error('Failed to fetch member counts:', countsRes.error)
+      if (profilesRes.error) logError('Failed to fetch owner profiles:', profilesRes.error)
+      if (countsRes.error) logError('Failed to fetch member counts:', countsRes.error)
 
       // Build lookup maps
       const ownerMap = {}
@@ -122,7 +123,7 @@ export const useWorkspaceStore = create((set, get) => ({
 
       set({ sharedBoards, loading: false })
     } catch (err) {
-      console.error('fetchSharedBoards failed:', err)
+      logError('fetchSharedBoards failed:', err)
       set({ loading: false })
     }
   },
@@ -137,7 +138,7 @@ export const useWorkspaceStore = create((set, get) => ({
       })
 
       if (error) {
-        console.error('Failed to accept invitation:', error)
+        logError('Failed to accept invitation:', error)
         return
       }
 
@@ -147,7 +148,7 @@ export const useWorkspaceStore = create((set, get) => ({
         useBoardStore.getState().fetchBoards(),
       ])
     } catch (err) {
-      console.error('acceptInvitation failed:', err)
+      logError('acceptInvitation failed:', err)
     }
   },
 
@@ -161,13 +162,13 @@ export const useWorkspaceStore = create((set, get) => ({
       })
 
       if (error) {
-        console.error('Failed to decline invitation:', error)
+        logError('Failed to decline invitation:', error)
         return
       }
 
       await get().fetchInvitations()
     } catch (err) {
-      console.error('declineInvitation failed:', err)
+      logError('declineInvitation failed:', err)
     }
   },
 
@@ -181,7 +182,7 @@ export const useWorkspaceStore = create((set, get) => ({
       })
 
       if (error) {
-        console.error('Failed to leave board:', error)
+        logError('Failed to leave board:', error)
         return
       }
 
@@ -190,7 +191,7 @@ export const useWorkspaceStore = create((set, get) => ({
         useBoardStore.getState().fetchBoards(),
       ])
     } catch (err) {
-      console.error('leaveBoard failed:', err)
+      logError('leaveBoard failed:', err)
     }
   },
 }))

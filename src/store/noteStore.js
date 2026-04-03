@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { logError } from '../utils/logger'
 
 export const useNoteStore = create((set, get) => ({
   notes: {},
@@ -49,7 +50,7 @@ export const useNoteStore = create((set, get) => ({
     }))
     const { error } = await supabase.from('notes').update(updates).eq('id', noteId)
     if (error) {
-      console.error('Failed to update note:', error)
+      logError('Failed to update note:', error)
       // Rollback optimistic update
       if (prevNote) {
         set((state) => ({
@@ -67,7 +68,7 @@ export const useNoteStore = create((set, get) => ({
     })
     const { error } = await supabase.from('notes').delete().eq('id', noteId)
     if (error) {
-      console.error('Failed to delete note:', error)
+      logError('Failed to delete note:', error)
       // Rollback — restore the note
       if (prevNote) {
         set((state) => ({

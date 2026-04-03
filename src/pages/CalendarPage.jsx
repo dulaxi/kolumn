@@ -181,8 +181,8 @@ export default function CalendarPage() {
                     )}
                     {card.labels && card.labels.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-0.5">
-                        {card.labels.map((label, idx) => (
-                          <span key={idx} className="text-[10px] font-medium text-[#5C5C57] bg-[#E8E2DB] rounded-full px-2 py-0.5">
+                        {card.labels.map((label) => (
+                          <span key={`${label.text}-${label.color}`} className="text-[10px] font-medium text-[#5C5C57] bg-[#E8E2DB] rounded-full px-2 py-0.5">
                             {label.text}
                           </span>
                         ))}

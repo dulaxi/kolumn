@@ -57,6 +57,7 @@ export default function CardDetailComments({
                   <button
                     type="button"
                     onClick={() => deleteComment(comment.id, cardId)}
+                    aria-label="Delete comment"
                     className="opacity-0 group-hover:opacity-100 text-[#8E8E89] hover:text-[#7A5C44] transition-all"
                   >
                     <Trash2 className="w-3 h-3" />

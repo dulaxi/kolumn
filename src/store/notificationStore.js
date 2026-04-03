@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { logError } from '../utils/logger'
 
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
@@ -13,7 +14,7 @@ export const useNotificationStore = create((set, get) => ({
       .limit(30)
 
     if (error) {
-      console.error('Failed to fetch notifications:', error)
+      logError('Failed to fetch notifications:', error)
       return
     }
 

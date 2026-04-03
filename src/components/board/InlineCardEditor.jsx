@@ -210,7 +210,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
       <div className="flex flex-wrap items-center gap-1">
         {labels.map((label, idx) => (
           <span
-            key={idx}
+            key={`${label.text}-${label.color}`}
             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
               LABEL_COLOR_CLASSES[label.color] || LABEL_COLOR_CLASSES.gray
             }`}
@@ -274,7 +274,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           </div>
         )}
         {checklist.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-1.5 group">
+          <div key={`${item.text}-${idx}`} className="flex items-center gap-1.5 group">
             <button
               type="button"
               onClick={() => {

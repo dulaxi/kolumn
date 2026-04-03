@@ -62,9 +62,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         {/* Labels row */}
         {labels?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {labels.map((label, idx) => (
+            {labels.map((label) => (
               <span
-                key={idx}
+                key={`${label.text}-${label.color}`}
                 className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   LABEL_BG[label.color] || LABEL_BG.gray
                 }`}
@@ -83,6 +83,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
               e.stopPropagation()
               if (onComplete) onComplete(card.id)
             }}
+            aria-label={completed ? 'Mark as incomplete' : 'Mark as complete'}
             className="shrink-0"
           >
             <CheckCircle2 className={`w-4 h-4 transition-colors ${completed ? 'text-[#A8BA32]' : 'text-[#8E8E89] hover:text-[#C2D64A]'}`} />
@@ -182,7 +183,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
             </div>
             <div className="space-y-1">
               {checklist.map((item, idx) => (
-                <label key={idx} className="flex items-center gap-2 py-0.5 cursor-pointer group">
+                <label key={`${item.text}-${idx}`} className="flex items-center gap-2 py-0.5 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={item.done}

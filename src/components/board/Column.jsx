@@ -7,6 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import { filterCards } from '../../utils/cardFilters'
+import { showToast } from '../../utils/toast'
 import ConfirmModal from './ConfirmModal'
 import { useTemplateStore } from '../../store/templateStore'
 
@@ -96,6 +97,11 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
 
   const handleCreateCard = async (template) => {
     if (creating) return
+    // Enforce WIP limit
+    if (wipLimit && columnCards.length >= wipLimit) {
+      showToast.warn(`Column is at its WIP limit (${wipLimit})`)
+      return
+    }
     setCreating(true)
     const today = new Date().toISOString().split('T')[0] + 'T23:59:59'
     const cardData = template
@@ -275,7 +281,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-[#E0DBD5] rounded-xl shadow-lg z-30 overflow-hidden">
             <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#E8E2DB]">
               <span className="text-[10px] font-semibold text-[#8E8E89] uppercase tracking-wider">Templates</span>
-              <button type="button" onClick={() => setShowTemplates(false)} className="text-[#C4BFB8] hover:text-[#5C5C57]">
+              <button type="button" onClick={() => setShowTemplates(false)} aria-label="Close templates" className="text-[#C4BFB8] hover:text-[#5C5C57]">
                 <X className="w-3 h-3" />
               </button>
             </div>
@@ -292,6 +298,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
                   <button
                     type="button"
                     onClick={() => deleteTemplate(t.id)}
+                    aria-label={`Delete template ${t.name}`}
                     className="p-1 mr-1 text-[#C4BFB8] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 className="w-3 h-3" />

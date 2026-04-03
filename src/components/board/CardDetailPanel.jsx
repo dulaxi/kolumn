@@ -25,8 +25,8 @@ export default function CardDetailPanel({ cardId, onClose }) {
   const archiveCard = useBoardStore((s) => s.archiveCard)
   const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
   const completeCard = useBoardStore((s) => s.completeCard)
-  const boards = useBoardStore((s) => s.boards)
-  const allColumns = useBoardStore((s) => s.columns)
+  const boardName = useBoardStore((s) => s.boards[s.cards[cardId]?.board_id]?.name || '—')
+  const statusName = useBoardStore((s) => s.columns[s.cards[cardId]?.column_id]?.title || '—')
   const profile = useAuthStore((s) => s.profile)
   const user = useAuthStore((s) => s.user)
   const font = useSettingsStore((s) => s.font)
@@ -162,11 +162,6 @@ export default function CardDetailPanel({ cardId, onClose }) {
 
   if (!card) return null
 
-  const board = boards[card.board_id]
-  const boardName = board?.name || '—'
-  const column = allColumns[card.column_id]
-  const statusName = column?.title || '—'
-
   const handleSave = () => {
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
     isDirtyRef.current = false
@@ -250,6 +245,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             <button
               type="button"
               onClick={handleSaveAndClose}
+              aria-label="Back"
               className="p-1.5 rounded-lg hover:bg-[#E8E2DB]"
             >
               <ArrowLeft className="w-5 h-5 text-[#5C5C57]" />
@@ -303,6 +299,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             <button
               type="button"
               onClick={handleSaveAndClose}
+              aria-label="Close panel"
               className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
             >
               <X className="w-4 h-4" />
@@ -319,6 +316,7 @@ export default function CardDetailPanel({ cardId, onClose }) {
             <button
               type="button"
               onClick={() => completeCard(cardId)}
+              aria-label={card.completed ? 'Mark as incomplete' : 'Mark as complete'}
               className="shrink-0"
             >
               <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-[#A8BA32]' : 'text-[#8E8E89] hover:text-[#C2D64A]'}`} />

@@ -40,7 +40,7 @@ export default function CardDetailChecklist({ checklist, onToggle, onRemove, onA
 
       <div className="space-y-1">
         {checklist.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2 group py-0.5">
+          <div key={`${item.text}-${idx}`} className="flex items-center gap-2 group py-0.5">
             <input
               type="checkbox"
               checked={item.done}

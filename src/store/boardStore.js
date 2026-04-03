@@ -4,8 +4,10 @@ import toast from 'react-hot-toast'
 import { showToast } from '../utils/toast'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
+import { useNotificationStore } from './notificationStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
 import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
+import { logError } from '../utils/logger'
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
@@ -79,7 +81,7 @@ async function logActivity(cardId, action, detail) {
     })
   } catch (err) {
     // Activity logging should never break the main flow
-    console.error('logActivity failed:', err)
+    logError('logActivity failed:', err)
   }
 }
 
@@ -108,9 +110,9 @@ export const useBoardStore = create((set, get) => ({
         supabase.from('cards').select('*').order('position'),
       ])
 
-      if (boardsRes.error) console.error('Failed to fetch boards:', boardsRes.error)
-      if (columnsRes.error) console.error('Failed to fetch columns:', columnsRes.error)
-      if (cardsRes.error) console.error('Failed to fetch cards:', cardsRes.error)
+      if (boardsRes.error) logError('Failed to fetch boards:', boardsRes.error)
+      if (columnsRes.error) logError('Failed to fetch columns:', columnsRes.error)
+      if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
 
       const boardMap = {}
       ;(boardsRes.data || []).forEach((b) => { boardMap[b.id] = b })
@@ -136,7 +138,7 @@ export const useBoardStore = create((set, get) => ({
         loading: false,
       })
     } catch (err) {
-      console.error('fetchBoards failed:', err)
+      logError('fetchBoards failed:', err)
       if (!navigator.onLine) {
         showToast.warn('You\'re offline — showing cached data')
       } else {
@@ -215,7 +217,7 @@ export const useBoardStore = create((set, get) => ({
     }))
     const { error } = await supabase.from('boards').update({ icon }).eq('id', boardId)
     if (error) {
-      console.error('Failed to update board icon:', error)
+      logError('Failed to update board icon:', error)
       if (prevBoard) set((state) => ({ boards: { ...state.boards, [boardId]: prevBoard } }))
     }
   },
@@ -227,7 +229,7 @@ export const useBoardStore = create((set, get) => ({
     }))
     const { error } = await supabase.from('boards').update({ name }).eq('id', boardId)
     if (error) {
-      console.error('Failed to rename board:', error)
+      logError('Failed to rename board:', error)
       if (prevBoard) set((state) => ({ boards: { ...state.boards, [boardId]: prevBoard } }))
       showToast.error('Failed to rename board')
     }
@@ -270,17 +272,6 @@ export const useBoardStore = create((set, get) => ({
     }
   },
 
-  // Board members (kept as simple name strings on cards for display,
-  // actual members managed through board_members table)
-  addBoardMember: async (boardId, name) => {
-    // For now, this just adds name as assignee_name on the card level
-    // Real member management is in BoardShareModal
-  },
-
-  removeBoardMember: async (boardId, name) => {
-    // Handled through board_members table
-  },
-
   // ============================================================
   // COLUMN ACTIONS
   // ============================================================
@@ -298,7 +289,7 @@ export const useBoardStore = create((set, get) => ({
       .single()
 
     if (error) {
-      console.error('Failed to add column:', error)
+      logError('Failed to add column:', error)
       showToast.error('Failed to add section')
       return
     }
@@ -317,7 +308,7 @@ export const useBoardStore = create((set, get) => ({
     }))
     const { error } = await supabase.from('columns').update({ title }).eq('id', columnId)
     if (error) {
-      console.error('Failed to rename column:', error)
+      logError('Failed to rename column:', error)
       if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
       showToast.error('Failed to rename section')
     }
@@ -331,7 +322,7 @@ export const useBoardStore = create((set, get) => ({
     }))
     const { error } = await supabase.from('columns').update({ wip_limit: value }).eq('id', columnId)
     if (error) {
-      console.error('Failed to update WIP limit:', error)
+      logError('Failed to update WIP limit:', error)
       if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
     }
   },
@@ -371,7 +362,7 @@ export const useBoardStore = create((set, get) => ({
     const state = get()
     const board = state.boards[boardId]
     if (!board) {
-      console.error('addCard: board not found', boardId)
+      logError('addCard: board not found', boardId)
       return null
     }
 
@@ -409,11 +400,11 @@ export const useBoardStore = create((set, get) => ({
       ])
 
       if (numRes.error) {
-        console.error('Failed to increment task number:', numRes.error)
+        logError('Failed to increment task number:', numRes.error)
       }
 
       if (cardRes.error || !cardRes.data) {
-        console.error('Failed to create card:', cardRes.error)
+        logError('Failed to create card:', cardRes.error)
         showToast.error('Failed to create task')
         return null
       }
@@ -430,7 +421,7 @@ export const useBoardStore = create((set, get) => ({
       logActivity(card.id, 'created', null)
       return card.id
     } catch (err) {
-      console.error('addCard failed:', err)
+      logError('addCard failed:', err)
       showToast.error('Failed to create task')
       return null
     }
@@ -467,7 +458,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { error } = await supabase.from('cards').update(dbUpdates).eq('id', cardId)
     if (error) {
-      console.error('Failed to update card:', error)
+      logError('Failed to update card:', error)
       // Rollback optimistic update
       if (prevCard) {
         set((state) => ({
@@ -483,6 +474,27 @@ export const useBoardStore = create((set, get) => ({
         const from = prevCard.assignee_name || 'unassigned'
         const to = dbUpdates.assignee_name || 'unassigned'
         logActivity(cardId, 'updated_assignee', `${from} → ${to}`)
+
+        // Notify the newly assigned user
+        if (dbUpdates.assignee_name) {
+          const { data: assigneeProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('display_name', dbUpdates.assignee_name)
+            .single()
+          if (assigneeProfile) {
+            const actorProfile = useAuthStore.getState().profile
+            useNotificationStore.getState().notify({
+              userId: assigneeProfile.id,
+              type: 'assignment',
+              title: 'assigned you a task',
+              body: dbUpdates.title || prevCard.title,
+              cardId,
+              boardId: prevCard.board_id,
+              actorName: actorProfile?.display_name || 'Someone',
+            })
+          }
+        }
       }
       if ('due_date' in dbUpdates && dbUpdates.due_date !== prevCard.due_date) {
         logActivity(cardId, 'updated_due_date', dbUpdates.due_date ? dbUpdates.due_date.split('T')[0] : 'removed')
@@ -508,7 +520,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { error } = await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
     if (error) {
-      console.error('Failed to toggle card completion:', error)
+      logError('Failed to toggle card completion:', error)
       set((state) => ({
         cards: { ...state.cards, [cardId]: card },
       }))
@@ -530,6 +542,16 @@ export const useBoardStore = create((set, get) => ({
     const shouldDelete = await undoableDelete('Task deleted — undo?')
 
     if (shouldDelete) {
+      // Clean up storage files BEFORE cascade deletes card_attachments rows
+      const { data: attachments } = await supabase
+        .from('card_attachments')
+        .select('storage_path')
+        .eq('card_id', cardId)
+      if (attachments?.length) {
+        const paths = attachments.map((a) => a.storage_path)
+        supabase.storage.from('attachments').remove(paths).catch(() => {})
+      }
+
       const { error } = await supabase.from('cards').delete().eq('id', cardId)
       if (error) {
         set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
@@ -552,7 +574,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { error } = await supabase.from('cards').update({ archived: true }).eq('id', cardId)
     if (error) {
-      console.error('Failed to archive card:', error)
+      logError('Failed to archive card:', error)
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
       }))
@@ -572,7 +594,7 @@ export const useBoardStore = create((set, get) => ({
 
     const { error } = await supabase.from('cards').update({ archived: false }).eq('id', cardId)
     if (error) {
-      console.error('Failed to unarchive card:', error)
+      logError('Failed to unarchive card:', error)
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
       }))
@@ -615,7 +637,7 @@ export const useBoardStore = create((set, get) => ({
         // Update positions in DB (parallel to minimize race window)
         await Promise.all(dbBatch.map(({ id, position }) =>
           supabase.from('cards').update({ position }).eq('id', id)
-            .then(({ error }) => { if (error) console.error('Failed to update card position:', error) })
+            .then(({ error }) => { if (error) logError('Failed to update card position:', error) })
         ))
       }
     } else {
@@ -651,7 +673,7 @@ export const useBoardStore = create((set, get) => ({
       // Update positions in DB (parallel to minimize race window)
       await Promise.all(dbBatch.map(({ id, ...rest }) =>
         supabase.from('cards').update(rest).eq('id', id)
-          .then(({ error }) => { if (error) console.error('Failed to update card position:', error) })
+          .then(({ error }) => { if (error) logError('Failed to update card position:', error) })
       ))
 
       // Log the column move
@@ -727,7 +749,7 @@ export const useBoardStore = create((set, get) => ({
     // Parallel writes to minimize race window
     await Promise.all(writes.map(({ id, ...rest }) =>
       supabase.from('cards').update(rest).eq('id', id)
-        .then(({ error }) => { if (error) console.error('Failed to persist card position:', error) })
+        .then(({ error }) => { if (error) logError('Failed to persist card position:', error) })
     ))
 
     // Refetch cards for the active board to recover any realtime updates
@@ -789,7 +811,7 @@ export const useBoardStore = create((set, get) => ({
       .order('created_at', { ascending: true })
 
     if (error) {
-      console.error('Failed to fetch comments:', error)
+      logError('Failed to fetch comments:', error)
       return
     }
 
@@ -815,7 +837,7 @@ export const useBoardStore = create((set, get) => ({
       .single()
 
     if (error) {
-      console.error('Failed to add comment:', error)
+      logError('Failed to add comment:', error)
       return
     }
 
@@ -836,7 +858,7 @@ export const useBoardStore = create((set, get) => ({
       .limit(50)
 
     if (error) {
-      console.error('Failed to fetch activity:', error)
+      logError('Failed to fetch activity:', error)
       return
     }
 
@@ -852,7 +874,7 @@ export const useBoardStore = create((set, get) => ({
       .eq('id', commentId)
 
     if (error) {
-      console.error('Failed to delete comment:', error)
+      logError('Failed to delete comment:', error)
       return
     }
 
@@ -875,7 +897,7 @@ export const useBoardStore = create((set, get) => ({
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Failed to fetch attachments:', error)
+      logError('Failed to fetch attachments:', error)
       return
     }
 
@@ -909,7 +931,7 @@ export const useBoardStore = create((set, get) => ({
       .upload(storagePath, file)
 
     if (uploadError) {
-      console.error('Failed to upload file:', uploadError)
+      logError('Failed to upload file:', uploadError)
       showToast.error('Failed to upload file')
       return null
     }
@@ -929,7 +951,7 @@ export const useBoardStore = create((set, get) => ({
       .single()
 
     if (error) {
-      console.error('Failed to save attachment metadata:', error)
+      logError('Failed to save attachment metadata:', error)
       return null
     }
 
@@ -945,23 +967,14 @@ export const useBoardStore = create((set, get) => ({
   },
 
   deleteAttachment: async (attachmentId, cardId, storagePath) => {
-    // Remove from storage
-    const { error: storageError } = await supabase.storage
-      .from('attachments')
-      .remove([storagePath])
-
-    if (storageError) {
-      console.error('Failed to delete file from storage:', storageError)
-    }
-
-    // Remove metadata
+    // Remove metadata first (authoritative), then storage (best-effort)
     const { error } = await supabase
       .from('card_attachments')
       .delete()
       .eq('id', attachmentId)
 
     if (error) {
-      console.error('Failed to delete attachment:', error)
+      logError('Failed to delete attachment:', error)
       return
     }
 
@@ -971,6 +984,9 @@ export const useBoardStore = create((set, get) => ({
         [cardId]: (state.attachments[cardId] || []).filter((a) => a.id !== attachmentId),
       },
     }))
+
+    // Best-effort storage cleanup (metadata is already gone, so no orphaned records)
+    supabase.storage.from('attachments').remove([storagePath]).catch(() => {})
   },
 
   getAttachmentUrl: async (storagePath) => {
@@ -979,7 +995,7 @@ export const useBoardStore = create((set, get) => ({
       .createSignedUrl(storagePath, 3600) // 1 hour expiry
 
     if (error) {
-      console.error('Failed to get signed URL:', error)
+      logError('Failed to get signed URL:', error)
       return null
     }
     return data.signedUrl
@@ -1084,7 +1100,7 @@ export const useBoardStore = create((set, get) => ({
       })
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR') {
-          console.error('Realtime boards subscription error:', err)
+          logError('Realtime boards subscription error:', err)
           showToast.warn('Live updates disconnected — refresh to resync')
         }
       })
@@ -1123,10 +1139,10 @@ export const useBoardStore = create((set, get) => ({
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR') {
-            console.error('Realtime board detail subscription error:', err)
+            logError('Realtime board detail subscription error:', err)
           }
           if (status === 'TIMED_OUT') {
-            console.error('Realtime board detail subscription timed out')
+            logError('Realtime board detail subscription timed out')
             showToast.warn('Live updates timed out — refresh to resync')
           }
         })

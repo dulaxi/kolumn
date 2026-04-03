@@ -34,7 +34,6 @@ export default function CardDetailFields({
   renderAvatar, boardMemberNames, boardName, statusName,
 }) {
   const updateCard = useBoardStore((s) => s.updateCard)
-  const addBoardMember = useBoardStore((s) => s.addBoardMember)
 
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showPriorityPicker, setShowPriorityPicker] = useState(false)
@@ -174,7 +173,7 @@ export default function CardDetailFields({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && showAddOption) {
                       const name = assigneeSearch.trim()
-                      addBoardMember(card.board_id, name)
+
                       setAssignee(name)
                       setShowAssigneePicker(false)
                       setAssigneeSearch('')
@@ -238,7 +237,7 @@ export default function CardDetailFields({
                     type="button"
                     onClick={() => {
                       const name = assigneeSearch.trim()
-                      addBoardMember(card.board_id, name)
+
                       setAssignee(name)
                       setShowAssigneePicker(false)
                       setAssigneeSearch('')
@@ -440,7 +439,7 @@ export default function CardDetailFields({
             )}
             {labels.map((label, idx) => (
               <span
-                key={idx}
+                key={`${label.text}-${label.color}`}
                 className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                   LABEL_BG[label.color] || LABEL_BG.gray
                 }`}

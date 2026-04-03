@@ -162,6 +162,7 @@ export default function Sidebar() {
               </button>
               <button
                 onClick={() => setBoardsOpen(!boardsOpen)}
+                aria-label={boardsOpen ? 'Collapse boards' : 'Expand boards'}
                 className="p-1.5 mr-1 rounded-lg hover:bg-[#E0DBD5] transition-colors cursor-pointer"
               >
                 {boardsOpen ? (
@@ -238,6 +239,8 @@ export default function Sidebar() {
                       </span>
                       <span className="flex items-center gap-0.5 shrink-0">
                         <Trash2
+                          role="button"
+                          aria-label={`Delete board ${board.name}`}
                           className="w-3.5 h-3.5 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
                           onClick={(e) => handleDeleteBoard(e, board.id)}
                         />
@@ -407,6 +410,7 @@ export default function Sidebar() {
         {isDesktop && (
           <button
             onClick={toggle}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors w-full ${
               collapsed ? 'justify-center' : ''
             }`}

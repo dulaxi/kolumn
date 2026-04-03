@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { logError } from '../utils/logger'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -15,17 +16,17 @@ export const useAuthStore = create((set, get) => ({
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       if (error) {
-        console.error('Failed to get session:', error)
+        logError('Failed to get session:', error)
       } else if (session) {
         set({ user: session.user, session })
         try {
           await get().fetchProfile()
         } catch (profileErr) {
-          console.error('Failed to fetch profile:', profileErr)
+          logError('Failed to fetch profile:', profileErr)
         }
       }
     } catch (err) {
-      console.error('Auth initialization failed:', err)
+      logError('Auth initialization failed:', err)
     } finally {
       set({ loading: false })
     }
@@ -41,7 +42,7 @@ export const useAuthStore = create((set, get) => ({
         try {
           await get().fetchProfile()
         } catch (err) {
-          console.error('Failed to fetch profile on auth change:', err)
+          logError('Failed to fetch profile on auth change:', err)
         }
       } else {
         set({ profile: null })
@@ -97,7 +98,7 @@ export const useAuthStore = create((set, get) => ({
   signOut: () => {
     set({ user: null, session: null, profile: null })
     supabase.auth.signOut({ scope: 'local' }).catch((err) => {
-      console.error('Sign out error:', err)
+      logError('Sign out error:', err)
     })
   },
 

@@ -217,6 +217,7 @@ export default function Header({ title }) {
           <button
             type="button"
             onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
             className="p-1.5 -ml-1.5 rounded-lg text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
           >
             <LayoutGrid className="w-[18px] h-[18px]" />
@@ -395,6 +396,7 @@ export default function Header({ title }) {
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="User menu"
           className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${
             isDesktop
               ? profile?.icon ? `${profile.color === 'bg-[#8E8E89]' ? 'text-[#1B1B18]' : 'text-white'} ${profile.color || 'bg-[#E0DBD5]'}` : 'bg-[#E8E2DB]'
