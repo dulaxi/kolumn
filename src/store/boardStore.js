@@ -8,7 +8,6 @@ import { addRecurrenceInterval } from '../utils/dateUtils'
 import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
-let _creatingSampleBoard = false // in-memory guard against StrictMode double-fire
 
 // Rate limiters for mutation actions
 const cardCreateLimiter = createRateLimiter(10, 10000)   // 10 cards per 10s
@@ -207,104 +206,6 @@ export const useBoardStore = create((set, get) => ({
     })
 
     showToast.success(`Board "${name}" created`)
-    return board.id
-  },
-
-  createSampleBoard: async () => {
-    if (_creatingSampleBoard) return null
-    _creatingSampleBoard = true
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { _creatingSampleBoard = false; return null }
-
-    const flagKey = `kolumn_sample_board_created_${user.id}`
-    if (localStorage.getItem(flagKey)) { _creatingSampleBoard = false; return null }
-    localStorage.setItem(flagKey, '1')
-
-    const boardId = crypto.randomUUID()
-    const { error } = await supabase
-      .from('boards')
-      .insert({ id: boardId, name: 'Getting Started', icon: 'Target', owner_id: user.id })
-
-    if (error) {
-      localStorage.removeItem(flagKey)
-      return null
-    }
-
-    const { data: board } = await supabase
-      .from('boards')
-      .select()
-      .eq('id', boardId)
-      .single()
-
-    if (!board) return null
-
-    const columnTitles = ['Try These', 'In Progress', 'Almost There', 'Done']
-    const { data: cols } = await supabase
-      .from('columns')
-      .insert(columnTitles.map((title, i) => ({ board_id: board.id, title, position: i })))
-      .select()
-
-    if (!cols || cols.length === 0) return board.id
-
-    const profile = useAuthStore.getState().profile
-    const assignee = profile?.display_name || ''
-    const today = new Date()
-    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
-    const fmtDate = (d) => d.toISOString().split('T')[0] + 'T23:59:59'
-
-    const tryCol = cols.find((c) => c.title === 'Try These')
-    const inProgressCol = cols.find((c) => c.title === 'In Progress')
-    const almostCol = cols.find((c) => c.title === 'Almost There')
-    const doneCol = cols.find((c) => c.title === 'Done')
-
-    const sampleCards = [
-      { column_id: tryCol.id, position: 0, task_number: 1, global_task_number: 1, title: 'Drag me to In Progress →', description: 'Click and drag cards between columns to update their status. Try moving this card to the next column.', assignee_name: assignee, priority: 'high', due_date: fmtDate(tomorrow), icon: 'GripVertical', labels: [{ text: 'Start Here', color: 'blue' }] },
-      { column_id: tryCol.id, position: 1, task_number: 2, global_task_number: 2, title: 'Click me to see the detail panel', description: 'Cards expand into a detail panel where you can edit everything — description, labels, due dates, checklists, and more.', icon: 'PanelRight', labels: [{ text: 'Explore', color: 'purple' }] },
-      { column_id: tryCol.id, position: 2, task_number: 3, global_task_number: 3, title: 'Try checking off items below', icon: 'ListChecks', labels: [{ text: 'Checklist', color: 'green' }], checklist: [{ text: 'Check this item off', done: true }, { text: 'Then this one', done: false }, { text: 'And this one too', done: false }] },
-      { column_id: tryCol.id, position: 3, task_number: 4, global_task_number: 4, title: 'Create your own card', description: 'Hit the + button at the bottom of any column, or press N anywhere on the board.', icon: 'Plus', labels: [{ text: 'Your Turn', color: 'yellow' }] },
-      { column_id: inProgressCol.id, position: 0, task_number: 5, global_task_number: 5, title: 'Invite a teammate', description: 'Click "Share" in the top bar to invite someone by email. You can collaborate on boards in real time.', assignee_name: assignee, priority: 'medium', icon: 'UserPlus', labels: [{ text: 'Collaborate', color: 'pink' }] },
-      { column_id: inProgressCol.id, position: 1, task_number: 6, global_task_number: 6, title: 'Set a due date on this card', description: 'Open this card and pick a date — it will show up on the calendar and dashboard timeline.', icon: 'CalendarDays', labels: [{ text: 'Your Turn', color: 'yellow' }] },
-      { column_id: almostCol.id, position: 0, task_number: 7, global_task_number: 7, title: 'Visit the Dashboard', description: 'Check out your stats, calendar heatmap, and daily streak. It updates as you complete tasks.', icon: 'LayoutDashboard', labels: [{ text: 'Explore', color: 'purple' }] },
-      { column_id: almostCol.id, position: 1, task_number: 8, global_task_number: 8, title: 'Add a label to any card', description: 'Open a card, scroll to Labels, pick a color and type a name. Labels help you filter tasks.', icon: 'Tag', labels: [{ text: 'Feature', color: 'blue' }, { text: 'Labels', color: 'green' }, { text: 'Like These', color: 'red' }] },
-      { column_id: doneCol.id, position: 0, task_number: 9, global_task_number: 9, title: 'Sign up for Kolumn', completed: true, icon: 'PartyPopper', labels: [{ text: 'Setup', color: 'green' }] },
-    ]
-
-    const cardInserts = sampleCards.map((c) => ({
-      board_id: board.id,
-      column_id: c.column_id,
-      position: c.position,
-      task_number: c.task_number,
-      global_task_number: c.global_task_number,
-      title: c.title,
-      description: c.description || '',
-      assignee_name: c.assignee_name || '',
-      priority: c.priority || 'medium',
-      due_date: c.due_date || null,
-      icon: c.icon || '',
-      labels: c.labels || [],
-      checklist: c.checklist || [],
-      completed: c.completed || false,
-    }))
-
-    const { data: cards } = await supabase.from('cards').insert(cardInserts).select()
-
-    await supabase.from('boards').update({ next_task_number: 10 }).eq('id', board.id)
-
-    // Update local state
-    const columnMap = {}
-    cols.forEach((c) => { columnMap[c.id] = c })
-    const cardMap = {}
-    ;(cards || []).forEach((c) => { cardMap[c.id] = c })
-
-    localStorage.setItem(ACTIVE_BOARD_KEY, board.id)
-    set((state) => ({
-      boards: { ...state.boards, [board.id]: { ...board, next_task_number: 10 } },
-      columns: { ...state.columns, ...columnMap },
-      cards: { ...state.cards, ...cardMap },
-      activeBoardId: board.id,
-    }))
-
     return board.id
   },
 

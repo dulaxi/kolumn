@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import BottomTabBar from './BottomTabBar'
@@ -29,10 +29,8 @@ export default function AppLayout() {
   const font = useSettingsStore((s) => s.font)
   const isDesktop = useIsDesktop()
   const location = useLocation()
-  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const fetchBoards = useBoardStore((s) => s.fetchBoards)
-  const createSampleBoard = useBoardStore((s) => s.createSampleBoard)
   const spawnRecurringTasks = useBoardStore((s) => s.spawnRecurringTasks)
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
   const unsubscribeAll = useBoardStore((s) => s.unsubscribeAll)
@@ -63,15 +61,6 @@ export default function AppLayout() {
     if (user) {
       fetchBoards().then(() => {
         spawnRecurringTasks()
-        // Create sample board for first-time users
-        const boards = useBoardStore.getState().boards
-        if (Object.keys(boards).length === 0) {
-          createSampleBoard().then((id) => {
-            if (id) navigate('/boards')
-          })
-          return
-        }
-
         // Due date reminders — run once per session
         if (remindersShown.current) return
         remindersShown.current = true

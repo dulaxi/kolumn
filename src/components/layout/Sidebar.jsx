@@ -237,12 +237,10 @@ export default function Sidebar() {
                         )}
                       </span>
                       <span className="flex items-center gap-0.5 shrink-0">
-                        {Object.keys(ownedBoards).length > 1 && (
-                          <Trash2
-                            className="w-3.5 h-3.5 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
-                            onClick={(e) => handleDeleteBoard(e, board.id)}
-                          />
-                        )}
+                        <Trash2
+                          className="w-3.5 h-3.5 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
+                          onClick={(e) => handleDeleteBoard(e, board.id)}
+                        />
                       </span>
                       {iconPickerBoardId === board.id && (
                         <div className="absolute left-0 top-full z-40" onClick={(e) => e.stopPropagation()}>
