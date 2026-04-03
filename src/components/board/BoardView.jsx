@@ -243,7 +243,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         ))}
 
         {/* Add section */}
-        <div className="shrink-0 w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] snap-start">
+        <div className="shrink-0 w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] sm:flex-none snap-start">
           {isAddingColumn ? (
             <div className="bg-white rounded-lg border border-[#E0DBD5] shadow-sm p-3 space-y-2">
               <input

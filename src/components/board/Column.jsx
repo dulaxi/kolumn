@@ -133,7 +133,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   }
 
   return (
-    <div className={`flex flex-col w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] shrink-0 snap-start ${overWip ? 'bg-[#E8E2DB] rounded-xl px-2.5 py-2' : ''}`}>
+    <div className={`flex flex-col w-[calc(100vw-3.5rem)] sm:min-w-[260px] lg:min-w-[290px] sm:flex-1 shrink-0 snap-start ${overWip ? 'bg-[#E8E2DB] rounded-xl px-2.5 py-2' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between px-0.5 pb-3">
         <div className="flex items-baseline gap-2">
