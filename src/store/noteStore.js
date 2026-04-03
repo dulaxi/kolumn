@@ -39,6 +39,7 @@ export const useNoteStore = create((set, get) => ({
   },
 
   updateNote: async (noteId, updates) => {
+    const prevNote = get().notes[noteId]
     // Optimistic update
     set((state) => ({
       notes: {
@@ -46,15 +47,34 @@ export const useNoteStore = create((set, get) => ({
         [noteId]: { ...state.notes[noteId], ...updates, updated_at: new Date().toISOString() },
       },
     }))
-    await supabase.from('notes').update(updates).eq('id', noteId)
+    const { error } = await supabase.from('notes').update(updates).eq('id', noteId)
+    if (error) {
+      console.error('Failed to update note:', error)
+      // Rollback optimistic update
+      if (prevNote) {
+        set((state) => ({
+          notes: { ...state.notes, [noteId]: prevNote },
+        }))
+      }
+    }
   },
 
   deleteNote: async (noteId) => {
+    const prevNote = get().notes[noteId]
     set((state) => {
       const { [noteId]: _, ...rest } = state.notes
       return { notes: rest }
     })
-    await supabase.from('notes').delete().eq('id', noteId)
+    const { error } = await supabase.from('notes').delete().eq('id', noteId)
+    if (error) {
+      console.error('Failed to delete note:', error)
+      // Rollback — restore the note
+      if (prevNote) {
+        set((state) => ({
+          notes: { ...state.notes, [noteId]: prevNote },
+        }))
+      }
+    }
   },
 
   getAllNotes: () => Object.values(get().notes),

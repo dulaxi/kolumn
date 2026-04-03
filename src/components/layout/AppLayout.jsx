@@ -58,58 +58,64 @@ export default function AppLayout() {
 
   // Fetch data and set up real-time when authenticated
   useEffect(() => {
-    if (user) {
-      // Fire all independent fetches in parallel
-      Promise.all([
-        fetchBoards(),
-        fetchNotes(),
-        fetchInvitations(),
-        fetchSharedBoards(),
-        fetchNotifications(),
-      ]).then(() => {
-        // Subscribe to realtime AFTER data is loaded to avoid stale overwrites
-        subscribeToBoards()
+    if (!user) return
 
-        spawnRecurringTasks()
+    let cancelled = false
 
-        // Due date reminders — run once per session
-        if (remindersShown.current) return
-        remindersShown.current = true
-        const profile = useAuthStore.getState().profile
-        const displayName = profile?.display_name || ''
-        const cards = useBoardStore.getState().cards
-        const now = new Date()
-        const todayStr = now.toISOString().split('T')[0]
+    // Fire all independent fetches in parallel
+    Promise.all([
+      fetchBoards(),
+      fetchNotes(),
+      fetchInvitations(),
+      fetchSharedBoards(),
+      fetchNotifications(),
+    ]).then(() => {
+      // If user logged out while fetches were in flight, discard results
+      if (cancelled) return
 
-        let overdue = 0
-        let dueToday = 0
-        Object.values(cards).forEach((card) => {
-          if (card.completed || card.archived || !card.due_date) return
-          if (displayName && card.assignee_name !== displayName) return
-          const dueDateStr = card.due_date.split('T')[0]
-          if (dueDateStr < todayStr) overdue++
-          else if (dueDateStr === todayStr) dueToday++
-        })
+      // Subscribe to realtime AFTER data is loaded to avoid stale overwrites
+      subscribeToBoards()
 
-        if (overdue > 0) {
-          showToast.overdue(`You have ${overdue} overdue task${overdue > 1 ? 's' : ''}`)
-        }
-        if (dueToday > 0) {
-          showToast.warn(`${dueToday} task${dueToday > 1 ? 's' : ''} due today`)
-        }
+      spawnRecurringTasks()
+
+      // Due date reminders — run once per session
+      if (remindersShown.current) return
+      remindersShown.current = true
+      const profile = useAuthStore.getState().profile
+      const displayName = profile?.display_name || ''
+      const cards = useBoardStore.getState().cards
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+
+      let overdue = 0
+      let dueToday = 0
+      Object.values(cards).forEach((card) => {
+        if (card.completed || card.archived || !card.due_date) return
+        if (displayName && card.assignee_name !== displayName) return
+        const dueDateStr = card.due_date.split('T')[0]
+        if (dueDateStr < todayStr) overdue++
+        else if (dueDateStr === todayStr) dueToday++
       })
 
-      const unsubNotifications = subscribeToNotifications()
-
-      // Check for local data migration
-      if (hasLocalData()) {
-        setShowMigration(true)
+      if (overdue > 0) {
+        showToast.overdue(`You have ${overdue} overdue task${overdue > 1 ? 's' : ''}`)
       }
-
-      return () => {
-        unsubscribeAll()
-        unsubNotifications()
+      if (dueToday > 0) {
+        showToast.warn(`${dueToday} task${dueToday > 1 ? 's' : ''} due today`)
       }
+    })
+
+    const unsubNotifications = subscribeToNotifications()
+
+    // Check for local data migration
+    if (hasLocalData()) {
+      setShowMigration(true)
+    }
+
+    return () => {
+      cancelled = true
+      unsubscribeAll()
+      unsubNotifications()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])

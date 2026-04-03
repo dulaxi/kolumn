@@ -612,11 +612,11 @@ export const useBoardStore = create((set, get) => ({
         set((state) => ({
           cards: { ...state.cards, ...updates },
         }))
-        // Update positions in DB
-        for (const { id, position } of dbBatch) {
-          const { error } = await supabase.from('cards').update({ position }).eq('id', id)
-          if (error) console.error('Failed to update card position:', error)
-        }
+        // Update positions in DB (parallel to minimize race window)
+        await Promise.all(dbBatch.map(({ id, position }) =>
+          supabase.from('cards').update({ position }).eq('id', id)
+            .then(({ error }) => { if (error) console.error('Failed to update card position:', error) })
+        ))
       }
     } else {
       // Move between columns
@@ -648,11 +648,11 @@ export const useBoardStore = create((set, get) => ({
         cards: { ...state.cards, ...updates },
       }))
 
-      for (const update of dbBatch) {
-        const { id, ...rest } = update
-        const { error } = await supabase.from('cards').update(rest).eq('id', id)
-        if (error) console.error('Failed to update card position:', error)
-      }
+      // Update positions in DB (parallel to minimize race window)
+      await Promise.all(dbBatch.map(({ id, ...rest }) =>
+        supabase.from('cards').update(rest).eq('id', id)
+          .then(({ error }) => { if (error) console.error('Failed to update card position:', error) })
+      ))
 
       // Log the column move
       const fromCol = state.columns[fromColumnId]
@@ -714,16 +714,39 @@ export const useBoardStore = create((set, get) => ({
 
   // Persist the current card positions to Supabase after drag ends
   persistCardPositions: async (cardIds) => {
+    // Capture all positions upfront from a single state snapshot
     const state = get()
-    for (const cardId of cardIds) {
-      const card = state.cards[cardId]
-      if (card) {
-        const { error } = await supabase.from('cards').update({
-          column_id: card.column_id,
-          position: card.position,
-          completed: card.completed,
-        }).eq('id', cardId)
-        if (error) console.error('Failed to persist card position:', error)
+    const writes = cardIds
+      .map((cardId) => {
+        const card = state.cards[cardId]
+        if (!card) return null
+        return { id: cardId, column_id: card.column_id, position: card.position, completed: card.completed }
+      })
+      .filter(Boolean)
+
+    // Parallel writes to minimize race window
+    await Promise.all(writes.map(({ id, ...rest }) =>
+      supabase.from('cards').update(rest).eq('id', id)
+        .then(({ error }) => { if (error) console.error('Failed to persist card position:', error) })
+    ))
+
+    // Refetch cards for the active board to recover any realtime updates
+    // that were silently dropped while _isDragging was true
+    const boardId = state.activeBoardId
+    if (boardId && boardId !== '__all__') {
+      const { data } = await supabase.from('cards').select('*').eq('board_id', boardId)
+      if (data) {
+        set((s) => {
+          const cards = { ...s.cards }
+          data.forEach((c) => { cards[c.id] = c })
+          // Remove cards that no longer exist on this board
+          Object.keys(cards).forEach((id) => {
+            if (cards[id].board_id === boardId && !data.find((c) => c.id === id)) {
+              delete cards[id]
+            }
+          })
+          return { cards }
+        })
       }
     }
   },

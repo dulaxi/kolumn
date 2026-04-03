@@ -6,8 +6,12 @@ export const useAuthStore = create((set, get) => ({
   session: null,
   profile: null,
   loading: true,
+  _authSubscription: null,
 
   initialize: async () => {
+    // Unsubscribe any previous listener (prevents duplicates on HMR / re-init)
+    get()._authSubscription?.unsubscribe()
+
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       if (error) {
@@ -28,7 +32,7 @@ export const useAuthStore = create((set, get) => ({
 
     // Listen for future auth changes (token refresh, sign-out from another tab, etc.)
     // NOT used for initial signUp/signIn — those set state explicitly from their response.
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       // Skip INITIAL_SESSION — we already handled it via getSession() above
       if (event === 'INITIAL_SESSION') return
 
@@ -43,6 +47,7 @@ export const useAuthStore = create((set, get) => ({
         set({ profile: null })
       }
     })
+    set({ _authSubscription: subscription })
   },
 
   fetchProfile: async () => {
