@@ -886,11 +886,22 @@ export const useBoardStore = create((set, get) => ({
 
   uploadAttachment: async (cardId, file) => {
     if (!uploadLimiter()) { showToast.warn('Too many uploads — slow down'); return null }
+
+    // Block dangerous file types that could execute code when opened
+    const BLOCKED_EXTENSIONS = ['.html', '.htm', '.svg', '.xml', '.xhtml', '.exe', '.bat', '.cmd', '.com', '.msi', '.js', '.jsx', '.ts', '.vbs', '.ps1', '.sh', '.php', '.asp', '.aspx', '.jsp', '.cgi', '.scr', '.hta', '.wsf']
+    const ext = (file.name.lastIndexOf('.') >= 0 ? file.name.slice(file.name.lastIndexOf('.')) : '').toLowerCase()
+    if (BLOCKED_EXTENSIONS.includes(ext)) {
+      showToast.error('This file type is not allowed')
+      return null
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
+    // Sanitize filename to prevent path traversal and special characters
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 255)
     const fileId = crypto.randomUUID()
-    const storagePath = `${user.id}/${cardId}/${fileId}_${file.name}`
+    const storagePath = `${user.id}/${cardId}/${fileId}_${safeName}`
 
     // Upload to storage
     const { error: uploadError } = await supabase.storage
