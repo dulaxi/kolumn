@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
+import * as Sentry from '@sentry/react'
+import { identifyUser, resetUser, capture } from '../lib/analytics'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -94,6 +96,9 @@ export const useAuthStore = create((set, get) => ({
       throw new Error('Please check your email to confirm your account.')
     }
     set({ user: data.session.user, session: data.session })
+    if (data.user) Sentry.setUser({ id: data.user.id, email })
+    if (data.user) identifyUser(data.user.id, { email, display_name: displayName })
+    capture('user_signed_up')
     return data
   },
 
@@ -104,11 +109,16 @@ export const useAuthStore = create((set, get) => ({
     })
     if (error) throw error
     set({ user: data.session.user, session: data.session })
+    if (data.session?.user) Sentry.setUser({ id: data.session.user.id, email })
+    if (data.session?.user) identifyUser(data.session.user.id, { email })
+    capture('user_signed_in')
     return data
   },
 
   signOut: () => {
     set({ user: null, session: null, profile: null })
+    Sentry.setUser(null)
+    resetUser()
     supabase.auth.signOut({ scope: 'local' }).catch((err) => {
       logError('Sign out error:', err)
     })

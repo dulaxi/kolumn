@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { logError } from '../utils/logger'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import * as Sentry from '@sentry/react'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -14,6 +15,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     logError('ErrorBoundary caught:', error, errorInfo)
+    Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } })
   }
 
   handleReset = () => {

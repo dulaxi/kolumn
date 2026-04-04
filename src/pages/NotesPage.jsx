@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { capture } from '../lib/analytics'
 import { useNoteStore } from '../store/noteStore'
 import { format, parseISO } from 'date-fns'
 import { Plus, Trash2, FileText, ArrowLeft } from 'lucide-react'
@@ -24,6 +25,8 @@ export default function NotesPage() {
   useEffect(() => {
     fetchNotes()
   }, [])
+
+  useEffect(() => { capture('feature_used', { feature: 'notes' }) }, [])
 
   const sortedNotes = useMemo(
     () =>

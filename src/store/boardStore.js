@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { capture } from '../lib/analytics'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { showToast } from '../utils/toast'
@@ -223,6 +224,7 @@ export const useBoardStore = create((set, get) => ({
     })
 
     showToast.success(`Board "${name}" created`)
+    capture('board_created', { template: customColumns ? 'custom' : 'default' })
     return board.id
   },
 
@@ -441,6 +443,7 @@ export const useBoardStore = create((set, get) => ({
       }
 
       const card = cardRes.data
+      capture('card_created', { board_id: boardId })
       set((state) => ({
         cards: { ...state.cards, [card.id]: card },
         boards: {

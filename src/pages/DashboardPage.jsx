@@ -1,4 +1,5 @@
 import { useMemo, useEffect } from 'react'
+import { capture } from '../lib/analytics'
 import { useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../store/boardStore'
 import { useAuthStore } from '../store/authStore'
@@ -40,6 +41,8 @@ export default function DashboardPage() {
     [boards, columns, cards, profile]
   )
 
+
+  useEffect(() => { capture('feature_used', { feature: 'dashboard' }) }, [])
 
   useEffect(() => {
     if ('requestIdleCallback' in window) {

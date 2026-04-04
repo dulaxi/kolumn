@@ -405,10 +405,10 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div className="px-6 sm:px-10 pt-16 pb-8 max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E0DBD5] text-xs font-medium text-[#5C5C57] mb-6 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#A8BA32] animate-pulse" />
-              Real-time collaboration, built in
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEF2D6] text-[#6B7A12] text-xs font-medium mb-6">
+              <Sparkles className="w-3.5 h-3.5" />
+              100% free — no credit card required
+            </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1B1B18] tracking-tight leading-[1.08] mb-5">
               Project management
               <br />
@@ -424,7 +424,7 @@ export default function LandingPage() {
                 to="/signup"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#1B1B18] text-white text-sm font-semibold rounded-xl hover:bg-[#333] transition-all shadow-sm hover:shadow-md"
               >
-                Start for free
+                Get started free
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
@@ -434,6 +434,9 @@ export default function LandingPage() {
                 Sign in
               </Link>
             </div>
+            <p className="mt-6 text-sm text-[#8E8E89]">
+              Trusted by early adopters · launching 2026
+            </p>
           </div>
 
           {/* ─── Mock Board Preview ─── */}
@@ -633,6 +636,13 @@ export default function LandingPage() {
             <Link to="/signup" className="hover:text-[#5C5C57] transition-colors">Sign up</Link>
           </div>
         </div>
+      </footer>
+
+      <footer className="border-t border-[#E8E2DB] py-8 px-6 text-center text-sm text-[#8E8E89]">
+        <p>&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>
+        <p className="mt-1">
+          Questions? <a href="mailto:hello@kolumn.app" className="underline hover:text-[#5C5C57]">hello@kolumn.app</a>
+        </p>
       </footer>
     </div>
   )
