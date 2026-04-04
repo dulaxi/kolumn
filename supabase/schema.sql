@@ -80,12 +80,23 @@ create policy "Board owners can delete boards"
   to authenticated
   using (owner_id = auth.uid());
 
--- Board members RLS
+-- Helper: bypasses RLS to look up current user's board IDs (breaks recursion)
+create or replace function public.get_my_board_ids()
+returns setof uuid
+language sql
+security definer
+stable
+set search_path = ''
+as $$
+  select board_id from public.board_members where user_id = auth.uid()
+$$;
+
+-- Board members RLS (uses helper function to avoid self-referential recursion)
 create policy "Members can view board_members"
   on public.board_members for select
   to authenticated
   using (
-    board_id in (select board_id from public.board_members where user_id = auth.uid())
+    board_id in (select get_my_board_ids())
   );
 
 create policy "Board owners can manage members"
