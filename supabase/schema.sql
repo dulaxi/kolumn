@@ -62,7 +62,7 @@ create policy "Members can view boards"
   on public.boards for select
   to authenticated
   using (
-    id in (select board_id from public.board_members where user_id = auth.uid())
+    id in (select get_my_board_ids())
   );
 
 create policy "Authenticated users can create boards"
@@ -80,6 +80,13 @@ create policy "Board owners can delete boards"
   to authenticated
   using (owner_id = auth.uid());
 
+create policy "Invitees can view boards they are invited to"
+  on public.boards for select
+  to authenticated
+  using (
+    id in (select get_my_invited_board_ids())
+  );
+
 -- Helper: bypasses RLS to look up current user's board IDs (breaks recursion)
 create or replace function public.get_my_board_ids()
 returns setof uuid
@@ -89,6 +96,19 @@ stable
 set search_path = ''
 as $$
   select board_id from public.board_members where user_id = auth.uid()
+$$;
+
+-- Helper: bypasses RLS to look up boards the user is invited to
+create or replace function public.get_my_invited_board_ids()
+returns setof uuid
+language sql
+security definer
+stable
+set search_path = ''
+as $$
+  select board_id from public.board_invitations
+  where invited_email = (select auth.jwt()->>'email')
+  and status = 'pending'
 $$;
 
 -- Board members RLS (uses helper function to avoid self-referential recursion)
@@ -113,6 +133,15 @@ create policy "Board owners can remove members"
   using (
     board_id in (select id from public.boards where owner_id = auth.uid())
     or user_id = auth.uid()
+  );
+
+create policy "Invited users can join boards"
+  on public.board_members for insert
+  to authenticated
+  with check (
+    user_id = auth.uid()
+    and role = 'member'
+    and board_id in (select get_my_invited_board_ids())
   );
 
 -- ============================================================
@@ -259,12 +288,12 @@ create table public.board_invitations (
 
 alter table public.board_invitations enable row level security;
 
-create policy "Board owners can view invitations"
+create policy "Board owners and invitees can view invitations"
   on public.board_invitations for select
   to authenticated
   using (
-    board_id in (select id from public.boards where owner_id = auth.uid())
-    or invited_email = (select email from auth.users where id = auth.uid())
+    board_id in (select get_my_board_ids())
+    or invited_email = (auth.jwt()->>'email')
   );
 
 create policy "Board owners can create invitations"
@@ -274,12 +303,12 @@ create policy "Board owners can create invitations"
     board_id in (select id from public.boards where owner_id = auth.uid())
   );
 
-create policy "Board owners can update invitations"
+create policy "Board owners and invitees can update invitations"
   on public.board_invitations for update
   to authenticated
   using (
-    board_id in (select id from public.boards where owner_id = auth.uid())
-    or invited_email = (select email from auth.users where id = auth.uid())
+    board_id in (select get_my_board_ids())
+    or invited_email = (auth.jwt()->>'email')
   );
 
 create policy "Board owners can delete invitations"
