@@ -30,7 +30,6 @@ export const useAuthStore = create((set, get) => ({
     supabase.auth.onAuthStateChange(async (event, session) => {
       set({ user: session?.user || null, session })
       if (session?.user) {
-        Sentry.setUser({ id: session.user.id, email: session.user.email })
         try {
           await get().fetchProfile()
         } catch (err) {
@@ -64,6 +63,7 @@ export const useAuthStore = create((set, get) => ({
       },
     })
     if (error) throw error
+    if (data.user) Sentry.setUser({ id: data.user.id, email })
     return data
   },
 
@@ -73,6 +73,8 @@ export const useAuthStore = create((set, get) => ({
       password,
     })
     if (error) throw error
+    const user = data.session?.user || data.user
+    if (user) Sentry.setUser({ id: user.id, email })
     return data
   },
 
