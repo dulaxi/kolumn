@@ -6,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
+const LandingPageV2 = lazy(() => import('./pages/LandingPageV2'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignupPage = lazy(() => import('./pages/SignupPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
@@ -49,6 +50,7 @@ export default function App() {
       <Suspense fallback={<div className="min-h-screen bg-[#F2EDE8] flex items-center justify-center"><div className="text-sm text-[#8E8E89]">Loading...</div></div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/landing-v2" element={<LandingPageV2 />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
