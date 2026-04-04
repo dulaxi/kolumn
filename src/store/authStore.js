@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import * as Sentry from '@sentry/react'
+import { identifyUser, resetUser, capture } from '../lib/analytics'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -64,6 +65,8 @@ export const useAuthStore = create((set, get) => ({
     })
     if (error) throw error
     if (data.user) Sentry.setUser({ id: data.user.id, email })
+    if (data.user) identifyUser(data.user.id, { email, display_name: displayName })
+    capture('user_signed_up')
     return data
   },
 
@@ -75,6 +78,8 @@ export const useAuthStore = create((set, get) => ({
     if (error) throw error
     const user = data.session?.user || data.user
     if (user) Sentry.setUser({ id: user.id, email })
+    if (user) identifyUser(user.id, { email })
+    capture('user_signed_in')
     return data
   },
 
@@ -86,6 +91,7 @@ export const useAuthStore = create((set, get) => ({
     }
     set({ user: null, session: null, profile: null })
     Sentry.setUser(null)
+    resetUser()
   },
 
   resetPassword: async (email) => {

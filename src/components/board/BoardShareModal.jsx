@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { capture } from '../../lib/analytics'
 import { X, UserPlus, Trash2, Mail, Crown, Users } from 'lucide-react'
 import { showToast } from '../../utils/toast'
 import { supabase } from '../../lib/supabase'
@@ -77,6 +78,7 @@ export default function BoardShareModal({ board, onClose }) {
       await fetchInvitations()
       setEmail('')
       showToast.success('Invitation sent')
+      capture('member_invited')
     }
 
     setLoading(false)

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { capture } from '../lib/analytics'
 import { useBoardStore } from '../store/boardStore'
 import {
   startOfMonth,
@@ -34,6 +35,8 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date())
   const cards = useBoardStore((s) => s.cards)
+
+  useEffect(() => { capture('feature_used', { feature: 'calendar' }) }, [])
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth)

@@ -15,6 +15,7 @@ import App from './App.jsx'
 import { useAuthStore } from './store/authStore'
 import * as Sentry from '@sentry/react'
 import { env } from './lib/env'
+import { initAnalytics } from './lib/analytics'
 
 // Initialize Sentry (no-op if DSN not configured)
 if (env.sentryDsn) {
@@ -24,6 +25,9 @@ if (env.sentryDsn) {
     sampleRate: 1.0,
   })
 }
+
+// Initialize product analytics (no-op if keys not configured)
+initAnalytics()
 
 // Global error handlers — catch unhandled errors and rejections
 window.addEventListener('error', (event) => {
