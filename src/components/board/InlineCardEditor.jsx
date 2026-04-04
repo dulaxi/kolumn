@@ -6,16 +6,7 @@ import { useBoardStore } from '../../store/boardStore'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 import { LABEL_COLORS, COLOR_DOT_CLASSES, PRIORITY_OPTIONS } from '../../constants/colors'
-
-const LABEL_COLOR_CLASSES = {
-  red: 'bg-[#F2D9C7] text-[#8B5A33]',
-  blue: 'bg-[#DAE0F0] text-[#4A5578]',
-  green: 'bg-[#EEF2D6] text-[#6B7A12]',
-  yellow: 'bg-[#F5EDCF] text-[#8B7322]',
-  purple: 'bg-[#E8DDE2] text-[#6E5A65]',
-  pink: 'bg-[#F0E0D2] text-[#7A5C44]',
-  gray: 'bg-[#E8E2DB] text-[#5C5C57]',
-}
+import { LABEL_BG } from '../../utils/formatting'
 
 export default function InlineCardEditor({ cardId, onDone }) {
   const card = useBoardStore((s) => s.cards[cardId])
@@ -195,7 +186,7 @@ export default function InlineCardEditor({ cardId, onDone }) {
           <span
             key={`${label.text}-${label.color}`}
             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-              LABEL_COLOR_CLASSES[label.color] || LABEL_COLOR_CLASSES.gray
+              LABEL_BG[label.color] || LABEL_BG.gray
             }`}
           >
             {label.text}

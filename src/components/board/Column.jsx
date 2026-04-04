@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { Plus, MoreHorizontal, Pencil, Trash2, Gauge, ChevronDown, Bookmark, X } from 'lucide-react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -48,7 +49,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const templates = useTemplateStore((s) => s.templates)
   const deleteTemplate = useTemplateStore((s) => s.deleteTemplate)
   const renameRef = useRef(null)
-  const menuRef = useRef(null)
+  const menuRef = useClickOutside(() => setMenuOpen(false))
 
   const allCards = useBoardStore((s) => s.cards)
   const addCard = useBoardStore((s) => s.addCard)
@@ -83,17 +84,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       renameRef.current.select()
     }
   }, [isRenaming])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const handleClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [menuOpen])
 
   const handleCreateCard = async (template) => {
     if (creating) return

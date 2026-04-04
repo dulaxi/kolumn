@@ -1,5 +1,5 @@
 import { Search, User, LogOut, Settings, LayoutGrid, Bell, AtSign, UserPlus, MessageSquare, ArrowRight, X, SquareKanban } from 'lucide-react'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { useAuthStore } from '../../store/authStore'
@@ -8,6 +8,7 @@ import { useNoteStore } from '../../store/noteStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useNotificationStore } from '../../store/notificationStore'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import DynamicIcon from '../board/DynamicIcon'
 
 export default function Header({ title }) {
@@ -17,9 +18,9 @@ export default function Header({ title }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const mobileSearchRef = useRef(null)
-  const menuRef = useRef(null)
-  const searchRef = useRef(null)
-  const notifRef = useRef(null)
+  const menuRef = useClickOutside(() => setMenuOpen(false))
+  const searchRef = useClickOutside(() => setSearchFocused(false))
+  const notifRef = useClickOutside(() => setNotifOpen(false))
   const navigate = useNavigate()
   const profile = useAuthStore((s) => s.profile)
   const signOut = useAuthStore((s) => s.signOut)
@@ -35,41 +36,6 @@ export default function Header({ title }) {
   const boards = useBoardStore((s) => s.boards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const notes = useNoteStore((s) => s.notes)
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const handleClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [menuOpen])
-
-  // Close notification panel on click outside
-  useEffect(() => {
-    if (!notifOpen) return
-    const handleClick = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [notifOpen])
-
-  // Close search on click outside
-  useEffect(() => {
-    if (!searchFocused) return
-    const handleClick = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchFocused(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [searchFocused])
 
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()

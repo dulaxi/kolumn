@@ -13,6 +13,17 @@ import { cardInsertSchema, cardUpdateSchema, boardInsertSchema, columnInsertSche
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
+// Debounce guard for realtime reconnect — prevents concurrent reconnect races
+let reconnectTimer = null
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    const store = useBoardStore.getState()
+    if (store.subscriptions.length > 0) store.subscribeToBoards()
+  }, 3000)
+}
+
 // Rate limiters for mutation actions
 const cardCreateLimiter = createRateLimiter(10, 10000)   // 10 cards per 10s
 const boardCreateLimiter = createRateLimiter(5, 30000)   // 5 boards per 30s
@@ -775,7 +786,7 @@ export const useBoardStore = create((set, get) => ({
   },
 
   // Persist the current card positions to Supabase after drag ends
-  persistCardPositions: async (cardIds) => {
+  persistCardPositions: async (cardIds, { movedCrossColumn = false } = {}) => {
     // Capture all positions upfront from a single state snapshot
     const state = get()
     const writes = cardIds
@@ -792,10 +803,10 @@ export const useBoardStore = create((set, get) => ({
         .then(({ error }) => { if (error) logError('Failed to persist card position:', error) })
     ))
 
-    // Refetch cards for the active board to recover any realtime updates
+    // Refetch cards after cross-column moves to recover any realtime updates
     // that were silently dropped while _isDragging was true
     const boardId = state.activeBoardId
-    if (boardId && boardId !== '__all__') {
+    if (movedCrossColumn && boardId && boardId !== '__all__') {
       const { data } = await supabase.from('cards').select('*').eq('board_id', boardId)
       if (data) {
         set((s) => {
@@ -1154,10 +1165,7 @@ export const useBoardStore = create((set, get) => ({
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           logError('Realtime boards subscription error:', err)
-          // Auto-reconnect after 3 seconds
-          setTimeout(() => {
-            if (get().subscriptions.length > 0) get().subscribeToBoards()
-          }, 3000)
+          scheduleReconnect()
         }
       })
 
@@ -1196,10 +1204,7 @@ export const useBoardStore = create((set, get) => ({
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             logError('Realtime board detail subscription error:', err)
-            // Auto-reconnect after 3 seconds
-            setTimeout(() => {
-              if (get().subscriptions.length > 0) get().subscribeToBoards()
-            }, 3000)
+            scheduleReconnect()
           }
         })
       subs.push(boardDetailSub)
@@ -1231,9 +1236,7 @@ export const useBoardStore = create((set, get) => ({
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             logError('Realtime all-detail subscription error:', err)
-            setTimeout(() => {
-              if (get().subscriptions.length > 0) get().subscribeToBoards()
-            }, 3000)
+            scheduleReconnect()
           }
         })
       subs.push(allDetailSub)

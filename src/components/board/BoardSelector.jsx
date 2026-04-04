@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { ChevronDown, Plus, LayoutGrid, Layers, Users, Filter, X, Check, ArrowUpDown, Archive, ArchiveRestore, Trash2, Copy } from 'lucide-react'
 
 import { useBoardStore } from '../../store/boardStore'
@@ -9,18 +10,7 @@ const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
 function FilterPill({ label, active, children }) {
   const [isOpen, setIsOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [isOpen])
+  const ref = useClickOutside(() => setIsOpen(false))
 
   return (
     <div className="relative" ref={ref}>
@@ -201,7 +191,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
-  const dropdownRef = useRef(null)
+  const dropdownRef = useClickOutside(() => setOpen(false))
 
   const boards = useBoardStore((s) => s.boards)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
@@ -260,17 +250,6 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const clearFilters = useCallback(() => {
     setFilters({ priority: [], assignee: null, label: [], due: null })
   }, [setFilters])
-
-  useEffect(() => {
-    if (!open) return
-    const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
 
   return (
     <>

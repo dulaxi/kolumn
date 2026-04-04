@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { logError } from '../utils/logger'
 import { RefreshCw } from 'lucide-react'
+import * as Sentry from '@sentry/react'
 
 /**
  * Compact error boundary for sub-components (sidebar, header, columns).
@@ -22,6 +23,7 @@ export default class InlineErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     logError(`InlineErrorBoundary [${this.props.name}]:`, error, errorInfo)
+    Sentry.captureException(error, { extra: { component: this.props.name, componentStack: errorInfo?.componentStack } })
   }
 
   handleRetry = () => {

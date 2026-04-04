@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { capture } from '../lib/analytics'
 import { useNoteStore } from '../store/noteStore'
+import { useAutoSave } from '../hooks/useAutoSave'
 import { format, parseISO } from 'date-fns'
 import { Plus, Trash2, FileText, ArrowLeft } from 'lucide-react'
 import { useIsMobile } from '../hooks/useMediaQuery'
@@ -15,7 +16,29 @@ export default function NotesPage() {
   const isMobile = useIsMobile()
   const [showEditor, setShowEditor] = useState(false)
 
+  // Local state for editor inputs — decoupled from store to avoid per-keystroke DB writes
+  const [localTitle, setLocalTitle] = useState('')
+  const [localContent, setLocalContent] = useState('')
+  const pendingRef = useRef({})
+
+  const { scheduleSave, flushSave } = useAutoSave(() => {
+    if (selectedNoteId && Object.keys(pendingRef.current).length > 0) {
+      updateNote(selectedNoteId, pendingRef.current)
+      pendingRef.current = {}
+    }
+  }, 500)
+
+  // Sync local state when switching notes
+  useEffect(() => {
+    const note = selectedNoteId ? notes[selectedNoteId] : null
+    if (note) {
+      setLocalTitle(note.title)
+      setLocalContent(note.content)
+    }
+  }, [selectedNoteId])
+
   const handleSelectNote = (noteId) => {
+    flushSave()
     setSelectedNoteId(noteId)
     if (isMobile) setShowEditor(true)
   }
@@ -39,6 +62,7 @@ export default function NotesPage() {
   const selectedNote = selectedNoteId ? notes[selectedNoteId] : null
 
   const handleNewNote = async () => {
+    flushSave()
     const id = await addNote('Untitled')
     if (id) setSelectedNoteId(id)
   }
@@ -53,12 +77,16 @@ export default function NotesPage() {
 
   const handleTitleChange = (e) => {
     if (!selectedNoteId) return
-    updateNote(selectedNoteId, { title: e.target.value })
+    setLocalTitle(e.target.value)
+    pendingRef.current = { ...pendingRef.current, title: e.target.value }
+    scheduleSave()
   }
 
   const handleContentChange = (e) => {
     if (!selectedNoteId) return
-    updateNote(selectedNoteId, { content: e.target.value })
+    setLocalContent(e.target.value)
+    pendingRef.current = { ...pendingRef.current, content: e.target.value }
+    scheduleSave()
   }
 
 
@@ -126,7 +154,7 @@ export default function NotesPage() {
               <div className="flex-1">
               <input
                 type="text"
-                value={selectedNote.title}
+                value={localTitle}
                 onChange={handleTitleChange}
                 className="text-xl font-bold text-[#1B1B18] w-full outline-none bg-transparent placeholder-[#C4BFB8]"
                 placeholder="Note title..."
@@ -138,7 +166,7 @@ export default function NotesPage() {
               </div>
             </div>
             <textarea
-              value={selectedNote.content}
+              value={localContent}
               onChange={handleContentChange}
               className="flex-1 p-4 text-sm text-[#5C5C57] outline-none resize-none bg-transparent leading-relaxed placeholder-[#C4BFB8]"
               placeholder="Start writing..."

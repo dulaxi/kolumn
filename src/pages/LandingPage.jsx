@@ -632,17 +632,12 @@ export default function LandingPage() {
             <span>Built for teams that ship.</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-[#8E8E89]">
+            <a href="mailto:hello@kolumn.app" className="hover:text-[#5C5C57] transition-colors">Contact</a>
             <Link to="/login" className="hover:text-[#5C5C57] transition-colors">Sign in</Link>
             <Link to="/signup" className="hover:text-[#5C5C57] transition-colors">Sign up</Link>
           </div>
         </div>
-      </footer>
-
-      <footer className="border-t border-[#E8E2DB] py-8 px-6 text-center text-sm text-[#8E8E89]">
-        <p>&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>
-        <p className="mt-1">
-          Questions? <a href="mailto:hello@kolumn.app" className="underline hover:text-[#5C5C57]">hello@kolumn.app</a>
-        </p>
+        <p className="text-center text-xs text-[#C4BFB8] mt-4">&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>
       </footer>
     </div>
   )

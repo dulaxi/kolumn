@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { selectBoardColumns } from '../../store/selectors'
 import { Plus, X } from 'lucide-react'
 import {
   DndContext,
@@ -25,7 +26,8 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const isMobile = useIsMobile()
 
   const board = useBoardStore((s) => s.boards[boardId])
-  const allColumns = useBoardStore((s) => s.columns)
+  const columnSelector = useMemo(() => selectBoardColumns(boardId), [boardId])
+  const boardColumns = useBoardStore(columnSelector)
   const cards = useBoardStore((s) => s.cards)
   const addColumn = useBoardStore((s) => s.addColumn)
   const moveCardLocal = useBoardStore((s) => s.moveCardLocal)
@@ -33,14 +35,6 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const setDragging = useBoardStore((s) => s.setDragging)
   const completeCard = useBoardStore((s) => s.completeCard)
   const logCardMove = useBoardStore((s) => s.logCardMove)
-
-  // Memoize: only recompute when columns object or boardId changes
-  const boardColumns = useMemo(
-    () => Object.values(allColumns)
-      .filter((c) => c.board_id === boardId)
-      .sort((a, b) => a.position - b.position),
-    [allColumns, boardId]
-  )
 
   const dragOriginRef = useRef(null)
 
@@ -186,18 +180,20 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         }
       }
 
-      // Persist all affected cards to Supabase
-      persistCardPositions([...affectedCardsRef.current])
-
-      // Log activity if card moved to a different column
+      // Check if card moved to a different column
+      let movedCrossColumn = false
       if (dragOriginRef.current) {
         const { cardId: draggedId, columnId: origColumnId } = dragOriginRef.current
         const currentCard = useBoardStore.getState().cards[draggedId]
         if (currentCard && currentCard.column_id !== origColumnId) {
+          movedCrossColumn = true
           logCardMove(draggedId, origColumnId, currentCard.column_id)
         }
         dragOriginRef.current = null
       }
+
+      // Persist all affected cards to Supabase
+      persistCardPositions([...affectedCardsRef.current], { movedCrossColumn })
 
       affectedCardsRef.current = new Set()
     },

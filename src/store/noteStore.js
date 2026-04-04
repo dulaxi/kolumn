@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
 import { noteInsertSchema, noteUpdateSchema } from '../utils/schemas'
+import { useAuthStore } from './authStore'
 
 export const useNoteStore = create((set, get) => ({
   notes: {},
@@ -29,7 +30,7 @@ export const useNoteStore = create((set, get) => ({
   },
 
   addNote: async (title) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = useAuthStore.getState().user
     if (!user) return null
 
     const validated = noteInsertSchema.safeParse({ user_id: user.id, title: title || 'Untitled', content: '' })
