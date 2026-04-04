@@ -1,5 +1,5 @@
 import { Search, User, LogOut, Settings, LayoutGrid, Bell, AtSign, UserPlus, MessageSquare, ArrowRight, X, SquareKanban } from 'lucide-react'
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { useAuthStore } from '../../store/authStore'
