@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import {
   X, Trash2, Check, CheckCircle2, ArrowLeft, Bookmark, Archive, ArchiveRestore,
 } from 'lucide-react'
@@ -18,7 +18,7 @@ import CardDetailComments from './CardDetailComments'
 import CardDetailAttachments from './CardDetailAttachments'
 import CardDetailActivity from './CardDetailActivity'
 
-export default function CardDetailPanel({ cardId, onClose }) {
+export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
@@ -407,4 +407,4 @@ export default function CardDetailPanel({ cardId, onClose }) {
       </div>
     </div>
   )
-}
+})
