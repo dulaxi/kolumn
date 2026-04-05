@@ -97,7 +97,7 @@ export function computeBoardSummaries(boards, columns, cards, displayName) {
       .sort((a, b) => a.position - b.position)
 
     const boardCards = Object.values(cards).filter(
-      (c) => c.board_id === board.id && c.assignee_name && c.assignee_name === displayName
+      (c) => c.board_id === board.id
     )
     const totalCards = boardCards.length
 

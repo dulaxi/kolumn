@@ -3,6 +3,8 @@ import { Download, Upload, Trash2, AlertTriangle, Palette, User, Type } from 'lu
 import { showToast } from '../utils/toast'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
+import { useBoardStore } from '../store/boardStore'
+import { useNoteStore } from '../store/noteStore'
 import DynamicIcon from '../components/board/DynamicIcon'
 import IconPicker from '../components/board/IconPicker'
 import { PROFILE_COLORS } from '../constants/colors'
@@ -33,14 +35,15 @@ export default function SettingsPage() {
   }
 
   const handleExport = () => {
-    const data = {}
-    const keys = ['kolumn-boards', 'kolumn-notes', 'kolumn-settings']
-    keys.forEach((key) => {
-      const value = localStorage.getItem(key)
-      if (value) {
-        data[key] = JSON.parse(value)
-      }
-    })
+    const { boards, columns, cards } = useBoardStore.getState()
+    const { notes } = useNoteStore.getState()
+    const settings = localStorage.getItem('kolumn-settings')
+
+    const data = {
+      'kolumn-boards': { boards, columns, cards },
+      'kolumn-notes': { notes },
+    }
+    if (settings) data['kolumn-settings'] = JSON.parse(settings)
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
@@ -86,7 +89,8 @@ export default function SettingsPage() {
       }
     }
     reader.readAsText(file)
-    e.target.value = ''
+    // Reset input after read completes, not during (M9 fix)
+    reader.onloadend = () => { e.target.value = '' }
   }
 
   const handleClearData = () => {

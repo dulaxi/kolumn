@@ -151,7 +151,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           {/* Assignee avatar — bottom right */}
           {hasAssignee && (() => {
             const isMe = profile?.display_name && assignee.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
-            const iconText = profile.color === 'bg-[#8E8E89]' ? 'text-[#1B1B18]' : 'text-white'
+            const iconText = profile?.color === 'bg-[#8E8E89]' ? 'text-[#1B1B18]' : 'text-white'
             return isMe && profile.icon ? (
               <span
                 className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center ${iconText} ${profile.color}`}

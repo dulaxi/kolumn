@@ -13,7 +13,8 @@ export async function migrateLocalData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
 
-  let migrated = false
+  let boardsMigrated = true
+  let notesMigrated = true
 
   // Migrate boards
   if (boardsRaw) {
@@ -25,7 +26,7 @@ export async function migrateLocalData() {
 
       for (const board of Object.values(boards)) {
         // Create board
-        const { data: newBoard } = await supabase
+        const { data: newBoard, error: boardError } = await supabase
           .from('boards')
           .insert({
             name: board.name || 'Imported Board',
@@ -36,13 +37,17 @@ export async function migrateLocalData() {
           .select()
           .single()
 
-        if (!newBoard) continue
+        if (boardError || !newBoard) {
+          console.error('Failed to migrate board:', board.name, boardError)
+          boardsMigrated = false
+          continue
+        }
 
         // Create columns
         const columns = board.columns || []
         for (let i = 0; i < columns.length; i++) {
           const col = columns[i]
-          const { data: newCol } = await supabase
+          const { data: newCol, error: colError } = await supabase
             .from('columns')
             .insert({
               board_id: newBoard.id,
@@ -52,7 +57,11 @@ export async function migrateLocalData() {
             .select()
             .single()
 
-          if (!newCol) continue
+          if (colError || !newCol) {
+            console.error('Failed to migrate column:', col.title, colError)
+            boardsMigrated = false
+            continue
+          }
 
           // Create cards in this column
           const cardIds = col.cardIds || []
@@ -60,12 +69,12 @@ export async function migrateLocalData() {
             const card = cards[cardIds[j]]
             if (!card) continue
 
-            await supabase.from('cards').insert({
+            const { error: cardError } = await supabase.from('cards').insert({
               board_id: newBoard.id,
               column_id: newCol.id,
               position: j,
-              task_number: card.taskNumber || 0,
-              global_task_number: card.globalTaskNumber || 0,
+              task_number: card.taskNumber || 1,
+              global_task_number: card.globalTaskNumber || 1,
               title: card.title || 'Untitled',
               description: card.description || '',
               assignee_name: card.assignee || '',
@@ -76,12 +85,16 @@ export async function migrateLocalData() {
               labels: card.labels || [],
               checklist: card.checklist || [],
             })
+            if (cardError) {
+              console.error('Failed to migrate card:', card.title, cardError)
+              boardsMigrated = false
+            }
           }
         }
       }
-      migrated = true
     } catch (err) {
       console.error('Board migration error:', err)
+      boardsMigrated = false
     }
   }
 
@@ -93,25 +106,31 @@ export async function migrateLocalData() {
       const notes = state.notes || {}
 
       for (const note of Object.values(notes)) {
-        await supabase.from('notes').insert({
+        const { error: noteError } = await supabase.from('notes').insert({
           user_id: user.id,
           title: note.title || 'Untitled',
           content: note.content || '',
         })
+        if (noteError) {
+          console.error('Failed to migrate note:', note.title, noteError)
+          notesMigrated = false
+        }
       }
-      migrated = true
     } catch (err) {
       console.error('Notes migration error:', err)
+      notesMigrated = false
     }
   }
 
-  // Clear localStorage after successful migration
-  if (migrated) {
+  // Only clear localStorage for sections that fully migrated
+  if (boardsMigrated && boardsRaw) {
     localStorage.removeItem('kolumn-boards')
+  }
+  if (notesMigrated && notesRaw) {
     localStorage.removeItem('kolumn-notes')
   }
 
-  return migrated
+  return boardsMigrated && notesMigrated
 }
 
 /**

@@ -28,14 +28,14 @@ export default function NotesPage() {
     }
   }, 500)
 
-  // Sync local state when switching notes
+  // Sync local state when switching notes or when remote updates arrive
   useEffect(() => {
     const note = selectedNoteId ? notes[selectedNoteId] : null
-    if (note) {
+    if (note && Object.keys(pendingRef.current).length === 0) {
       setLocalTitle(note.title)
       setLocalContent(note.content)
     }
-  }, [selectedNoteId])
+  }, [selectedNoteId, notes])
 
   const handleSelectNote = (noteId) => {
     flushSave()

@@ -73,7 +73,7 @@ export default function AppLayout() {
     ])
 
     // Initial fetch + subscriptions
-    loadAllData().then(() => {
+    loadAllData().then((results) => {
       if (cancelled) return
 
       // Subscribe to realtime AFTER data is loaded to avoid stale overwrites
@@ -81,8 +81,9 @@ export default function AppLayout() {
 
       spawnRecurringTasks()
 
-      // Due date reminders — run once per session
-      if (remindersShown.current) return
+      // Due date reminders — run once per session, only if boards fetched successfully
+      const boardsFetchOk = results[0]?.status === 'fulfilled'
+      if (remindersShown.current || !boardsFetchOk) return
       remindersShown.current = true
       const profile = useAuthStore.getState().profile
       const displayName = profile?.display_name || ''
@@ -108,7 +109,7 @@ export default function AppLayout() {
       }
     })
 
-    const unsubNotifications = subscribeToNotifications()
+    const unsubNotifications = subscribeToNotifications(user.id)
 
     // Check for local data migration
     if (hasLocalData()) {

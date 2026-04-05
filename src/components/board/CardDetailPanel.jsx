@@ -63,45 +63,32 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const autoSaveTimerRef = useRef(null)
   const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', assignee: card?.assignee_name || '', priority: card?.priority || 'medium', dueDate: card?.due_date || '', labels: card?.labels ? [...card.labels] : [], checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [] })
 
-  // Fetch board members and comments on mount
+  // Fetch board members and comments when card changes
   useEffect(() => {
-    if (card) {
-      supabase
-        .from('board_members')
-        .select('profiles(display_name)')
-        .eq('board_id', card.board_id)
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Failed to fetch board members:', error)
-            return
-          }
-          const names = (data || [])
-            .map((m) => m.profiles?.display_name)
-            .filter(Boolean)
-          setBoardMemberNames(names)
-        })
-      fetchComments(cardId)
-      fetchActivity(cardId)
-      fetchAttachments(cardId)
+    if (!card) return
+    let cancelled = false
 
-      // Fetch board members for @mention autocomplete
-      if (card?.board_id) {
-        supabase
-          .from('board_members')
-          .select('user_id, profiles(id, display_name, icon, color)')
-          .eq('board_id', card.board_id)
-          .then(({ data }) => {
-            if (data) {
-              setBoardMembers(data.map((m) => ({
-                user_id: m.profiles?.id || m.user_id,
-                display_name: m.profiles?.display_name || 'Unknown',
-                color: m.profiles?.color || 'bg-[#E0DBD5]',
-              })))
-            }
-          })
-      }
-    }
-  }, [])
+    // Single query for board members (used for both assignee picker and @mentions)
+    supabase
+      .from('board_members')
+      .select('user_id, profiles(id, display_name, icon, color)')
+      .eq('board_id', card.board_id)
+      .then(({ data, error }) => {
+        if (cancelled || error) return
+        const members = (data || [])
+        setBoardMemberNames(members.map((m) => m.profiles?.display_name).filter(Boolean))
+        setBoardMembers(members.map((m) => ({
+          user_id: m.profiles?.id || m.user_id,
+          display_name: m.profiles?.display_name || 'Unknown',
+          color: m.profiles?.color || 'bg-[#E0DBD5]',
+        })))
+      })
+    fetchComments(cardId)
+    fetchActivity(cardId)
+    fetchAttachments(cardId)
+
+    return () => { cancelled = true }
+  }, [cardId])
 
   const saveAndCloseRef = useRef(null)
 

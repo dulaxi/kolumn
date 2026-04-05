@@ -409,7 +409,13 @@ export const useBoardStore = create((set, get) => ({
 
     const allCards = Object.values(state.cards)
     const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
-    const taskNumber = board.next_task_number || 1
+
+    // Use atomic RPC to get next task number (prevents duplicates under concurrent creates)
+    let taskNumber = board.next_task_number || 1
+    const { data: atomicNum, error: rpcError } = await supabase.rpc('next_task_number', { target_board_id: boardId })
+    if (!rpcError && atomicNum != null) {
+      taskNumber = atomicNum
+    }
 
     const rawInsert = {
       board_id: boardId,
@@ -437,15 +443,7 @@ export const useBoardStore = create((set, get) => ({
     const cardInsert = validated.data
 
     try {
-      // Run card insert and task number increment in parallel (independent operations)
-      const [cardRes, numRes] = await Promise.all([
-        supabase.from('cards').insert(cardInsert).select().single(),
-        supabase.from('boards').update({ next_task_number: taskNumber + 1 }).eq('id', boardId),
-      ])
-
-      if (numRes.error) {
-        logError('Failed to increment task number:', numRes.error)
-      }
+      const cardRes = await supabase.from('cards').insert(cardInsert).select().single()
 
       if (cardRes.error || !cardRes.data) {
         logError('Failed to create card:', cardRes.error)
@@ -568,16 +566,19 @@ export const useBoardStore = create((set, get) => ({
       },
     }))
 
-    const { error } = await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
-    get()._completingCards.delete(cardId)
-    if (error) {
-      logError('Failed to toggle card completion:', error)
-      set((state) => ({
-        cards: { ...state.cards, [cardId]: card },
-      }))
-      return
+    try {
+      const { error } = await supabase.from('cards').update({ completed: newCompleted }).eq('id', cardId)
+      if (error) {
+        logError('Failed to toggle card completion:', error)
+        set((state) => ({
+          cards: { ...state.cards, [cardId]: card },
+        }))
+        return
+      }
+      logActivity(cardId, newCompleted ? 'completed' : 'reopened', null)
+    } finally {
+      get()._completingCards.delete(cardId)
     }
-    logActivity(cardId, newCompleted ? 'completed' : 'reopened', null)
   },
 
   deleteCard: async (cardId) => {
@@ -609,8 +610,14 @@ export const useBoardStore = create((set, get) => ({
         showToast.error('Failed to delete task')
       }
     } else {
-      set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
-      showToast.restore('Task restored')
+      // Verify card still exists in DB before restoring (prevents ghost cards after concurrent remote delete)
+      const { data: exists } = await supabase.from('cards').select('id').eq('id', cardId).maybeSingle()
+      if (exists) {
+        set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
+        showToast.restore('Task restored')
+      } else {
+        showToast.warn('Task was already deleted')
+      }
     }
   },
 
@@ -652,85 +659,6 @@ export const useBoardStore = create((set, get) => ({
     } else {
       logActivity(cardId, 'unarchived', null)
       showToast.restore('Task restored from archive')
-    }
-  },
-
-  moveCard: async (boardId, fromColumnId, toColumnId, fromIndex, toIndex) => {
-    const state = get()
-
-    // Get cards sorted by position for each column
-    const fromCards = Object.values(state.cards)
-      .filter((c) => c.column_id === fromColumnId)
-      .sort((a, b) => a.position - b.position)
-
-    const movedCard = fromCards[fromIndex]
-    if (!movedCard) return
-
-    if (fromColumnId === toColumnId) {
-      // Reorder within same column
-      const cards = [...fromCards]
-      cards.splice(fromIndex, 1)
-      cards.splice(toIndex, 0, movedCard)
-
-      const updates = {}
-      const dbBatch = []
-      cards.forEach((card, i) => {
-        if (card.position !== i) {
-          updates[card.id] = { ...card, position: i }
-          dbBatch.push({ id: card.id, position: i })
-        }
-      })
-
-      if (Object.keys(updates).length > 0) {
-        set((state) => ({
-          cards: { ...state.cards, ...updates },
-        }))
-        // Update positions in DB (parallel to minimize race window)
-        await Promise.all(dbBatch.map(({ id, position }) =>
-          supabase.from('cards').update({ position }).eq('id', id)
-            .then(({ error }) => { if (error) logError('Failed to update card position:', error) })
-        ))
-      }
-    } else {
-      // Move between columns
-      const toCards = Object.values(state.cards)
-        .filter((c) => c.column_id === toColumnId)
-        .sort((a, b) => a.position - b.position)
-
-      const newFromCards = fromCards.filter((c) => c.id !== movedCard.id)
-      const newToCards = [...toCards]
-      newToCards.splice(toIndex, 0, { ...movedCard, column_id: toColumnId })
-
-      const updates = {}
-      const dbBatch = []
-
-      newFromCards.forEach((card, i) => {
-        if (card.position !== i) {
-          updates[card.id] = { ...card, position: i }
-          dbBatch.push({ id: card.id, position: i })
-        }
-      })
-
-      newToCards.forEach((card, i) => {
-        const isMovedCard = card.id === movedCard.id
-        updates[card.id] = { ...card, column_id: toColumnId, position: i, ...(isMovedCard ? { completed: false } : {}) }
-        dbBatch.push({ id: card.id, position: i, column_id: toColumnId, ...(isMovedCard ? { completed: false } : {}) })
-      })
-
-      set((state) => ({
-        cards: { ...state.cards, ...updates },
-      }))
-
-      // Update positions in DB (parallel to minimize race window)
-      await Promise.all(dbBatch.map(({ id, ...rest }) =>
-        supabase.from('cards').update(rest).eq('id', id)
-          .then(({ error }) => { if (error) logError('Failed to update card position:', error) })
-      ))
-
-      // Log the column move
-      const fromCol = state.columns[fromColumnId]
-      const toCol = state.columns[toColumnId]
-      logActivity(movedCard.id, 'moved', `${fromCol?.title || 'Unknown'} → ${toCol?.title || 'Unknown'}`)
     }
   },
 
@@ -1088,12 +1016,19 @@ export const useBoardStore = create((set, get) => ({
         task.recurrence_unit
       )
 
+      // Derive proper task numbers (same as addCard)
+      const state = get()
+      const board = state.boards[task.board_id]
+      const allCards = Object.values(state.cards)
+      const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+      const taskNumber = board?.next_task_number || 1
+
       const newCard = {
         board_id: task.board_id,
         column_id: task.column_id,
         position: task.position,
-        task_number: 0,
-        global_task_number: 0,
+        task_number: taskNumber,
+        global_task_number: globalNumber,
         title: task.title,
         description: task.description || '',
         assignee_name: task.assignee_name || '',
@@ -1108,7 +1043,16 @@ export const useBoardStore = create((set, get) => ({
         recurrence_next_due: format(nextDue, 'yyyy-MM-dd'),
       }
 
-      const { data: created } = await supabase.from('cards').insert(newCard).select().single()
+      const { data: created, error: insertError } = await supabase.from('cards').insert(newCard).select().single()
+      if (insertError) {
+        logError('Failed to spawn recurring task:', insertError)
+        continue
+      }
+
+      // Increment board task number
+      if (board) {
+        await supabase.from('boards').update({ next_task_number: taskNumber + 1 }).eq('id', task.board_id)
+      }
 
       if (created) {
         set((state) => ({

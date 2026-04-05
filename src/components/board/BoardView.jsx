@@ -265,14 +265,14 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
                 value={newColumnTitle}
                 onChange={(e) => setNewColumnTitle(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onBlur={handleAddColumn}
+                onBlur={() => { if (!addingColumn) handleAddColumn() }}
                 placeholder="Section name"
                 className="w-full text-[13px] px-0 py-0 border-none focus:outline-none focus:ring-0 placeholder-[#C4BFB8] bg-transparent"
               />
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleAddColumn}
+                  onMouseDown={(e) => { e.preventDefault(); handleAddColumn() }}
                   disabled={addingColumn}
                   className="px-3 py-1.5 text-xs font-medium bg-[#C2D64A] text-white rounded-md hover:bg-[#A8BA32] transition-colors disabled:opacity-50"
                 >

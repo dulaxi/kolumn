@@ -42,7 +42,7 @@ describe('cardInsertSchema', () => {
       title: 'Full task',
       description: 'A description',
       assignee_name: 'Alice',
-      labels: ['bug', 'urgent'],
+      labels: [{ text: 'bug', color: '#CF222E' }, { text: 'urgent', color: '#9A6700' }],
       due_date: '2026-04-10',
       priority: 'high',
       icon: 'AlertCircle',
@@ -53,6 +53,27 @@ describe('cardInsertSchema', () => {
     expect(result.success).toBe(true)
     expect(result.data.priority).toBe('high')
     expect(result.data.checklist).toHaveLength(1)
+  })
+
+  test('accepts object labels with text and color (C1 bug)', () => {
+    const input = {
+      board_id: 'abc-123',
+      column_id: 'col-456',
+      position: 0,
+      task_number: 1,
+      global_task_number: 1,
+      title: 'Labeled task',
+      labels: [
+        { text: 'bug', color: '#CF222E' },
+        { text: 'feature', color: '#3094FF' },
+      ],
+    }
+    const result = cardInsertSchema.safeParse(input)
+    expect(result.success).toBe(true)
+    expect(result.data.labels).toEqual([
+      { text: 'bug', color: '#CF222E' },
+      { text: 'feature', color: '#3094FF' },
+    ])
   })
 
   test('rejects missing required fields', () => {
@@ -141,6 +162,14 @@ describe('cardUpdateSchema', () => {
   test('validates empty update (no fields)', () => {
     const result = cardUpdateSchema.safeParse({})
     expect(result.success).toBe(true)
+  })
+
+  test('accepts object labels in update (C1 bug)', () => {
+    const result = cardUpdateSchema.safeParse({
+      labels: [{ text: 'urgent', color: '#CF222E' }],
+    })
+    expect(result.success).toBe(true)
+    expect(result.data.labels[0]).toEqual({ text: 'urgent', color: '#CF222E' })
   })
 
   test('rejects invalid priority in update', () => {

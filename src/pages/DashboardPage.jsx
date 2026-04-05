@@ -59,7 +59,12 @@ export default function DashboardPage() {
 
   function handleNewBoard() {
     navigate('/boards')
-    setTimeout(() => window.dispatchEvent(new CustomEvent('kolumn:create-board')), 100)
+    let attempts = 0
+    const tryDispatch = () => {
+      window.dispatchEvent(new CustomEvent('kolumn:create-board'))
+      if (++attempts < 10) setTimeout(tryDispatch, 100)
+    }
+    setTimeout(tryDispatch, 50)
   }
 
   return (

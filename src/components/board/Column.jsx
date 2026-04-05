@@ -74,7 +74,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     [columnCards, filters, sortBy]
   )
 
-  const cardIds = useMemo(() => columnCards.map((c) => c.id), [columnCards])
+  const cardIds = useMemo(() => filteredCards.map((c) => c.id), [filteredCards])
   const wipLimit = column.wip_limit
   const overWip = wipLimit && columnCards.length > wipLimit
 
@@ -155,8 +155,9 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           <button
             type="button"
             onClick={handleCreateCard}
+            disabled={creating}
             aria-label="Add task"
-            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
+            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
           </button>

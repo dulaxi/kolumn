@@ -51,9 +51,13 @@ export const useNotificationStore = create((set, get) => ({
     const unread = get().notifications.filter((n) => !n.read)
     if (unread.length === 0) return
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
     await supabase
       .from('notifications')
       .update({ read: true })
+      .eq('user_id', user.id)
       .eq('read', false)
 
     set((state) => ({
@@ -79,12 +83,14 @@ export const useNotificationStore = create((set, get) => ({
     })
   },
 
-  subscribeToNotifications: () => {
+  subscribeToNotifications: (userId) => {
+    if (!userId) return () => {}
+
     const channel = supabase
-      .channel('notifications')
+      .channel(`notifications:${userId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         (payload) => {
           const item = payload.new
           set((state) => ({

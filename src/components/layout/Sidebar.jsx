@@ -262,7 +262,13 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => {
                     navigate('/boards')
-                    setTimeout(() => window.dispatchEvent(new CustomEvent('kolumn:create-board')), 100)
+                    // Retry dispatch until BoardsPage listener is mounted
+                    let attempts = 0
+                    const tryDispatch = () => {
+                      window.dispatchEvent(new CustomEvent('kolumn:create-board'))
+                      if (++attempts < 10) setTimeout(tryDispatch, 100)
+                    }
+                    setTimeout(tryDispatch, 50)
                     closeMobileMenu()
                   }}
                   className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors cursor-pointer"

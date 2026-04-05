@@ -134,14 +134,15 @@ describe('computeBoardSummaries', () => {
     expect(projA.columns[1].count).toBe(1) // Done
   })
 
-  test('only counts cards assigned to the given user', () => {
+  test('counts ALL cards on the board, not just the current user (C2 bug)', () => {
     const cards = {
       c1: makeCard({ id: 'c1', board_id: 'b1', column_id: 'col1', assignee_name: 'Alice' }),
       c2: makeCard({ id: 'c2', board_id: 'b1', column_id: 'col1', assignee_name: 'Bob' }),
+      c3: makeCard({ id: 'c3', board_id: 'b1', column_id: 'col1', assignee_name: '' }),
     }
     const summaries = computeBoardSummaries(boards, columns, cards, 'Alice')
     const projA = summaries.find((s) => s.id === 'b1')
-    expect(projA.totalCards).toBe(1)
+    expect(projA.totalCards).toBe(3)
   })
 
   test('computes lastUpdated from most recent card timestamp', () => {

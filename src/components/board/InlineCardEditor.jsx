@@ -13,33 +13,21 @@ export default function InlineCardEditor({ cardId, onDone }) {
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
 
-  const [title, setTitle] = useState('')
-  const [assignee, setAssignee] = useState('')
-  const [priority, setPriority] = useState('medium')
-  const [dueDate, setDueDate] = useState('')
-  const [labels, setLabels] = useState([])
+  const [title, setTitle] = useState(() => card?.title === 'Untitled task' ? '' : (card?.title || ''))
+  const [assignee, setAssignee] = useState(() => card?.assignee_name || '')
+  const [priority, setPriority] = useState(() => card?.priority || 'medium')
+  const [dueDate, setDueDate] = useState(() => card?.due_date || '')
+  const [labels, setLabels] = useState(() => card?.labels ? [...card.labels] : [])
   const [showPriority, setShowPriority] = useState(false)
   const [showLabelForm, setShowLabelForm] = useState(false)
   const [newLabelText, setNewLabelText] = useState('')
   const [newLabelColor, setNewLabelColor] = useState('blue')
   const [showIconPicker, setShowIconPicker] = useState(false)
-  const [description, setDescription] = useState('')
-  const [checklist, setChecklist] = useState([])
+  const [description, setDescription] = useState(() => card?.description || '')
+  const [checklist, setChecklist] = useState(() => card?.checklist ? [...card.checklist] : [])
   const [newCheckItem, setNewCheckItem] = useState('')
 
   const titleRef = useRef(null)
-
-  useEffect(() => {
-    if (card) {
-      setTitle(card.title === 'Untitled task' ? '' : card.title)
-      setAssignee(card.assignee_name || '')
-      setPriority(card.priority || 'medium')
-      setDueDate(card.due_date || '')
-      setLabels(card.labels ? [...card.labels] : [])
-      setDescription(card.description || '')
-      setChecklist(card.checklist ? [...card.checklist] : [])
-    }
-  }, [cardId])
 
   useEffect(() => {
     if (titleRef.current) titleRef.current.focus()
