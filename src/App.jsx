@@ -16,6 +16,7 @@ const CalendarPage = lazy(() => import('./pages/CalendarPage'))
 const NotesPage = lazy(() => import('./pages/NotesPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function UndoListener() {
   const { toasts } = useToasterStore()
@@ -44,6 +45,7 @@ export default function App() {
         toastOptions={{
           duration: 3000,
         }}
+        containerProps={{ role: 'status', 'aria-live': 'polite' }}
       />
       <UndoListener />
       <Suspense fallback={<div className="min-h-screen bg-[#F2EDE8] flex items-center justify-center"><div className="text-sm text-[#8E8E89]">Loading...</div></div>}>
@@ -67,6 +69,7 @@ export default function App() {
             <Route path="notes" element={<ErrorBoundary><NotesPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

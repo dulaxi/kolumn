@@ -119,7 +119,7 @@ export const useAuthStore = create((set, get) => ({
     set({ user: null, session: null, profile: null })
     Sentry.setUser(null)
     resetUser()
-    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
+    supabase.auth.signOut({ scope: 'global' }).catch((err) => {
       logError('Sign out error:', err)
     })
   },
