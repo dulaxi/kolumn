@@ -89,7 +89,7 @@ export default function IconPicker({ value, onChange, onClose }) {
   const displayIcons = !searchResults ? (currentCategory ? currentCategory.icons : []) : null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" data-icon-picker onClick={onClose}>
       <div
         className={`bg-white shadow-2xl flex flex-col overflow-hidden ${
           isMobile

@@ -60,7 +60,11 @@ export default function DashboardPage() {
   function handleNewBoard() {
     navigate('/boards')
     let attempts = 0
+    let handled = false
+    const onHandled = () => { handled = true }
+    window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
     const tryDispatch = () => {
+      if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
       window.dispatchEvent(new CustomEvent('kolumn:create-board'))
       if (++attempts < 10) setTimeout(tryDispatch, 100)
     }

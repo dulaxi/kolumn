@@ -68,14 +68,16 @@ export const useAuthStore = create((set, get) => ({
   fetchProfile: async () => {
     const { user } = get()
     if (!user) return
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
-    if (data) {
-      set({ profile: data })
+    if (error) {
+      logError('fetchProfile error:', error)
+      return
     }
+    set({ profile: data || null })
   },
 
   // signUp and signIn explicitly set user/session from the API response.
@@ -119,6 +121,10 @@ export const useAuthStore = create((set, get) => ({
     set({ user: null, session: null, profile: null })
     Sentry.setUser(null)
     resetUser()
+    // Lazy import to avoid circular dependency (boardStore imports authStore)
+    import('./boardStore').then(({ useBoardStore }) => useBoardStore.getState().resetStore())
+    import('./noteStore').then(({ useNoteStore }) => useNoteStore.getState().resetStore())
+    localStorage.removeItem('kolumn_active_board')
     supabase.auth.signOut({ scope: 'global' }).catch((err) => {
       logError('Sign out error:', err)
     })

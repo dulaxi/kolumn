@@ -264,7 +264,11 @@ export default function Sidebar() {
                     navigate('/boards')
                     // Retry dispatch until BoardsPage listener is mounted
                     let attempts = 0
+                    let handled = false
+                    const onHandled = () => { handled = true }
+                    window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
                     const tryDispatch = () => {
+                      if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
                       window.dispatchEvent(new CustomEvent('kolumn:create-board'))
                       if (++attempts < 10) setTimeout(tryDispatch, 100)
                     }
@@ -334,7 +338,7 @@ export default function Sidebar() {
                 <div
                   onClick={() => { navigate('/workspace'); closeMobileMenu() }}
                   className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
-                    location.pathname === '/workspace' && !activeBoardId?.startsWith('ws_')
+                    location.pathname === '/workspace'
                       ? 'text-[#1B1B18] font-medium bg-[#EEF2D6]'
                       : 'text-[#5C5C57] hover:text-[#1B1B18] hover:bg-[#E8E2DB]'
                   }`}

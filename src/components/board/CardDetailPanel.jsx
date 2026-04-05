@@ -140,6 +140,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
+        // Don't close panel if Escape was for a child modal/overlay
+        if (e.target.closest('[data-modal]') || e.target.closest('[data-icon-picker]')) return
         saveAndCloseRef.current?.()
       }
     }
@@ -257,7 +259,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 description: card.description || '',
                 priority: card.priority || 'medium',
                 labels: card.labels || [],
-                checklist: (card.checklist || []).map((item) => ({ text: item.text, checked: false })),
+                checklist: (card.checklist || []).map((item) => ({ text: item.text, done: false })),
               })
               showToast.success('Saved as template')
             }}

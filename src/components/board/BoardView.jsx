@@ -133,6 +133,13 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
     [boardId, getColumns, findCol, getColumnCards, moveCardLocal]
   )
 
+  const handleDragCancel = useCallback(() => {
+    setActiveCardId(null)
+    setDragging(false)
+    affectedCardsRef.current = new Set()
+    dragOriginRef.current = null
+  }, [setDragging])
+
   const handleDragEnd = useCallback(
     (event) => {
       const { active, over } = event
@@ -238,6 +245,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div className="flex gap-3 sm:gap-5 overflow-x-auto h-full pb-4 snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
         {boardColumns.map((column) => (

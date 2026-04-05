@@ -60,14 +60,14 @@ export const useNoteStore = create((set, get) => ({
     }
 
     const prevNote = get().notes[noteId]
-    // Optimistic update
+    // Optimistic update — use validated.data, not raw updates
     set((state) => ({
       notes: {
         ...state.notes,
-        [noteId]: { ...state.notes[noteId], ...updates, updated_at: new Date().toISOString() },
+        [noteId]: { ...state.notes[noteId], ...validated.data, updated_at: new Date().toISOString() },
       },
     }))
-    const { error } = await supabase.from('notes').update(updates).eq('id', noteId)
+    const { error } = await supabase.from('notes').update(validated.data).eq('id', noteId)
     if (error) {
       logError('Failed to update note:', error)
       // Rollback optimistic update
@@ -98,4 +98,6 @@ export const useNoteStore = create((set, get) => ({
   },
 
   getAllNotes: () => Object.values(get().notes),
+
+  resetStore: () => set({ notes: {}, loading: false, error: null }),
 }))

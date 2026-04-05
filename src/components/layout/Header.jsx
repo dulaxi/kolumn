@@ -32,6 +32,8 @@ export default function Header({ title }) {
   const markAsRead = useNotificationStore((s) => s.markAsRead)
   const markAllAsRead = useNotificationStore((s) => s.markAllAsRead)
 
+  const isLightColor = (color) => ['bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]'].includes(color)
+
   const cards = useBoardStore((s) => s.cards)
   const boards = useBoardStore((s) => s.boards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
@@ -103,7 +105,7 @@ export default function Header({ title }) {
     <header className="relative h-16 bg-[#FAF8F6] border-b border-[#E0DBD5] flex items-center justify-between px-4 sm:px-6">
       {/* Mobile search overlay */}
       {!isDesktop && mobileSearchOpen ? (
-        <div className="absolute inset-0 bg-white flex items-center gap-2 px-4 z-40" ref={searchRef}>
+        <div className="absolute inset-0 bg-white flex items-center gap-2 px-4 z-40">
           <Search className="w-4 h-4 text-[#8E8E89] shrink-0" />
           <input
             ref={mobileSearchRef}
@@ -287,7 +289,7 @@ export default function Header({ title }) {
         <div className="relative" ref={notifRef}>
           <button
             type="button"
-            onClick={() => setNotifOpen(!notifOpen)}
+            onClick={() => { setNotifOpen(!notifOpen); setMenuOpen(false) }}
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
             className="relative p-2 rounded-lg text-[#8E8E89] hover:bg-[#E8E2DB] transition-colors"
           >
@@ -363,11 +365,11 @@ export default function Header({ title }) {
       <div className="relative" ref={menuRef}>
         <button
           type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => { setMenuOpen(!menuOpen); setNotifOpen(false) }}
           aria-label="User menu"
           className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${
             isDesktop
-              ? profile?.icon ? `${profile.color === 'bg-[#8E8E89]' ? 'text-[#1B1B18]' : 'text-white'} ${profile.color || 'bg-[#E0DBD5]'}` : 'bg-[#E8E2DB]'
+              ? profile?.icon ? `${isLightColor(profile.color) ? 'text-[#1B1B18]' : 'text-white'} ${profile.color || 'bg-[#E0DBD5]'}` : 'bg-[#E8E2DB]'
               : ''
           }`}
         >
@@ -381,7 +383,7 @@ export default function Header({ title }) {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-full mt-2 bg-white border border-[#E0DBD5] rounded-xl shadow-lg py-1 z-30 w-48 animate-dropdown">
+          <div className="absolute right-0 top-full mt-2 bg-white border border-[#E0DBD5] rounded-xl shadow-lg py-1 z-50 w-48 animate-dropdown">
             <div className="px-3 py-2 border-b border-[#E8E2DB]">
               <p className="text-sm font-medium text-[#1B1B18] truncate">{profile?.display_name || 'User'}</p>
               <p className="text-xs text-[#8E8E89] truncate">{profile?.email || ''}</p>

@@ -19,7 +19,6 @@ const themes = [
 
 export default function SettingsPage() {
   const fileInputRef = useRef(null)
-  const [importMessage, setImportMessage] = useState(null)
   const [confirmingClear, setConfirmingClear] = useState(false)
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
@@ -28,6 +27,7 @@ export default function SettingsPage() {
   const profile = useAuthStore((s) => s.profile)
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const [showProfileIconPicker, setShowProfileIconPicker] = useState(false)
+  const isLightColor = (color) => ['bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]'].includes(color)
 
   const handleProfileUpdate = (updates) => {
     updateProfile(updates)
@@ -122,7 +122,7 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {/* Preview */}
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${(profile?.color || 'bg-[#E0DBD5]') === 'bg-[#A0A0A0]' ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
               {profile?.icon ? (
                 <DynamicIcon name={profile.icon} className="w-5 h-5" />
               ) : (
@@ -151,7 +151,7 @@ export default function SettingsPage() {
               onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
               className="flex items-center gap-2 px-3 py-2 border border-[#E0DBD5] rounded-xl hover:bg-[#F2EDE8] transition-colors text-sm"
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${(profile?.color || 'bg-[#E0DBD5]') === 'bg-[#A0A0A0]' ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
                 {profile?.icon ? (
                   <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
                 ) : (
@@ -308,17 +308,6 @@ export default function SettingsPage() {
           Import Backup
         </button>
 
-        {importMessage && (
-          <div
-            className={`mt-3 text-sm px-3 py-2 rounded-lg ${
-              importMessage.type === 'success'
-                ? 'bg-[#EEF2D6] text-[#A8BA32]'
-                : 'bg-[#F0E0D2] text-[#7A5C44]'
-            }`}
-          >
-            {importMessage.text}
-          </div>
-        )}
       </div>
 
       {/* Danger Zone */}
