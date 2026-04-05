@@ -11,8 +11,8 @@ export function filterCards(cards, filters) {
       const d = card.due_date ? parseISO(card.due_date) : null
       if (filters.due === 'overdue' && !(d && isPast(d) && !isToday(d))) return false
       if (filters.due === 'today' && !(d && isToday(d))) return false
-      if (filters.due === 'week' && !(d && isThisWeek(d))) return false
-      if (filters.due === 'none' && d) return false
+      if (filters.due === 'this_week' && !(d && isThisWeek(d))) return false
+      if (filters.due === 'no_date' && d) return false
     }
     return true
   })

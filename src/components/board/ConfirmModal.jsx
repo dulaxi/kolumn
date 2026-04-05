@@ -14,7 +14,7 @@ export default function ConfirmModal({ title, message, confirmLabel = 'Delete', 
   }, [onCancel])
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={onCancel} role="presentation">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" data-modal onClick={onCancel} role="presentation">
       <div
         role="alertdialog"
         aria-labelledby="confirm-title"

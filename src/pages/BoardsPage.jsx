@@ -33,7 +33,7 @@ export default function BoardsPage() {
       const cardId = await addCard(activeBoardId, firstCol.id, { title: '' })
       if (cardId) setInlineCardId(cardId)
     }
-    const openCreate = () => setShowCreateModal(true)
+    const openCreate = () => { setShowCreateModal(true); window.dispatchEvent(new CustomEvent('kolumn:create-board-ack')) }
     window.addEventListener('kolumn:open-card', openCard)
     window.addEventListener('kolumn:close-panel', closePanel)
     window.addEventListener('kolumn:new-card', newCard)

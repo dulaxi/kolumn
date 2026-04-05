@@ -46,6 +46,11 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const [wipValue, setWipValue] = useState(column.wip_limit || '')
   const [showTemplates, setShowTemplates] = useState(false)
   const [visibleCount, setVisibleCount] = useState(20)
+
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [filters, sortBy])
+
   const templates = useTemplateStore((s) => s.templates)
   const deleteTemplate = useTemplateStore((s) => s.deleteTemplate)
   const renameRef = useRef(null)
@@ -74,6 +79,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     [columnCards, filters, sortBy]
   )
 
+  const allCardIds = useMemo(() => columnCards.map((c) => c.id), [columnCards])
   const cardIds = useMemo(() => filteredCards.map((c) => c.id), [filteredCards])
   const wipLimit = column.wip_limit
   const overWip = wipLimit && columnCards.length > wipLimit
@@ -93,7 +99,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       return
     }
     setCreating(true)
-    const today = new Date().toISOString().split('T')[0] + 'T23:59:59'
+    const today = new Date().toISOString().split('T')[0]
     const cardData = template
       ? {
           title: template.title || 'Untitled task',
@@ -102,7 +108,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           dueDate: today,
           priority: template.priority || 'medium',
           labels: template.labels || [],
-          checklist: (template.checklist || []).map((item) => ({ text: item.text, checked: false })),
+          checklist: (template.checklist || []).map((item) => ({ text: item.text, done: false })),
         }
       : { title: 'Untitled task', assignee: profile?.display_name || '', dueDate: today }
     const cardId = await addCard(boardId, column.id, cardData)
@@ -148,7 +154,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
             </h3>
           )}
           <span className={`text-xs ${overWip ? 'text-[#8B7355] font-medium' : 'text-[#8E8E89]'}`}>
-            {filteredCards.length}{wipLimit ? `/${wipLimit}` : ''}
+            {columnCards.length}{wipLimit ? `/${wipLimit}` : ''}
           </span>
         </div>
         <div className="flex items-center">
@@ -223,7 +229,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
         className="flex-1 overflow-y-auto pb-2 space-y-2 min-h-[80px]"
       >
         <SortableContext
-          items={cardIds}
+          items={allCardIds}
           strategy={verticalListSortingStrategy}
         >
           {filteredCards.slice(0, visibleCount).map((card) =>

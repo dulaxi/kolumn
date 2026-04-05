@@ -294,9 +294,12 @@ export const useBoardStore = create((set, get) => ({
         const cards = { ...s.cards }
         prevColumns.forEach((c) => { columns[c.id] = c })
         prevCards.forEach((c) => { cards[c.id] = c })
-        return { boards: { ...s.boards, [boardId]: prevBoard }, columns, cards, activeBoardId: prevActiveId }
+        // Only restore activeBoardId if the user hasn't navigated to another valid board
+        const currentActiveId = s.activeBoardId
+        const shouldRestoreActive = currentActiveId === null || !s.boards[currentActiveId]
+        return { boards: { ...s.boards, [boardId]: prevBoard }, columns, cards, activeBoardId: shouldRestoreActive ? prevActiveId : currentActiveId }
       })
-      localStorage.setItem(ACTIVE_BOARD_KEY, prevActiveId || '')
+      localStorage.setItem(ACTIVE_BOARD_KEY, get().activeBoardId || '')
       showToast.restore('Board restored')
     }
   },
@@ -407,8 +410,12 @@ export const useBoardStore = create((set, get) => ({
       .filter((c) => c.column_id === columnId)
     const position = columnCards.length
 
-    const allCards = Object.values(state.cards)
-    const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+    let globalNumber = Object.values(state.cards).reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+    // Try to get accurate max from DB to avoid duplicates in multi-tab scenarios
+    const { data: maxRow } = await supabase.from('cards').select('global_task_number').order('global_task_number', { ascending: false }).limit(1).single()
+    if (maxRow?.global_task_number >= globalNumber) {
+      globalNumber = maxRow.global_task_number + 1
+    }
 
     // Use atomic RPC to get next task number (prevents duplicates under concurrent creates)
     let taskNumber = board.next_task_number || 1
@@ -521,10 +528,13 @@ export const useBoardStore = create((set, get) => ({
         // Notify the newly assigned user
         if (dbUpdates.assignee_name) {
           const { data: assigneeProfile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('display_name', dbUpdates.assignee_name)
-            .single()
+            .from('board_members')
+            .select('user_id, profiles(id, display_name)')
+            .eq('board_id', prevCard.board_id)
+            .then(({ data }) => {
+              const match = (data || []).find((m) => m.profiles?.display_name === dbUpdates.assignee_name)
+              return { data: match?.profiles || null }
+            })
           if (assigneeProfile) {
             const actorProfile = useAuthStore.getState().profile
             useNotificationStore.getState().notify({
@@ -552,10 +562,17 @@ export const useBoardStore = create((set, get) => ({
   completeCard: async (cardId) => {
     // Prevent rapid double-clicks from toggling multiple times
     if (get()._completingCards.has(cardId)) return
-    get()._completingCards.add(cardId)
+    set((state) => ({ _completingCards: new Set([...state._completingCards, cardId]) }))
 
     const card = get().cards[cardId]
-    if (!card) { get()._completingCards.delete(cardId); return }
+    if (!card) {
+      set((state) => {
+        const next = new Set(state._completingCards)
+        next.delete(cardId)
+        return { _completingCards: next }
+      })
+      return
+    }
 
     const newCompleted = !card.completed
 
@@ -577,7 +594,11 @@ export const useBoardStore = create((set, get) => ({
       }
       logActivity(cardId, newCompleted ? 'completed' : 'reopened', null)
     } finally {
-      get()._completingCards.delete(cardId)
+      set((state) => {
+        const next = new Set(state._completingCards)
+        next.delete(cardId)
+        return { _completingCards: next }
+      })
     }
   },
 
@@ -1019,9 +1040,18 @@ export const useBoardStore = create((set, get) => ({
       // Derive proper task numbers (same as addCard)
       const state = get()
       const board = state.boards[task.board_id]
-      const allCards = Object.values(state.cards)
-      const globalNumber = allCards.reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
-      const taskNumber = board?.next_task_number || 1
+
+      let globalNumber = Object.values(state.cards).reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+      const { data: maxRow } = await supabase.from('cards').select('global_task_number').order('global_task_number', { ascending: false }).limit(1).single()
+      if (maxRow?.global_task_number >= globalNumber) {
+        globalNumber = maxRow.global_task_number + 1
+      }
+
+      let taskNumber = board?.next_task_number || 1
+      const { data: atomicNum, error: rpcError } = await supabase.rpc('next_task_number', { target_board_id: task.board_id })
+      if (!rpcError && atomicNum != null) {
+        taskNumber = atomicNum
+      }
 
       const newCard = {
         board_id: task.board_id,
@@ -1049,8 +1079,8 @@ export const useBoardStore = create((set, get) => ({
         continue
       }
 
-      // Increment board task number
-      if (board) {
+      // Only manually increment if the atomic RPC was not used
+      if (rpcError && board) {
         await supabase.from('boards').update({ next_task_number: taskNumber + 1 }).eq('id', task.board_id)
       }
 
@@ -1190,8 +1220,16 @@ export const useBoardStore = create((set, get) => ({
   },
 
   unsubscribeAll: () => {
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
     subscriptions.forEach((sub) => supabase.removeChannel(sub))
     set({ subscriptions: [] })
+  },
+
+  resetStore: () => {
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+    const { subscriptions } = get()
+    subscriptions.forEach((sub) => supabase.removeChannel(sub))
+    set({ boards: {}, columns: {}, cards: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))

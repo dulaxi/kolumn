@@ -25,6 +25,17 @@ export async function migrateLocalData() {
       const cards = state.cards || {}
 
       for (const board of Object.values(boards)) {
+        // Check if already migrated (prevents duplicates on retry)
+        const { data: existing } = await supabase
+          .from('boards')
+          .select('id')
+          .eq('owner_id', user.id)
+          .eq('name', board.name || 'Imported Board')
+          .limit(1)
+        if (existing?.length > 0) {
+          continue // Already migrated this board
+        }
+
         // Create board
         const { data: newBoard, error: boardError } = await supabase
           .from('boards')
