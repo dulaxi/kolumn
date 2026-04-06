@@ -54,9 +54,15 @@
   animation: slideInRight 0.2s ease-out;
 }
 
-/* Landing page font */
+/* Landing page fonts */
 .landing-font {
-  font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+.landing-font h1,
+.landing-font h2,
+.landing-font h3,
+.landing-font .font-heading {
+  font-family: 'Crimson Pro', Georgia, serif;
 }
 
 /* Text selection */
