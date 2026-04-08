@@ -2,12 +2,28 @@
 
 **Date**: 2026-04-08
 **Branch**: landing
-**Status**: Approved, ready for implementation plan
+**Status**: Approved (amended 2026-04-08 after reading existing demo code)
 **Replaces**: Tools Strip section (`src/pages/LandingPage.jsx:1205-1238`)
+
+## Amendment history
+
+**2026-04-08 (initial)**: Approved with simple opacity/shimmer animation model.
+
+**2026-04-08 (amended, same day)**: After reading the existing `EveryDetailDemo` code in detail during implementation plan writing, discovered three things that forced spec changes:
+
+1. The existing demo uses a sophisticated phase-based animation timeline (~10 named constants, character-by-character typing, mirror transition, per-card sweep) rather than simple percentage blocks. The new demo must reach similar craftsmanship to avoid visual asymmetry on the landing page. → **Added `SLACK_*` phase constants and compute helpers in §4.**
+2. The existing `AI_CARDS` array (lines 403-437) already contains the exact cards described for the new section. Reusing `AI_CARDS` + `AICard` creates a stronger "same output from different inputs" narrative and halves implementation work. → **Right panel rewritten to reuse existing components in §3.**
+3. The original "Labels from channel names" bullet was inaccurate — the existing card labels are topic-based (Frontend/Backend), not channel-based. → **Corrected to "Labels from topic cues" in §6.**
+
+Messages were then reverse-engineered from `AI_CARDS` so each message's extractable signals map to a specific card's existing fields (assignee initial, label text, priority level, due date). This also forced Message 2 to have no `@mention` so that Card 2's existing `assignee: null` value is honest.
 
 ## Summary
 
 Add a second dual-panel showcase section to the landing page that demonstrates Kolumn's ability to extract structured tasks from a team Slack thread. The new section mirrors the architecture of the existing `EveryDetailDemo` component but tells a different input→output story: **team chat → assigned kanban cards**.
+
+**Design-defining decision: the right panel reuses the existing `AI_CARDS` data and the existing `AICard` component as-is.** The two demos show the *same* final cards but arrived at via *different* input sources (scratchpad notes vs. Slack messages). This creates an unmissable narrative payoff: "different inputs, same clean output" — which is a stronger product claim than two independent scenarios.
+
+The Slack messages are reverse-engineered from the existing `AI_CARDS` so that each extractable signal in the text maps to a specific field on one of the three cards.
 
 The new section replaces the Tools Strip, which is currently redundant with the Features Grid directly above it — both enumerate Kolumn's features in a tile-grid format, competing for the same conversion job.
 
@@ -45,8 +61,9 @@ The two showcases are separated by Features Grid, preventing visual clash. The n
 - **No real Slack OAuth integration** — this is pure visual animation, all content is hardcoded
 - **No hover/interactive state** on messages — purely presentational, same as existing demo
 - **No dark mode styling** — stays in the cream/warm palette of the rest of the page
-- **No reuse of the production `Card` component** from `src/components/board/` — lightweight inline mock cards, same approach as the existing `RightContent`
+- **No new card data or new card component** — reuse the existing `AI_CARDS` array and `AICard` component as-is
 - **No new component files** — `SlackThreadDemo` lives inline in `LandingPage.jsx` alongside `EveryDetailDemo`
+- **No mirror/transition phase** — Slack messages and cards don't occupy comparable visual positions, so there's no equivalent to the existing `MirrorNotes` phase. The new timeline goes directly from "messages land" to "cards sweep in" with a brief gap.
 - **No unit tests** — project has no test suite (per CLAUDE.md); verification is manual
 
 ## Design Decisions
@@ -61,14 +78,31 @@ A short Slack thread in `#launch-prep` where a PM named **Priya** drops three me
 
 **Channel header**: `# launch-prep`
 
-**Message 1** (Priya)
-> hey team — quick stuff for launch 🚀 @aisha pricing page needs to go live by fri, 3 tiers not 2 per founder
+The messages are reverse-engineered from the existing `AI_CARDS` (at `LandingPage.jsx:403-437`) so that each one's extractable signals map cleanly to a specific card's fields.
 
-**Message 2** (Priya)
-> @marcus stripe needs to handle refunds too, high prio — legal flagged it
+**Message 1** (Priya) — maps to `AI_CARDS[0]` (Redo hero section / Frontend / high / assignee A)
+> @aisha hero section feels plain — sarah flagged it on the call, can you redo it? high prio
 
-**Message 3** (Priya)
-> also someone pls redo the hero copy, current one feels plain
+**Message 2** (Priya) — maps to `AI_CARDS[1]` (Build pricing page / Frontend / medium / 0/3 checklist / no assignee)
+> also pricing page needs building — 3 tiers with monthly/annual toggle, founder's call
+
+**Message 3** (Priya) — maps to `AI_CARDS[2]` (Stripe integration / Backend / high / Fri / assignee M)
+> @marcus stripe integration by fri — checkout, webhooks, customer portal. high prio, legal flagged it
+
+**Mapping of signals → fields**:
+
+| Message text | Extracted field |
+|---|---|
+| `@aisha` (Msg 1) | `assignee: 'A'` on Card 1 |
+| `@marcus` (Msg 3) | `assignee: 'M'` on Card 3 |
+| No mention (Msg 2) | `assignee: null` on Card 2 (honesty: unassigned because nobody was named) |
+| "high prio" (Msg 1, Msg 3) | `priority: 'high'` on Cards 1, 3 |
+| No priority cue (Msg 2) | `priority: 'medium'` on Card 2 (default) |
+| "by fri" (Msg 3) | `dueDate: 'Fri'` on Card 3 |
+| "3 tiers with monthly/annual toggle" (Msg 2) | `checklist: { done: 0, total: 3 }` on Card 2 |
+| "hero section" (Msg 1) | `labels: [{ text: 'Frontend' }]` on Card 1 |
+| "pricing page" (Msg 2) | `labels: [{ text: 'Frontend' }]` on Card 2 |
+| "stripe integration" (Msg 3) | `labels: [{ text: 'Backend' }]` on Card 3 |
 
 **Visual treatment per message**:
 - Rounded avatar circle with initial letter ("P") on dark background (`bg-[#1B1B18] text-white`)
@@ -79,36 +113,125 @@ A short Slack thread in `#launch-prep` where a PM named **Priya** drops three me
 
 ### 3. Right panel: Extracted cards
 
-Three mock cards materialize in sequence, each pulling multiple structured fields out of the corresponding message.
+**The right panel reuses `AI_CARDS` (`LandingPage.jsx:403`) and the `AICard` component (`LandingPage.jsx:570`) as-is.** No new card data, no new card component. The new demo's right panel renders the same three cards as the existing `EveryDetailDemo`:
 
-| # | Title | Assignee | Label | Deadline | Priority | Signal source in Slack |
-|---|---|---|---|---|---|---|
-| 1 | Build pricing page (3 tiers) | Aisha | Frontend | Fri | Medium | `@aisha` + "by fri" + "3 tiers" |
-| 2 | Stripe refunds support | Marcus | Backend | — | **High** | `@marcus` + "high prio" + "legal" |
-| 3 | Redo hero copy | — (none) | Copy | — | Low | no mention, no deadline, casual tone |
+1. **Redo hero section** — Frontend label, high priority, assignee A (Aisha), Browser icon
+2. **Build pricing page** — Frontend label, medium priority, 0/3 checklist, **no assignee**, Tag icon
+3. **Stripe integration** — Backend label, high priority, Fri deadline, assignee M (Marcus), CreditCard icon
 
-**Card 3 is intentionally under-specified** — no assignee, no deadline. This sells the AI's honesty: it extracts what's grounded in the input and does not invent fields. This is a deliberate trust signal and must not be "fixed" during implementation by adding a random assignee.
+**Why Card 2 has no assignee is load-bearing**: the corresponding Slack message has no `@mention`, so the AI has nothing to extract. Adding an assignee "to look more impressive" would invent a field, which breaks the demo's honesty. Since we're reusing `AI_CARDS` as-is, this constraint is enforced automatically — do not modify `AI_CARDS` during implementation.
 
-**Card visual treatment**: Matches the existing mock cards in the current `RightContent` implementation (white background, rounded-xl, label pill at top, task number + priority dot + title + description + footer with deadline/checklist/assignee avatar). Uses Lucide icons for task-number icon, checklist icon, calendar icon.
+**Card rendering**: The new demo uses a thin wrapper around the existing `AIGeneratedCards` / `AICard` pipeline. The right panel's `CreamWindow` contains a `SlackExtractedCards` component that calls `computeSlackCardState(elapsed, idx)` for each card and passes `opacity` + `sweepProgress` to `<AICard>`. This is structurally parallel to the existing `RightContent` → `AIGeneratedCards` → `AICard` chain, but with Slack-specific timeline helpers.
 
 ### 4. Animation timeline
 
-Reuses the shared `elapsed` state pattern from `EveryDetailDemo` — one `setInterval` incrementing `elapsed` by 50ms, wrapping at `TIMELINE_TOTAL`. Both sub-components read from the same clock and derive their per-frame state from fractions of `elapsed / TIMELINE_TOTAL`.
+The new demo has its **own independent timeline** with named phase constants, mirroring the existing demo's architectural pattern (see `LandingPage.jsx:439-456`). Using its own constants (prefixed `SLACK_`) rather than reusing the existing ones keeps the two demos decoupled and independently tunable.
+
+**Phase constants** (all in milliseconds):
+
+```js
+// Message landing phase — each Slack message slides up + fades in
+const SLACK_LOOP_CARRY = 300        // initial "carry-over" showing prev loop's cards
+const SLACK_MSG_LAND_DUR = 400      // per-message slide + fade duration
+const SLACK_MSG_GAP = 350           // gap between messages landing
+const SLACK_MSG_1_START = SLACK_LOOP_CARRY
+const SLACK_MSG_1_END = SLACK_MSG_1_START + SLACK_MSG_LAND_DUR
+const SLACK_MSG_2_START = SLACK_MSG_1_END + SLACK_MSG_GAP
+const SLACK_MSG_2_END = SLACK_MSG_2_START + SLACK_MSG_LAND_DUR
+const SLACK_MSG_3_START = SLACK_MSG_2_END + SLACK_MSG_GAP
+const SLACK_MSG_3_END = SLACK_MSG_3_START + SLACK_MSG_LAND_DUR
+
+// Cards layer fade-out as messages start landing (hides leftover cards from prev loop)
+const SLACK_CARDS_FADE_OUT_DUR = 200
+
+// Cards sweep-in phase — matches existing CARD_SWEEP / CARD_STAGGER values
+const SLACK_CARDS_GAP = 400         // pause after last message before cards start
+const SLACK_CARDS_START = SLACK_MSG_3_END + SLACK_CARDS_GAP
+const SLACK_CARD_SWEEP = 750        // intentionally matches existing CARD_SWEEP
+const SLACK_CARD_STAGGER = 600      // intentionally matches existing CARD_STAGGER
+const SLACK_CARDS_END = SLACK_CARDS_START + (AI_CARDS.length - 1) * SLACK_CARD_STAGGER + SLACK_CARD_SWEEP
+
+// Final hold with brief message fade-out at the tail
+const SLACK_MSG_FADE_OUT_DUR = 400
+const SLACK_HOLD_DUR = 1800         // hold with both panels visible
+const SLACK_MSG_FADE_OUT_START = SLACK_CARDS_END + SLACK_HOLD_DUR
+const SLACK_FINAL_HOLD = SLACK_HOLD_DUR + SLACK_MSG_FADE_OUT_DUR  // = 2200, matches existing
+const SLACK_TIMELINE_TOTAL = SLACK_CARDS_END + SLACK_FINAL_HOLD
+```
+
+**Timeline walkthrough** (approximate ms values):
 
 ```
-0%  — 15%   Message 1 slides up + fades in on left
-15% — 25%   Card 1 materializes on right via ai-shimmer-reveal
-25% — 40%   Message 2 slides in
-40% — 50%   Card 2 materializes
-50% — 65%   Message 3 slides in
-65% — 75%   Card 3 materializes
-75% — 95%   Hold state — all messages and cards visible
-95% —100%   Fade out, loop back to 0%
+0     — 300   LOOP_CARRY     Cards from previous loop still visible, left panel blank
+300   — 700   MSG_1_LANDING  Card layer starts fading out; Message 1 slides up + fades in
+700   — 1050  GAP            Message 1 visible; pause before next message
+1050  — 1450  MSG_2_LANDING  Message 2 slides up + fades in (cards fully hidden by now)
+1450  — 1800  GAP            Messages 1-2 visible; pause
+1800  — 2200  MSG_3_LANDING  Message 3 slides up + fades in
+2200  — 2600  CARDS_GAP      All 3 messages visible; pause before cards
+2600  — 3350  CARD_1_SWEEP   Card 1 sweeps in via ai-shimmer-reveal
+3200  — 3950  CARD_2_SWEEP   (overlaps with Card 1 tail — CARD_STAGGER is 600, sweep is 750)
+3800  — 4550  CARD_3_SWEEP
+4550  — 6350  HOLD           All messages + all cards visible
+6350  — 6750  MSG_FADE_OUT   Messages fade out (cards remain visible — they carry to next loop)
+6750  → 0     Loop reset     Elapsed wraps, cards carry over (opacity 1), messages hidden
 ```
 
-Cards trail their source messages by ~10% of the timeline — short enough to feel reactive (AI "responds" to each message), long enough to feel considered (AI "reads" before emitting).
+**Compute helper functions** (to be added inline in `LandingPage.jsx`, near existing compute helpers at lines 458-482):
 
-**All animations use opacity and transform only** — no layout-affecting properties. This keeps the demo GPU-composited and reflow-free.
+```js
+function computeSlackMessageState(elapsed, msgIdx) {
+  const starts = [SLACK_MSG_1_START, SLACK_MSG_2_START, SLACK_MSG_3_START]
+  const msgStart = starts[msgIdx]
+
+  // Fade-out phase near end of timeline (same for all messages simultaneously)
+  if (elapsed >= SLACK_MSG_FADE_OUT_START) {
+    const fadeElapsed = elapsed - SLACK_MSG_FADE_OUT_START
+    const t = Math.min(1, fadeElapsed / SLACK_MSG_FADE_OUT_DUR)
+    return { opacity: 1 - t, translateY: 0 }
+  }
+
+  // Hidden during loop-carry / before this message's turn
+  if (elapsed < msgStart) return { opacity: 0, translateY: 20 }
+
+  // Landing phase: slide up + fade in
+  const msgElapsed = elapsed - msgStart
+  if (msgElapsed < SLACK_MSG_LAND_DUR) {
+    const t = msgElapsed / SLACK_MSG_LAND_DUR
+    return { opacity: t, translateY: 20 * (1 - t) }
+  }
+
+  // Fully landed
+  return { opacity: 1, translateY: 0 }
+}
+
+function computeSlackCardsLayerOpacity(elapsed) {
+  // Loop-carry: cards from previous cycle still visible before messages start
+  if (elapsed < SLACK_MSG_1_START) return 1
+  // Cards fade out as first message lands
+  const fadeElapsed = elapsed - SLACK_MSG_1_START
+  if (fadeElapsed < SLACK_CARDS_FADE_OUT_DUR) {
+    return 1 - fadeElapsed / SLACK_CARDS_FADE_OUT_DUR
+  }
+  // Hidden during message phase
+  if (elapsed < SLACK_CARDS_START) return 0
+  // Visible during card sweep and hold
+  return 1
+}
+
+function computeSlackCardState(elapsed, cardIdx) {
+  // Loop-carry: show cards from prev cycle at full
+  if (elapsed < SLACK_MSG_1_START) return { opacity: 1, sweepProgress: 1 }
+  // Before this card's sweep start
+  const cardShowStart = SLACK_CARDS_START + cardIdx * SLACK_CARD_STAGGER
+  if (elapsed < cardShowStart) return { opacity: 0, sweepProgress: 0 }
+  // Sweep in progress
+  const cardElapsed = elapsed - cardShowStart
+  return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / SLACK_CARD_SWEEP) }
+}
+```
+
+**All animations use opacity and transform only** — no layout-affecting properties. GPU-composited, reflow-free.
 
 ### 5. Visual container styling
 
@@ -137,9 +260,11 @@ Cards trail their source messages by ~10% of the timeline — short enough to fe
 | `AtSign` | Assignees from @mentions |
 | `Clock` | Deadlines from casual phrases |
 | `AlertCircle` | Priority from urgency cues |
-| `Hash` | Labels from channel names |
+| `Hash` | Labels from topic cues |
 
 **Icon imports**: `Clock` is already imported from `lucide-react` on line 6. Add `AtSign`, `AlertCircle`, and `Hash` to the existing `lucide-react` import block (lines 4-10).
+
+**Note on "Labels from topic cues"**: originally drafted as "Labels from channel names" but corrected because the existing `AI_CARDS` labels (`Frontend`, `Backend`) are topic-based, not channel-based. "Topic cues" is more honest about what the AI actually extracts from message content.
 
 ### 7. Component architecture
 
@@ -148,7 +273,7 @@ function SlackThreadDemo() {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     const id = setInterval(() => {
-      setElapsed((prev) => (prev + 50 >= TIMELINE_TOTAL ? 0 : prev + 50))
+      setElapsed((prev) => (prev + 50 >= SLACK_TIMELINE_TOTAL ? 0 : prev + 50))
     }, 50)
     return () => clearInterval(id)
   }, [])
@@ -163,7 +288,7 @@ function SlackThreadDemo() {
             <SlackThread elapsed={elapsed} />
           </CreamWindow>
           <CreamWindow className="aspect-[4/5]">
-            <ExtractedCards elapsed={elapsed} />
+            <SlackExtractedCards elapsed={elapsed} />
           </CreamWindow>
         </div>
       </div>
@@ -173,13 +298,21 @@ function SlackThreadDemo() {
 ```
 
 **New sub-components (both inline in `LandingPage.jsx`)**:
-- `SlackThread({ elapsed })` — renders channel header + 3 messages with per-message opacity/transform derived from `elapsed`
-- `ExtractedCards({ elapsed })` — renders 3 kanban-card mocks with per-card ai-shimmer-reveal driven by `elapsed`
 
-**Reused from existing demo**:
-- `CreamWindow` component — unchanged
-- `TIMELINE_TOTAL` constant — unchanged
-- `ai-shimmer-reveal` CSS class and `--reveal` variable technique — unchanged
+- `SlackThread({ elapsed })` — renders the channel header + 3 Slack messages. Each message reads its per-frame state from `computeSlackMessageState(elapsed, msgIdx)` and applies `opacity` + `transform: translateY(Npx)` as inline styles.
+- `SlackExtractedCards({ elapsed })` — wraps the existing `AICard` rendering in a new timeline context. Reads `computeSlackCardsLayerOpacity(elapsed)` for the outer layer opacity and `computeSlackCardState(elapsed, idx)` per card, then passes `card={AI_CARDS[idx]}`, `opacity={cardStates[idx].opacity}`, `sweepProgress={cardStates[idx].sweepProgress}` to `<AICard>`. Structurally parallel to the existing `RightContent` → `AIGeneratedCards` → `AICard` chain, but with Slack-specific timeline helpers.
+
+**New constants (all inline in `LandingPage.jsx`)**:
+- `SLACK_MESSAGES` — array of 3 message objects (see §2 for content)
+- All `SLACK_*` timeline phase constants (see §4)
+- `computeSlackMessageState`, `computeSlackCardsLayerOpacity`, `computeSlackCardState` helper functions
+
+**Reused from existing demo (unchanged)**:
+- `CreamWindow` component
+- `AICard` component (rendered with new opacity/sweepProgress values from Slack helpers)
+- `AI_CARDS` data array (same 3 cards)
+- `LANDING_PRIORITY_DOT`, `LANDING_LABEL_BG`, `PHOSPHOR_ICON_MAP` maps
+- `ai-shimmer-reveal` CSS class and `--reveal` variable technique (flows through `AICard`)
 
 ### 8. Section JSX placement
 
@@ -215,23 +348,27 @@ Replace the current Tools Strip section (`src/pages/LandingPage.jsx:1205-1238`) 
 
 | File | Change |
 |---|---|
-| `src/pages/LandingPage.jsx` | Add `AtSign, AlertCircle, Hash` to lucide-react imports. Add `SlackThreadDemo`, `SlackThread`, `ExtractedCards` inline component definitions (after existing demo components, ~line 995). Replace Tools Strip section (1205-1238) with new Slack Thread Showcase section. Remove references to the `tools` array if it is no longer used anywhere else (verify via grep before deletion). |
+| `src/pages/LandingPage.jsx` | (1) Add `AtSign`, `AlertCircle`, `Hash` to lucide-react imports (lines 4-10). (2) Add `SLACK_MESSAGES` constant near `AI_CARDS` (~line 437). (3) Add all `SLACK_*` timeline constants after existing timeline constants (~line 456). (4) Add `computeSlackMessageState`, `computeSlackCardsLayerOpacity`, `computeSlackCardState` helper functions near existing compute helpers (~line 482). (5) Add `SlackThread`, `SlackExtractedCards`, `SlackThreadDemo` component definitions after `EveryDetailDemo` (~line 713). (6) Replace Tools Strip section (1205-1238) with new Slack Thread Showcase section. (7) Delete unused `tools` array constant (line 179) — verified to be referenced only at line 1222 (`tools.map`) which will be removed. |
 
 **No new files created.**
+
+**Note**: The existing `tools` array constant should be removed in the same commit as the Tools Strip section removal so the repo doesn't have an orphaned unused constant sitting in between edits. Pre-verified via grep that `tools` is only referenced once in code (`LandingPage.jsx:1222`); other matches on lines 1187 and 1211 are prose containing the English word "tools" in feature-description sentences, unrelated to the array.
 
 ## Success criteria
 
 1. New section renders on the landing page between Features Grid and CTA
-2. Animation loops smoothly with left and right panels synchronized via shared `elapsed` clock
-3. Three Slack messages appear in sequence on the left with opacity/transform transitions
-4. Three cards materialize in sequence on the right via ai-shimmer-reveal, trailing each message by ~10% of the timeline
-5. Card 3 visibly lacks an assignee avatar and deadline pill (honesty signal preserved)
+2. Animation loops smoothly with left and right panels synchronized via shared `elapsed` clock driven by `SLACK_TIMELINE_TOTAL`
+3. Three Slack messages appear in sequence on the left, each sliding up with `translateY` and fading in over `SLACK_MSG_LAND_DUR`
+4. After all 3 messages land, a `SLACK_CARDS_GAP` pause occurs, then the three cards sweep in via `AICard`'s existing sweep mechanism (per-card stagger matching existing demo's `CARD_STAGGER`)
+5. **Card 2 (Build pricing page) visibly has no assignee avatar** — the `@mention`-less Message 2 produces an assigneeless card (honesty signal preserved via `AI_CARDS[1].assignee === null`)
 6. Container background is `#DAE0F0` (soft blue), visually distinct from the existing lilac showcase
-7. Headline renders as "We read the room" with "room" in accent green Sentient/heading font
+7. Headline renders as "We read the room" with "room" in accent green using the heading font (same pattern as existing "Notes in, kanban out" heading)
 8. Responsive: stacks vertically on mobile, side-by-side on `md:` breakpoint and up
-9. No console errors or warnings during the animation loop
-10. `npm run build` succeeds without errors
-11. Tools Strip section is fully removed from the rendered output; the `tools` array is either removed or left in place only if referenced elsewhere
+9. Loop restart is smooth: at `elapsed` wrap to 0, cards remain visible from the previous loop's final state (via `computeSlackCardState` returning full opacity for `elapsed < SLACK_MSG_1_START`), then cards fade out as Message 1 begins landing, matching the "loop-carry" pattern used by the existing `EveryDetailDemo`
+10. No console errors or warnings during the animation loop
+11. `npm run build` succeeds without errors
+12. Tools Strip section fully removed from rendered output; `tools` array constant deleted from the file
+13. The existing `EveryDetailDemo` section continues to work unchanged (regression check)
 
 ## Testing approach
 
