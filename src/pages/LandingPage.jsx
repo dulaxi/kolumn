@@ -873,6 +873,36 @@ function SlackThread({ elapsed }) {
   )
 }
 
+function SlackExtractedCards({ elapsed }) {
+  const layerOpacity = computeSlackCardsLayerOpacity(elapsed)
+  const cardStates = AI_CARDS.map((_, idx) => computeSlackCardState(elapsed, idx))
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{ opacity: layerOpacity }}
+    >
+      <div className="pt-5 px-4 flex justify-center select-none">
+        <div className="flex flex-col w-full max-w-[290px]">
+          <div className="flex items-baseline gap-2 px-0.5 pb-3">
+            <h3 className="text-sm font-semibold text-[#1B1B18]">to do</h3>
+            <span className="text-xs text-[#8E8E89]">{AI_CARDS.length}</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {AI_CARDS.map((card, idx) => (
+              <AICard
+                key={card.taskNumber}
+                card={card}
+                opacity={cardStates[idx].opacity}
+                sweepProgress={cardStates[idx].sweepProgress}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Demo board data ── */
 const DEMO_COLUMNS = [
   { id: 'demo-col-1', title: 'To Do', position: 0 },
