@@ -431,21 +431,18 @@ const AI_CARDS = [
 const SLACK_MESSAGES = [
   {
     sender: 'Jordan',
-    avatar: 'J',
     timestamp: '2:14 PM',
     text: '@aisha hero section feels plain — sarah flagged it on the call, can you redo it? high prio',
     mentions: ['@aisha'],
   },
   {
     sender: 'Jordan',
-    avatar: 'J',
     timestamp: '2:15 PM',
     text: "also pricing page needs building — 3 tiers with monthly/annual toggle, founder's call",
     mentions: [],
   },
   {
     sender: 'Jordan',
-    avatar: 'J',
     timestamp: '2:16 PM',
     text: '@marcus stripe integration by fri — checkout, webhooks, customer portal. high prio, legal flagged it',
     mentions: ['@marcus'],
@@ -818,6 +815,19 @@ function renderMessageText(text, mentions) {
   )
 }
 
+// Slack brand mark — 4-color windmill SVG, used as the avatar to make
+// the demo feel like a real Slack message rather than a generic chat
+function SlackLogo({ className = '' }) {
+  return (
+    <svg viewBox="0 0 270 270" className={className} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="m99.4 151.2c0 7.1-5.8 12.9-12.9 12.9-7.1 0-12.9-5.8-12.9-12.9 0-7.1 5.8-12.9 12.9-12.9h12.9zm6.5 0c0-7.1 5.8-12.9 12.9-12.9 7.1 0 12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9-7.1 0-12.9-5.8-12.9-12.9z" fill="#E01E5A"/>
+      <path d="m118.8 99.4c-7.1 0-12.9-5.8-12.9-12.9 0-7.1 5.8-12.9 12.9-12.9 7.1 0 12.9 5.8 12.9 12.9v12.9zm0 6.5c7.1 0 12.9 5.8 12.9 12.9 0 7.1-5.8 12.9-12.9 12.9h-32.3c-7.1 0-12.9-5.8-12.9-12.9 0-7.1 5.8-12.9 12.9-12.9z" fill="#36C5F0"/>
+      <path d="m170.6 118.8c0-7.1 5.8-12.9 12.9-12.9 7.1 0 12.9 5.8 12.9 12.9 0 7.1-5.8 12.9-12.9 12.9h-12.9zm-6.5 0c0 7.1-5.8 12.9-12.9 12.9-7.1 0-12.9-5.8-12.9-12.9v-32.3c0-7.1 5.8-12.9 12.9-12.9 7.1 0 12.9 5.8 12.9 12.9z" fill="#2EB67D"/>
+      <path d="m151.2 170.6c7.1 0 12.9 5.8 12.9 12.9 0 7.1-5.8 12.9-12.9 12.9-7.1 0-12.9-5.8-12.9-12.9v-12.9zm0-6.5c-7.1 0-12.9-5.8-12.9-12.9 0-7.1 5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9 0 7.1-5.8 12.9-12.9 12.9z" fill="#ECB22E"/>
+    </svg>
+  )
+}
+
 function SlackThread({ elapsed }) {
   const messageStates = SLACK_MESSAGES.map((_, idx) => computeSlackMessageState(elapsed, idx))
   return (
@@ -842,8 +852,8 @@ function SlackThread({ elapsed }) {
               }}
             >
               {/* Avatar */}
-              <div className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center text-[11px] font-bold text-white bg-[#1B1B18]">
-                {msg.avatar}
+              <div className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center bg-white border border-[#E0DBD5] p-1">
+                <SlackLogo className="w-full h-full" />
               </div>
               {/* Message body */}
               <div className="flex-1 min-w-0">
