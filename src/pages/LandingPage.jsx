@@ -530,6 +530,56 @@ function computeCardState(elapsed, cardIdx) {
   return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / CARD_SWEEP) }
 }
 
+function computeSlackMessageState(elapsed, msgIdx) {
+  const starts = [SLACK_MSG_1_START, SLACK_MSG_2_START, SLACK_MSG_3_START]
+  const msgStart = starts[msgIdx]
+
+  // Fade-out phase near end of timeline (all messages fade together)
+  if (elapsed >= SLACK_MSG_FADE_OUT_START) {
+    const fadeElapsed = elapsed - SLACK_MSG_FADE_OUT_START
+    const t = Math.min(1, fadeElapsed / SLACK_MSG_FADE_OUT_DUR)
+    return { opacity: 1 - t, translateY: 0 }
+  }
+
+  // Hidden during loop-carry / before this message's turn
+  if (elapsed < msgStart) return { opacity: 0, translateY: 20 }
+
+  // Landing phase: slide up + fade in
+  const msgElapsed = elapsed - msgStart
+  if (msgElapsed < SLACK_MSG_LAND_DUR) {
+    const t = msgElapsed / SLACK_MSG_LAND_DUR
+    return { opacity: t, translateY: 20 * (1 - t) }
+  }
+
+  // Fully landed
+  return { opacity: 1, translateY: 0 }
+}
+
+function computeSlackCardsLayerOpacity(elapsed) {
+  // Loop-carry: cards from previous cycle still visible before messages start
+  if (elapsed < SLACK_MSG_1_START) return 1
+  // Cards fade out as first message lands
+  const fadeElapsed = elapsed - SLACK_MSG_1_START
+  if (fadeElapsed < SLACK_CARDS_FADE_OUT_DUR) {
+    return 1 - fadeElapsed / SLACK_CARDS_FADE_OUT_DUR
+  }
+  // Hidden during message phase
+  if (elapsed < SLACK_CARDS_START) return 0
+  // Visible during card sweep and hold
+  return 1
+}
+
+function computeSlackCardState(elapsed, cardIdx) {
+  // Loop-carry: show cards from prev cycle at full
+  if (elapsed < SLACK_MSG_1_START) return { opacity: 1, sweepProgress: 1 }
+  // Before this card's sweep start
+  const cardShowStart = SLACK_CARDS_START + cardIdx * SLACK_CARD_STAGGER
+  if (elapsed < cardShowStart) return { opacity: 0, sweepProgress: 0 }
+  // Sweep in progress
+  const cardElapsed = elapsed - cardShowStart
+  return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / SLACK_CARD_SWEEP) }
+}
+
 const PHOSPHOR_ICON_MAP = { 'browser': Browser, 'tag': PhosphorTag, 'credit-card': CreditCard }
 
 function BrowserChrome() {
