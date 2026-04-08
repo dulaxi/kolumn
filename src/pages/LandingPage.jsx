@@ -812,6 +812,67 @@ function EveryDetailDemo() {
   )
 }
 
+/* ── Slack Thread Demo ── */
+
+// Renders message text with @mentions wrapped in an accent-colored span
+function renderMessageText(text, mentions) {
+  if (!mentions || mentions.length === 0) return text
+  // Build a regex that matches any of the mentions literally
+  const escaped = mentions.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const regex = new RegExp(`(${escaped.join('|')})`, 'g')
+  const parts = text.split(regex)
+  return parts.map((part, idx) =>
+    mentions.includes(part)
+      ? <span key={idx} className="text-[#8BA32E] font-medium">{part}</span>
+      : <span key={idx}>{part}</span>
+  )
+}
+
+function SlackThread({ elapsed }) {
+  const messageStates = SLACK_MESSAGES.map((_, idx) => computeSlackMessageState(elapsed, idx))
+  return (
+    <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-2 select-none h-full">
+      {/* Channel header */}
+      <div className="flex items-center gap-1.5 pb-2 border-b border-[#E0DBD5]">
+        <Hash className="w-3.5 h-3.5 text-[#8E8E89]" />
+        <span className="text-[13px] font-semibold text-[#1B1B18]">launch-prep</span>
+      </div>
+
+      {/* Messages */}
+      <div className="flex flex-col gap-3 pt-1">
+        {SLACK_MESSAGES.map((msg, idx) => {
+          const state = messageStates[idx]
+          return (
+            <div
+              key={idx}
+              className="flex gap-2.5"
+              style={{
+                opacity: state.opacity,
+                transform: `translateY(${state.translateY}px)`,
+              }}
+            >
+              {/* Avatar */}
+              <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold text-white bg-[#1B1B18]">
+                {msg.avatar}
+              </div>
+              {/* Message body */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 mb-0.5">
+                  <span className="text-[13px] font-semibold text-[#1B1B18]">{msg.sender}</span>
+                  <span className="text-[10px] text-[#8E8E89]">{msg.timestamp}</span>
+                </div>
+                <p className="text-[12px] text-[#5C5C57] leading-relaxed break-words">
+                  {renderMessageText(msg.text, msg.mentions)}
+                </p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 /* ── Demo board data ── */
 const DEMO_COLUMNS = [
   { id: 'demo-col-1', title: 'To Do', position: 0 },
