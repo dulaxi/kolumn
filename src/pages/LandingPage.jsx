@@ -430,22 +430,22 @@ const AI_CARDS = [
 // so each message's extractable signals map to AI_CARDS[i]'s fields.
 const SLACK_MESSAGES = [
   {
-    sender: 'Priya',
-    avatar: 'P',
+    sender: 'Jordan',
+    avatar: 'J',
     timestamp: '2:14 PM',
     text: '@aisha hero section feels plain — sarah flagged it on the call, can you redo it? high prio',
     mentions: ['@aisha'],
   },
   {
-    sender: 'Priya',
-    avatar: 'P',
+    sender: 'Jordan',
+    avatar: 'J',
     timestamp: '2:15 PM',
     text: "also pricing page needs building — 3 tiers with monthly/annual toggle, founder's call",
     mentions: [],
   },
   {
-    sender: 'Priya',
-    avatar: 'P',
+    sender: 'Jordan',
+    avatar: 'J',
     timestamp: '2:16 PM',
     text: '@marcus stripe integration by fri — checkout, webhooks, customer portal. high prio, legal flagged it',
     mentions: ['@marcus'],
@@ -473,7 +473,7 @@ const TIMELINE_TOTAL = CARDS_END + FINAL_HOLD
 
 // Slack demo timeline — independent phases mirroring the existing demo's structure
 const SLACK_LOOP_CARRY = 300         // initial "carry-over" showing prev loop's cards
-const SLACK_MSG_LAND_DUR = 400       // per-message slide + fade duration
+const SLACK_MSG_LAND_DUR = 500       // per-message slide + fade duration (eased)
 const SLACK_MSG_GAP = 350            // gap between messages landing
 const SLACK_MSG_1_START = SLACK_LOOP_CARRY
 const SLACK_MSG_1_END = SLACK_MSG_1_START + SLACK_MSG_LAND_DUR
@@ -481,7 +481,7 @@ const SLACK_MSG_2_START = SLACK_MSG_1_END + SLACK_MSG_GAP
 const SLACK_MSG_2_END = SLACK_MSG_2_START + SLACK_MSG_LAND_DUR
 const SLACK_MSG_3_START = SLACK_MSG_2_END + SLACK_MSG_GAP
 const SLACK_MSG_3_END = SLACK_MSG_3_START + SLACK_MSG_LAND_DUR
-const SLACK_CARDS_FADE_OUT_DUR = 200 // cards from prev loop fade out as first msg lands
+const SLACK_CARDS_FADE_OUT_DUR = 350 // cards from prev loop fade out as first msg lands
 const SLACK_CARDS_GAP = 400          // pause after last message before cards start
 const SLACK_CARDS_START = SLACK_MSG_3_END + SLACK_CARDS_GAP
 const SLACK_CARD_SWEEP = 750         // intentionally matches existing CARD_SWEEP
@@ -533,10 +533,11 @@ function computeSlackMessageState(elapsed, msgIdx) {
   // Hidden during loop-carry / before this message's turn
   if (elapsed < msgStart) return { opacity: 0, translateY: 20 }
 
-  // Landing phase: slide up + fade in
+  // Landing phase: slide up + fade in (ease-out cubic for smooth settle)
   const msgElapsed = elapsed - msgStart
   if (msgElapsed < SLACK_MSG_LAND_DUR) {
-    const t = msgElapsed / SLACK_MSG_LAND_DUR
+    const linearT = msgElapsed / SLACK_MSG_LAND_DUR
+    const t = 1 - Math.pow(1 - linearT, 3)
     return { opacity: t, translateY: 20 * (1 - t) }
   }
 
@@ -841,7 +842,7 @@ function SlackThread({ elapsed }) {
               }}
             >
               {/* Avatar */}
-              <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold text-white bg-[#1B1B18]">
+              <div className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center text-[11px] font-bold text-white bg-[#1B1B18]">
                 {msg.avatar}
               </div>
               {/* Message body */}
