@@ -11,8 +11,10 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
 import { useIsMobile } from '../../hooks/useMediaQuery'
+import SortableColumn from './SortableColumn'
 import Column from './Column'
 import Card from './Card'
 
@@ -21,6 +23,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [addingColumn, setAddingColumn] = useState(false)
   const [activeCardId, setActiveCardId] = useState(null)
+  const [activeColumnId, setActiveColumnId] = useState(null)
   const inputRef = useRef(null)
   const affectedCardsRef = useRef(new Set())
   const isMobile = useIsMobile()
@@ -35,6 +38,8 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const setDragging = useBoardStore((s) => s.setDragging)
   const completeCard = useBoardStore((s) => s.completeCard)
   const logCardMove = useBoardStore((s) => s.logCardMove)
+  const reorderColumns = useBoardStore((s) => s.reorderColumns)
+  const columns = useBoardStore((s) => s.columns)
 
   const dragOriginRef = useRef(null)
 
@@ -44,10 +49,13 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
 
   // Custom collision: prefer pointerWithin (cards), fallback to rectIntersection (columns)
   const collisionDetection = useCallback((args) => {
+    // Column drags: pointer-only for fluid response
+    if (activeColumnId) return pointerWithin(args)
+    // Card drags: prefer pointer, fallback to rect
     const pointerCollisions = pointerWithin(args)
     if (pointerCollisions.length > 0) return pointerCollisions
     return rectIntersection(args)
-  }, [])
+  }, [activeColumnId])
 
   useEffect(() => {
     if (isAddingColumn && inputRef.current) {
@@ -56,13 +64,21 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   }, [isAddingColumn])
 
   const handleDragStart = useCallback((event) => {
-    const cardId = event.active.id
+    const id = event.active.id
     const state = useBoardStore.getState()
-    const card = state.cards[cardId]
-    dragOriginRef.current = card ? { cardId, columnId: card.column_id } : null
-    setActiveCardId(cardId)
+
+    // Check if dragging a column
+    if (state.columns[id]) {
+      setActiveColumnId(id)
+      return
+    }
+
+    // Card drag
+    const card = state.cards[id]
+    dragOriginRef.current = card ? { cardId: id, columnId: card.column_id } : null
+    setActiveCardId(id)
     setDragging(true)
-    affectedCardsRef.current = new Set([cardId])
+    affectedCardsRef.current = new Set([id])
   }, [setDragging])
 
   const getColumns = useCallback(() => {
@@ -96,6 +112,8 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
     (event) => {
       const { active, over } = event
       if (!over) return
+      // Skip column drags — handled in handleDragEnd
+      if (activeColumnId) return
 
       const activeId = active.id
       const overId = over.id
@@ -130,11 +148,12 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       // Only update local state during drag (no DB calls)
       moveCardLocal(boardId, fromColumn.id, toColumn.id, fromIndex, toIndex)
     },
-    [boardId, getColumns, findCol, getColumnCards, moveCardLocal]
+    [boardId, activeColumnId, getColumns, findCol, getColumnCards, moveCardLocal]
   )
 
   const handleDragCancel = useCallback(() => {
     setActiveCardId(null)
+    setActiveColumnId(null)
     setDragging(false)
     affectedCardsRef.current = new Set()
     dragOriginRef.current = null
@@ -145,6 +164,21 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       const { active, over } = event
       setActiveCardId(null)
       setDragging(false)
+
+      // Column drag end
+      if (activeColumnId) {
+        setActiveColumnId(null)
+        if (over && active.id !== over.id) {
+          const colIds = boardColumns.map((c) => c.id)
+          const oldIdx = colIds.indexOf(active.id)
+          const newIdx = colIds.indexOf(over.id)
+          if (oldIdx !== -1 && newIdx !== -1) {
+            const newOrder = arrayMove(colIds, oldIdx, newIdx)
+            reorderColumns(boardId, newOrder)
+          }
+        }
+        return
+      }
 
       if (!over) {
         // Drag cancelled — still persist any changes from handleDragOver
@@ -204,13 +238,13 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
 
       affectedCardsRef.current = new Set()
     },
-    [boardId, getColumns, findCol, getColumnCards, moveCardLocal, persistCardPositions, setDragging, logCardMove]
+    [boardId, activeColumnId, boardColumns, reorderColumns, getColumns, findCol, getColumnCards, moveCardLocal, persistCardPositions, setDragging, logCardMove]
   )
 
   if (!board) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6">
-        <p className="text-sm text-[#8E8E89]">Select a board from the sidebar to get started</p>
+        <p className="text-sm text-[var(--text-muted)]">Select a board from the sidebar to get started</p>
       </div>
     )
   }
@@ -248,6 +282,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       onDragCancel={handleDragCancel}
     >
       <div className="flex gap-3 sm:gap-5 overflow-x-auto h-full pb-4 snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
+        {/* Column drag reorder disabled for now — SortableColumn + reorderColumns ready when needed */}
         {boardColumns.map((column) => (
           <Column
             key={column.id}
@@ -267,7 +302,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         {/* Add section */}
         <div className="shrink-0 w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] snap-start">
           {isAddingColumn ? (
-            <div className="bg-white rounded-lg border border-[#E0DBD5] shadow-sm p-3 space-y-2">
+            <div className="bg-[var(--surface-card)] rounded-lg border border-[var(--border-default)] shadow-sm p-3 space-y-2">
               <input
                 ref={inputRef}
                 value={newColumnTitle}
@@ -275,7 +310,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
                 onKeyDown={handleKeyDown}
                 onBlur={() => { if (!addingColumn) handleAddColumn() }}
                 placeholder="Section name"
-                className="w-full text-[13px] px-0 py-0 border-none focus:outline-none focus:ring-0 placeholder-[#C4BFB8] bg-transparent"
+                className="w-full text-[13px] px-0 py-0 border-none focus:outline-none focus:ring-0 placeholder-[var(--text-faint)] bg-transparent"
               />
               <div className="flex items-center gap-2">
                 <button
@@ -292,7 +327,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
                     setNewColumnTitle('')
                     setIsAddingColumn(false)
                   }}
-                  className="p-1 rounded hover:bg-[#E8E2DB] text-[#8E8E89]"
+                  className="p-1 rounded hover:bg-[var(--surface-hover)] text-[var(--text-muted)]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -302,7 +337,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             <button
               type="button"
               onClick={() => setIsAddingColumn(true)}
-              className="flex items-center gap-2 w-full px-0.5 py-2 text-[13px] text-[#8E8E89] hover:text-[#5C5C57] transition-colors"
+              className="flex items-center gap-2 w-full px-0.5 py-2 text-[13px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add section

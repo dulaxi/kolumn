@@ -14,8 +14,8 @@ function ColumnGroup({ title, items, onCardClick, selectedCardId, completeCard }
   return (
     <div className="flex flex-col w-[290px] shrink-0">
       <div className="flex items-baseline gap-2 px-0.5 pb-3">
-        <h3 className="text-sm font-semibold text-[#1B1B18]">{title}</h3>
-        <span className="text-xs text-[#8E8E89]">{items.length}</span>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
+        <span className="text-xs text-[var(--text-muted)]">{items.length}</span>
       </div>
       <div className="flex-1 overflow-y-auto pb-2 space-y-2 min-h-[80px]">
         {visible.map(({ card, boardIcon }) => (
@@ -32,7 +32,7 @@ function ColumnGroup({ title, items, onCardClick, selectedCardId, completeCard }
           <button
             type="button"
             onClick={() => setVisibleCount((c) => c + 20)}
-            className="w-full py-1.5 text-[12px] font-medium text-[#A8BA32] hover:text-[#A8BA32] hover:bg-[#EEF2D6] rounded-lg transition-colors"
+            className="w-full py-1.5 text-[12px] font-medium text-[#A8BA32] hover:text-[#A8BA32] hover:bg-[var(--accent-lime-wash)] rounded-lg transition-colors"
           >
             Show {Math.min(remaining, 20)} more ({remaining} remaining)
           </button>
@@ -54,11 +54,11 @@ export default function AllBoardsView({ onCardClick, selectedCardId }) {
   if (columnEntries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6">
-        <div className="w-12 h-12 rounded-full bg-[#E8E2DB] flex items-center justify-center mb-3">
-          <Layers className="w-6 h-6 text-[#C4BFB8]" />
+        <div className="w-12 h-12 rounded-full bg-[var(--surface-hover)] flex items-center justify-center mb-3">
+          <Layers className="w-6 h-6 text-[var(--text-faint)]" />
         </div>
-        <p className="text-sm font-medium text-[#5C5C57]">No tasks across boards</p>
-        <p className="text-xs text-[#8E8E89] mt-1">Create a board and add tasks to see them here</p>
+        <p className="text-sm font-medium text-[var(--text-secondary)]">No tasks across boards</p>
+        <p className="text-xs text-[var(--text-muted)] mt-1">Create a board and add tasks to see them here</p>
       </div>
     )
   }

@@ -13,7 +13,10 @@ export const useSettingsStore = create(
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
       closeMobileMenu: () => set({ mobileMenuOpen: false }),
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => {
+        set({ theme })
+        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light')
+      },
       setFont: (font) => set({ font }),
       toggleFavorite: (boardId) => {
         const favs = get().favoriteBoards

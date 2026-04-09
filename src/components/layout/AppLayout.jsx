@@ -181,14 +181,14 @@ export default function AppLayout() {
     : pageTitles[basePath] || 'Kolumn'
 
   return (
-    <div className="min-h-screen bg-[#FEFDFD]">
+    <div className="min-h-screen bg-[var(--surface-board)]">
       <OfflineBanner />
       <InlineErrorBoundary name="sidebar">
         <Sidebar />
       </InlineErrorBoundary>
       <div
         className={`transition-all duration-200 ${
-          isDesktop ? (collapsed ? 'ml-16' : 'ml-60') : 'ml-0'
+          isDesktop ? (collapsed ? 'ml-16' : 'ml-64') : 'ml-0'
         }`}
       >
         <InlineErrorBoundary name="header">
@@ -197,24 +197,24 @@ export default function AppLayout() {
         <main className={`p-4 sm:p-6 ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
-            <div className="mb-4 bg-[#EEF2D6] border border-[#C2D64A] rounded-xl p-4 flex items-center justify-between">
+            <div className="mb-4 bg-[var(--accent-lime-wash)] border border-[#C2D64A] rounded-xl p-4 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#1B1B18]">Local data detected</p>
-                <p className="text-xs text-[#5C5C57] mt-0.5">
+                <p className="text-sm font-medium text-[var(--text-primary)]">Local data detected</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                   Import your existing boards and notes into your account?
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSkipMigration}
-                  className="px-3 py-1.5 text-xs font-medium text-[#5C5C57] hover:bg-[#E8E2DB] rounded-lg transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
                 >
                   Skip
                 </button>
                 <button
                   onClick={handleMigrate}
                   disabled={migrating}
-                  className="px-3 py-1.5 text-xs font-medium bg-[#1B1B18] text-white rounded-lg hover:bg-[#333] disabled:opacity-50 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium bg-[var(--text-primary)] text-white rounded-lg hover:bg-[#333] disabled:opacity-50 transition-colors"
                 >
                   {migrating ? 'Importing...' : 'Import data'}
                 </button>

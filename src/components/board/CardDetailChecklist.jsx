@@ -16,19 +16,19 @@ export default function CardDetailChecklist({ checklist, onToggle, onRemove, onA
   return (
     <div className="px-5 pt-3 pb-5">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-[#8E8E89]">
+        <div className="flex items-center gap-2 text-[var(--text-muted)]">
           <CheckSquare className="w-4 h-4" />
           <span className="text-xs font-medium uppercase tracking-wider">Checklist</span>
         </div>
         {checklist.length > 0 && (
-          <span className="text-xs text-[#8E8E89]">
+          <span className="text-xs text-[var(--text-muted)]">
             {checkedCount}/{checklist.length}
           </span>
         )}
       </div>
 
       {checklist.length > 0 && (
-        <div className="w-full bg-[#E8E2DB] rounded-full h-1 mb-3">
+        <div className="w-full bg-[var(--surface-hover)] rounded-full h-1 mb-3">
           <div
             className="bg-[#C2D64A] h-1 rounded-full transition-all"
             style={{
@@ -45,11 +45,11 @@ export default function CardDetailChecklist({ checklist, onToggle, onRemove, onA
               type="checkbox"
               checked={item.done}
               onChange={() => onToggle(idx)}
-              className="w-4 h-4 rounded border-[#E0DBD5] text-[#C2D64A] focus:ring-[#EEF2D6]"
+              className="w-4 h-4 rounded border-[var(--border-default)] text-[#C2D64A] focus:ring-[var(--accent-lime-wash)]"
             />
             <span
               className={`flex-1 text-sm ${
-                item.done ? 'line-through text-[#8E8E89]' : 'text-[#5C5C57]'
+                item.done ? 'line-through text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'
               }`}
             >
               {item.text}
@@ -57,7 +57,7 @@ export default function CardDetailChecklist({ checklist, onToggle, onRemove, onA
             <button
               type="button"
               onClick={() => onRemove(idx)}
-              className="opacity-0 group-hover:opacity-100 p-0.5 text-[#8E8E89] hover:text-[#7A5C44] transition-opacity"
+              className="opacity-0 group-hover:opacity-100 p-0.5 text-[var(--text-muted)] hover:text-[#7A5C44] transition-opacity"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -71,12 +71,12 @@ export default function CardDetailChecklist({ checklist, onToggle, onRemove, onA
           onChange={(e) => setNewCheckItem(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder="Add an item..."
-          className="flex-1 text-sm rounded-lg px-2.5 py-1.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none placeholder-[#8E8E89]"
+          className="flex-1 text-sm rounded-lg px-2.5 py-1.5 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none placeholder-[#8E8E89]"
         />
         <button
           type="button"
           onClick={handleAdd}
-          className="px-2.5 py-1.5 text-xs font-medium bg-[#E8E2DB] text-[#5C5C57] rounded-lg hover:bg-[#E0DBD5] transition-colors"
+          className="px-2.5 py-1.5 text-xs font-medium bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg hover:bg-[var(--border-default)] transition-colors"
         >
           Add
         </button>

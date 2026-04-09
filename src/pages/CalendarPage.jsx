@@ -51,17 +51,17 @@ export default function CalendarPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-1 rounded-full text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
+              className="p-1 rounded-full text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-1 rounded-full text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
+              className="p-1 rounded-full text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
-            <h1 className="text-xl font-semibold text-[#1B1B18] font-heading ml-2">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)] font-heading ml-2">
               {format(currentMonth, 'MMMM yyyy')}
             </h1>
           </div>
@@ -70,21 +70,21 @@ export default function CalendarPage() {
               setCurrentMonth(new Date())
               setSelectedDay(new Date())
             }}
-            className="px-3 py-1 text-sm font-medium text-[#7A5C44] border border-[#E0DBD5] rounded-full hover:bg-[#F2EDE8] transition-colors"
+            className="px-3 py-1 text-sm font-medium text-[#7A5C44] border border-[var(--border-default)] rounded-full hover:bg-[var(--surface-raised)] transition-colors"
           >
             Today
           </button>
         </div>
 
         {/* Calendar grid */}
-        <div className="flex-1 flex flex-col rounded-xl bg-white border border-[#E0DBD5] overflow-hidden">
+        <div className="flex-1 flex flex-col rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] overflow-hidden">
           {/* Day headers */}
           <div className="grid grid-cols-7">
             {DAY_NAMES.map((name, i) => (
               <div
                 key={name}
-                className={`text-center text-[11px] font-semibold uppercase tracking-wider py-2.5 text-[#8E8E89] ${
-                  i < 6 ? 'border-r border-[#E8E2DB]' : ''
+                className={`text-center text-[11px] font-semibold uppercase tracking-wider py-2.5 text-[var(--text-muted)] ${
+                  i < 6 ? 'border-r border-[var(--border-subtle)]' : ''
                 }`}
               >
                 {name}
@@ -93,7 +93,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Day cells */}
-          <div className="grid grid-cols-7 flex-1 auto-rows-fr border-t border-[#E0DBD5]">
+          <div className="grid grid-cols-7 flex-1 auto-rows-fr border-t border-[var(--border-default)]">
             {calendarDays.map((day, i) => {
               const dateKey = format(day, 'yyyy-MM-dd')
               const dayCards = cardsByDate[dateKey] || []
@@ -106,8 +106,8 @@ export default function CalendarPage() {
                   key={dateKey}
                   type="button"
                   onClick={() => setSelectedDay(day)}
-                  className={`relative border-b border-r border-[#E8E2DB] text-left cursor-pointer transition-colors flex flex-col ${
-                    selected ? 'bg-[#EEF2D6]/30' : 'hover:bg-[#F2EDE8]/60'
+                  className={`relative border-b border-r border-[var(--border-subtle)] text-left cursor-pointer transition-colors flex flex-col ${
+                    selected ? 'bg-[var(--accent-lime-wash)]/30' : 'hover:bg-[var(--surface-raised)]/60'
                   }`}
                 >
                   {/* Date number */}
@@ -117,8 +117,8 @@ export default function CalendarPage() {
                         today
                           ? 'bg-[#7A5C44] text-white font-semibold'
                           : inMonth
-                            ? 'text-[#1B1B18] font-medium'
-                            : 'text-[#8E8E89]'
+                            ? 'text-[var(--text-primary)] font-medium'
+                            : 'text-[var(--text-muted)]'
                       }`}
                     >
                       {format(day, 'd')}
@@ -144,37 +144,37 @@ export default function CalendarPage() {
       </div>
 
       {/* Right: Task detail panel */}
-      <div className="w-full lg:w-72 shrink-0 bg-white rounded-xl border border-[#E0DBD5] flex flex-col overflow-hidden max-h-64 lg:max-h-none">
+      <div className="w-full lg:w-72 shrink-0 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] flex flex-col overflow-hidden max-h-64 lg:max-h-none">
         {selectedDay ? (
           <>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E2DB]">
-              <span className="text-sm font-semibold text-[#1B1B18]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)]">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">
                 {format(selectedDay, 'EEEE, MMM d')}
               </span>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="text-xs text-[#8E8E89] hover:text-[#5C5C57] transition-colors"
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
               >
                 Close
               </button>
             </div>
 
             {selectedDayCards.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-sm text-[#8E8E89]">
+              <div className="flex-1 flex items-center justify-center text-sm text-[var(--text-muted)]">
                 No tasks scheduled
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto divide-y divide-[#F2EDE8]">
                 {selectedDayCards.map((card) => (
                   <div key={card.id} className={`flex flex-col gap-1 px-4 py-3 border-l-[3px] ${EVENT_ACCENT[card.priority] || EVENT_ACCENT.medium}`}>
-                    <p className="text-sm font-medium text-[#1B1B18]">{card.title}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{card.title}</p>
                     {card.description && (
-                      <p className="text-xs text-[#5C5C57] line-clamp-2">{card.description}</p>
+                      <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{card.description}</p>
                     )}
                     {card.labels && card.labels.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {card.labels.map((label) => (
-                          <span key={`${label.text}-${label.color}`} className="text-[10px] font-medium text-[#5C5C57] bg-[#E8E2DB] rounded-full px-2 py-0.5">
+                          <span key={`${label.text}-${label.color}`} className="text-[10px] font-medium text-[var(--text-secondary)] bg-[var(--surface-hover)] rounded-full px-2 py-0.5">
                             {label.text}
                           </span>
                         ))}
@@ -186,7 +186,7 @@ export default function CalendarPage() {
             )}
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-sm text-[#8E8E89]">
+          <div className="flex-1 flex items-center justify-center text-sm text-[var(--text-muted)]">
             Select a day
           </div>
         )}

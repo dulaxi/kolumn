@@ -40,17 +40,17 @@ export default function CardDetailComments({
   }
 
   return (
-    <div className="px-5 pt-4 pb-4 border-t border-[#E8E2DB]">
-      <label className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider mb-3 block">
+    <div className="px-5 pt-4 pb-4 border-t border-[var(--border-subtle)]">
+      <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-3 block">
         Comments
       </label>
       <div className="space-y-3 mb-3">
         {(comments || []).map((comment) => (
           <div key={comment.id} className="group">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs font-medium text-[#5C5C57]">{comment.author_name}</span>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">{comment.author_name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[#8E8E89]">
+                <span className="text-[10px] text-[var(--text-muted)]">
                   {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                 </span>
                 {comment.user_id === userId && (
@@ -58,14 +58,14 @@ export default function CardDetailComments({
                     type="button"
                     onClick={() => deleteComment(comment.id, cardId)}
                     aria-label="Delete comment"
-                    className="opacity-0 group-hover:opacity-100 text-[#8E8E89] hover:text-[#7A5C44] transition-all"
+                    className="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-[#7A5C44] transition-all"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-sm text-[#5C5C57] mt-0.5">
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
               {comment.text.split(/(@\w[\w ]*)/g).map((part, i) =>
                 part.startsWith('@') ? (
                   <span key={i} className="font-medium text-[#A8BA32]">{part}</span>

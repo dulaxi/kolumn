@@ -36,15 +36,15 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2EDE8] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <SquareKanban className="w-10 h-10 text-black mx-auto mb-3" strokeWidth={1.75} />
-          <h1 className="text-2xl font-bold text-[#1B1B18] font-heading">Set new password</h1>
-          <p className="text-sm text-[#5C5C57] mt-1">Enter your new password below</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] font-heading">Set new password</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">Enter your new password below</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white border border-[#E0DBD5] rounded-2xl p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm space-y-4">
           {error && (
             <div className="text-sm text-[#7A5C44] bg-[#F0E0D2] rounded-xl px-3 py-2">
               {error}
@@ -52,26 +52,26 @@ export default function UpdatePasswordPage() {
           )}
 
           <div>
-            <label className="text-xs font-medium text-[#5C5C57] mb-1 block">New password</label>
+            <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">New password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoFocus
-              className="w-full text-sm rounded-xl px-3 py-2.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6]"
+              className="w-full text-sm rounded-xl px-3 py-2.5 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)]"
               placeholder="At least 6 characters"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-[#5C5C57] mb-1 block">Confirm password</label>
+            <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">Confirm password</label>
             <input
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required
-              className="w-full text-sm rounded-xl px-3 py-2.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6]"
+              className="w-full text-sm rounded-xl px-3 py-2.5 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)]"
               placeholder="Repeat your password"
             />
           </div>
@@ -79,7 +79,7 @@ export default function UpdatePasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B1B18] text-white text-sm font-medium rounded-xl hover:bg-[#333] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--btn-primary-bg)] text-white text-sm font-medium rounded-xl hover:bg-[var(--btn-primary-hover)] transition-colors disabled:opacity-50"
           >
             <Lock className="w-4 h-4" />
             {loading ? 'Updating...' : 'Update password'}

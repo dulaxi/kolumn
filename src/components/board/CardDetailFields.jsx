@@ -86,24 +86,24 @@ export default function CardDetailFields({
   return (
     <div className="px-5 space-y-0">
       {/* Icon */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB] relative">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)] relative">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <Smile className="w-4 h-4" />
           <span className="text-sm">Icon</span>
         </div>
         <button
           type="button"
           onClick={() => setShowIconPicker(!showIconPicker)}
-          className="flex items-center gap-2 text-sm hover:bg-[#F2EDE8] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 text-sm hover:bg-[var(--surface-raised)] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
         >
-          <div className="w-6 h-6 rounded-lg bg-[#E8E2DB] flex items-center justify-center text-[#8E8E89]">
+          <div className="w-6 h-6 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-muted)]">
             {card.icon ? (
               <DynamicIcon name={card.icon} className="w-3.5 h-3.5" />
             ) : (
               <FileText className="w-3.5 h-3.5" />
             )}
           </div>
-          <span className="text-[#5C5C57]">{card.icon || 'Default'}</span>
+          <span className="text-[var(--text-secondary)]">{card.icon || 'Default'}</span>
         </button>
         {showIconPicker && (
           <IconPicker
@@ -115,8 +115,8 @@ export default function CardDetailFields({
       </div>
 
       {/* Assignee */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB] relative">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)] relative">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <User className="w-4 h-4" />
           <span className="text-sm">Assignee</span>
         </div>
@@ -127,15 +127,15 @@ export default function CardDetailFields({
               setShowAssigneePicker(!showAssigneePicker)
               setAssigneeSearch('')
             }}
-            className="flex items-center gap-2 text-sm hover:bg-[#F2EDE8] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 text-sm hover:bg-[var(--surface-raised)] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
           >
             {assignee.trim() ? (
               <>
                 {renderAvatar(assignee)}
-                <span className="text-[#5C5C57]">{assignee}</span>
+                <span className="text-[var(--text-secondary)]">{assignee}</span>
               </>
             ) : (
-              <span className="text-[#8E8E89]">No assignee</span>
+              <span className="text-[var(--text-muted)]">No assignee</span>
             )}
           </button>
         </div>
@@ -148,8 +148,8 @@ export default function CardDetailFields({
           const showAddOption = query && !exactMatch
 
           return (
-            <div className="absolute left-24 sm:left-32 top-full mt-1 bg-white border border-[#E0DBD5] rounded-xl shadow-lg z-10 w-56 overflow-hidden">
-              <div className="p-2 border-b border-[#E8E2DB]">
+            <div className="absolute left-24 sm:left-32 top-full mt-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg z-10 w-56 overflow-hidden">
+              <div className="p-2 border-b border-[var(--border-subtle)]">
                 <input
                   value={assigneeSearch}
                   onChange={(e) => setAssigneeSearch(e.target.value)}
@@ -173,7 +173,7 @@ export default function CardDetailFields({
                   }}
                   autoFocus
                   placeholder="Search or add member..."
-                  className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none placeholder-[#8E8E89]"
+                  className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none placeholder-[#8E8E89]"
                 />
               </div>
               <div className="max-h-48 overflow-y-auto py-1">
@@ -186,7 +186,7 @@ export default function CardDetailFields({
                       setAssigneeSearch('')
                       scheduleSave()
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#8E8E89] hover:bg-[#F2EDE8] transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-raised)] transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                     Unassign
@@ -204,8 +204,8 @@ export default function CardDetailFields({
                     }}
                     className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm transition-colors ${
                       assignee === member
-                        ? 'bg-[#F2EDE8] text-[#1B1B18] font-medium'
-                        : 'text-[#5C5C57] hover:bg-[#F2EDE8]'
+                        ? 'bg-[var(--surface-raised)] text-[var(--text-primary)] font-medium'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
                     }`}
                   >
                     {renderAvatar(member)}
@@ -213,7 +213,7 @@ export default function CardDetailFields({
                   </button>
                 ))}
                 {filtered.length === 0 && !showAddOption && (
-                  <div className="px-3 py-2 text-sm text-[#8E8E89]">No members yet</div>
+                  <div className="px-3 py-2 text-sm text-[var(--text-muted)]">No members yet</div>
                 )}
                 {showAddOption && (
                   <button
@@ -226,7 +226,7 @@ export default function CardDetailFields({
                       setAssigneeSearch('')
                       scheduleSave()
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#A8BA32] hover:bg-[#EEF2D6] transition-colors border-t border-[#E8E2DB]"
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#A8BA32] hover:bg-[var(--accent-lime-wash)] transition-colors border-t border-[var(--border-subtle)]"
                   >
                     <UserPlus className="w-4 h-4" />
                     Add "{assigneeSearch.trim()}"
@@ -239,8 +239,8 @@ export default function CardDetailFields({
       </div>
 
       {/* Due date */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB]">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <Calendar className="w-4 h-4" />
           <span className="text-sm">Due date</span>
         </div>
@@ -255,13 +255,13 @@ export default function CardDetailFields({
             }}
             onBlur={() => setEditingDueDate(false)}
             autoFocus
-            className="text-sm text-[#5C5C57] bg-transparent border-none focus:outline-none"
+            className="text-sm text-[var(--text-secondary)] bg-transparent border-none focus:outline-none"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditingDueDate(true)}
-            className="text-sm hover:bg-[#F2EDE8] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
+            className="text-sm hover:bg-[var(--surface-raised)] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
           >
             {dueDateDisplay ? (
               <span className={
@@ -272,15 +272,15 @@ export default function CardDetailFields({
                 'text-[#A8BA32] font-medium'
               }>{dueDateDisplay}</span>
             ) : (
-              <span className="text-[#8E8E89]">No due date</span>
+              <span className="text-[var(--text-muted)]">No due date</span>
             )}
           </button>
         )}
       </div>
 
       {/* Repeat */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB]">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <Repeat className="w-4 h-4" />
           <span className="text-sm">Repeat</span>
         </div>
@@ -288,12 +288,12 @@ export default function CardDetailFields({
           <button
             type="button"
             onClick={() => setShowRecurrencePicker(!showRecurrencePicker)}
-            className="text-sm text-[#5C5C57] hover:bg-[#F2EDE8] px-2 py-0.5 rounded-lg transition-colors"
+            className="text-sm text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] px-2 py-0.5 rounded-lg transition-colors"
           >
             {recurrenceLabel || 'None'}
           </button>
           {showRecurrencePicker && (
-            <div className="absolute left-0 top-full mt-1 bg-white border border-[#E0DBD5] rounded-xl shadow-lg py-1 z-20 w-52">
+            <div className="absolute left-0 top-full mt-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg py-1 z-20 w-52">
               {[
                 { label: 'No repeat', interval: null, unit: null },
                 { label: 'Daily', interval: 1, unit: 'days' },
@@ -308,24 +308,24 @@ export default function CardDetailFields({
                     handleRecurrenceChange(opt.interval, opt.unit)
                     setShowRecurrencePicker(false)
                   }}
-                  className="w-full px-3 py-1.5 text-sm text-left text-[#5C5C57] hover:bg-[#F2EDE8] transition-colors"
+                  className="w-full px-3 py-1.5 text-sm text-left text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] transition-colors"
                 >
                   {opt.label}
                 </button>
               ))}
-              <div className="border-t border-[#E8E2DB] px-3 py-2 flex items-center gap-2">
-                <span className="text-xs text-[#8E8E89]">Every</span>
+              <div className="border-t border-[var(--border-subtle)] px-3 py-2 flex items-center gap-2">
+                <span className="text-xs text-[var(--text-muted)]">Every</span>
                 <input
                   type="number"
                   min="1"
                   value={customInterval}
                   onChange={(e) => setCustomInterval(parseInt(e.target.value) || 1)}
-                  className="w-12 text-sm px-1.5 py-0.5 border border-[#E0DBD5] rounded-lg text-center focus:outline-none focus:border-[#C2D64A]"
+                  className="w-12 text-sm px-1.5 py-0.5 border border-[var(--border-default)] rounded-lg text-center focus:outline-none focus:border-[var(--border-focus)]"
                 />
                 <select
                   value={customUnit}
                   onChange={(e) => setCustomUnit(e.target.value)}
-                  className="text-sm px-1.5 py-0.5 border border-[#E0DBD5] rounded-lg focus:outline-none focus:border-[#C2D64A]"
+                  className="text-sm px-1.5 py-0.5 border border-[var(--border-default)] rounded-lg focus:outline-none focus:border-[var(--border-focus)]"
                 >
                   <option value="days">days</option>
                   <option value="weeks">weeks</option>
@@ -348,35 +348,35 @@ export default function CardDetailFields({
       </div>
 
       {/* Projects */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB]">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <Briefcase className="w-4 h-4" />
           <span className="text-sm">Projects</span>
         </div>
-        <span className="text-sm text-[#5C5C57]">{boardName}</span>
+        <span className="text-sm text-[var(--text-secondary)]">{boardName}</span>
       </div>
 
       {/* Fields section header */}
-      <div className="pt-4 pb-1 border-t border-[#E8E2DB]">
-        <span className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider">Fields</span>
+      <div className="pt-4 pb-1 border-t border-[var(--border-subtle)]">
+        <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Fields</span>
       </div>
 
       {/* Priority */}
       <div className="flex items-center py-2.5 relative">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <Flag className="w-4 h-4" />
           <span className="text-sm">Priority</span>
         </div>
         <button
           type="button"
           onClick={() => setShowPriorityPicker(!showPriorityPicker)}
-          className="flex items-center gap-2 text-sm hover:bg-[#F2EDE8] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 text-sm hover:bg-[var(--surface-raised)] px-1.5 py-0.5 -mx-1.5 rounded-lg transition-colors"
         >
           <span className={`w-2.5 h-2.5 rounded-full ${currentPriority.dot}`} />
-          <span className="text-[#5C5C57]">{currentPriority.label}</span>
+          <span className="text-[var(--text-secondary)]">{currentPriority.label}</span>
         </button>
         {showPriorityPicker && (
-          <div className="absolute left-24 sm:left-32 top-full mt-1 bg-white border border-[#E0DBD5] rounded-xl shadow-lg py-1 z-10 w-36">
+          <div className="absolute left-24 sm:left-32 top-full mt-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg py-1 z-10 w-36">
             {PRIORITY_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -388,8 +388,8 @@ export default function CardDetailFields({
                 }}
                 className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm transition-colors ${
                   priority === opt.value
-                    ? 'bg-[#F2EDE8] text-[#1B1B18] font-medium'
-                    : 'text-[#5C5C57] hover:bg-[#F2EDE8]'
+                    ? 'bg-[var(--surface-raised)] text-[var(--text-primary)] font-medium'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full ${opt.dot}`} />
@@ -401,24 +401,24 @@ export default function CardDetailFields({
       </div>
 
       {/* Status */}
-      <div className="flex items-center py-2.5 border-t border-[#E8E2DB]">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89]">
+      <div className="flex items-center py-2.5 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)]">
           <LayoutList className="w-4 h-4" />
           <span className="text-sm">Status</span>
         </div>
-        <span className="text-sm text-[#5C5C57]">{statusName}</span>
+        <span className="text-sm text-[var(--text-secondary)]">{statusName}</span>
       </div>
 
       {/* Labels */}
-      <div className="flex items-start py-2.5 border-t border-[#E8E2DB]">
-        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[#8E8E89] pt-0.5">
+      <div className="flex items-start py-2.5 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2 w-24 sm:w-32 shrink-0 text-[var(--text-muted)] pt-0.5">
           <Tag className="w-4 h-4" />
           <span className="text-sm">Labels</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap gap-1.5">
             {labels.length === 0 && !showLabelForm && (
-              <span className="text-sm text-[#8E8E89]">—</span>
+              <span className="text-sm text-[var(--text-muted)]">—</span>
             )}
             {labels.map((label, idx) => (
               <span
@@ -445,7 +445,7 @@ export default function CardDetailFields({
                   onKeyDown={(e) => e.key === 'Enter' && addLabel()}
                   placeholder="Label text..."
                   autoFocus
-                  className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none"
+                  className="w-full text-sm rounded-lg px-2.5 py-1.5 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none"
                 />
                 <div className="flex items-center justify-between">
                   <div className="flex gap-1.5">
@@ -467,7 +467,7 @@ export default function CardDetailFields({
                     <button type="button" onClick={addLabel} className="p-1 bg-[#C2D64A] text-white rounded hover:bg-[#A8BA32]">
                       <Check className="w-3.5 h-3.5" />
                     </button>
-                    <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="p-1 text-[#8E8E89] hover:text-[#5C5C57]">
+                    <button type="button" onClick={() => { setShowLabelForm(false); setNewLabelText('') }} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -477,7 +477,7 @@ export default function CardDetailFields({
               <button
                 type="button"
                 onClick={() => setShowLabelForm(true)}
-                className="flex items-center gap-0.5 text-xs text-[#8E8E89] hover:text-[#5C5C57] px-1.5 py-0.5"
+                className="flex items-center gap-0.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] px-1.5 py-0.5"
               >
                 <Plus className="w-3 h-3" />
               </button>

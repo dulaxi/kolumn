@@ -81,7 +81,7 @@ export default function Sidebar() {
     setConfirmDeleteBoardId(boardId)
   }
 
-  // On mobile, sidebar is always expanded (w-60) since collapse toggle is hidden
+  // On mobile, sidebar is always expanded (w-64) since collapse toggle is hidden
   const showCollapsed = isDesktop && collapsed
 
   return (
@@ -94,19 +94,19 @@ export default function Sidebar() {
         />
       )}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-[#FAF8F6] border-r border-[#E0DBD5] flex flex-col transition-all duration-200 z-40 ${
+        className={`fixed top-0 left-0 h-screen bg-[var(--surface-sidebar)] border-r border-[var(--border-default)] flex flex-col transition-all duration-200 z-40 ${
           isDesktop
             ? collapsed
               ? 'w-16'
-              : 'w-60'
-            : `w-60 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+              : 'w-64'
+            : `w-64 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
         }`}
       >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 h-16 border-b border-[#E0DBD5]">
+      <div className="flex items-center gap-2 px-4 h-16 border-b border-[var(--border-default)]">
         <KolumnLogo />
         {!showCollapsed && (
-          <span className="text-lg font-bold text-[#1B1B18] tracking-tight font-logo">
+          <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight font-logo">
             Kolumn
           </span>
         )}
@@ -121,8 +121,8 @@ export default function Sidebar() {
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive
-                ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
             } ${showCollapsed ? 'justify-center' : ''}`
           }
         >
@@ -137,8 +137,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                  : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
               }`
             }
           >
@@ -149,8 +149,8 @@ export default function Sidebar() {
             <div
               className={`flex items-center rounded-lg transition-colors ${
                 isBoardsActive
-                  ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                  : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
               }`}
             >
               <button
@@ -163,7 +163,7 @@ export default function Sidebar() {
               <button
                 onClick={() => setBoardsOpen(!boardsOpen)}
                 aria-label={boardsOpen ? 'Collapse boards' : 'Expand boards'}
-                className="p-1.5 mr-1 rounded-lg hover:bg-[#E0DBD5] transition-colors cursor-pointer"
+                className="p-1.5 mr-1 rounded-lg hover:bg-[var(--border-default)] transition-colors cursor-pointer"
               >
                 {boardsOpen ? (
                   <ChevronDown className="w-4 h-4" />
@@ -174,7 +174,7 @@ export default function Sidebar() {
             </div>
 
             {boardsOpen && (
-              <div className="ml-5 mt-1 pl-3 border-l border-[#E0DBD5] space-y-0.5">
+              <div className="ml-5 mt-1 pl-3 border-l border-[var(--border-default)] space-y-0.5">
                 {sortedOwnedBoards.map((board) => {
                   return (
                     <div
@@ -182,8 +182,8 @@ export default function Sidebar() {
                       onClick={() => handleSelectBoard(board.id)}
                       className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors group cursor-pointer relative ${
                         isBoardsActive && activeBoardId === board.id
-                          ? 'text-[#1B1B18] font-medium bg-[#EEF2D6]'
-                          : 'text-[#5C5C57] hover:text-[#1B1B18] hover:bg-[#E8E2DB]'
+                          ? 'text-[var(--text-primary)] font-medium bg-[var(--accent-lime-wash)]'
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                       }`}
                     >
                       <span className="flex items-center gap-2 truncate">
@@ -193,13 +193,13 @@ export default function Sidebar() {
                             e.stopPropagation()
                             setIconPickerBoardId(iconPickerBoardId === board.id ? null : board.id)
                           }}
-                          className="shrink-0 hover:bg-[#E0DBD5] rounded p-0.5 transition-colors"
+                          className="shrink-0 hover:bg-[var(--border-default)] rounded p-0.5 transition-colors"
                           title="Change icon"
                         >
                           {board.icon ? (
-                            <DynamicIcon name={board.icon} className="w-4 h-4 text-[#8E8E89]" />
+                            <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-muted)]" />
                           ) : (
-                            <Kanban className="w-4 h-4 text-[#8E8E89]" />
+                            <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
                           )}
                         </button>
                         {renamingBoardId === board.id ? (
@@ -222,7 +222,7 @@ export default function Sidebar() {
                               setRenamingBoardId(null)
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex-1 text-sm bg-white border border-[#C2D64A] rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#EEF2D6] min-w-0"
+                            className="flex-1 text-sm bg-[var(--surface-card)] border border-[var(--border-focus)] rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)] min-w-0"
                           />
                         ) : (
                           <span
@@ -241,7 +241,7 @@ export default function Sidebar() {
                         <Trash2
                           role="button"
                           aria-label={`Delete board ${board.name}`}
-                          className="w-3.5 h-3.5 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
+                          className="w-3.5 h-3.5 text-[var(--text-muted)] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
                           onClick={(e) => handleDeleteBoard(e, board.id)}
                         />
                       </span>
@@ -275,7 +275,7 @@ export default function Sidebar() {
                     setTimeout(tryDispatch, 50)
                     closeMobileMenu()
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#8E8E89] hover:text-[#1B1B18] hover:bg-[#E8E2DB] transition-colors cursor-pointer"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>New board</span>
@@ -292,8 +292,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                  : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
               }`
             }
           >
@@ -312,8 +312,8 @@ export default function Sidebar() {
               onClick={() => setWorkspaceOpen(!workspaceOpen)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full ${
                 location.pathname.startsWith('/workspace')
-                  ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                  : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
               }`}
             >
               <span className="relative">
@@ -333,22 +333,22 @@ export default function Sidebar() {
             </button>
 
             {workspaceOpen && (
-              <div className="ml-5 mt-1 pl-3 border-l border-[#E0DBD5] space-y-0.5">
+              <div className="ml-5 mt-1 pl-3 border-l border-[var(--border-default)] space-y-0.5">
                 {/* Invitations link */}
                 <div
                   onClick={() => { navigate('/workspace'); closeMobileMenu() }}
                   className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
                     location.pathname === '/workspace'
-                      ? 'text-[#1B1B18] font-medium bg-[#EEF2D6]'
-                      : 'text-[#5C5C57] hover:text-[#1B1B18] hover:bg-[#E8E2DB]'
+                      ? 'text-[var(--text-primary)] font-medium bg-[var(--accent-lime-wash)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <Briefcase className="w-4 h-4 text-[#8E8E89] shrink-0" />
+                    <Briefcase className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                     <span className="truncate">Overview</span>
                   </span>
                   {invitationCount > 0 && (
-                    <span className="text-[10px] font-semibold bg-[#EEF2D6] text-[#A8BA32] px-1.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-semibold bg-[var(--accent-lime-wash)] text-[#A8BA32] px-1.5 py-0.5 rounded-full">
                       {invitationCount}
                     </span>
                   )}
@@ -361,15 +361,15 @@ export default function Sidebar() {
                     onClick={() => { setActiveBoard(board.id); navigate('/boards'); closeMobileMenu() }}
                     className={`flex items-center w-full px-3 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
                       isBoardsActive && activeBoardId === board.id
-                        ? 'text-[#1B1B18] font-medium bg-[#EEF2D6]'
-                        : 'text-[#5C5C57] hover:text-[#1B1B18] hover:bg-[#E8E2DB]'
+                        ? 'text-[var(--text-primary)] font-medium bg-[var(--accent-lime-wash)]'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                     }`}
                   >
                     <span className="flex items-center gap-2 truncate">
                       {board.icon ? (
-                        <DynamicIcon name={board.icon} className="w-4 h-4 text-[#8E8E89] shrink-0" />
+                        <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                       ) : (
-                        <Kanban className="w-4 h-4 text-[#8E8E89] shrink-0" />
+                        <Kanban className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                       )}
                       <span className="truncate">{board.name}</span>
                     </span>
@@ -389,8 +389,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                  : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
               } ${showCollapsed ? 'justify-center' : ''}`
             }
           >
@@ -401,15 +401,15 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="border-t border-[#E0DBD5] py-4 px-2 space-y-1">
+      <div className="border-t border-[var(--border-default)] py-4 px-2 space-y-1">
         <NavLink
           to="/settings"
           onClick={closeMobileMenu}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive
-                ? 'bg-[#EEF2D6] text-[#1B1B18]'
-                : 'text-[#5C5C57] hover:bg-[#E8E2DB]'
+                ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
             } ${showCollapsed ? 'justify-center' : ''}`
           }
         >
@@ -421,7 +421,7 @@ export default function Sidebar() {
           <button
             onClick={toggle}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors w-full ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors w-full ${
               collapsed ? 'justify-center' : ''
             }`}
           >

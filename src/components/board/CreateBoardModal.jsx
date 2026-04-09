@@ -67,16 +67,16 @@ function SkeletonPreview({ columns }) {
         return (
           <div
             key={col}
-            className="flex-1 min-w-0 rounded-xl border border-[#E0DBD5] bg-white/60 p-2.5"
+            className="flex-1 min-w-0 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)]/60 p-2.5"
           >
-            <div className="text-[11px] font-medium text-[#8E8E89] truncate mb-3">
+            <div className="text-[11px] font-medium text-[var(--text-muted)] truncate mb-3">
               {col}
             </div>
             <div className="flex flex-col gap-2">
               {pattern.map((h, gi) => (
                 <div
                   key={gi}
-                  className="rounded-lg bg-[#F2EDE8] animate-pulse"
+                  className="rounded-lg bg-[var(--surface-raised)] animate-pulse"
                   style={{ height: h }}
                 />
               ))}
@@ -158,7 +158,7 @@ export default function CreateBoardModal({ onClose }) {
       >
         {/* Modal */}
         <div
-          className={`bg-[#FAF8F6] shadow-2xl flex flex-col overflow-hidden ${
+          className={`bg-[var(--surface-page)] shadow-2xl flex flex-col overflow-hidden ${
             isMobile
               ? 'fixed inset-0 rounded-none'
               : 'rounded-2xl w-[900px] max-h-[85vh]'
@@ -166,17 +166,17 @@ export default function CreateBoardModal({ onClose }) {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E0DBD5]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-default)]">
             <div className="flex items-center gap-2">
-              <SquareKanban className="w-4 h-4 text-[#8E8E89]" />
-              <h2 className="text-sm font-semibold text-[#1B1B18]">
+              <SquareKanban className="w-4 h-4 text-[var(--text-muted)]" />
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 New Board
               </h2>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-1 text-[#8E8E89] hover:text-[#5C5C57] rounded-lg hover:bg-[#E8E2DB] transition-colors"
+              className="p-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -193,28 +193,28 @@ export default function CreateBoardModal({ onClose }) {
               className={`p-6 flex flex-col gap-5 ${
                 isMobile
                   ? 'w-full'
-                  : 'w-[340px] shrink-0 border-r border-[#E0DBD5]'
+                  : 'w-[340px] shrink-0 border-r border-[var(--border-default)]'
               }`}
             >
               {/* Board name + icon */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[#5C5C57]">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">
                   Board name
                 </label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowIconPicker(true)}
-                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-[#E0DBD5] bg-white hover:bg-[#F2EDE8] transition-colors"
+                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-raised)] transition-colors"
                     title="Choose icon"
                   >
                     {icon ? (
                       <DynamicIcon
                         name={icon}
-                        className="w-4 h-4 text-[#5C5C57]"
+                        className="w-4 h-4 text-[var(--text-secondary)]"
                       />
                     ) : (
-                      <SquareKanban className="w-4 h-4 text-[#8E8E89]" />
+                      <SquareKanban className="w-4 h-4 text-[var(--text-muted)]" />
                     )}
                   </button>
                   <input
@@ -226,14 +226,14 @@ export default function CreateBoardModal({ onClose }) {
                     autoFocus
                     maxLength={200}
                     placeholder="e.g. Product Roadmap"
-                    className="flex-1 h-10 px-3 text-sm rounded-xl border border-[#E0DBD5] bg-white text-[#1B1B18] placeholder-[#8E8E89] focus:outline-none focus:ring-2 focus:ring-[#C2D64A] focus:border-transparent transition-shadow"
+                    className="flex-1 h-10 px-3 text-sm rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#C2D64A] focus:border-transparent transition-shadow"
                   />
                 </div>
               </div>
 
               {/* Template list */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-[#5C5C57]">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">
                   Template
                 </label>
                 <div className="flex flex-col gap-1">
@@ -244,15 +244,15 @@ export default function CreateBoardModal({ onClose }) {
                       onClick={() => handleTemplateSelect(tpl)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
                         selectedTemplate === tpl.key
-                          ? 'bg-[#EEF2D6] ring-1 ring-[#C2D64A]'
-                          : 'hover:bg-[#F2EDE8]'
+                          ? 'bg-[var(--accent-lime-wash)] ring-1 ring-[#C2D64A]'
+                          : 'hover:bg-[var(--surface-raised)]'
                       }`}
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                           selectedTemplate === tpl.key
                             ? 'bg-[#C2D64A]/20 text-[#7A8A1E]'
-                            : 'bg-[#E8E2DB] text-[#8E8E89]'
+                            : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
                         }`}
                       >
                         {tpl.icon ? (
@@ -262,10 +262,10 @@ export default function CreateBoardModal({ onClose }) {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-medium text-[#1B1B18] truncate">
+                        <div className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                           {tpl.label}
                         </div>
-                        <div className="text-[11px] text-[#8E8E89] truncate">
+                        <div className="text-[11px] text-[var(--text-muted)] truncate">
                           {tpl.description}
                         </div>
                       </div>
@@ -278,16 +278,16 @@ export default function CreateBoardModal({ onClose }) {
             {/* Right side: skeleton preview */}
             <div
               className={`flex-1 flex flex-col items-center justify-center p-6 ${
-                isMobile ? 'border-t border-[#E0DBD5]' : ''
+                isMobile ? 'border-t border-[var(--border-default)]' : ''
               }`}
             >
-              <div className="text-[11px] font-medium text-[#8E8E89] mb-3 self-start">
+              <div className="text-[11px] font-medium text-[var(--text-muted)] mb-3 self-start">
                 Preview
               </div>
               <div className="w-full">
                 <SkeletonPreview columns={template.columns} />
               </div>
-              <div className="mt-3 text-[11px] text-[#8E8E89]">
+              <div className="mt-3 text-[11px] text-[var(--text-muted)]">
                 {template.columns.length} column
                 {template.columns.length !== 1 ? 's' : ''}
               </div>
@@ -295,11 +295,11 @@ export default function CreateBoardModal({ onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[#E0DBD5]">
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[var(--border-default)]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-[#5C5C57] hover:text-[#1B1B18] rounded-xl hover:bg-[#E8E2DB] transition-colors"
+              className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
             >
               Cancel
             </button>
@@ -307,7 +307,7 @@ export default function CreateBoardModal({ onClose }) {
               type="button"
               onClick={handleCreate}
               disabled={!canCreate}
-              className="px-4 py-2 text-sm font-medium rounded-xl transition-colors bg-[#1B1B18] text-white hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium rounded-xl transition-colors bg-[var(--btn-primary-bg)] text-white hover:bg-[var(--btn-primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {creating ? 'Creating...' : 'Create'}
             </button>

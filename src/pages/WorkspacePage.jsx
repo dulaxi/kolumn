@@ -40,10 +40,10 @@ export default function WorkspacePage() {
   }
 
   const steps = [
-    { icon: Kanban, color: 'bg-[#EEF2D6] text-[#A8BA32]', label: 'Open a board', desc: 'Navigate to one of your boards' },
+    { icon: Kanban, color: 'bg-[var(--accent-lime-wash)] text-[#A8BA32]', label: 'Open a board', desc: 'Navigate to one of your boards' },
     { icon: UserPlus, color: 'bg-[#E8DDE2] text-[#6E5A65]', label: 'Click Share', desc: 'Hit the Share button in the top bar' },
     { icon: Mail, color: 'bg-[#F5EDCF] text-[#D4A843]', label: 'Invite by email', desc: "Enter your teammate's email" },
-    { icon: Check, color: 'bg-[#EEF2D6] text-[#A8BA32]', label: 'They accept here', desc: 'Invitations appear in their Workspace' },
+    { icon: Check, color: 'bg-[var(--accent-lime-wash)] text-[#A8BA32]', label: 'They accept here', desc: 'Invitations appear in their Workspace' },
   ]
 
   return (
@@ -51,13 +51,13 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       {/*  Step-by-step guide — always visible                         */}
       {/* ============================================================ */}
-      <section className="bg-white rounded-xl border border-[#E0DBD5] p-5 sm:p-6">
+      <section className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-7 h-7 rounded-lg bg-[#E8E2DB] flex items-center justify-center">
-            <Users className="w-4 h-4 text-[#8E8E89]" />
+          <div className="w-7 h-7 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center">
+            <Users className="w-4 h-4 text-[var(--text-muted)]" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-[#1B1B18]">How collaboration works</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">How collaboration works</h2>
           </div>
         </div>
 
@@ -68,12 +68,12 @@ export default function WorkspacePage() {
                 <div className={`w-10 h-10 rounded-xl ${step.color} flex items-center justify-center`}>
                   <step.icon className="w-4.5 h-4.5" />
                 </div>
-                <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-[#1B1B18] text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-[var(--btn-primary-bg)] text-white text-[9px] font-bold flex items-center justify-center">
                   {i + 1}
                 </span>
               </div>
-              <p className="text-xs font-medium text-[#1B1B18]">{step.label}</p>
-              <p className="text-[11px] text-[#8E8E89] mt-0.5">{step.desc}</p>
+              <p className="text-xs font-medium text-[var(--text-primary)]">{step.label}</p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -84,43 +84,43 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       <section>
           <div className="flex items-center gap-2 mb-4">
-            <UserPlus className="w-4 h-4 text-[#8E8E89]" />
-            <h2 className="text-sm font-semibold text-[#1B1B18]">Invitations</h2>
+            <UserPlus className="w-4 h-4 text-[var(--text-muted)]" />
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Invitations</h2>
             {invitations.length > 0 && (
-              <span className="text-[11px] font-semibold bg-[#EEF2D6] text-[#A8BA32] px-1.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-semibold bg-[var(--accent-lime-wash)] text-[#A8BA32] px-1.5 py-0.5 rounded-full">
                 {invitations.length}
               </span>
             )}
           </div>
 
           {invitations.length === 0 ? (
-            <div className="bg-white rounded-xl border border-[#E0DBD5] py-10 flex flex-col items-center justify-center">
-              <UserPlus className="w-10 h-10 text-[#8E8E89] mb-2" />
-              <p className="text-sm text-[#8E8E89]">No pending invitations</p>
+            <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] py-10 flex flex-col items-center justify-center">
+              <UserPlus className="w-10 h-10 text-[var(--text-muted)] mb-2" />
+              <p className="text-sm text-[var(--text-muted)]">No pending invitations</p>
             </div>
           ) : (
             <div className="space-y-2">
               {invitations.map((inv) => (
                 <div
                   key={inv.id}
-                  className="bg-white rounded-xl border border-[#E0DBD5] p-4 flex items-center gap-4"
+                  className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-4 flex items-center gap-4"
                 >
                   {/* Left: board icon + info */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-[#E8E2DB] flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--surface-hover)] flex items-center justify-center shrink-0">
                       {inv.boards?.icon ? (
-                        <DynamicIcon name={inv.boards.icon} className="w-5 h-5 text-[#5C5C57]" />
+                        <DynamicIcon name={inv.boards.icon} className="w-5 h-5 text-[var(--text-secondary)]" />
                       ) : (
-                        <Kanban className="w-5 h-5 text-[#8E8E89]" />
+                        <Kanban className="w-5 h-5 text-[var(--text-muted)]" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#1B1B18] truncate">
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                         {inv.boards?.name || 'Unknown Board'}
                       </p>
-                      <p className="text-xs text-[#8E8E89] truncate">
+                      <p className="text-xs text-[var(--text-muted)] truncate">
                         Invited by{' '}
-                        <span className="text-[#5C5C57] font-medium">
+                        <span className="text-[var(--text-secondary)] font-medium">
                           {inv.inviter?.display_name || inv.inviter?.email || 'Someone'}
                         </span>{' '}
                         &middot;{' '}
@@ -133,13 +133,13 @@ export default function WorkspacePage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleDecline(inv.id)}
-                      className="p-2 text-[#5C5C57] bg-[#E8E2DB] hover:bg-[#E0DBD5] rounded-lg cursor-pointer transition-colors"
+                      className="p-2 text-[var(--text-secondary)] bg-[var(--surface-hover)] hover:bg-[var(--border-default)] rounded-lg cursor-pointer transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleAccept(inv.id)}
-                      className="p-2 text-white bg-[#1B1B18] hover:bg-[#333] rounded-lg cursor-pointer transition-colors"
+                      className="p-2 text-white bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] rounded-lg cursor-pointer transition-colors"
                     >
                       <Check className="w-4 h-4" />
                     </button>
@@ -155,14 +155,14 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       <section>
           <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-[#8E8E89]" />
-            <h2 className="text-sm font-semibold text-[#1B1B18]">Shared with me</h2>
+            <Users className="w-4 h-4 text-[var(--text-muted)]" />
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Shared with me</h2>
           </div>
 
           {sharedBoards.length === 0 ? (
-            <div className="bg-white rounded-xl border border-[#E0DBD5] py-10 flex flex-col items-center justify-center">
-              <Users className="w-10 h-10 text-[#8E8E89] mb-2" />
-              <p className="text-sm text-[#8E8E89]">No shared boards yet</p>
+            <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] py-10 flex flex-col items-center justify-center">
+              <Users className="w-10 h-10 text-[var(--text-muted)] mb-2" />
+              <p className="text-sm text-[var(--text-muted)]">No shared boards yet</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -170,7 +170,7 @@ export default function WorkspacePage() {
                 <div
                   key={board.id}
                   onClick={() => handleBoardClick(board.id)}
-                  className="bg-white rounded-xl border border-[#E0DBD5] p-4 text-left cursor-pointer hover:border-[#E0DBD5] hover:shadow-sm transition-all group relative"
+                  className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-4 text-left cursor-pointer hover:border-[var(--border-default)] hover:shadow-sm transition-all group relative"
                 >
                   {/* Leave button — top right, visible on hover */}
                   <button
@@ -180,7 +180,7 @@ export default function WorkspacePage() {
                         leaveBoard(board.id)
                       }
                     }}
-                    className="absolute top-2.5 right-2.5 p-1.5 rounded-lg text-[#8E8E89] hover:text-[#7A5C44] hover:bg-[#F0E0D2] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    className="absolute top-2.5 right-2.5 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[#7A5C44] hover:bg-[#F0E0D2] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                     title="Leave board"
                   >
                     <LogOut className="w-3.5 h-3.5" />
@@ -188,14 +188,14 @@ export default function WorkspacePage() {
 
                   {/* Top row: icon + name */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#E8E2DB] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center shrink-0">
                       {board.icon ? (
-                        <DynamicIcon name={board.icon} className="w-4.5 h-4.5 text-[#5C5C57]" />
+                        <DynamicIcon name={board.icon} className="w-4.5 h-4.5 text-[var(--text-secondary)]" />
                       ) : (
-                        <Kanban className="w-4.5 h-4.5 text-[#8E8E89]" />
+                        <Kanban className="w-4.5 h-4.5 text-[var(--text-muted)]" />
                       )}
                     </div>
-                    <p className="text-sm font-medium text-[#1B1B18] truncate pr-6">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate pr-6">
                       {board.name}
                     </p>
                   </div>
@@ -210,11 +210,11 @@ export default function WorkspacePage() {
                           {(board.ownerName || '?')[0].toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-xs text-[#8E8E89] truncate">
+                      <span className="text-xs text-[var(--text-muted)] truncate">
                         {board.ownerName || 'Unknown'}
                       </span>
                     </div>
-                    <span className="text-xs text-[#8E8E89] shrink-0">
+                    <span className="text-xs text-[var(--text-muted)] shrink-0">
                       {board.memberCount} member{board.memberCount !== 1 ? 's' : ''}
                     </span>
                   </div>

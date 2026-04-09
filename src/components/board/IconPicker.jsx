@@ -34,8 +34,8 @@ function IconGrid({ icons: iconList, value, onChange, onClose, namePrefix = '' }
             title={name}
             className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
               value === storedName
-                ? 'bg-[#EEF2D6] text-[#A8BA32] ring-1 ring-[#C2D64A]'
-                : 'text-[#5C5C57] hover:bg-[#E8E2DB] hover:text-[#5C5C57]'
+                ? 'bg-[var(--accent-lime-wash)] text-[#A8BA32] ring-1 ring-[#C2D64A]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-secondary)]'
             }`}
           >
             <DynamicIcon name={storedName} className="w-5 h-5" />
@@ -91,7 +91,7 @@ export default function IconPicker({ value, onChange, onClose }) {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" data-icon-picker onClick={onClose}>
       <div
-        className={`bg-white shadow-2xl flex flex-col overflow-hidden ${
+        className={`bg-[var(--surface-card)] shadow-2xl flex flex-col overflow-hidden ${
           isMobile
             ? 'fixed inset-0 rounded-none'
             : 'rounded-2xl w-[640px] max-h-[80vh]'
@@ -99,10 +99,10 @@ export default function IconPicker({ value, onChange, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with tabs */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8E2DB]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-subtle)]">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold text-[#1B1B18]">Choose an icon</h2>
-            <div className="flex items-center bg-[#E8E2DB] rounded-lg p-0.5">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Choose an icon</h2>
+            <div className="flex items-center bg-[var(--surface-hover)] rounded-lg p-0.5">
               {LIBRARY_TABS.map((tab) => (
                 <button
                   key={tab.key}
@@ -110,8 +110,8 @@ export default function IconPicker({ value, onChange, onClose }) {
                   onClick={() => setActiveTab(tab.key)}
                   className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer ${
                     activeTab === tab.key
-                      ? 'bg-white text-[#1B1B18] shadow-sm'
-                      : 'text-[#5C5C57] hover:text-[#5C5C57]'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-secondary)]'
                   }`}
                 >
                   {tab.label}
@@ -119,14 +119,14 @@ export default function IconPicker({ value, onChange, onClose }) {
               ))}
             </div>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-[#8E8E89] hover:text-[#5C5C57] rounded-lg hover:bg-[#E8E2DB]">
+          <button type="button" onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)] rounded-lg hover:bg-[var(--surface-hover)]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-[#E8E2DB]">
-          <Search className="w-4 h-4 text-[#8E8E89] shrink-0" />
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-[var(--border-subtle)]">
+          <Search className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
           <input
             ref={inputRef}
             value={search}
@@ -135,7 +135,7 @@ export default function IconPicker({ value, onChange, onClose }) {
             className="flex-1 text-sm bg-transparent border-none focus:outline-none placeholder-[#8E8E89]"
           />
           {search && (
-            <button type="button" onClick={() => setSearch('')} className="text-[#8E8E89] hover:text-[#5C5C57]">
+            <button type="button" onClick={() => setSearch('')} className="text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -144,7 +144,7 @@ export default function IconPicker({ value, onChange, onClose }) {
         <div className="flex flex-1 min-h-0">
           {/* Category sidebar */}
           {!searchResults && (
-            <div className="hidden sm:block w-44 shrink-0 border-r border-[#E8E2DB] overflow-y-auto py-2">
+            <div className="hidden sm:block w-44 shrink-0 border-r border-[var(--border-subtle)] overflow-y-auto py-2">
               {categories.map((cat) => (
                 <button
                   key={cat.key}
@@ -152,12 +152,12 @@ export default function IconPicker({ value, onChange, onClose }) {
                   onClick={() => setActiveCategory(cat.key)}
                   className={`w-full text-left px-4 py-1.5 text-xs transition-colors cursor-pointer ${
                     activeCategory === cat.key
-                      ? 'text-[#1B1B18] font-medium bg-[#F2EDE8]'
-                      : 'text-[#5C5C57] hover:text-[#5C5C57] hover:bg-[#F2EDE8]'
+                      ? 'text-[var(--text-primary)] font-medium bg-[var(--surface-raised)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
                   }`}
                 >
                   {cat.label}
-                  <span className="text-[#8E8E89] ml-1">({cat.icons.length})</span>
+                  <span className="text-[var(--text-muted)] ml-1">({cat.icons.length})</span>
                 </button>
               ))}
             </div>
@@ -170,7 +170,7 @@ export default function IconPicker({ value, onChange, onClose }) {
               <button
                 type="button"
                 onClick={() => { onChange(null); onClose() }}
-                className="mb-3 text-xs text-[#8E8E89] hover:text-[#7A5C44] transition-colors cursor-pointer"
+                className="mb-3 text-xs text-[var(--text-muted)] hover:text-[#7A5C44] transition-colors cursor-pointer"
               >
                 Remove icon
               </button>
@@ -178,17 +178,17 @@ export default function IconPicker({ value, onChange, onClose }) {
 
             {searchResults ? (
               <>
-                <p className="text-xs text-[#8E8E89] mb-3">{searchResults.length} results for &ldquo;{search}&rdquo;</p>
+                <p className="text-xs text-[var(--text-muted)] mb-3">{searchResults.length} results for &ldquo;{search}&rdquo;</p>
                 <IconGrid icons={searchResults} value={value} onChange={onChange} onClose={onClose} namePrefix={activeTab === 'material' ? 'material:' : ''} />
                 {searchResults.length === 0 && (
-                  <p className="text-center text-sm text-[#8E8E89] py-8">No icons found</p>
+                  <p className="text-center text-sm text-[var(--text-muted)] py-8">No icons found</p>
                 )}
               </>
             ) : (
               <>
                 <IconGrid icons={displayIcons} value={value} onChange={onChange} onClose={onClose} namePrefix={activeTab === 'material' ? 'material:' : ''} />
                 {displayIcons.length === 0 && (
-                  <p className="text-center text-sm text-[#8E8E89] py-8">No icons found</p>
+                  <p className="text-center text-sm text-[var(--text-muted)] py-8">No icons found</p>
                 )}
               </>
             )}
@@ -196,9 +196,9 @@ export default function IconPicker({ value, onChange, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-2.5 border-t border-[#E8E2DB] flex items-center justify-between">
-          <span className="text-[11px] text-[#8E8E89]">{iconCount} icons available</span>
-          <button type="button" onClick={onClose} className="text-xs text-[#5C5C57] hover:text-[#5C5C57] px-3 py-1 rounded-lg hover:bg-[#E8E2DB] cursor-pointer">
+        <div className="px-5 py-2.5 border-t border-[var(--border-subtle)] flex items-center justify-between">
+          <span className="text-[11px] text-[var(--text-muted)]">{iconCount} icons available</span>
+          <button type="button" onClick={onClose} className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-secondary)] px-3 py-1 rounded-lg hover:bg-[var(--surface-hover)] cursor-pointer">
             Cancel
           </button>
         </div>

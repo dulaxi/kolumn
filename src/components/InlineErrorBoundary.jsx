@@ -33,12 +33,12 @@ export default class InlineErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center gap-2 px-3 py-2 text-xs text-[#8E8E89] bg-[#F2EDE8] rounded-lg">
+        <div className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--text-muted)] bg-[var(--surface-raised)] rounded-lg">
           <span>Couldn&apos;t load {this.props.name}</span>
           <button
             onClick={this.handleRetry}
             aria-label="Retry"
-            className="flex items-center gap-1 px-2 py-0.5 text-[#5C5C57] hover:text-[#1B1B18] bg-white rounded border border-[#E0DBD5] transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-card)] rounded border border-[var(--border-default)] transition-colors"
           >
             <RefreshCw className="w-3 h-3" />
             Retry

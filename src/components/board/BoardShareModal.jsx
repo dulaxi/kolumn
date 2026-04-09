@@ -63,19 +63,21 @@ export default function BoardShareModal({ board, onClose }) {
 
     setLoading(true)
 
-    // Always create an invitation row (whether user exists or not)
-    const { error: invError } = await supabase
+    const { data: invData, error: invError } = await supabase
       .from('board_invitations')
       .insert({
         board_id: board.id,
         invited_email: trimmed,
         invited_by: user.id,
       })
+      .select()
+      .single()
 
     if (invError) {
       setError(invError.message)
     } else {
-      await fetchInvitations()
+      // Update local state directly instead of refetching
+      if (invData) setInvitations((prev) => [...prev, invData])
       setEmail('')
       showToast.success('Invitation sent')
       capture('member_invited')
@@ -86,17 +88,21 @@ export default function BoardShareModal({ board, onClose }) {
 
   const handleRemoveMember = async (userId) => {
     if (userId === board.owner_id) return
-    await supabase
+    // Optimistic remove
+    setMembers((prev) => prev.filter((m) => m.user_id !== userId))
+    const { error } = await supabase
       .from('board_members')
       .delete()
       .eq('board_id', board.id)
       .eq('user_id', userId)
-    await fetchMembers()
+    if (error) fetchMembers() // Rollback by refetching
   }
 
   const handleCancelInvitation = async (invId) => {
-    await supabase.from('board_invitations').delete().eq('id', invId)
-    await fetchInvitations()
+    // Optimistic remove
+    setInvitations((prev) => prev.filter((inv) => inv.id !== invId))
+    const { error } = await supabase.from('board_invitations').delete().eq('id', invId)
+    if (error) fetchInvitations() // Rollback by refetching
   }
 
   const isOwner = user?.id === board.owner_id
@@ -114,21 +120,21 @@ export default function BoardShareModal({ board, onClose }) {
       data-modal
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className={`bg-white shadow-xl ${
+      <div className={`bg-[var(--surface-card)] shadow-xl ${
         isMobile
           ? 'fixed inset-0'
           : 'rounded-2xl w-full max-w-md mx-4'
       }`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E2DB]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#5C5C57]" />
-            <h2 className="text-base font-semibold text-[#1B1B18]">Share "{board.name}"</h2>
+            <Users className="w-5 h-5 text-[var(--text-secondary)]" />
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">Share "{board.name}"</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB]"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
           >
             <X className="w-4 h-4" />
           </button>
@@ -136,16 +142,16 @@ export default function BoardShareModal({ board, onClose }) {
 
         {/* Invite form */}
         {isOwner && (
-          <form onSubmit={handleInvite} className="px-5 py-3 border-b border-[#E8E2DB]">
+          <form onSubmit={handleInvite} className="px-5 py-3 border-b border-[var(--border-subtle)]">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E89]" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError('') }}
                   placeholder="Invite by email..."
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6]"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)]"
                 />
               </div>
               <button
@@ -165,7 +171,7 @@ export default function BoardShareModal({ board, onClose }) {
 
         {/* Members list */}
         <div className="px-5 py-3 max-h-64 overflow-y-auto">
-          <p className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
             Members ({members.length})
           </p>
           <div className="space-y-1">
@@ -179,10 +185,10 @@ export default function BoardShareModal({ board, onClose }) {
                     {(m.profiles?.display_name || '?')[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1B1B18] truncate">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                       {m.profiles?.display_name || 'Unknown'}
                     </p>
-                    <p className="text-xs text-[#8E8E89] truncate">{m.profiles?.email}</p>
+                    <p className="text-xs text-[var(--text-muted)] truncate">{m.profiles?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -195,12 +201,12 @@ export default function BoardShareModal({ board, onClose }) {
                     <button
                       type="button"
                       onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1 text-[var(--text-muted)] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   ) : (
-                    <span className="text-xs text-[#8E8E89]">Member</span>
+                    <span className="text-xs text-[var(--text-muted)]">Member</span>
                   )}
                 </div>
               </div>
@@ -210,7 +216,7 @@ export default function BoardShareModal({ board, onClose }) {
           {/* Pending invitations */}
           {invitations.length > 0 && (
             <>
-              <p className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider mt-4 mb-2">
+              <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mt-4 mb-2">
                 Pending Invitations ({invitations.length})
               </p>
               <div className="space-y-1">
@@ -220,16 +226,16 @@ export default function BoardShareModal({ board, onClose }) {
                     className="flex items-center justify-between py-2 group"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-[#E8E2DB] flex items-center justify-center">
-                        <Mail className="w-3.5 h-3.5 text-[#8E8E89]" />
+                      <div className="w-7 h-7 rounded-full bg-[var(--surface-hover)] flex items-center justify-center">
+                        <Mail className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                       </div>
-                      <p className="text-sm text-[#5C5C57]">{inv.invited_email}</p>
+                      <p className="text-sm text-[var(--text-secondary)]">{inv.invited_email}</p>
                     </div>
                     {isOwner && (
                       <button
                         type="button"
                         onClick={() => handleCancelInvitation(inv.id)}
-                        className="p-1 text-[#8E8E89] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 text-[var(--text-muted)] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>

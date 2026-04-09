@@ -10,9 +10,9 @@ export default function CardDetailAttachments({
   const fileInputRef = useRef(null)
 
   return (
-    <div className="px-5 pt-3 pb-3 border-t border-[#E8E2DB]">
+    <div className="px-5 pt-3 pb-3 border-t border-[var(--border-subtle)]">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider flex items-center gap-2">
+        <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
           <Paperclip className="w-3.5 h-3.5" />
           Attachments
         </label>
@@ -54,13 +54,13 @@ export default function CardDetailAttachments({
                 : `${(att.file_size / (1024 * 1024)).toFixed(1)} MB`
 
             return (
-              <div key={att.id} className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-lg hover:bg-[#F2EDE8] transition-colors">
-                <div className="w-7 h-7 rounded-lg bg-[#E8E2DB] flex items-center justify-center shrink-0">
-                  {isImage ? <Image className="w-3.5 h-3.5 text-[#C2D64A]" /> : <File className="w-3.5 h-3.5 text-[#C4BFB8]" />}
+              <div key={att.id} className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-lg hover:bg-[var(--surface-raised)] transition-colors">
+                <div className="w-7 h-7 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center shrink-0">
+                  {isImage ? <Image className="w-3.5 h-3.5 text-[#C2D64A]" /> : <File className="w-3.5 h-3.5 text-[var(--text-faint)]" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-medium text-[#5C5C57] truncate">{att.file_name}</p>
-                  <p className="text-[10px] text-[#C4BFB8]">{sizeStr}</p>
+                  <p className="text-[12px] font-medium text-[var(--text-secondary)] truncate">{att.file_name}</p>
+                  <p className="text-[10px] text-[var(--text-faint)]">{sizeStr}</p>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
@@ -69,7 +69,7 @@ export default function CardDetailAttachments({
                       const url = await getAttachmentUrl(att.storage_path)
                       if (url) window.open(url, '_blank')
                     }}
-                    className="p-1 text-[#C4BFB8] hover:text-[#A8BA32] transition-colors"
+                    className="p-1 text-[var(--text-faint)] hover:text-[#A8BA32] transition-colors"
                     title="Download"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -78,7 +78,7 @@ export default function CardDetailAttachments({
                     <button
                       type="button"
                       onClick={() => deleteAttachment(att.id, cardId, att.storage_path)}
-                      className="p-1 text-[#C4BFB8] hover:text-[#7A5C44] transition-colors"
+                      className="p-1 text-[var(--text-faint)] hover:text-[#7A5C44] transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

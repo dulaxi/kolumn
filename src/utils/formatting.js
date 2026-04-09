@@ -1,11 +1,11 @@
 export const LABEL_BG = {
-  red: 'bg-[#F2D9C7] text-[#8B5A33]',
-  blue: 'bg-[#DAE0F0] text-[#4A5578]',
-  green: 'bg-[#EEF2D6] text-[#6B7A12]',
-  yellow: 'bg-[#F5EDCF] text-[#8B7322]',
-  purple: 'bg-[#E8DDE2] text-[#6E5A65]',
-  pink: 'bg-[#F0E0D2] text-[#7A5C44]',
-  gray: 'bg-[#E8E2DB] text-[#5C5C57]',
+  red: 'bg-[var(--label-red-bg)] text-[var(--label-red-text)]',
+  blue: 'bg-[var(--label-blue-bg)] text-[var(--label-blue-text)]',
+  green: 'bg-[var(--label-green-bg)] text-[var(--label-green-text)]',
+  yellow: 'bg-[var(--label-yellow-bg)] text-[var(--label-yellow-text)]',
+  purple: 'bg-[var(--label-purple-bg)] text-[var(--label-purple-text)]',
+  pink: 'bg-[var(--label-pink-bg)] text-[var(--label-pink-text)]',
+  gray: 'bg-[var(--label-gray-bg)] text-[var(--label-gray-text)]',
 }
 
 export const PRIORITY_DOT = {

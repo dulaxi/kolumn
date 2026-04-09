@@ -23,29 +23,29 @@ const ACTION_TEXT = {
 
 export default function CardDetailActivity({ activityItems }) {
   return (
-    <div className="px-5 pt-3 pb-5 border-t border-[#E8E2DB]">
-      <label className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider mb-3 flex items-center gap-2">
+    <div className="px-5 pt-3 pb-5 border-t border-[var(--border-subtle)]">
+      <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
         <History className="w-3.5 h-3.5" />
         Activity
       </label>
       {!activityItems || activityItems.length === 0 ? (
-        <p className="text-xs text-[#C4BFB8]">No activity yet</p>
+        <p className="text-xs text-[var(--text-faint)]">No activity yet</p>
       ) : (
       <div className="space-y-2">
         {activityItems.map((item) => (
           <div key={item.id} className="flex items-start gap-2 text-[12px]">
             <div className="mt-0.5 shrink-0">
               {ACTION_ICONS[item.action] || (item.action.startsWith('updated_') || item.action === 'renamed'
-                ? <PencilLine className="w-3 h-3 text-[#C4BFB8]" />
+                ? <PencilLine className="w-3 h-3 text-[var(--text-faint)]" />
                 : null
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="font-medium text-[#5C5C57]">{item.actor_name}</span>{' '}
-              <span className="text-[#8E8E89]">
+              <span className="font-medium text-[var(--text-secondary)]">{item.actor_name}</span>{' '}
+              <span className="text-[var(--text-muted)]">
                 {(ACTION_TEXT[item.action] || (() => item.action))(item.detail)}
               </span>
-              <span className="text-[#C4BFB8] ml-1.5">
+              <span className="text-[var(--text-faint)] ml-1.5">
                 {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
               </span>
             </div>

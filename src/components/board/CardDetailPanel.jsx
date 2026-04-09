@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import {
-  X, Trash2, Check, CheckCircle2, ArrowLeft, Bookmark, Archive, ArchiveRestore,
+  X, Trash2, Check, CheckCircle2, ArrowLeft, Bookmark, Archive, ArchiveRestore, Copy,
 } from 'lucide-react'
 import { showToast } from '../../utils/toast'
 import { useBoardStore } from '../../store/boardStore'
@@ -22,6 +22,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
+  const duplicateCard = useBoardStore((s) => s.duplicateCard)
   const archiveCard = useBoardStore((s) => s.archiveCard)
   const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
   const completeCard = useBoardStore((s) => s.completeCard)
@@ -207,7 +208,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const renderAvatar = (name, size = 'w-6 h-6', iconSize = 'w-3.5 h-3.5') => {
     const isMe = profile?.display_name && name.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
     if (isMe && profile.icon) {
-      const iconText = profile.color === 'bg-[#8E8E89]' ? 'text-[#1B1B18]' : 'text-white'
+      const iconText = profile.color === 'bg-[#8E8E89]' ? 'text-[var(--text-primary)]' : 'text-white'
       return (
         <span className={`${size} rounded-full shrink-0 flex items-center justify-center ${iconText} ${profile.color}`}>
           <DynamicIcon name={profile.icon} className={iconSize} />
@@ -222,28 +223,28 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   }
 
   return (
-    <div className={`fixed bg-white border-l border-[#E0DBD5] flex flex-col z-20 ${
+    <div className={`fixed bg-[var(--surface-card)] border-l border-[var(--border-default)] flex flex-col z-20 ${
       isMobile
         ? 'inset-0'
         : 'top-16 right-0 bottom-0 w-[340px] lg:w-[420px] animate-slide-in-right'
     }`}>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 border-b border-[#E8E2DB]">
+      <div className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-1">
           {isMobile && (
             <button
               type="button"
               onClick={handleSaveAndClose}
               aria-label="Back"
-              className="p-1.5 rounded-lg hover:bg-[#E8E2DB]"
+              className="p-1.5 rounded-lg hover:bg-[var(--surface-hover)]"
             >
-              <ArrowLeft className="w-5 h-5 text-[#5C5C57]" />
+              <ArrowLeft className="w-5 h-5 text-[var(--text-secondary)]" />
             </button>
           )}
           <button
             type="button"
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#5C5C57] hover:bg-[#E8E2DB] rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
           >
             <Check className="w-3.5 h-3.5" />
             Save
@@ -263,15 +264,23 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               })
               showToast.success('Saved as template')
             }}
-            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#A8BA32] hover:bg-[#E8E2DB] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[#A8BA32] hover:bg-[var(--surface-hover)] transition-colors"
             title="Save as template"
           >
             <Bookmark className="w-4 h-4" />
           </button>
           <button
             type="button"
+            onClick={() => { duplicateCard(cardId); showToast.success('Card duplicated') }}
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
+            title="Duplicate"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
             onClick={handleArchive}
-            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#D4A843] hover:bg-[#E8E2DB] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[#D4A843] hover:bg-[var(--surface-hover)] transition-colors"
             title={card?.archived ? 'Unarchive' : 'Archive'}
           >
             {card?.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
@@ -279,7 +288,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           <button
             type="button"
             onClick={handleDelete}
-            className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#7A5C44] hover:bg-[#E8E2DB] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[#7A5C44] hover:bg-[var(--surface-hover)] transition-colors"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />
@@ -289,7 +298,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               type="button"
               onClick={handleSaveAndClose}
               aria-label="Close panel"
-              className="p-1.5 rounded-lg text-[#8E8E89] hover:text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
+              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -308,13 +317,13 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               aria-label={card.completed ? 'Mark as incomplete' : 'Mark as complete'}
               className="shrink-0"
             >
-              <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-[#A8BA32]' : 'text-[#8E8E89] hover:text-[#C2D64A]'}`} />
+              <CheckCircle2 className={`w-5 h-5 transition-colors ${card.completed ? 'text-[#A8BA32]' : 'text-[var(--text-muted)] hover:text-[#C2D64A]'}`} />
             </button>
             {card.task_number > 0 && (
-              <span className="text-xs font-medium text-[#5C5C57]">Task #{card.task_number}</span>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">Task #{card.task_number}</span>
             )}
             {card.global_task_number > 0 && (
-              <span className="text-[10px] text-[#8E8E89] bg-[#F2EDE8] px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
+              <span className="text-[10px] text-[var(--text-muted)] bg-[var(--surface-raised)] px-1.5 py-0.5 rounded-full">G-{card.global_task_number}</span>
             )}
             {card.archived && (
               <span className="text-[10px] font-medium text-[#8B7355] bg-[#F5EDCF] px-1.5 py-0.5 rounded-full">Archived</span>
@@ -325,7 +334,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             onChange={(e) => { setTitle(e.target.value); scheduleSave() }}
             maxLength={200}
             aria-label="Task name"
-            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[#8E8E89] ${card.completed ? 'text-[#8E8E89] line-through' : 'text-[#1B1B18]'}`}
+            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[#8E8E89] ${card.completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}
             placeholder="Task name"
           />
         </div>
@@ -350,15 +359,15 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         />
 
         {/* Description */}
-        <div className="px-5 pt-5 pb-2 border-t border-[#E8E2DB] mt-1">
-          <label className="text-xs font-medium text-[#8E8E89] uppercase tracking-wider mb-2 block">Description</label>
+        <div className="px-5 pt-5 pb-2 border-t border-[var(--border-subtle)] mt-1">
+          <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Description</label>
           <textarea
             value={description}
             onChange={(e) => { setDescription(e.target.value); scheduleSave() }}
             rows={4}
             maxLength={5000}
             placeholder="Add details about this task..."
-            className="w-full text-sm text-[#5C5C57] rounded-lg px-3 py-2 resize-none border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none focus:ring-1 focus:ring-[#EEF2D6] placeholder-[#8E8E89]"
+            className="w-full text-sm text-[var(--text-secondary)] rounded-lg px-3 py-2 resize-none border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)] placeholder-[#8E8E89]"
           />
         </div>
 

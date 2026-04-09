@@ -19,21 +19,21 @@ export default function ConfirmModal({ title, message, confirmLabel = 'Delete', 
         role="alertdialog"
         aria-labelledby="confirm-title"
         aria-describedby="confirm-message"
-        className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-5"
+        className="bg-[var(--surface-card)] rounded-2xl shadow-xl w-full max-w-sm mx-4 p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 rounded-full bg-[#F0E0D2] flex items-center justify-center shrink-0">
             <AlertTriangle className="w-5 h-5 text-[#7A5C44]" />
           </div>
-          <h3 id="confirm-title" className="text-sm font-semibold text-[#1B1B18]">{title}</h3>
+          <h3 id="confirm-title" className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
         </div>
-        <p id="confirm-message" className="text-sm text-[#5C5C57] mb-5 ml-12">{message}</p>
+        <p id="confirm-message" className="text-sm text-[var(--text-secondary)] mb-5 ml-12">{message}</p>
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-[#5C5C57] hover:bg-[#E8E2DB] rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
           >
             Cancel
           </button>

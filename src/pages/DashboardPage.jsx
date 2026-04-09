@@ -77,23 +77,23 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col items-center justify-center">
         {/* Header — centered */}
         <div className="text-center mb-12 -mt-10">
-          <div className="text-[11px] tracking-[1.5px] uppercase text-[#8E8E89] mb-1">
+          <div className="text-[11px] tracking-[1.5px] uppercase text-[var(--text-muted)] mb-1">
             {format(new Date(), 'EEEE, MMMM d')}
           </div>
-          <h1 className="text-[26px] sm:text-[30px] font-normal text-[#1B1B18] leading-tight">
-            <span className="font-logo">{boardCount === 0 ? 'Welcome' : getGreeting()},</span> <span className="text-[#A8BA32] font-heading text-[1.14em]">{displayName}</span>
+          <h1 className="text-[26px] sm:text-[30px] font-normal text-[var(--text-primary)] leading-tight">
+            <span className="font-logo">{boardCount === 0 ? 'Welcome' : getGreeting()},</span> <span className="text-[#A8BA32] font-heading">{displayName}</span>
           </h1>
-          <p className="text-[14px] text-[#5C5C57] font-heading italic mt-0.5">
+          <p className="text-[14px] text-[var(--text-secondary)] font-heading italic mt-0.5">
             {boardCount === 0 ? "Let's get you set up." : 'Here\u2019s your home base.'}
           </p>
         </div>
         {boardCount === 0 ? (
           <>
-            <div className="w-14 h-14 rounded-2xl bg-[#EEF2D6] flex items-center justify-center mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--accent-lime-wash)] flex items-center justify-center mb-5">
               <Target className="w-7 h-7 text-[#A8BA32]" />
             </div>
-            <h2 className="text-lg font-normal text-[#1B1B18] mb-1.5 font-logo">Your dashboard lives here</h2>
-            <p className="text-sm text-[#8E8E89] text-center max-w-sm mb-6">
+            <h2 className="text-lg font-normal text-[var(--text-primary)] mb-1.5 font-logo">Your dashboard lives here</h2>
+            <p className="text-sm text-[var(--text-muted)] text-center max-w-sm mb-6">
               Stats, calendar, timeline, and activity will fill in as you create boards and complete tasks.
             </p>
             <button
@@ -106,8 +106,8 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[#1B1B18] mb-1.5 font-logo px-3 py-0.5 bg-[#A8BA32] rounded-lg"><Kanban className="w-4.5 h-4.5" />Your boards</h2>
-            <p className="text-sm text-[#8E8E89] text-center max-w-sm mb-6">
+            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[var(--text-primary)] mb-1.5 font-logo px-3 py-0.5 bg-[#A8BA32] rounded-lg"><Kanban className="w-4.5 h-4.5" />Your boards</h2>
+            <p className="text-sm text-[var(--text-muted)] text-center max-w-sm mb-6">
               Jump into a board, or create a new one.
             </p>
             <div className={`grid gap-3 max-w-lg w-full mb-6 ${boardSummaries.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
@@ -115,19 +115,19 @@ export default function DashboardPage() {
                 <button
                   key={board.id}
                   onClick={() => { setActiveBoard(board.id); navigate('/boards') }}
-                  className="bg-white border border-[#E0DBD5] rounded-xl p-4 text-left cursor-pointer hover:shadow-sm hover:border-[#C4BFB8] transition-all"
+                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-left cursor-pointer hover:shadow-sm hover:border-[#C4BFB8] transition-all"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {board.icon ? (
-                      <DynamicIcon name={board.icon} className="w-4 h-4 text-[#5C5C57]" />
+                      <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-secondary)]" />
                     ) : (
-                      <Kanban className="w-4 h-4 text-[#8E8E89]" />
+                      <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
                     )}
-                    <span className="text-[13px] font-normal text-[#1B1B18] flex-1 truncate">{board.name}</span>
-                    <span className="text-[11px] text-[#8E8E89]">{board.totalCards}</span>
+                    <span className="text-[13px] font-normal text-[var(--text-primary)] flex-1 truncate">{board.name}</span>
+                    <span className="text-[11px] text-[var(--text-muted)]">{board.totalCards}</span>
                   </div>
                   {board.totalCards > 0 && (
-                    <div className="h-1 rounded-full overflow-hidden flex bg-[#E8E2DB] mb-2">
+                    <div className="h-1 rounded-full overflow-hidden flex bg-[var(--surface-hover)] mb-2">
                       {board.columns.map((col, i) =>
                         col.count > 0 ? (
                           <div key={col.id} className="h-full" style={{ width: `${(col.count / board.totalCards) * 100}%`, background: SEGMENT_COLORS[i % SEGMENT_COLORS.length] }} />
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                     </div>
                   )}
                   {board.lastUpdated && (
-                    <div className="text-[10px] font-mono text-[#C4BFB8]">
+                    <div className="text-[10px] font-mono text-[var(--text-faint)]">
                       {formatDistanceToNow(new Date(board.lastUpdated), { addSuffix: true })}
                     </div>
                   )}
@@ -145,7 +145,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={handleNewBoard}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#5C5C57] bg-white border border-[#E0DBD5] rounded-xl hover:border-[#C4BFB8] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl hover:border-[#C4BFB8] transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               New Board
@@ -155,27 +155,27 @@ export default function DashboardPage() {
 
         {/* Feature hints — always visible */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 max-w-lg w-full">
-          <div className="bg-white border border-[#E0DBD5] rounded-xl p-4 text-center">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
             <LayoutGrid className="w-5 h-5 text-[#A8BA32] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[#1B1B18] mb-0.5">Boards</div>
-            <div className="text-[11px] text-[#8E8E89]">Organize tasks into columns</div>
+            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Boards</div>
+            <div className="text-[11px] text-[var(--text-muted)]">Organize tasks into columns</div>
           </div>
-          <div className="bg-white border border-[#E0DBD5] rounded-xl p-4 text-center">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
             <Users className="w-5 h-5 text-[#D4A843] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[#1B1B18] mb-0.5">Collaborate</div>
-            <div className="text-[11px] text-[#8E8E89]">Invite your team to boards</div>
+            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Collaborate</div>
+            <div className="text-[11px] text-[var(--text-muted)]">Invite your team to boards</div>
           </div>
-          <div className="bg-white border border-[#E0DBD5] rounded-xl p-4 text-center">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
             <BarChart3 className="w-5 h-5 text-[#C27A4A] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[#1B1B18] mb-0.5">Track</div>
-            <div className="text-[11px] text-[#8E8E89]">Stats and streaks appear here</div>
+            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Track</div>
+            <div className="text-[11px] text-[var(--text-muted)]">Stats and streaks appear here</div>
           </div>
         </div>
       </div>
 
       {/* ─── Footer ─── */}
-      <div className="flex items-center justify-center pt-3 border-t border-[#E8E2DB] shrink-0">
-        <span className="text-[12px] text-[#C4BFB8] font-heading italic">
+      <div className="flex items-center justify-center pt-3 border-t border-[var(--border-subtle)] shrink-0">
+        <span className="text-[12px] text-[var(--text-faint)] font-heading italic">
           "{quote.text}" — {quote.author}
         </span>
       </div>

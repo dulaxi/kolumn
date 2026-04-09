@@ -31,6 +31,98 @@
   --animate-fadeIn: fadeIn 1s ease forwards;
 }
 
+/* ── Semantic theme tokens ── */
+:root, [data-theme="light"] {
+  --surface-page: #FAF8F6;
+  --surface-board: #FEFDFD;
+  --surface-card: #FFFFFF;
+  --surface-sidebar: #FAF8F6;
+  --surface-raised: #F2EDE8;
+  --surface-hover: #E8E2DB;
+  --surface-input: #FFFFFF;
+
+  --border-default: #E0DBD5;
+  --border-subtle: #E8E2DB;
+  --border-focus: #C2D64A;
+
+  --text-primary: #1B1B18;
+  --text-secondary: #5C5C57;
+  --text-muted: #8E8E89;
+  --text-faint: #C4BFB8;
+
+  --accent-lime: #C2D64A;
+  --accent-lime-dark: #A8BA32;
+  --accent-lime-wash: #EEF2D6;
+
+  --btn-primary-bg: #1B1B18;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #333333;
+
+  --label-red-bg: #F2D9C7;    --label-red-text: #8B5A33;
+  --label-blue-bg: #DAE0F0;   --label-blue-text: #4A5578;
+  --label-green-bg: #EEF2D6;  --label-green-text: #6B7A12;
+  --label-yellow-bg: #F5EDCF; --label-yellow-text: #8B7322;
+  --label-purple-bg: #E8DDE2; --label-purple-text: #6E5A65;
+  --label-pink-bg: #F0E0D2;   --label-pink-text: #7A5C44;
+  --label-gray-bg: #E8E2DB;   --label-gray-text: #5C5C57;
+}
+
+[data-theme="dark"] {
+  --surface-page: #1C1C1A;
+  --surface-board: #1C1C1A;
+  --surface-card: #262624;
+  --surface-sidebar: #212120;
+  --surface-raised: #2E2E2B;
+  --surface-hover: #3A3937;
+  --surface-input: #2E2E2B;
+
+  --border-default: #3A3937;
+  --border-subtle: #332F2D;
+  --border-focus: #C2D64A;
+
+  --text-primary: #E8E5E0;
+  --text-secondary: #9C9A95;
+  --text-muted: #6B6966;
+  --text-faint: #4A4845;
+
+  --accent-lime: #C2D64A;
+  --accent-lime-dark: #A8BA32;
+  --accent-lime-wash: #2E3B1A;
+
+  --btn-primary-bg: #C2D64A;
+  --btn-primary-text: #1C1C1A;
+  --btn-primary-hover: #A8BA32;
+
+  --label-red-bg: #3A2A20;    --label-red-text: #C49878;
+  --label-blue-bg: #2A3040;   --label-blue-text: #8DA0C4;
+  --label-green-bg: #2A3520;  --label-green-text: #A8C278;
+  --label-yellow-bg: #3A3520; --label-yellow-text: #C4B078;
+  --label-purple-bg: #3A3040; --label-purple-text: #C4A0B8;
+  --label-pink-bg: #352820;   --label-pink-text: #C09870;
+  --label-gray-bg: #333330;   --label-gray-text: #9C9A95;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] ::selection {
+  background: rgba(194, 214, 74, 0.3);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--surface-page);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-hover);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

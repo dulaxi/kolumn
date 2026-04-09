@@ -39,15 +39,15 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       aria-label={`Task: ${title}`}
       onClick={() => onClick(card.id)}
       style={font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : undefined}
-      className={`w-full rounded-xl border shadow-sm transition-all text-left cursor-pointer flex focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C2D64A] focus-visible:ring-offset-1 ${
+      className={`w-full rounded-xl border shadow-sm transition-all text-left cursor-pointer flex focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 ${
         isSelected
-          ? 'bg-[#EEF2D6]/60 border-[#EEF2D6]'
-          : 'bg-white border-[#E0DBD5] hover:shadow-md'
+          ? 'bg-[var(--accent-lime-wash)]/60 border-[var(--accent-lime-wash)]'
+          : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:shadow-md'
       }`}
     >
       {/* Icon — left center */}
       <div className="flex items-center pl-3 shrink-0">
-        <div className="w-7 h-7 rounded-lg bg-[#E8E2DB] flex items-center justify-center text-[#8E8E89]">
+        <div className="w-7 h-7 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-muted)]">
           {displayIcon ? (
             <DynamicIcon name={displayIcon} className="w-4 h-4" />
           ) : (
@@ -85,20 +85,20 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
             aria-label={completed ? 'Mark as incomplete' : 'Mark as complete'}
             className="shrink-0"
           >
-            <CheckCircle2 className={`w-4 h-4 transition-colors ${completed ? 'text-[#A8BA32]' : 'text-[#8E8E89] hover:text-[#C2D64A]'}`} />
+            <CheckCircle2 className={`w-4 h-4 transition-colors ${completed ? 'text-[#A8BA32]' : 'text-[var(--text-muted)] hover:text-[#C2D64A]'}`} />
           </button>
           {taskNumber && (
-            <span className="text-[11px] font-medium text-[#5C5C57]">Task #{taskNumber}</span>
+            <span className="text-[11px] font-medium text-[var(--text-secondary)]">Task #{taskNumber}</span>
           )}
           <span className={`w-2 h-2 rounded-full ${priDot}`} title={priority} />
         </div>
-        <p className={`text-[13px] font-medium leading-snug ${completed ? 'text-[#8E8E89] line-through' : 'text-[#1B1B18]'}`}>
+        <p className={`text-[13px] font-medium leading-snug ${completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}>
           {title}
         </p>
 
         {/* Description preview */}
         {hasDescription && (
-          <p className="text-[12px] text-[#8E8E89] leading-relaxed mt-1 line-clamp-2">
+          <p className="text-[12px] text-[var(--text-muted)] leading-relaxed mt-1 line-clamp-2">
             {description}
           </p>
         )}
@@ -133,7 +133,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
                 className={`text-[10px] font-medium flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors ${
                   checkedCount === totalCount
                     ? 'bg-[#EEF2D6] text-[#A8BA32]'
-                    : 'bg-[#E8E2DB] text-[#8E8E89] hover:bg-[#E0DBD5]'
+                    : 'bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[#E0DBD5]'
                 }`}
               >
                 <CheckSquare className="w-3 h-3" />
@@ -142,7 +142,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
             )}
 
             {hasDescription && (
-              <span className="text-[10px] text-[#8E8E89] flex items-center">
+              <span className="text-[10px] text-[var(--text-muted)] flex items-center">
                 <AlignLeft className="w-3 h-3" />
               </span>
             )}
@@ -172,9 +172,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
 
         {/* Expandable checklist */}
         {hasChecklist && checklistOpen && (
-          <div className="mt-2 pt-2 border-t border-[#E8E2DB]" onClick={(e) => e.stopPropagation()}>
+          <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]" onClick={(e) => e.stopPropagation()}>
             {/* Progress bar */}
-            <div className="w-full bg-[#E8E2DB] rounded-full h-1 mb-2">
+            <div className="w-full bg-[var(--surface-hover)] rounded-full h-1 mb-2">
               <div
                 className={`h-1 rounded-full transition-all ${checkedCount === totalCount ? 'bg-[#A8BA32]' : 'bg-[#C2D64A]'}`}
                 style={{ width: `${(checkedCount / totalCount) * 100}%` }}
@@ -187,9 +187,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
                     type="checkbox"
                     checked={item.done}
                     onChange={() => toggleCheckItem(idx)}
-                    className="w-3.5 h-3.5 rounded border-[#E0DBD5] text-[#C2D64A] focus:ring-[#EEF2D6]"
+                    className="w-3.5 h-3.5 rounded border-[var(--border-default)] text-[#C2D64A] focus:ring-[var(--accent-lime-wash)]"
                   />
-                  <span className={`text-[12px] leading-snug ${item.done ? 'line-through text-[#8E8E89]' : 'text-[#5C5C57]'}`}>
+                  <span className={`text-[12px] leading-snug ${item.done ? 'line-through text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'}`}>
                     {item.text}
                   </span>
                 </label>

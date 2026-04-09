@@ -42,6 +42,10 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   })
 }
 
+// Apply persisted theme before first paint to avoid flash
+const savedTheme = JSON.parse(localStorage.getItem('kolumn-settings') || '{}')?.state?.theme
+document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light')
+
 // Initialize auth before rendering
 useAuthStore.getState().initialize()
 

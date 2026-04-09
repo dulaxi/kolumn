@@ -12,8 +12,13 @@ import { PROFILE_COLORS } from '../constants/colors'
 const themes = [
   {
     id: 'default',
-    label: 'Default',
+    label: 'Light',
     swatches: ['#FFFFFF', '#F2EDE8', '#C2D64A', '#1B1B18'],
+  },
+  {
+    id: 'dark',
+    label: 'Dark',
+    swatches: ['#262624', '#1C1C1A', '#C2D64A', '#E8E5E0'],
   },
 ]
 
@@ -103,62 +108,62 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1B1B18] font-heading">Settings</h1>
-        <p className="text-[#5C5C57] text-sm mt-1">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] font-heading">Settings</h1>
+        <p className="text-[var(--text-secondary)] text-sm mt-1">
           Manage your data and preferences
         </p>
       </div>
 
       {/* My Profile */}
-      <div className="bg-white border border-[#E0DBD5] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <User className="w-4 h-4 text-[#5C5C57]" />
-          <h2 className="text-sm font-semibold text-[#1B1B18]">My Profile</h2>
+          <User className="w-4 h-4 text-[var(--text-secondary)]" />
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">My Profile</h2>
         </div>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Set your name, avatar icon, and color. This appears on cards assigned to you.
         </p>
 
         <div className="space-y-4">
           {/* Preview */}
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
               {profile?.icon ? (
                 <DynamicIcon name={profile.icon} className="w-5 h-5" />
               ) : (
                 <User className="w-5 h-5" />
               )}
             </div>
-            <span className="text-sm font-medium text-[#5C5C57]">{profile?.display_name || 'No name set'}</span>
+            <span className="text-sm font-medium text-[var(--text-secondary)]">{profile?.display_name || 'No name set'}</span>
           </div>
 
           {/* Name */}
           <div>
-            <label className="text-xs font-medium text-[#5C5C57] mb-1 block">Display name</label>
+            <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">Display name</label>
             <input
               value={profile?.display_name || ''}
               onChange={(e) => handleProfileUpdate({ display_name: e.target.value })}
               placeholder="Your name..."
-              className="w-full text-sm rounded-xl px-3 py-2 border border-[#E0DBD5] focus:border-[#C2D64A] focus:outline-none"
+              className="w-full text-sm rounded-xl px-3 py-2 border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none"
             />
           </div>
 
           {/* Icon */}
           <div className="relative">
-            <label className="text-xs font-medium text-[#5C5C57] mb-1 block">Icon</label>
+            <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">Icon</label>
             <button
               type="button"
               onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
-              className="flex items-center gap-2 px-3 py-2 border border-[#E0DBD5] rounded-xl hover:bg-[#F2EDE8] transition-colors text-sm"
+              className="flex items-center gap-2 px-3 py-2 border border-[var(--border-default)] rounded-xl hover:bg-[var(--surface-raised)] transition-colors text-sm"
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[#1B1B18]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
                 {profile?.icon ? (
                   <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
                 ) : (
                   <User className="w-3.5 h-3.5" />
                 )}
               </div>
-              <span className="text-[#5C5C57]">{profile?.icon || 'Choose icon'}</span>
+              <span className="text-[var(--text-secondary)]">{profile?.icon || 'Choose icon'}</span>
             </button>
             {showProfileIconPicker && (
               <IconPicker
@@ -174,7 +179,7 @@ export default function SettingsPage() {
 
           {/* Color */}
           <div>
-            <label className="text-xs font-medium text-[#5C5C57] mb-1 block">Color</label>
+            <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">Color</label>
             <div className="flex gap-2 flex-wrap">
               {PROFILE_COLORS.map((c) => (
                 <button
@@ -195,12 +200,12 @@ export default function SettingsPage() {
       </div>
 
       {/* Theme */}
-      <div className="bg-white border border-[#E0DBD5] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Palette className="w-4 h-4 text-[#5C5C57]" />
-          <h2 className="text-sm font-semibold text-[#1B1B18]">Theme</h2>
+          <Palette className="w-4 h-4 text-[var(--text-secondary)]" />
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Theme</h2>
         </div>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Choose a color theme for the interface.
         </p>
         <div className="flex gap-3">
@@ -210,20 +215,20 @@ export default function SettingsPage() {
               onClick={() => setTheme(t.id)}
               className={`flex flex-col items-center gap-2 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
                 theme === t.id
-                  ? 'border-[#C2D64A] bg-[#EEF2D6]/60'
-                  : 'border-[#E0DBD5] hover:border-[#E0DBD5]'
+                  ? 'border-[var(--border-focus)] bg-[var(--accent-lime-wash)]/60'
+                  : 'border-[var(--border-default)] hover:border-[var(--border-default)]'
               }`}
             >
               <div className="flex gap-1">
                 {t.swatches.map((color, i) => (
                   <div
                     key={i}
-                    className="w-5 h-5 rounded-full border border-[#E0DBD5]"
+                    className="w-5 h-5 rounded-full border border-[var(--border-default)]"
                     style={{ backgroundColor: color }}
                   />
                 ))}
               </div>
-              <span className="text-xs font-medium text-[#5C5C57]">
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
                 {t.label}
               </span>
             </button>
@@ -232,12 +237,12 @@ export default function SettingsPage() {
       </div>
 
       {/* Font */}
-      <div className="bg-white border border-[#E0DBD5] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Type className="w-4 h-4 text-[#5C5C57]" />
-          <h2 className="text-sm font-semibold text-[#1B1B18]">Font</h2>
+          <Type className="w-4 h-4 text-[var(--text-secondary)]" />
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Font</h2>
         </div>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Choose a typeface for cards.
         </p>
         <div className="flex gap-3">
@@ -245,38 +250,38 @@ export default function SettingsPage() {
             onClick={() => setFont('mona-sans')}
             className={`flex flex-col items-center gap-2 px-5 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
               font === 'mona-sans'
-                ? 'border-[#C2D64A] bg-[#EEF2D6]/60'
-                : 'border-[#E0DBD5] hover:border-[#E0DBD5]'
+                ? 'border-[var(--border-focus)] bg-[var(--accent-lime-wash)]/60'
+                : 'border-[var(--border-default)] hover:border-[var(--border-default)]'
             }`}
           >
-            <span style={{ fontFamily: "'Mona Sans Variable', sans-serif" }} className="text-lg font-semibold text-[#1B1B18]">Aa</span>
-            <span className="text-xs font-medium text-[#5C5C57]">Mona Sans</span>
+            <span style={{ fontFamily: "'Mona Sans Variable', sans-serif" }} className="text-lg font-semibold text-[var(--text-primary)]">Aa</span>
+            <span className="text-xs font-medium text-[var(--text-secondary)]">Mona Sans</span>
           </button>
           <button
             onClick={() => setFont('sf-mono')}
             className={`flex flex-col items-center gap-2 px-5 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
               font === 'sf-mono'
-                ? 'border-[#C2D64A] bg-[#EEF2D6]/60'
-                : 'border-[#E0DBD5] hover:border-[#E0DBD5]'
+                ? 'border-[var(--border-focus)] bg-[var(--accent-lime-wash)]/60'
+                : 'border-[var(--border-default)] hover:border-[var(--border-default)]'
             }`}
           >
-            <span style={{ fontFamily: "'SF Mono', 'Menlo', monospace" }} className="text-lg font-semibold text-[#1B1B18]">Aa</span>
-            <span className="text-xs font-medium text-[#5C5C57]">SF Mono</span>
+            <span style={{ fontFamily: "'SF Mono', 'Menlo', monospace" }} className="text-lg font-semibold text-[var(--text-primary)]">Aa</span>
+            <span className="text-xs font-medium text-[var(--text-secondary)]">SF Mono</span>
           </button>
         </div>
       </div>
 
       {/* Export Data */}
-      <div className="bg-white border border-[#E0DBD5] rounded-2xl p-5 shadow-sm mb-4">
-        <h2 className="text-sm font-semibold text-[#1B1B18] mb-1">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
           Export Data
         </h2>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Download all your boards, notes, and settings as a JSON backup file.
         </p>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-[#E8E2DB] text-[#1B1B18] text-sm font-medium rounded-xl hover:bg-[#E0DBD5] cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-hover)] text-[var(--text-primary)] text-sm font-medium rounded-xl hover:bg-[#E0DBD5] cursor-pointer transition-colors"
         >
           <Download className="w-4 h-4" />
           Export Backup
@@ -284,11 +289,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Import Data */}
-      <div className="bg-white border border-[#E0DBD5] rounded-2xl p-5 shadow-sm mb-4">
-        <h2 className="text-sm font-semibold text-[#1B1B18] mb-1">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
           Import Data
         </h2>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Restore from a previously exported JSON backup. This will replace your
           current data.
         </p>
@@ -302,7 +307,7 @@ export default function SettingsPage() {
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 border border-[#E0DBD5] text-[#5C5C57] text-sm font-medium rounded-xl hover:bg-[#F2EDE8] cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-4 py-2 border border-[var(--border-default)] text-[var(--text-secondary)] text-sm font-medium rounded-xl hover:bg-[var(--surface-raised)] cursor-pointer transition-colors"
         >
           <Upload className="w-4 h-4" />
           Import Backup
@@ -311,12 +316,12 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-white border-2 border-[#D4A07A] rounded-2xl p-5 shadow-sm">
+      <div className="bg-[var(--surface-card)] border-2 border-[#D4A07A] rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle className="w-4 h-4 text-[#C27A4A]" />
           <h2 className="text-sm font-semibold text-[#7A5C44]">Danger Zone</h2>
         </div>
-        <p className="text-sm text-[#5C5C57] mb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
           Permanently delete all your boards, notes, and settings. This action
           cannot be undone.
         </p>
@@ -339,7 +344,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setConfirmingClear(false)}
-              className="px-4 py-2 border border-[#E0DBD5] text-[#5C5C57] text-sm font-medium rounded-xl hover:bg-[#F2EDE8] cursor-pointer transition-colors"
+              className="px-4 py-2 border border-[var(--border-default)] text-[var(--text-secondary)] text-sm font-medium rounded-xl hover:bg-[var(--surface-raised)] cursor-pointer transition-colors"
             >
               Cancel
             </button>

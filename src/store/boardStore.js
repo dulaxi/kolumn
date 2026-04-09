@@ -107,6 +107,7 @@ export const useBoardStore = create((set, get) => ({
   error: null,
   subscriptions: [],
   _isDragging: false,
+  _tempIdMap: {},
   comments: {},
   activity: {},
   attachments: {},
@@ -321,6 +322,13 @@ export const useBoardStore = create((set, get) => ({
       return
     }
 
+    // Optimistic: show column instantly with temp ID
+    const tempId = `temp-${crypto.randomUUID()}`
+    const now = new Date().toISOString()
+    const optimisticCol = { id: tempId, board_id: boardId, title: sanitizedCol, position, created_at: now, wip_limit: null }
+    set((s) => ({ columns: { ...s.columns, [tempId]: optimisticCol } }))
+
+    // Persist in background
     const { data: col, error } = await supabase
       .from('columns')
       .insert(validated.data)
@@ -330,13 +338,15 @@ export const useBoardStore = create((set, get) => ({
     if (error) {
       logError('Failed to add column:', error)
       showToast.error('Failed to add section')
+      set((s) => { const { [tempId]: _, ...rest } = s.columns; return { columns: rest } })
       return
     }
 
     if (col) {
-      set((state) => ({
-        columns: { ...state.columns, [col.id]: col },
-      }))
+      set((s) => {
+        const { [tempId]: _, ...restCols } = s.columns
+        return { columns: { ...restCols, [col.id]: col } }
+      })
     }
   },
 
@@ -363,6 +373,30 @@ export const useBoardStore = create((set, get) => ({
     if (error) {
       logError('Failed to update WIP limit:', error)
       if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
+    }
+  },
+
+  reorderColumns: async (boardId, orderedIds) => {
+    // Optimistic: update positions locally
+    const prevColumns = { ...get().columns }
+    set((s) => {
+      const columns = { ...s.columns }
+      orderedIds.forEach((id, idx) => {
+        if (columns[id]) columns[id] = { ...columns[id], position: idx }
+      })
+      return { columns }
+    })
+
+    // Persist each column's new position
+    const updates = orderedIds.map((id, idx) =>
+      supabase.from('columns').update({ position: idx }).eq('id', id)
+    )
+    const results = await Promise.all(updates)
+    const failed = results.some((r) => r.error)
+    if (failed) {
+      logError('Failed to reorder columns')
+      set({ columns: prevColumns })
+      showToast.error('Failed to reorder sections')
     }
   },
 
@@ -410,71 +444,140 @@ export const useBoardStore = create((set, get) => ({
       .filter((c) => c.column_id === columnId)
     const position = columnCards.length
 
-    let globalNumber = Object.values(state.cards).reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
-    // Try to get accurate max from DB to avoid duplicates in multi-tab scenarios
-    const { data: maxRow } = await supabase.from('cards').select('global_task_number').order('global_task_number', { ascending: false }).limit(1).single()
-    if (maxRow?.global_task_number >= globalNumber) {
-      globalNumber = maxRow.global_task_number + 1
-    }
+    // Optimistic local task numbers (best-guess, server reconciles)
+    const localGlobalNumber = Object.values(state.cards).reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
+    const localTaskNumber = board.next_task_number || 1
 
-    // Use atomic RPC to get next task number (prevents duplicates under concurrent creates)
-    let taskNumber = board.next_task_number || 1
-    const { data: atomicNum, error: rpcError } = await supabase.rpc('next_task_number', { target_board_id: boardId })
-    if (!rpcError && atomicNum != null) {
-      taskNumber = atomicNum
-    }
-
-    const rawInsert = {
+    // Build optimistic card with temp ID
+    const tempId = `temp-${crypto.randomUUID()}`
+    const now = new Date().toISOString()
+    const optimisticCard = {
+      id: tempId,
       board_id: boardId,
       column_id: columnId,
       position,
-      task_number: taskNumber,
-      global_task_number: globalNumber,
+      task_number: localTaskNumber,
+      global_task_number: localGlobalNumber,
       title: sanitizeTitle(cardData.title) || 'Untitled task',
-      description: sanitizeDescription(cardData.description),
-      assignee_name: sanitizeTitle(cardData.assignee),
+      description: sanitizeDescription(cardData.description) || '',
+      assignee_name: sanitizeTitle(cardData.assignee) || '',
       labels: cardData.labels || [],
       due_date: cardData.dueDate || null,
       priority: cardData.priority || 'medium',
       icon: cardData.icon || null,
       completed: cardData.completed || false,
       checklist: cardData.checklist || [],
+      created_at: now,
+      updated_at: now,
+      archived: false,
+      _optimistic: true,
     }
 
-    const validated = cardInsertSchema.safeParse(rawInsert)
-    if (!validated.success) {
-      logError('Card validation failed:', validated.error.flatten())
-      showToast.error('Invalid task data')
-      return null
-    }
-    const cardInsert = validated.data
+    // Show card instantly
+    set((s) => ({
+      cards: { ...s.cards, [tempId]: optimisticCard },
+      boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: localTaskNumber + 1 } },
+    }))
 
-    try {
-      const cardRes = await supabase.from('cards').insert(cardInsert).select().single()
+    // Persist in background
+    ;(async () => {
+      try {
+        // Get accurate numbers from DB
+        let globalNumber = localGlobalNumber
+        const { data: maxRow } = await supabase.from('cards').select('global_task_number').order('global_task_number', { ascending: false }).limit(1).single()
+        if (maxRow?.global_task_number >= globalNumber) {
+          globalNumber = maxRow.global_task_number + 1
+        }
 
-      if (cardRes.error || !cardRes.data) {
-        logError('Failed to create card:', cardRes.error)
+        let taskNumber = localTaskNumber
+        const { data: atomicNum, error: rpcError } = await supabase.rpc('next_task_number', { target_board_id: boardId })
+        if (!rpcError && atomicNum != null) {
+          taskNumber = atomicNum
+        }
+
+        const rawInsert = {
+          board_id: boardId,
+          column_id: columnId,
+          position,
+          task_number: taskNumber,
+          global_task_number: globalNumber,
+          title: optimisticCard.title,
+          description: optimisticCard.description,
+          assignee_name: optimisticCard.assignee_name,
+          labels: optimisticCard.labels,
+          due_date: optimisticCard.due_date,
+          priority: optimisticCard.priority,
+          icon: optimisticCard.icon,
+          completed: optimisticCard.completed,
+          checklist: optimisticCard.checklist,
+        }
+
+        const validated = cardInsertSchema.safeParse(rawInsert)
+        if (!validated.success) {
+          logError('Card validation failed:', validated.error.flatten())
+          showToast.error('Invalid task data')
+          set((s) => { const { [tempId]: _, ...rest } = s.cards; return { cards: rest } })
+          return
+        }
+
+        const cardRes = await supabase.from('cards').insert(validated.data).select().single()
+        if (cardRes.error || !cardRes.data) {
+          logError('Failed to create card:', cardRes.error)
+          showToast.error('Failed to create task')
+          set((s) => { const { [tempId]: _, ...rest } = s.cards; return { cards: rest } })
+          return
+        }
+
+        const realCard = cardRes.data
+        capture('card_created', { board_id: boardId })
+
+        // Swap temp card with real card; also apply any edits user made to the temp card
+        set((s) => {
+          const tempCurrent = s.cards[tempId]
+          const merged = { ...realCard }
+          // Preserve user edits made while insert was in flight
+          if (tempCurrent && tempCurrent.updated_at !== optimisticCard.updated_at) {
+            if (tempCurrent.title !== optimisticCard.title) merged.title = tempCurrent.title
+            if (tempCurrent.description !== optimisticCard.description) merged.description = tempCurrent.description
+            if (tempCurrent.assignee_name !== optimisticCard.assignee_name) merged.assignee_name = tempCurrent.assignee_name
+            if (tempCurrent.priority !== optimisticCard.priority) merged.priority = tempCurrent.priority
+            if (tempCurrent.due_date !== optimisticCard.due_date) merged.due_date = tempCurrent.due_date
+            if (JSON.stringify(tempCurrent.labels) !== JSON.stringify(optimisticCard.labels)) merged.labels = tempCurrent.labels
+            if (JSON.stringify(tempCurrent.checklist) !== JSON.stringify(optimisticCard.checklist)) merged.checklist = tempCurrent.checklist
+          }
+          const { [tempId]: _, ...restCards } = s.cards
+          return {
+            cards: { ...restCards, [realCard.id]: merged },
+            boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: taskNumber + 1 } },
+            _tempIdMap: { ...(s._tempIdMap || {}), [tempId]: realCard.id },
+          }
+        })
+
+        logActivity(realCard.id, 'created', null)
+      } catch (err) {
+        logError('addCard background persist failed:', err)
         showToast.error('Failed to create task')
-        return null
+        set((s) => { const { [tempId]: _, ...rest } = s.cards; return { cards: rest } })
       }
+    })()
 
-      const card = cardRes.data
-      capture('card_created', { board_id: boardId })
-      set((state) => ({
-        cards: { ...state.cards, [card.id]: card },
-        boards: {
-          ...state.boards,
-          [boardId]: { ...state.boards[boardId], next_task_number: taskNumber + 1 },
-        },
-      }))
+    return tempId
+  },
 
-      logActivity(card.id, 'created', null)
-      return card.id
-    } catch (err) {
-      logError('addCard failed:', err)
-      showToast.error('Failed to create task')
-      return null
-    }
+  duplicateCard: async (cardId) => {
+    const card = get().cards[cardId]
+    if (!card) return null
+    return get().addCard(card.board_id, card.column_id, {
+      title: `${card.title} (copy)`,
+      description: card.description || '',
+      assignee: card.assignee_name || '',
+      labels: card.labels ? [...card.labels] : [],
+      dueDate: card.due_date || null,
+      priority: card.priority || 'medium',
+      icon: card.icon || null,
+      completed: false,
+      checklist: card.checklist ? card.checklist.map((item) => ({ text: item.text, done: false })) : [],
+    })
   },
 
   updateCard: async (cardId, updates) => {
@@ -505,6 +608,9 @@ export const useBoardStore = create((set, get) => ({
         [cardId]: { ...state.cards[cardId], ...dbUpdates, updated_at: new Date().toISOString() },
       },
     }))
+
+    // Temp cards haven't been persisted yet — edits will be merged on swap
+    if (typeof cardId === 'string' && cardId.startsWith('temp-')) return
 
     const { error } = await supabase.from('cards').update(dbUpdates).eq('id', cardId)
     if (error) {
@@ -831,15 +937,30 @@ export const useBoardStore = create((set, get) => ({
     if (!commentLimiter()) { showToast.warn('Too many comments — slow down'); return }
     const sanitizedText = sanitizeText(text, 2000)
     if (!sanitizedText) return
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
 
     const profile = useAuthStore.getState().profile
+    const user = useAuthStore.getState().user
+    if (!user) return
     const authorName = profile?.display_name || user.email || 'Unknown'
 
+    // Optimistic: show comment instantly
+    const tempId = `temp-${crypto.randomUUID()}`
+    const now = new Date().toISOString()
+    const optimisticComment = {
+      id: tempId, card_id: cardId, user_id: user.id, author_name: authorName,
+      text: sanitizedText, created_at: now,
+    }
+    set((s) => ({
+      comments: { ...s.comments, [cardId]: [...(s.comments[cardId] || []), optimisticComment] },
+    }))
+
+    // Persist in background
     const commentData = commentInsertSchema.safeParse({ card_id: cardId, user_id: user.id, author_name: authorName, text: sanitizedText })
     if (!commentData.success) {
       logError('Comment validation failed:', commentData.error.flatten())
+      set((s) => ({
+        comments: { ...s.comments, [cardId]: (s.comments[cardId] || []).filter((c) => c.id !== tempId) },
+      }))
       return
     }
 
@@ -851,13 +972,18 @@ export const useBoardStore = create((set, get) => ({
 
     if (error) {
       logError('Failed to add comment:', error)
+      // Rollback
+      set((s) => ({
+        comments: { ...s.comments, [cardId]: (s.comments[cardId] || []).filter((c) => c.id !== tempId) },
+      }))
       return
     }
 
-    set((state) => ({
+    // Swap temp with real
+    set((s) => ({
       comments: {
-        ...state.comments,
-        [cardId]: [...(state.comments[cardId] || []), data],
+        ...s.comments,
+        [cardId]: (s.comments[cardId] || []).map((c) => c.id === tempId ? data : c),
       },
     }))
   },
@@ -881,6 +1007,12 @@ export const useBoardStore = create((set, get) => ({
   },
 
   deleteComment: async (commentId, cardId) => {
+    // Optimistic remove
+    const prevComments = get().comments[cardId] || []
+    set((s) => ({
+      comments: { ...s.comments, [cardId]: (s.comments[cardId] || []).filter((c) => c.id !== commentId) },
+    }))
+
     const { error } = await supabase
       .from('card_comments')
       .delete()
@@ -888,15 +1020,9 @@ export const useBoardStore = create((set, get) => ({
 
     if (error) {
       logError('Failed to delete comment:', error)
-      return
+      // Rollback
+      set((s) => ({ comments: { ...s.comments, [cardId]: prevComments } }))
     }
-
-    set((state) => ({
-      comments: {
-        ...state.comments,
-        [cardId]: (state.comments[cardId] || []).filter((c) => c.id !== commentId),
-      },
-    }))
   },
 
   // ============================================================
@@ -980,7 +1106,12 @@ export const useBoardStore = create((set, get) => ({
   },
 
   deleteAttachment: async (attachmentId, cardId, storagePath) => {
-    // Remove metadata first (authoritative), then storage (best-effort)
+    // Optimistic remove
+    const prevAttachments = get().attachments[cardId] || []
+    set((s) => ({
+      attachments: { ...s.attachments, [cardId]: (s.attachments[cardId] || []).filter((a) => a.id !== attachmentId) },
+    }))
+
     const { error } = await supabase
       .from('card_attachments')
       .delete()
@@ -988,17 +1119,12 @@ export const useBoardStore = create((set, get) => ({
 
     if (error) {
       logError('Failed to delete attachment:', error)
+      // Rollback
+      set((s) => ({ attachments: { ...s.attachments, [cardId]: prevAttachments } }))
       return
     }
 
-    set((state) => ({
-      attachments: {
-        ...state.attachments,
-        [cardId]: (state.attachments[cardId] || []).filter((a) => a.id !== attachmentId),
-      },
-    }))
-
-    // Best-effort storage cleanup (metadata is already gone, so no orphaned records)
+    // Best-effort storage cleanup
     supabase.storage.from('attachments').remove([storagePath]).catch(() => {})
   },
 
@@ -1230,6 +1356,6 @@ export const useBoardStore = create((set, get) => ({
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
     subscriptions.forEach((sub) => supabase.removeChannel(sub))
-    set({ boards: {}, columns: {}, cards: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
+    set({ boards: {}, columns: {}, cards: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))

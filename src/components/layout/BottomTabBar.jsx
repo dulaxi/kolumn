@@ -11,14 +11,14 @@ const tabs = [
 
 export default function BottomTabBar() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E0DBD5] flex items-center justify-around h-16 z-30 lg:hidden pb-safe" role="navigation" aria-label="Main navigation">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--surface-card)] border-t border-[var(--border-default)] flex items-center justify-around h-16 z-30 lg:hidden pb-safe" role="navigation" aria-label="Main navigation">
       {tabs.map(({ to, icon: Icon, label }) => (
         <NavLink
           key={to}
           to={to}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors ${
-              isActive ? 'text-[#1B1B18]' : 'text-[#8E8E89]'
+              isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
             }`
           }
         >
