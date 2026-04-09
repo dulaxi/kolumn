@@ -7,9 +7,15 @@ import {
   Shield, Sparkles, MousePointerClick, ArrowUpRight,
   Check, Square, AlignLeft, User, Plus, FileText, CheckCircle2,
   LayoutDashboard, Settings, ChevronsRight, SquareKanban, Kanban as LucideKanban,
-  AtSign, AlertCircle, Hash,
+  ChevronLeft, ChevronRight, Hash,
 } from 'lucide-react'
-import { Kanban, Browser, Tag as PhosphorTag, CreditCard } from '@phosphor-icons/react'
+import { SiGmail } from 'react-icons/si'
+import { BsSlack, BsMicrosoftTeams } from 'react-icons/bs'
+import {
+  Kanban, Browser, Tag as PhosphorTag, CreditCard,
+  ShoppingCart, ShieldCheck, Gauge,
+  TrendUp, ChartPie, Target,
+} from '@phosphor-icons/react'
 import {
   DndContext, DragOverlay, pointerWithin, rectIntersection,
   PointerSensor, useSensor, useSensors, useDroppable,
@@ -426,23 +432,22 @@ const AI_CARDS = [
   },
 ]
 
-// Slack thread demo — messages reverse-engineered from AI_CARDS above
-// so each message's extractable signals map to AI_CARDS[i]'s fields.
+// Slack thread demo — mirrors slack-thread-demo.html exactly.
 const SLACK_MESSAGES = [
   {
-    sender: 'Jordan',
+    sender: 'Dula',
     timestamp: '2:14 PM',
-    text: '@aisha hero section feels plain — sarah flagged it on the call, can you redo it? high prio',
-    mentions: ['@aisha'],
+    text: '@rhea hero section feels plain — sarah flagged it on the call, can you redo it? high prio',
+    mentions: ['@rhea'],
   },
   {
-    sender: 'Jordan',
+    sender: 'Dula',
     timestamp: '2:15 PM',
     text: "also pricing page needs building — 3 tiers with monthly/annual toggle, founder's call",
     mentions: [],
   },
   {
-    sender: 'Jordan',
+    sender: 'Dula',
     timestamp: '2:16 PM',
     text: '@marcus stripe integration by fri — checkout, webhooks, customer portal. high prio, legal flagged it',
     mentions: ['@marcus'],
@@ -468,24 +473,24 @@ const CARDS_END = CARDS_START + (AI_CARDS.length - 1) * CARD_STAGGER + CARD_SWEE
 const FINAL_HOLD = 2200
 const TIMELINE_TOTAL = CARDS_END + FINAL_HOLD
 
-// Slack demo timeline — independent phases mirroring the existing demo's structure
-const SLACK_LOOP_CARRY = 300         // initial "carry-over" showing prev loop's cards
-const SLACK_MSG_LAND_DUR = 500       // per-message slide + fade duration (eased)
-const SLACK_MSG_GAP = 350            // gap between messages landing
+// Slack demo timeline — mirrors slack-thread-demo.html exactly.
+// Messages pop in with easeOutBack scale, carry-over cards stay visible.
+const SLACK_LOOP_CARRY = 300
+const SLACK_MSG_LAND_DUR = 220
+const SLACK_MSG_GAP = 350
 const SLACK_MSG_1_START = SLACK_LOOP_CARRY
 const SLACK_MSG_1_END = SLACK_MSG_1_START + SLACK_MSG_LAND_DUR
 const SLACK_MSG_2_START = SLACK_MSG_1_END + SLACK_MSG_GAP
 const SLACK_MSG_2_END = SLACK_MSG_2_START + SLACK_MSG_LAND_DUR
 const SLACK_MSG_3_START = SLACK_MSG_2_END + SLACK_MSG_GAP
 const SLACK_MSG_3_END = SLACK_MSG_3_START + SLACK_MSG_LAND_DUR
-const SLACK_CARDS_FADE_OUT_DUR = 350 // cards from prev loop fade out as first msg lands
-const SLACK_CARDS_GAP = 400          // pause after last message before cards start
+const SLACK_CARDS_GAP = 400
 const SLACK_CARDS_START = SLACK_MSG_3_END + SLACK_CARDS_GAP
-const SLACK_CARD_SWEEP = 750         // intentionally matches existing CARD_SWEEP
-const SLACK_CARD_STAGGER = 600       // intentionally matches existing CARD_STAGGER
+const SLACK_CARD_SWEEP = 750
+const SLACK_CARD_STAGGER = 600
 const SLACK_CARDS_END = SLACK_CARDS_START + (AI_CARDS.length - 1) * SLACK_CARD_STAGGER + SLACK_CARD_SWEEP
-const SLACK_HOLD_DUR = 1800          // hold with both panels visible
-const SLACK_MSG_FADE_OUT_DUR = 400   // messages fade out near end of timeline
+const SLACK_HOLD_DUR = 1800
+const SLACK_MSG_FADE_OUT_DUR = 400
 const SLACK_MSG_FADE_OUT_START = SLACK_CARDS_END + SLACK_HOLD_DUR
 const SLACK_FINAL_HOLD = SLACK_HOLD_DUR + SLACK_MSG_FADE_OUT_DUR
 const SLACK_TIMELINE_TOTAL = SLACK_CARDS_END + SLACK_FINAL_HOLD
@@ -516,58 +521,226 @@ function computeCardState(elapsed, cardIdx) {
   return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / CARD_SWEEP) }
 }
 
+// easeOutBack — overshoots 1.0 slightly then settles (chat bubble pop)
+function easeOutBack(t) {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+}
+
 function computeSlackMessageState(elapsed, msgIdx) {
   const starts = [SLACK_MSG_1_START, SLACK_MSG_2_START, SLACK_MSG_3_START]
   const msgStart = starts[msgIdx]
 
-  // Fade-out phase near end of timeline (all messages fade together)
+  // Fade-out phase near end of timeline
   if (elapsed >= SLACK_MSG_FADE_OUT_START) {
     const fadeElapsed = elapsed - SLACK_MSG_FADE_OUT_START
     const t = Math.min(1, fadeElapsed / SLACK_MSG_FADE_OUT_DUR)
-    return { opacity: 1 - t, translateY: 0 }
+    return { opacity: 1 - t, scale: 1 }
   }
 
-  // Hidden during loop-carry / before this message's turn
-  if (elapsed < msgStart) return { opacity: 0, translateY: 20 }
+  // Hidden before this message's turn
+  if (elapsed < msgStart) return { opacity: 0, scale: 0.75 }
 
-  // Landing phase: slide up + fade in (ease-out cubic for smooth settle)
+  // Landing phase: easeOutBack scale pop
   const msgElapsed = elapsed - msgStart
   if (msgElapsed < SLACK_MSG_LAND_DUR) {
     const linearT = msgElapsed / SLACK_MSG_LAND_DUR
-    const t = 1 - Math.pow(1 - linearT, 3)
-    return { opacity: t, translateY: 20 * (1 - t) }
+    const opacity = Math.min(1, linearT * 4)
+    const scale = 0.75 + (easeOutBack(linearT) * 0.25)
+    return { opacity, scale }
   }
 
-  // Fully landed
-  return { opacity: 1, translateY: 0 }
+  return { opacity: 1, scale: 1 }
 }
 
-function computeSlackCardsLayerOpacity(elapsed) {
-  // Loop-carry: cards from previous cycle still visible before messages start
-  if (elapsed < SLACK_MSG_1_START) return 1
-  // Cards fade out as first message lands
-  const fadeElapsed = elapsed - SLACK_MSG_1_START
-  if (fadeElapsed < SLACK_CARDS_FADE_OUT_DUR) {
-    return 1 - fadeElapsed / SLACK_CARDS_FADE_OUT_DUR
-  }
-  // Hidden during message phase
-  if (elapsed < SLACK_CARDS_START) return 0
-  // Visible during card sweep and hold
+function computeSlackCardsLayerOpacity() {
   return 1
 }
 
+// Carry-over: previous cycle's cards stay visible through message phase
 function computeSlackCardState(elapsed, cardIdx) {
-  // Loop-carry: show cards from prev cycle at full
-  if (elapsed < SLACK_MSG_1_START) return { opacity: 1, sweepProgress: 1 }
-  // Before this card's sweep start
+  if (elapsed < SLACK_MSG_3_END) return { opacity: 1, sweepProgress: 1 }
   const cardShowStart = SLACK_CARDS_START + cardIdx * SLACK_CARD_STAGGER
   if (elapsed < cardShowStart) return { opacity: 0, sweepProgress: 0 }
-  // Sweep in progress
   const cardElapsed = elapsed - cardShowStart
   return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / SLACK_CARD_SWEEP) }
 }
 
 const PHOSPHOR_ICON_MAP = { 'browser': Browser, 'tag': PhosphorTag, 'credit-card': CreditCard }
+const TEAMS_PHOSPHOR_ICON_MAP = { 'shopping-cart': ShoppingCart, 'shield-check': ShieldCheck, 'gauge': Gauge }
+const GMAIL_PHOSPHOR_ICON_MAP = { 'trend-up': TrendUp, 'chart-pie': ChartPie, 'target': Target }
+
+/* ── Teams Thread Demo data ── */
+const TEAMS_MESSAGES = [
+  {
+    sender: 'Dula',
+    initial: 'D',
+    avatarBg: '#4B53BF',
+    timestamp: '9:12 AM',
+    text: 'Standup update — checkout redesign is in good shape. Cart drawer and order summary shipped to preview. Working on the payment step now, should have a full preview link by EOD.',
+    mentions: [],
+  },
+  {
+    sender: 'Jamie',
+    initial: 'J',
+    avatarBg: '#038387',
+    timestamp: '9:14 AM',
+    text: "On my side — auth service JWT migration is roughly 70% there. Refresh token rotation is working locally, sessions holding across reloads. Just need to swap the mobile endpoints and we're done.",
+    mentions: [],
+  },
+  {
+    sender: 'Aaron',
+    initial: 'A',
+    avatarBg: '#CA5010',
+    timestamp: '9:16 AM',
+    text: 'Search performance work is paying off — P99 dropped from 800ms to 220ms after the index rebuild. Pushing to staging tomorrow to verify before prod.',
+    mentions: [],
+  },
+]
+
+const TEAMS_AI_CARDS = [
+  {
+    taskNumber: 42,
+    title: 'Checkout redesign',
+    description: 'Cart + summary shipped, payment step in progress',
+    labels: [{ text: 'Frontend', color: 'blue' }],
+    priority: 'high',
+    dueDate: 'EOD',
+    checklist: { done: 2, total: 3 },
+    assignee: 'D',
+    icon: 'shopping-cart',
+  },
+  {
+    taskNumber: 43,
+    title: 'Auth JWT migration',
+    description: 'Refresh rotation working, mobile swap pending',
+    labels: [{ text: 'Backend', color: 'green' }],
+    priority: 'high',
+    dueDate: null,
+    checklist: { done: 3, total: 4 },
+    assignee: 'J',
+    icon: 'shield-check',
+  },
+  {
+    taskNumber: 44,
+    title: 'Search performance',
+    description: 'P99 800ms → 220ms after index rebuild',
+    labels: [{ text: 'Perf', color: 'purple' }],
+    priority: 'medium',
+    dueDate: null,
+    checklist: null,
+    assignee: 'A',
+    icon: 'gauge',
+  },
+]
+
+// Teams timeline — shake variant
+const TEAMS_SHAKE_START = 300
+const TEAMS_SHAKE_STAGGER = 550
+const TEAMS_SHAKE_DUR = 450
+const TEAMS_SHAKE_LAST_END = TEAMS_SHAKE_START + (TEAMS_MESSAGES.length - 1) * TEAMS_SHAKE_STAGGER + TEAMS_SHAKE_DUR
+const TEAMS_CARDS_GAP = 400
+const TEAMS_CARDS_START = TEAMS_SHAKE_LAST_END + TEAMS_CARDS_GAP
+const TEAMS_CARD_SWEEP = 750
+const TEAMS_CARD_STAGGER = 600
+const TEAMS_CARDS_END = TEAMS_CARDS_START + (TEAMS_AI_CARDS.length - 1) * TEAMS_CARD_STAGGER + TEAMS_CARD_SWEEP
+const TEAMS_HOLD_DUR = 2000
+const TEAMS_TIMELINE_TOTAL = TEAMS_CARDS_END + TEAMS_HOLD_DUR
+
+function computeTeamsMessageShake(elapsed, msgIdx) {
+  const shakeStart = TEAMS_SHAKE_START + msgIdx * TEAMS_SHAKE_STAGGER
+  if (elapsed < shakeStart) return 0
+  const t = elapsed - shakeStart
+  if (t >= TEAMS_SHAKE_DUR) return 0
+  const progress = t / TEAMS_SHAKE_DUR
+  const amplitude = 4 * (1 - progress)
+  return amplitude * Math.sin(progress * Math.PI * 4)
+}
+
+function computeTeamsCardState(elapsed, cardIdx) {
+  if (elapsed < TEAMS_CARDS_START) return { opacity: 1, sweepProgress: 1 }
+  const cardShowStart = TEAMS_CARDS_START + cardIdx * TEAMS_CARD_STAGGER
+  if (elapsed < cardShowStart) return { opacity: 0, sweepProgress: 0 }
+  const cardElapsed = elapsed - cardShowStart
+  return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / TEAMS_CARD_SWEEP) }
+}
+
+/* ── Gmail Thread Demo data ── */
+const GMAIL_PARAGRAPH = {
+  text: "Board meeting tomorrow AM and the deck is missing a few things. Can @jamie pull the MRR chart for the last 6 months, stacked by segment? @aaron — draft the churn analysis slide. And we still need a competitive landscape section: 3 logos and positioning bullets. All by tonight, high prio.",
+  mentions: ['@jamie', '@aaron'],
+  highlights: [
+    '@jamie pull the MRR chart',
+    '@aaron — draft the churn analysis slide',
+    'competitive landscape section',
+  ],
+}
+
+const GMAIL_AI_CARDS = [
+  {
+    taskNumber: 27,
+    title: 'Pull MRR chart',
+    description: '6 months, stacked by segment',
+    labels: [{ text: 'Analytics', color: 'blue' }],
+    priority: 'high',
+    dueDate: 'Tonight',
+    checklist: null,
+    assignee: 'J',
+    icon: 'trend-up',
+  },
+  {
+    taskNumber: 28,
+    title: 'Draft churn slide',
+    description: 'For tomorrow\u2019s board deck',
+    labels: [{ text: 'Analytics', color: 'blue' }],
+    priority: 'high',
+    dueDate: 'Tonight',
+    checklist: null,
+    assignee: 'A',
+    icon: 'chart-pie',
+  },
+  {
+    taskNumber: 29,
+    title: 'Competitive landscape',
+    description: '3 logos + positioning bullets',
+    labels: [{ text: 'Strategy', color: 'purple' }],
+    priority: 'medium',
+    dueDate: 'Tonight',
+    checklist: null,
+    assignee: null,
+    icon: 'target',
+  },
+]
+
+// Gmail timeline — highlight-scan variant
+const GMAIL_SCAN_START = 300
+const GMAIL_SCAN_FADE_IN = 220
+const GMAIL_SCAN_STAGGER = 500
+const GMAIL_SCAN_ALL_DONE = GMAIL_SCAN_START + 2 * GMAIL_SCAN_STAGGER + GMAIL_SCAN_FADE_IN
+const GMAIL_CARDS_GAP = 400
+const GMAIL_CARDS_START = GMAIL_SCAN_ALL_DONE + GMAIL_CARDS_GAP
+const GMAIL_CARD_SWEEP = 750
+const GMAIL_CARD_STAGGER = 600
+const GMAIL_CARDS_END = GMAIL_CARDS_START + (GMAIL_AI_CARDS.length - 1) * GMAIL_CARD_STAGGER + GMAIL_CARD_SWEEP
+const GMAIL_HOLD_DUR = 2000
+const GMAIL_TIMELINE_TOTAL = GMAIL_CARDS_END + GMAIL_HOLD_DUR
+
+function computeGmailScanHighlight(elapsed, idx) {
+  const startAt = GMAIL_SCAN_START + idx * GMAIL_SCAN_STAGGER
+  if (elapsed < startAt) return 0
+  const t = elapsed - startAt
+  if (t < GMAIL_SCAN_FADE_IN) return t / GMAIL_SCAN_FADE_IN
+  return 1
+}
+
+function computeGmailCardState(elapsed, cardIdx) {
+  if (elapsed < GMAIL_CARDS_START) return { opacity: 1, sweepProgress: 1 }
+  const cardShowStart = GMAIL_CARDS_START + cardIdx * GMAIL_CARD_STAGGER
+  if (elapsed < cardShowStart) return { opacity: 0, sweepProgress: 0 }
+  const cardElapsed = elapsed - cardShowStart
+  return { opacity: 1, sweepProgress: Math.min(1, cardElapsed / GMAIL_CARD_SWEEP) }
+}
 
 function BrowserChrome() {
   return (
@@ -653,11 +826,11 @@ function MirrorNotes({ lineOpacities }) {
   )
 }
 
-function AICard({ card, opacity, sweepProgress }) {
+function AICard({ card, opacity, sweepProgress, iconMap }) {
   const dotColor = LANDING_PRIORITY_DOT[card.priority]
   const labelStyles = card.labels.map((l) => LANDING_LABEL_BG[l.color])
   const revealVar = `${sweepProgress * 124 - 12}%`
-  const PhosphorIcon = PHOSPHOR_ICON_MAP[card.icon]
+  const PhosphorIcon = (iconMap || PHOSPHOR_ICON_MAP)[card.icon]
   return (
     <div
       className="relative overflow-hidden w-full rounded-xl border shadow-sm flex bg-white border-[#E0DBD5]"
@@ -772,14 +945,15 @@ function RightContent({ elapsed }) {
   )
 }
 
-function EveryDetailDemo() {
+function EveryDetailDemo({ active = true }) {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
+    if (!active) return
     const id = setInterval(() => {
       setElapsed((prev) => (prev + 50 >= TIMELINE_TOTAL ? 0 : prev + 50))
     }, 50)
     return () => clearInterval(id)
-  }, [])
+  }, [active])
   return (
     <div className="w-full max-w-5xl">
       <div
@@ -832,36 +1006,46 @@ function SlackThread({ elapsed }) {
   const messageStates = SLACK_MESSAGES.map((_, idx) => computeSlackMessageState(elapsed, idx))
   return (
     <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-2 select-none h-full">
-      {/* Channel header */}
-      <div className="flex items-center gap-1.5 pb-2 border-b border-[#E0DBD5]">
-        <Hash className="w-3.5 h-3.5 text-[#8E8E89]" />
-        <span className="text-[13px] font-semibold text-[#1B1B18]">launch-prep</span>
+      {/* Channel header — Slack 2024: channel name + topic subtitle */}
+      <div className="pb-2 border-b border-[#E8E8E8]">
+        <div className="flex items-center gap-1.5">
+          <Hash className="w-3.5 h-3.5 text-[#616061]" />
+          <span className="text-[13px] font-bold text-[#1D1C1D]">launch-prep</span>
+          <svg className="w-2.5 h-2.5 text-[#616061] ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <p className="text-[10px] text-[#616061] ml-[19px] mt-0.5 truncate">Sprint prep, blockers, and launch readiness</p>
       </div>
 
-      {/* Messages */}
+      {/* Messages — grouped continuation for same sender */}
       <div className="flex flex-col gap-3 pt-1">
         {SLACK_MESSAGES.map((msg, idx) => {
           const state = messageStates[idx]
+          const isGrouped = idx > 0 && SLACK_MESSAGES[idx - 1].sender === msg.sender
           return (
             <div
               key={idx}
-              className="flex gap-2.5"
+              className={`flex gap-2.5 ${isGrouped ? '-mt-2' : ''}`}
               style={{
                 opacity: state.opacity,
-                transform: `translateY(${state.translateY}px)`,
+                transform: `scale(${state.scale})`,
+                transformOrigin: 'left center',
               }}
             >
-              {/* Avatar */}
-              <div className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center bg-white border border-[#E0DBD5] p-1">
-                <SlackLogo className="w-full h-full" />
-              </div>
-              {/* Message body */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-[13px] font-semibold text-[#1B1B18]">{msg.sender}</span>
-                  <span className="text-[10px] text-[#8E8E89]">{msg.timestamp}</span>
+              {isGrouped ? (
+                <div className="w-7 shrink-0" />
+              ) : (
+                <div className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center bg-white border border-[#E0DBD5] p-1">
+                  <SlackLogo className="w-full h-full" />
                 </div>
-                <p className="text-[12px] text-[#5C5C57] leading-relaxed break-words">
+              )}
+              <div className="flex-1 min-w-0">
+                {!isGrouped && (
+                  <div className="flex items-baseline gap-2 mb-0.5">
+                    <span className="text-[13px] font-bold text-[#1D1C1D]">{msg.sender}</span>
+                    <span className="text-[10px] text-[#616061]">{msg.timestamp}</span>
+                  </div>
+                )}
+                <p className="text-[12px] text-[#1D1C1D] leading-relaxed break-words">
                   {renderMessageText(msg.text, msg.mentions)}
                 </p>
               </div>
@@ -874,13 +1058,9 @@ function SlackThread({ elapsed }) {
 }
 
 function SlackExtractedCards({ elapsed }) {
-  const layerOpacity = computeSlackCardsLayerOpacity(elapsed)
   const cardStates = AI_CARDS.map((_, idx) => computeSlackCardState(elapsed, idx))
   return (
-    <div
-      className="absolute inset-0 pointer-events-none"
-      style={{ opacity: layerOpacity }}
-    >
+    <div className="absolute inset-0 pointer-events-none">
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
@@ -903,28 +1083,446 @@ function SlackExtractedCards({ elapsed }) {
   )
 }
 
-function SlackThreadDemo() {
+function SlackChrome() {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2.5 shrink-0 bg-[#3F0E40]">
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+      <div className="flex items-center gap-1.5 ml-3">
+        <SlackLogo className="w-4 h-4" />
+        <span className="text-[11px] font-semibold text-white/90 tracking-tight">Slack</span>
+      </div>
+    </div>
+  )
+}
+
+function SlackThreadDemo({ active = true }) {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
+    if (!active) return
+    setElapsed(0)
     const id = setInterval(() => {
       setElapsed((prev) => (prev + 50 >= SLACK_TIMELINE_TOTAL ? 0 : prev + 50))
     }, 50)
     return () => clearInterval(id)
-  }, [])
+  }, [active])
   return (
     <div className="w-full max-w-5xl">
       <div
-        className="relative overflow-hidden w-full rounded-2xl bg-[#DAE0F0]"
+        className="relative overflow-hidden w-full rounded-2xl bg-[#E8DDE2]"
         style={{ boxShadow: 'inset 0 0 0 1px #E0DBD5' }}
       >
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-4 md:p-8">
-          <CreamWindow className="aspect-[4/3] md:aspect-[4/4.5]">
-            <SlackThread elapsed={elapsed} />
-          </CreamWindow>
+          <div
+            className="flex-1 rounded-lg overflow-hidden flex flex-col bg-[#FAF8F6] border border-[#E0DBD5] aspect-[4/3] md:aspect-[4/4.5]"
+            style={{ boxShadow: '0 8px 24px -8px rgba(27, 27, 24, 0.10)' }}
+          >
+            <SlackChrome />
+            <div className="flex-1 overflow-hidden relative">
+              <SlackThread elapsed={elapsed} />
+            </div>
+          </div>
           <CreamWindow className="aspect-[4/5]">
             <SlackExtractedCards elapsed={elapsed} />
           </CreamWindow>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Teams Thread Demo ── */
+
+function TeamsThread({ elapsed }) {
+  return (
+    <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-2 select-none h-full">
+      {/* Channel header — Teams style: team tile + Posts/Files tabs */}
+      <div className="pb-1 border-b border-[#E8E8E8]">
+        <div className="flex items-center gap-2">
+          <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white bg-[#6264A7] shrink-0">N</span>
+          <span className="text-[13px] font-bold text-[#252423]">Launch prep</span>
+        </div>
+        <div className="flex items-center gap-4 mt-1.5 ml-[26px]">
+          <span className="text-[11px] font-semibold text-[#252423] border-b-2 border-[#5B5FC7] pb-0.5">Posts</span>
+          <span className="text-[11px] text-[#616061] pb-0.5">Files</span>
+          <span className="text-[11px] text-[#616061] pb-0.5">+</span>
+        </div>
+      </div>
+      {/* Messages */}
+      <div className="flex flex-col gap-3 pt-1">
+        {TEAMS_MESSAGES.map((msg, idx) => {
+          const shakeX = computeTeamsMessageShake(elapsed, idx)
+          return (
+            <div
+              key={idx}
+              className="flex gap-2.5"
+              style={{ transform: `translateX(${shakeX}px)` }}
+            >
+              {/* Circular avatar with initial */}
+              <div
+                className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-semibold text-white"
+                style={{ backgroundColor: msg.avatarBg }}
+              >
+                {msg.initial}
+              </div>
+              {/* Message body */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 mb-0.5">
+                  <span className="text-[13px] font-bold text-[#252423]">{msg.sender}</span>
+                  <span className="text-[10px] text-[#616061]">{msg.timestamp}</span>
+                </div>
+                <p className="text-[12px] text-[#252423] leading-relaxed break-words">{msg.text}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function TeamsExtractedCards({ elapsed }) {
+  const cardStates = TEAMS_AI_CARDS.map((_, idx) => computeTeamsCardState(elapsed, idx))
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <div className="pt-5 px-4 flex justify-center select-none">
+        <div className="flex flex-col w-full max-w-[290px]">
+          <div className="flex items-baseline gap-2 px-0.5 pb-3">
+            <h3 className="text-sm font-semibold text-[#1B1B18]">In Progress</h3>
+            <span className="text-xs text-[#8E8E89]">{TEAMS_AI_CARDS.length}</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {TEAMS_AI_CARDS.map((card, idx) => (
+              <AICard
+                key={card.taskNumber}
+                card={card}
+                opacity={cardStates[idx].opacity}
+                sweepProgress={cardStates[idx].sweepProgress}
+                iconMap={TEAMS_PHOSPHOR_ICON_MAP}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TeamsChrome() {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2.5 shrink-0 bg-[#464775]">
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+      <div className="flex items-center gap-1.5 ml-3">
+        <svg className="w-4 h-4" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M32 14h12a2 2 0 0 1 2 2v10a6 6 0 1 1-12 0V16a2 2 0 0 1 2-2z" fill="#5059C9"/>
+          <circle cx="38" cy="8" r="4" fill="#5059C9"/>
+          <path d="M22 14H4a2 2 0 0 0-2 2v16a10 10 0 1 0 20 0V16a2 2 0 0 0-2-2z" fill="#7B83EB"/>
+          <circle cx="13" cy="8" r="4" fill="#7B83EB"/>
+          <path d="M17 20H6v2.5h4.25v10h2.5v-10H17z" fill="#FFFFFF"/>
+        </svg>
+        <span className="text-[11px] font-semibold text-white/90 tracking-tight">Teams</span>
+      </div>
+    </div>
+  )
+}
+
+function TeamsThreadDemo({ active = true }) {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    setElapsed(0)
+    const id = setInterval(() => {
+      setElapsed((prev) => (prev + 50 >= TEAMS_TIMELINE_TOTAL ? 0 : prev + 50))
+    }, 50)
+    return () => clearInterval(id)
+  }, [active])
+  return (
+    <div className="w-full max-w-5xl">
+      <div
+        className="relative overflow-hidden w-full rounded-2xl bg-[#E8DDE2]"
+        style={{ boxShadow: 'inset 0 0 0 1px #E0DBD5' }}
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-4 md:p-8">
+          <div
+            className="flex-1 rounded-lg overflow-hidden flex flex-col bg-[#FAF8F6] border border-[#E0DBD5] aspect-[4/3] md:aspect-[4/4.5]"
+            style={{ boxShadow: '0 8px 24px -8px rgba(27, 27, 24, 0.10)' }}
+          >
+            <TeamsChrome />
+            <div className="flex-1 overflow-hidden relative">
+              <TeamsThread elapsed={elapsed} />
+            </div>
+          </div>
+          <CreamWindow className="aspect-[4/5]">
+            <TeamsExtractedCards elapsed={elapsed} />
+          </CreamWindow>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Gmail Thread Demo ── */
+
+function GmailEmailBody({ elapsed }) {
+  const highlightAlphas = GMAIL_PARAGRAPH.highlights.map((_, idx) =>
+    computeGmailScanHighlight(elapsed, idx)
+  )
+
+  // Build the paragraph with highlight spans and @mention styling
+  const { text, mentions, highlights } = GMAIL_PARAGRAPH
+  const escaped = highlights.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const regex = new RegExp(`(${escaped.join('|')})`, 'g')
+  const parts = text.split(regex)
+
+  const renderedParts = parts.map((part, partIdx) => {
+    const highlightIdx = highlights.indexOf(part)
+    if (highlightIdx >= 0) {
+      const alpha = highlightAlphas[highlightIdx]
+      // Render mentions inside highlight spans
+      const mentionEscaped = mentions.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      const mentionRegex = new RegExp(`(${mentionEscaped.join('|')})`, 'g')
+      const innerParts = part.split(mentionRegex)
+      return (
+        <span
+          key={partIdx}
+          className="rounded-[3px] px-[2px]"
+          style={{ backgroundColor: `rgba(200, 160, 200, ${alpha * 0.4})`, transition: 'background-color 30ms linear' }}
+        >
+          {innerParts.map((inner, iIdx) =>
+            mentions.includes(inner)
+              ? <span key={iIdx} className="text-[#8BA32E] font-medium">{inner}</span>
+              : <span key={iIdx}>{inner}</span>
+          )}
+        </span>
+      )
+    }
+    // Non-highlighted text — still render mentions
+    if (!mentions.length) return <span key={partIdx}>{part}</span>
+    const mentionEscaped = mentions.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    const mentionRegex = new RegExp(`(${mentionEscaped.join('|')})`, 'g')
+    const innerParts = part.split(mentionRegex)
+    return (
+      <span key={partIdx}>
+        {innerParts.map((inner, iIdx) =>
+          mentions.includes(inner)
+            ? <span key={iIdx} className="text-[#8BA32E] font-medium">{inner}</span>
+            : <span key={iIdx}>{inner}</span>
+        )}
+      </span>
+    )
+  })
+
+  return (
+    <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-3 select-none h-full">
+      {/* Subject line */}
+      <h3 className="text-[15px] font-normal text-[#202124] leading-tight font-logo">Board deck gaps — need tonight</h3>
+      {/* Sender row */}
+      <div className="flex items-start gap-2.5 pb-2 border-b border-[#E8E8E8]">
+        <span className="w-7 h-7 rounded-full bg-[#1A73E8] shrink-0 flex items-center justify-center text-[11px] font-semibold text-white">S</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-[12px] font-semibold text-[#202124]">Sam Okoye</span>
+            <span className="text-[10px] text-[#5F6368]">&lt;sam@northstar.co&gt;</span>
+            <span className="ml-auto text-[10px] text-[#5F6368]">4:42 PM</span>
+          </div>
+          <div className="text-[10px] text-[#5F6368]">to me, jamie, aaron</div>
+        </div>
+      </div>
+      {/* Email body */}
+      <div className="flex flex-col gap-2 text-[12px] text-[#202124] leading-relaxed">
+        <p>Hey team,</p>
+        <p className="leading-relaxed">{renderedParts}</p>
+        <p className="text-[#5F6368]">— Sam</p>
+      </div>
+    </div>
+  )
+}
+
+function GmailExtractedCards({ elapsed }) {
+  const cardStates = GMAIL_AI_CARDS.map((_, idx) => computeGmailCardState(elapsed, idx))
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <div className="pt-5 px-4 flex justify-center select-none">
+        <div className="flex flex-col w-full max-w-[290px]">
+          <div className="flex items-baseline gap-2 px-0.5 pb-3">
+            <h3 className="text-sm font-semibold text-[#1B1B18]">to do</h3>
+            <span className="text-xs text-[#8E8E89]">{GMAIL_AI_CARDS.length}</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {GMAIL_AI_CARDS.map((card, idx) => (
+              <AICard
+                key={card.taskNumber}
+                card={card}
+                opacity={cardStates[idx].opacity}
+                sweepProgress={cardStates[idx].sweepProgress}
+                iconMap={GMAIL_PHOSPHOR_ICON_MAP}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GmailChrome() {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2.5 shrink-0 bg-white border-b border-[#E8E8E8]">
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
+      <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+      <div className="flex items-center gap-1.5 ml-3">
+        <svg className="w-4 h-3" viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M0 0 L0 18 L10 9 Z" fill="#EA4335"/>
+          <path d="M24 0 L24 18 L14 9 Z" fill="#FBBC04"/>
+          <path d="M0 18 L12 9 L24 18 Z" fill="#34A853"/>
+          <path d="M0 0 L12 9 L24 0 Z" fill="#4285F4"/>
+          <path d="M0 0 L12 9 L24 0 L24 2 L12 11 L0 2 Z" fill="#C5221F"/>
+        </svg>
+        <span className="text-[11px] font-semibold text-[#5F6368] tracking-tight font-logo">Gmail</span>
+      </div>
+      <div className="flex items-center gap-1.5 ml-auto">
+        <span className="text-[10px] text-[#5F6368]">dula@northstar.co</span>
+        <span className="w-4 h-4 rounded-full bg-[#EA4335] flex items-center justify-center text-[9px] font-bold text-white">D</span>
+      </div>
+    </div>
+  )
+}
+
+function GmailThreadDemo({ active = true }) {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    setElapsed(0)
+    const id = setInterval(() => {
+      setElapsed((prev) => (prev + 50 >= GMAIL_TIMELINE_TOTAL ? 0 : prev + 50))
+    }, 50)
+    return () => clearInterval(id)
+  }, [active])
+  return (
+    <div className="w-full max-w-5xl">
+      <div
+        className="relative overflow-hidden w-full rounded-2xl bg-[#E8DDE2]"
+        style={{ boxShadow: 'inset 0 0 0 1px #E0DBD5' }}
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-4 md:p-8">
+          <div
+            className="flex-1 rounded-lg overflow-hidden flex flex-col bg-[#FAF8F6] border border-[#E0DBD5] aspect-[4/3] md:aspect-[4/4.5]"
+            style={{ boxShadow: '0 8px 24px -8px rgba(27, 27, 24, 0.10)' }}
+          >
+            <GmailChrome />
+            <div className="flex-1 overflow-hidden relative">
+              <GmailEmailBody elapsed={elapsed} />
+            </div>
+          </div>
+          <CreamWindow className="aspect-[4/5]">
+            <GmailExtractedCards elapsed={elapsed} />
+          </CreamWindow>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Demo Slider — cycles through the 4 demo canvases ── */
+function AppleNotesIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* Rounded square body — white notepad */}
+      <rect x="10" y="10" width="180" height="180" rx="38" fill="#F5F0E8"/>
+      {/* Yellow top band */}
+      <clipPath id="notes-clip"><rect x="10" y="10" width="180" height="180" rx="38"/></clipPath>
+      <rect x="10" y="10" width="180" height="48" fill="#FDD835" clipPath="url(#notes-clip)"/>
+      {/* Subtle yellow bottom edge of band */}
+      <rect x="10" y="52" width="180" height="6" fill="#F5E273" clipPath="url(#notes-clip)"/>
+      {/* Spiral binding dots along the band bottom */}
+      {[40, 56, 72, 88, 104, 120, 136, 152, 168].map((cx) => (
+        <circle key={cx} cx={cx} cy="58" r="3" fill="#D4CFC5"/>
+      ))}
+      {/* Ruled lines */}
+      <line x1="36" y1="95" x2="164" y2="95" stroke="#D5D0C8" strokeWidth="1.5"/>
+      <line x1="36" y1="125" x2="164" y2="125" stroke="#D5D0C8" strokeWidth="1.5"/>
+      <line x1="36" y1="155" x2="164" y2="155" stroke="#D5D0C8" strokeWidth="1.5"/>
+    </svg>
+  )
+}
+
+const SLIDES = [
+  { label: 'Notes', Icon: AppleNotesIcon, color: null },
+  { label: 'Gmail', Icon: SiGmail, color: '#EA4335' },
+  { label: 'Slack', Icon: BsSlack, color: '#4A154B' },
+  { label: 'Teams', Icon: BsMicrosoftTeams, color: '#5059C9' },
+]
+
+function DemoSlider() {
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  const prev = () => setActiveIdx((i) => (i === 0 ? SLIDES.length - 1 : i - 1))
+  const next = () => setActiveIdx((i) => (i === SLIDES.length - 1 ? 0 : i + 1))
+
+  return (
+    <div className="w-full max-w-5xl mx-auto">
+      {/* Brand icon tabs */}
+      <div className="flex items-center justify-center gap-6 mb-6">
+        {SLIDES.map((slide, idx) => (
+          <button
+            key={slide.label}
+            onClick={() => setActiveIdx(idx)}
+            className={`flex flex-col items-center gap-1.5 transition-all duration-200 ${
+              idx === activeIdx
+                ? 'opacity-100'
+                : 'opacity-40 hover:opacity-70'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-200 ${
+              idx === activeIdx ? 'bg-[#8BA32E]' : 'bg-[#EEF2D6]'
+            }`}>
+              <slide.Icon
+                className="w-5 h-5 transition-colors duration-200"
+                style={{ color: idx === activeIdx ? '#fff' : slide.color || '#5C5C57' }}
+              />
+            </div>
+            <span className={`text-[11px] font-medium transition-colors duration-200 ${
+              idx === activeIdx ? 'text-[#1B1B18]' : 'text-[#8E8E89]'
+            }`}>
+              {slide.label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Slide viewport */}
+      <div className="relative overflow-hidden rounded-2xl">
+        <div
+          className="flex transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{ transform: `translateX(-${activeIdx * 100}%)` }}
+        >
+          <div className="w-full shrink-0"><EveryDetailDemo active={activeIdx === 0} /></div>
+          <div className="w-full shrink-0"><GmailThreadDemo active={activeIdx === 1} /></div>
+          <div className="w-full shrink-0"><SlackThreadDemo active={activeIdx === 2} /></div>
+          <div className="w-full shrink-0"><TeamsThreadDemo active={activeIdx === 3} /></div>
+        </div>
+      </div>
+
+      {/* Arrow controls */}
+      <div className="flex items-center justify-center gap-4 mt-5">
+        <button
+          onClick={prev}
+          className="w-8 h-8 rounded-full border border-[#E0DBD5] flex items-center justify-center text-[#8E8E89] hover:text-[#1B1B18] hover:border-[#1B1B18] transition-colors"
+          aria-label="Previous demo"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={next}
+          className="w-8 h-8 rounded-full border border-[#E0DBD5] flex items-center justify-center text-[#8E8E89] hover:text-[#1B1B18] hover:border-[#1B1B18] transition-colors"
+          aria-label="Next demo"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )
@@ -1360,40 +1958,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── AI Card Generation Showcase ─── */}
+      {/* ─── AI Demo Slider (Notes + Slack + Teams + Gmail) ─── */}
       <section className="px-6 sm:px-10 py-14 max-w-6xl mx-auto">
         {/* Heading + intro centered */}
         <div className="text-center mb-8 max-w-2xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-normal text-[#1B1B18] tracking-tight mb-3">
-            Notes in,{' '}
+            Chaos in,{' '}
             <span className="text-[#8BA32E] font-heading">kanban out</span>
           </h2>
           <p className="text-sm text-[#5C5C57] leading-relaxed">
-            Type how you think. Bullets, abbreviations, scribbles — Kolumn structures it for you.
-            No templates, no setup.
+            Notes, Slack threads, emails, standup updates — Kolumn reads the mess and drops
+            structured tasks on the board.
           </p>
         </div>
 
-        {/* Feature bullets — horizontal row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10 max-w-4xl mx-auto">
-          {[
-            { icon: Sparkles, text: 'Extracts tasks from rough notes' },
-            { icon: Clock, text: 'Catches deadlines from casual phrases' },
-            { icon: Tag, text: 'Auto-tags labels and priorities' },
-            { icon: CheckSquare, text: 'Builds checklists from inline lists' },
-          ].map((item) => (
-            <div key={item.text} className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-lg bg-[#C2D64A]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <item.icon className="w-3.5 h-3.5 text-[#1B1B18]" />
-              </div>
-              <p className="text-[12px] text-[#5C5C57] leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Full-width animated app demo */}
+        {/* Slider with all 4 demo canvases */}
         <div className="flex justify-center">
-          <EveryDetailDemo />
+          <DemoSlider />
         </div>
       </section>
 
@@ -1416,43 +1997,6 @@ export default function LandingPage() {
               <p className="text-[13px] text-[#5C5C57] leading-relaxed">{f.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ─── Slack Thread Showcase ─── */}
-      <section className="px-6 sm:px-10 py-14 max-w-6xl mx-auto">
-        {/* Heading + intro centered */}
-        <div className="text-center mb-8 max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-normal text-[#1B1B18] tracking-tight mb-3">
-            We read the{' '}
-            <span className="text-[#8BA32E] font-heading">room</span>
-          </h2>
-          <p className="text-sm text-[#5C5C57] leading-relaxed">
-            Your team already talks in Slack. Kolumn listens, picks out the asks,
-            and drops them on the board.
-          </p>
-        </div>
-
-        {/* Feature bullets — horizontal row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10 max-w-4xl mx-auto">
-          {[
-            { icon: AtSign, text: 'Assignees from @mentions' },
-            { icon: Clock, text: 'Deadlines from casual phrases' },
-            { icon: AlertCircle, text: 'Priority from urgency cues' },
-            { icon: Hash, text: 'Labels from topic cues' },
-          ].map((item) => (
-            <div key={item.text} className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-lg bg-[#C2D64A]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <item.icon className="w-3.5 h-3.5 text-[#1B1B18]" />
-              </div>
-              <p className="text-[12px] text-[#5C5C57] leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Full-width animated demo */}
-        <div className="flex justify-center">
-          <SlackThreadDemo />
         </div>
       </section>
 
