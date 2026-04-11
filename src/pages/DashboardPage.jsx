@@ -107,7 +107,56 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ActionCards — below hero for new users, at top for existing */}
+      {/* Your boards — above ActionCards for existing users */}
+      {boardCount > 0 && (
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[var(--text-primary)] font-logo"><Kanban className="w-4.5 h-4.5 text-[#A8BA32]" />Your boards</h2>
+            <button
+              onClick={handleNewBoard}
+              className="inline-flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 -ml-0.5" />
+              New Board
+            </button>
+          </div>
+          <div className="grid gap-3 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {boardSummaries.slice(0, 3).map((board) => (
+              <button
+                key={board.id}
+                onClick={() => { setActiveBoard(board.id); navigate('/boards') }}
+                className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm text-left cursor-pointer hover:bg-[var(--surface-raised)] transition-colors"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  {board.icon ? (
+                    <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-secondary)]" />
+                  ) : (
+                    <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
+                  )}
+                  <span className="text-[13px] font-normal text-[var(--text-primary)] flex-1 truncate">{board.name}</span>
+                  <span className="text-[11px] text-[var(--text-muted)]">{board.totalCards}</span>
+                </div>
+                {board.totalCards > 0 && (
+                  <div className="h-1 rounded-full overflow-hidden flex bg-[var(--surface-hover)] mb-2">
+                    {board.columns.map((col, i) =>
+                      col.count > 0 ? (
+                        <div key={col.id} className="h-full" style={{ width: `${(col.count / board.totalCards) * 100}%`, background: SEGMENT_COLORS[i % SEGMENT_COLORS.length] }} />
+                      ) : null
+                    )}
+                  </div>
+                )}
+                {board.lastUpdated && (
+                  <div className="text-[10px] font-mono text-[var(--text-faint)]">
+                    {formatDistanceToNow(new Date(board.lastUpdated), { addSuffix: true })}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ActionCards — below Your boards for existing users, below hero for new users */}
       <div className="flex w-full flex-col gap-3 mb-10">
         <ActionCard
           icon={Plus}
@@ -128,54 +177,6 @@ export default function DashboardPage() {
           to="/workspace"
         />
       </div>
-
-      {boardCount === 0 ? null : (
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[var(--text-primary)] font-logo"><Kanban className="w-4.5 h-4.5 text-[#A8BA32]" />Your boards</h2>
-            <button
-              onClick={handleNewBoard}
-              className="inline-flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 -ml-0.5" />
-              New Board
-            </button>
-          </div>
-          <div className="grid gap-3 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {boardSummaries.slice(0, 3).map((board) => (
-                <button
-                  key={board.id}
-                  onClick={() => { setActiveBoard(board.id); navigate('/boards') }}
-                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm text-left cursor-pointer hover:bg-[var(--surface-raised)] transition-colors"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    {board.icon ? (
-                      <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-secondary)]" />
-                    ) : (
-                      <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
-                    )}
-                    <span className="text-[13px] font-normal text-[var(--text-primary)] flex-1 truncate">{board.name}</span>
-                    <span className="text-[11px] text-[var(--text-muted)]">{board.totalCards}</span>
-                  </div>
-                  {board.totalCards > 0 && (
-                    <div className="h-1 rounded-full overflow-hidden flex bg-[var(--surface-hover)] mb-2">
-                      {board.columns.map((col, i) =>
-                        col.count > 0 ? (
-                          <div key={col.id} className="h-full" style={{ width: `${(col.count / board.totalCards) * 100}%`, background: SEGMENT_COLORS[i % SEGMENT_COLORS.length] }} />
-                        ) : null
-                      )}
-                    </div>
-                  )}
-                  {board.lastUpdated && (
-                    <div className="text-[10px] font-mono text-[var(--text-faint)]">
-                      {formatDistanceToNow(new Date(board.lastUpdated), { addSuffix: true })}
-                    </div>
-                  )}
-                </button>
-              ))}
-          </div>
-        </div>
-      )}
 
       {/* Feature hints — always visible */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mb-10">
