@@ -197,21 +197,33 @@ export default function AppLayout() {
     : pageTitles[basePath] || 'Kolumn'
 
   return (
-    <div className="min-h-screen bg-[var(--surface-board)]">
+    <div className="h-screen flex flex-col bg-[var(--surface-board)] overflow-hidden">
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       <OfflineBanner />
       <InlineErrorBoundary name="sidebar">
         <Sidebar />
       </InlineErrorBoundary>
       <div
-        className={`transition-all duration-200 ${
+        className={`flex-1 min-h-0 flex flex-col transition-all duration-200 ${
           isDesktop ? (collapsed ? 'ml-12' : 'ml-[287px]') : 'ml-0'
         }`}
       >
         <InlineErrorBoundary name="header">
           <Header title={title} />
         </InlineErrorBoundary>
-        <main className={`p-4 sm:p-6 ${!isDesktop ? 'pb-20' : ''}`}>
+        {/* Page heading — OUTSIDE the scroll container so it stays pinned */}
+        {isDesktop && (
+          <div className={`shrink-0 ${['/boards', '/calendar', '/notes'].includes(basePath) ? 'px-4 sm:px-8' : 'px-4 sm:px-8 max-w-4xl mx-auto w-full'}`}>
+            <header className="flex items-end h-8 md:h-8 shrink-0 mb-[26px]">
+              {basePath !== '/dashboard' && (
+                <h1 className="font-heading text-2xl text-[var(--text-primary)] flex items-center gap-2 min-w-0">
+                  <span className="truncate">{title}</span>
+                </h1>
+              )}
+            </header>
+          </div>
+        )}
+        <main className={`flex-1 min-h-0 flex flex-col ${['/boards', '/calendar', '/notes'].includes(basePath) ? 'px-4 sm:px-8 pb-12' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
             <div className="mb-4 bg-[var(--accent-lime-wash)] border border-[#C2D64A] rounded-xl p-4 flex items-center justify-between">

@@ -103,7 +103,7 @@ export default function Header({ title }) {
   }, [mobileSearchOpen])
 
   return (
-    <header className="relative h-16 bg-[var(--surface-page)] border-b border-[var(--border-default)] flex items-center justify-between px-4 sm:px-6">
+    <header className="relative h-16 bg-[var(--surface-page)] flex items-center justify-between px-4 sm:px-6">
       {/* Mobile search overlay */}
       {!isDesktop && mobileSearchOpen ? (
         <div className="absolute inset-0 bg-[var(--surface-card)] flex items-center gap-2 px-4 z-40">
@@ -193,9 +193,7 @@ export default function Header({ title }) {
             <LayoutGrid className="w-[18px] h-[18px]" />
           </button>
         )}
-        {isDesktop ? (
-          <h1 className="text-xl font-normal text-[var(--text-primary)] font-heading">{title}</h1>
-        ) : (
+        {!isDesktop && (
           <span className="text-sm font-medium text-[var(--text-secondary)] truncate">{title}</span>
         )}
       </div>

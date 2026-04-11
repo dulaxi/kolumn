@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../store/boardStore'
 import { useAuthStore } from '../store/authStore'
 import { format, formatDistanceToNow } from 'date-fns'
-import { Plus, Target, LayoutGrid, Users, BarChart3, Kanban } from 'lucide-react'
+import { Plus, Target, LayoutGrid, Users, BarChart3, Kanban, Sparkles, FileText } from 'lucide-react'
 import DynamicIcon from '../components/board/DynamicIcon'
+import ActionCard from '../components/ActionCard'
 import { getGreeting } from '../utils/formatting'
 import { computeBoardSummaries } from '../utils/cardStats'
 import { SEGMENT_COLORS } from '../constants/colors'
@@ -72,50 +73,80 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="w-full flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 7rem)' }}>
-      {/* ─── Content ─── */}
-      <div className="flex-1 flex flex-col items-center justify-center">
-        {/* Header — centered */}
-        <div className="text-center mb-12 -mt-10">
-          <div className="text-[11px] tracking-[1.5px] uppercase text-[var(--text-muted)] mb-1">
-            {format(new Date(), 'EEEE, MMMM d')}
-          </div>
-          <h1 className="text-[26px] sm:text-[30px] font-normal text-[var(--text-primary)] leading-tight">
-            <span className="font-logo">{boardCount === 0 ? 'Welcome' : getGreeting()},</span> <span className="text-[#A8BA32] font-heading">{displayName}</span>
-          </h1>
-          <p className="text-[14px] text-[var(--text-secondary)] font-heading italic mt-0.5">
-            {boardCount === 0 ? "Let's get you set up." : 'Here\u2019s your home base.'}
-          </p>
+    <div className="w-full flex flex-col">
+      {/* Greeting */}
+      <div className={`mb-8 ${boardCount === 0 ? 'text-center' : ''}`}>
+        <div className="text-[11px] tracking-[1.5px] uppercase text-[var(--text-muted)] mb-1">
+          {format(new Date(), 'EEEE, MMMM d')}
         </div>
-        {boardCount === 0 ? (
-          <>
-            <div className="w-14 h-14 rounded-2xl bg-[var(--accent-lime-wash)] flex items-center justify-center mb-5">
-              <Target className="w-7 h-7 text-[#A8BA32]" />
-            </div>
-            <h2 className="text-lg font-normal text-[var(--text-primary)] mb-1.5 font-logo">Your dashboard lives here</h2>
-            <p className="text-sm text-[var(--text-muted)] text-center max-w-sm mb-6">
-              Stats, calendar, timeline, and activity will fill in as you create boards and complete tasks.
-            </p>
+        <h1 className="text-[26px] sm:text-[30px] font-normal text-[var(--text-primary)] leading-tight">
+          <span className="font-heading">{boardCount === 0 ? 'Welcome' : getGreeting()},</span> <span className="text-[#A8BA32] font-heading">{displayName}</span>
+        </h1>
+        <p className="text-[14px] text-[var(--text-secondary)] font-heading italic mt-0.5">
+          {boardCount === 0 ? "Let's get you set up." : 'Here\u2019s your home base.'}
+        </p>
+      </div>
+
+      {/* New user hero — centered welcome block */}
+      {boardCount === 0 && (
+        <div className="flex flex-col items-center text-center mb-12">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-lime-wash)] flex items-center justify-center mb-5">
+            <Target className="w-8 h-8 text-[#8BA32E]" />
+          </div>
+          <h2 className="text-xl font-normal text-[var(--text-primary)] mb-2 font-heading">Your dashboard lives here</h2>
+          <p className="text-sm text-[var(--text-secondary)] max-w-md mb-6">
+            Stats, calendar, timeline, and activity will fill in as you create boards and complete tasks.
+          </p>
+          <button
+            onClick={handleNewBoard}
+            className="group inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-sm font-medium rounded-xl hover:bg-[var(--btn-primary-hover)] transition-all duration-75 active:scale-[0.995] cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Create your first board
+          </button>
+        </div>
+      )}
+
+      {/* ActionCards — below hero for new users, at top for existing */}
+      <div className="flex w-full flex-col gap-3 mb-10">
+        <ActionCard
+          icon={Plus}
+          title="Create a board"
+          description="Set up columns and start organizing your tasks."
+          onClick={handleNewBoard}
+        />
+        <ActionCard
+          icon={Sparkles}
+          title="Import from notes"
+          description="Turn your rough notes into structured kanban cards."
+          onClick={handleNewBoard}
+        />
+        <ActionCard
+          icon={Users}
+          title="Invite your team"
+          description="Share boards by email and collaborate in real time."
+          to="/workspace"
+        />
+      </div>
+
+      {boardCount === 0 ? null : (
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[var(--text-primary)] font-logo"><Kanban className="w-4.5 h-4.5 text-[#A8BA32]" />Your boards</h2>
             <button
               onClick={handleNewBoard}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B1B18] text-white text-sm font-medium rounded-xl hover:bg-[#333] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              Create your first board
+              <Plus className="w-4 h-4 -ml-0.5" />
+              New Board
             </button>
-          </>
-        ) : (
-          <>
-            <h2 className="inline-flex items-center gap-1.5 text-lg font-normal text-[var(--text-primary)] mb-1.5 font-logo px-3 py-0.5 bg-[#A8BA32] rounded-lg"><Kanban className="w-4.5 h-4.5" />Your boards</h2>
-            <p className="text-sm text-[var(--text-muted)] text-center max-w-sm mb-6">
-              Jump into a board, or create a new one.
-            </p>
-            <div className={`grid gap-3 max-w-lg w-full mb-6 ${boardSummaries.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
-              {boardSummaries.slice(0, 4).map((board) => (
+          </div>
+          <div className="grid gap-3 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {boardSummaries.slice(0, 3).map((board) => (
                 <button
                   key={board.id}
                   onClick={() => { setActiveBoard(board.id); navigate('/boards') }}
-                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-left cursor-pointer hover:shadow-sm hover:border-[#C4BFB8] transition-all"
+                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm text-left cursor-pointer hover:bg-[var(--surface-raised)] transition-colors"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {board.icon ? (
@@ -142,39 +173,31 @@ export default function DashboardPage() {
                   )}
                 </button>
               ))}
-            </div>
-            <button
-              onClick={handleNewBoard}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl hover:border-[#C4BFB8] transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              New Board
-            </button>
-          </>
-        )}
+          </div>
+        </div>
+      )}
 
-        {/* Feature hints — always visible */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 max-w-lg w-full">
-          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
-            <LayoutGrid className="w-5 h-5 text-[#A8BA32] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Boards</div>
-            <div className="text-[11px] text-[var(--text-muted)]">Organize tasks into columns</div>
-          </div>
-          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
-            <Users className="w-5 h-5 text-[#D4A843] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Collaborate</div>
-            <div className="text-[11px] text-[var(--text-muted)]">Invite your team to boards</div>
-          </div>
-          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-4 text-center">
-            <BarChart3 className="w-5 h-5 text-[#C27A4A] mx-auto mb-2" />
-            <div className="text-[12px] font-semibold text-[var(--text-primary)] mb-0.5">Track</div>
-            <div className="text-[11px] text-[var(--text-muted)]">Stats and streaks appear here</div>
-          </div>
+      {/* Feature hints — always visible */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mb-10">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm">
+          <LayoutGrid className="w-5 h-5 text-[#A8BA32] mb-2" />
+          <div className="text-[13px] font-semibold text-[var(--text-primary)] mb-0.5">Boards</div>
+          <div className="text-[11px] text-[var(--text-muted)]">Organize tasks into columns</div>
+        </div>
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm">
+          <Users className="w-5 h-5 text-[#D4A843] mb-2" />
+          <div className="text-[13px] font-semibold text-[var(--text-primary)] mb-0.5">Collaborate</div>
+          <div className="text-[11px] text-[var(--text-muted)]">Invite your team to boards</div>
+        </div>
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-3xl p-5 shadow-sm">
+          <BarChart3 className="w-5 h-5 text-[#C27A4A] mb-2" />
+          <div className="text-[13px] font-semibold text-[var(--text-primary)] mb-0.5">Track</div>
+          <div className="text-[11px] text-[var(--text-muted)]">Stats and streaks appear here</div>
         </div>
       </div>
 
-      {/* ─── Footer ─── */}
-      <div className="flex items-center justify-center pt-3 border-t border-[var(--border-subtle)] shrink-0">
+      {/* Daily quote footer */}
+      <div className="pt-4 border-t border-[var(--border-subtle)]">
         <span className="text-[12px] text-[var(--text-faint)] font-heading italic">
           "{quote.text}" — {quote.author}
         </span>

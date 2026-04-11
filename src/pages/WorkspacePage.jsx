@@ -5,6 +5,7 @@ import { showToast } from '../utils/toast'
 import { useWorkspaceStore } from '../store/workspaceStore'
 import { useBoardStore } from '../store/boardStore'
 import DynamicIcon from '../components/board/DynamicIcon'
+import ActionCard from '../components/ActionCard'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function WorkspacePage() {
@@ -47,11 +48,11 @@ export default function WorkspacePage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       {/* ============================================================ */}
-      {/*  Step-by-step guide — always visible                         */}
+      {/*  Step-by-step guide — top of page                             */}
       {/* ============================================================ */}
-      <section className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-5 sm:p-6">
+      <section className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border-default)] shadow-sm p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-7 h-7 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center">
             <Users className="w-4 h-4 text-[var(--text-muted)]" />
@@ -79,10 +80,40 @@ export default function WorkspacePage() {
         </div>
       </section>
 
+      {/* NEW: ActionCard quick actions */}
+      <div className="flex w-full flex-col gap-3">
+        <ActionCard
+          icon={Kanban}
+          title="Open a board to invite"
+          description="Go to one of your boards and hit Share to add teammates."
+          onClick={() => navigate('/boards')}
+        />
+        <ActionCard
+          icon={Mail}
+          title={invitations.length > 0 ? `${invitations.length} pending invitation${invitations.length > 1 ? 's' : ''}` : 'No pending invitations'}
+          description={invitations.length > 0 ? 'Review and accept team invites below.' : 'Invitations from teammates will appear here.'}
+          disabled={invitations.length === 0}
+          onClick={() => {
+            const el = document.getElementById('invitations-section')
+            if (el) el.scrollIntoView({ behavior: 'smooth' })
+          }}
+        />
+        <ActionCard
+          icon={Users}
+          title={sharedBoards.length > 0 ? `${sharedBoards.length} shared board${sharedBoards.length > 1 ? 's' : ''}` : 'No shared boards yet'}
+          description={sharedBoards.length > 0 ? 'Jump into boards your teammates have shared with you.' : 'Boards shared with you will appear here.'}
+          disabled={sharedBoards.length === 0}
+          onClick={() => {
+            const el = document.getElementById('shared-boards-section')
+            if (el) el.scrollIntoView({ behavior: 'smooth' })
+          }}
+        />
+      </div>
+
       {/* ============================================================ */}
       {/*  1. Pending Invitations                                       */}
       {/* ============================================================ */}
-      <section>
+      <section id="invitations-section">
           <div className="flex items-center gap-2 mb-4">
             <UserPlus className="w-4 h-4 text-[var(--text-muted)]" />
             <h2 className="text-sm font-semibold text-[var(--text-primary)]">Invitations</h2>
@@ -94,7 +125,7 @@ export default function WorkspacePage() {
           </div>
 
           {invitations.length === 0 ? (
-            <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] py-10 flex flex-col items-center justify-center">
+            <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border-default)] shadow-sm py-10 flex flex-col items-center justify-center">
               <UserPlus className="w-10 h-10 text-[var(--text-muted)] mb-2" />
               <p className="text-sm text-[var(--text-muted)]">No pending invitations</p>
             </div>
@@ -103,7 +134,7 @@ export default function WorkspacePage() {
               {invitations.map((inv) => (
                 <div
                   key={inv.id}
-                  className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-4 flex items-center gap-4"
+                  className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border-default)] shadow-sm p-4 flex items-center gap-4"
                 >
                   {/* Left: board icon + info */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -153,14 +184,14 @@ export default function WorkspacePage() {
       {/* ============================================================ */}
       {/*  2. Shared With Me                                            */}
       {/* ============================================================ */}
-      <section>
+      <section id="shared-boards-section">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-4 h-4 text-[var(--text-muted)]" />
             <h2 className="text-sm font-semibold text-[var(--text-primary)]">Shared with me</h2>
           </div>
 
           {sharedBoards.length === 0 ? (
-            <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] py-10 flex flex-col items-center justify-center">
+            <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border-default)] shadow-sm py-10 flex flex-col items-center justify-center">
               <Users className="w-10 h-10 text-[var(--text-muted)] mb-2" />
               <p className="text-sm text-[var(--text-muted)]">No shared boards yet</p>
             </div>
@@ -170,7 +201,7 @@ export default function WorkspacePage() {
                 <div
                   key={board.id}
                   onClick={() => handleBoardClick(board.id)}
-                  className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-4 text-left cursor-pointer hover:border-[var(--border-default)] hover:shadow-sm transition-all group relative"
+                  className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border-default)] shadow-sm p-4 text-left cursor-pointer hover:border-[var(--border-default)] hover:shadow-sm transition-all group relative"
                 >
                   {/* Leave button — top right, visible on hover */}
                   <button

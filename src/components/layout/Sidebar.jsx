@@ -130,7 +130,7 @@ export default function Sidebar() {
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('kolumn:focus-search'))}
             title={showCollapsed ? 'Search' : undefined}
-            className={`flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`}
+            className={`flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`}
           >
             <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
               <Search className="w-4 h-4 shrink-0" />
@@ -153,7 +153,7 @@ export default function Sidebar() {
                 `flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
                   isActive
                     ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                    : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
                 } ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`
               }
             >
@@ -215,7 +215,7 @@ export default function Sidebar() {
                   className={`flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 group cursor-pointer relative overflow-hidden ${
                     isBoardsActive && activeBoardId === board.id
                       ? 'text-[var(--text-primary)] bg-[var(--accent-lime-wash)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                      : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
                   }`}
                 >
                   <span className="flex items-center gap-3 truncate">
@@ -303,7 +303,7 @@ export default function Sidebar() {
                       className={`flex items-center w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 cursor-pointer overflow-hidden ${
                         isBoardsActive && activeBoardId === board.id
                           ? 'text-[var(--text-primary)] bg-[var(--accent-lime-wash)]'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                          : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
                       }`}
                     >
                       <span className="flex items-center gap-3 truncate">

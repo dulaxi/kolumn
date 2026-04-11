@@ -7,6 +7,7 @@ import { useBoardStore } from '../store/boardStore'
 import { useNoteStore } from '../store/noteStore'
 import DynamicIcon from '../components/board/DynamicIcon'
 import IconPicker from '../components/board/IconPicker'
+import ActionCard from '../components/ActionCard'
 import { PROFILE_COLORS } from '../constants/colors'
 
 const themes = [
@@ -106,13 +107,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] font-heading">Settings</h1>
-        <p className="text-[var(--text-secondary)] text-sm mt-1">
-          Manage your data and preferences
-        </p>
-      </div>
+    <div className="w-full">
 
       {/* My Profile */}
       <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
@@ -271,70 +266,48 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Export Data */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-          Export Data
-        </h2>
-        <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Download all your boards, notes, and settings as a JSON backup file.
-        </p>
-        <button
+      {/* NEW: ActionCard-based data management */}
+      <div className="flex w-full flex-col gap-3 mb-8">
+        <ActionCard
+          icon={Download}
+          title="Export your data"
+          description="Download all boards, notes, and settings as a JSON backup."
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-hover)] text-[var(--text-primary)] text-sm font-medium rounded-xl hover:bg-[#E0DBD5] cursor-pointer transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Export Backup
-        </button>
-      </div>
-
-      {/* Import Data */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-          Import Data
-        </h2>
-        <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Restore from a previously exported JSON backup. This will replace your
-          current data.
-        </p>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleImport}
-          className="hidden"
         />
-        <button
+        <ActionCard
+          icon={Upload}
+          title="Import from backup"
+          description="Restore from a previously exported JSON file. Replaces current data."
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 border border-[var(--border-default)] text-[var(--text-secondary)] text-sm font-medium rounded-xl hover:bg-[var(--surface-raised)] cursor-pointer transition-colors"
-        >
-          <Upload className="w-4 h-4" />
-          Import Backup
-        </button>
-
+        />
+        <ActionCard
+          icon={Trash2}
+          title="Clear all data"
+          description="Permanently delete all boards, notes, and settings. Cannot be undone."
+          variant="danger"
+          onClick={() => setConfirmingClear(true)}
+        />
       </div>
 
-      {/* Danger Zone */}
-      <div className="bg-[var(--surface-card)] border-2 border-[#D4A07A] rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-1">
-          <AlertTriangle className="w-4 h-4 text-[#C27A4A]" />
-          <h2 className="text-sm font-semibold text-[#7A5C44]">Danger Zone</h2>
-        </div>
-        <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Permanently delete all your boards, notes, and settings. This action
-          cannot be undone.
-        </p>
+      {/* Hidden file input used by Import ActionCard */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleImport}
+        className="hidden"
+      />
 
-        {!confirmingClear ? (
-          <button
-            onClick={() => setConfirmingClear(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#7A5C44] text-white text-sm font-medium rounded-xl hover:bg-[#6B4D38] cursor-pointer transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Clear All Data
-          </button>
-        ) : (
+      {/* Inline clear-data confirmation */}
+      {confirmingClear && (
+        <div className="bg-[#F0E0D2]/40 border border-[#D4A07A] rounded-2xl p-5 mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-[#C27A4A]" />
+            <h2 className="text-sm font-semibold text-[#7A5C44]">Confirm — this cannot be undone</h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
+            Permanently delete all your boards, notes, and settings.
+          </p>
           <div className="flex items-center gap-2">
             <button
               onClick={handleClearData}
@@ -349,8 +322,8 @@ export default function SettingsPage() {
               Cancel
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
