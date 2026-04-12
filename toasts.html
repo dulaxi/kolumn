@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toast Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: #F2EDE8; padding: 40px; }
+    h1 { font-size: 24px; color: #1B1B18; margin-bottom: 8px; }
+    .subtitle { font-size: 13px; color: #8E8E89; margin-bottom: 32px; }
+    .group { margin-bottom: 28px; }
+    .group-title { font-size: 11px; font-weight: 600; color: #8E8E89; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .toast {
+      font-family: 'SF Mono', SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 24px rgba(27,27,24,0.10);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 380px;
+      margin-bottom: 10px;
+    }
+    .toast .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 18px;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .toast .meta {
+      margin-left: auto;
+      font-size: 10px;
+      opacity: 0.6;
+      white-space: nowrap;
+      padding-left: 12px;
+    }
+    .undo-btn {
+      font-family: 'SF Mono', SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-left: 8px;
+      white-space: nowrap;
+      text-decoration: underline;
+    }
+    .spec {
+      display: flex;
+      gap: 24px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    .spec-card {
+      background: white;
+      border: 1px solid #E0DBD5;
+      border-radius: 12px;
+      padding: 16px;
+      width: 200px;
+    }
+    .spec-card .label { font-size: 10px; color: #8E8E89; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .spec-card .value { font-size: 12px; color: #1B1B18; font-family: 'SF Mono', Menlo, monospace; }
+    .swatch-row { display: flex; gap: 6px; margin-top: 4px; }
+    .swatch-dot { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <h1>Toast Notifications</h1>
+  <p class="subtitle">Phosphor palette &middot; SF Mono &middot; Material Symbols &middot; Top center</p>
+
+  <!-- Success -->
+  <div class="group">
+    <div class="group-title">Success</div>
+    <div class="toast" style="background:#C2D64A; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">check_circle</span>
+      Board "Product Launch" created
+      <span class="meta">3s</span>
+    </div>
+    <div class="toast" style="background:#C2D64A; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">check_circle</span>
+      Profile updated
+      <span class="meta">3s</span>
+    </div>
+    <div class="toast" style="background:#C2D64A; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">check_circle</span>
+      Invitation sent
+      <span class="meta">3s</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="group">
+    <div class="group-title">Error</div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">error</span>
+      Failed to load boards — check your connection
+      <span class="meta">4s</span>
+    </div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">error</span>
+      File must be under 10 MB
+      <span class="meta">4s</span>
+    </div>
+  </div>
+
+  <!-- Delete (with undo) -->
+  <div class="group">
+    <div class="group-title">Delete (with undo)</div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">delete</span>
+      Task deleted
+      <button class="undo-btn" style="color:#1B1B18; margin-left:auto;">Undo</button>
+    </div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">delete</span>
+      Board deleted
+      <button class="undo-btn" style="color:#1B1B18; margin-left:auto;">Undo</button>
+    </div>
+  </div>
+
+  <!-- Archive -->
+  <div class="group">
+    <div class="group-title">Archive</div>
+    <div class="toast" style="background:#A8969E; color:#E8DDE2; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">archive</span>
+      Task archived
+      <span class="meta">3s</span>
+    </div>
+  </div>
+
+  <!-- Restore -->
+  <div class="group">
+    <div class="group-title">Restore</div>
+    <div class="toast" style="background:#C2D64A; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">undo</span>
+      Task restored from archive
+      <span class="meta">3s</span>
+    </div>
+    <div class="toast" style="background:#C2D64A; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">undo</span>
+      Board restored
+      <span class="meta">3s</span>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="group">
+    <div class="group-title">Info</div>
+    <div class="toast" style="background:#FAF8F6; color:#5C5C57; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">info</span>
+      Invitation declined
+      <span class="meta">3s</span>
+    </div>
+  </div>
+
+  <!-- Warning -->
+  <div class="group">
+    <div class="group-title">Warning</div>
+    <div class="toast" style="background:#D4A843; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">warning</span>
+      You're offline — showing cached data
+      <span class="meta">4s</span>
+    </div>
+    <div class="toast" style="background:#D4A843; color:#1B1B18; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">warning</span>
+      Too many tasks created — slow down
+      <span class="meta">4s</span>
+    </div>
+  </div>
+
+  <!-- Overdue -->
+  <div class="group">
+    <div class="group-title">Overdue</div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">alarm</span>
+      "Auth flow redesign" is overdue
+    </div>
+    <div class="toast" style="background:#C27A4A; color:#FAF8F6; border:1px solid #1B1B18;">
+      <span class="material-symbols-outlined">alarm</span>
+      3 tasks are past their due date
+    </div>
+  </div>
+
+  <!-- Spec -->
+  <div class="spec">
+    <div class="spec-card">
+      <div class="label">Font</div>
+      <div class="value">SF Mono 12px</div>
+    </div>
+    <div class="spec-card">
+      <div class="label">Position</div>
+      <div class="value">top-center</div>
+    </div>
+    <div class="spec-card">
+      <div class="label">Radius</div>
+      <div class="value">10px</div>
+    </div>
+    <div class="spec-card">
+      <div class="label">Icons</div>
+      <div class="value">Material Symbols<br/>FILL 1, wght 500</div>
+    </div>
+    <div class="spec-card">
+      <div class="label">Colors</div>
+      <div class="swatch-row">
+        <div class="swatch-dot" style="background:#EEF2D6" title="Success/Restore"></div>
+        <div class="swatch-dot" style="background:#F2D9C7" title="Error/Delete"></div>
+        <div class="swatch-dot" style="background:#F5EDCF" title="Archive/Warning"></div>
+        <div class="swatch-dot" style="background:#FAF8F6" title="Info"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

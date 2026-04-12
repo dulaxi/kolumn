@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upcoming — Style Options</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #3c402b; --dark-grey: #656461; --pewter: #c9c5bf;
+      --foam: #e9ebe2; --lichen: #d2d6c5; --olive: #a4b55b;
+      --acid: #c4e456; --copper: #c27a4a; --honey: #d4a843;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Manrope', -apple-system, system-ui, sans-serif; background: #FAF8F6; color: #1B1B18; padding: 32px; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+    h1 { font-size: 20px; margin-bottom: 6px; }
+    .subtitle { font-size: 12px; color: #8E8E89; margin-bottom: 32px; }
+
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .option { border: 1px solid #E0DBD5; border-radius: 12px; background: white; overflow: hidden; }
+    .option-header { background: #f7f5f1; padding: 10px 16px; border-bottom: 1px solid #E0DBD5; display: flex; align-items: center; gap: 8px; }
+    .option-label { font-size: 11px; font-weight: 700; color: #656461; text-transform: uppercase; letter-spacing: 1.2px; }
+    .option-tag { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #EEF2D6; color: #6B7A12; }
+    .option-body { padding: 16px; }
+    .sl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--pewter); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Upcoming Tasks — Style Options</h1>
+  <p class="subtitle">Same 5 tasks, different treatments. All compact.</p>
+
+  <div class="options">
+
+    <!-- ═══ A: Vertical timeline with line ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">A — Vertical Line</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .va .sl { margin-bottom: 8px; }
+          .va-list { position: relative; padding-left: 16px; }
+          .va-list::before { content:''; position: absolute; left: 3px; top: 6px; bottom: 6px; width: 1.5px; background: #E0DBD5; }
+          .va-item { position: relative; padding: 5px 0; display: flex; align-items: center; gap: 10px; }
+          .va-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; left: -16px; top: 50%; transform: translate(-1px, -50%); z-index: 1; border: 2px solid white; }
+          .va-name { flex: 1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .va-when { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--pewter); flex-shrink: 0; }
+        </style>
+        <div class="va">
+          <div class="sl">Up next</div>
+          <div class="va-list">
+            <div class="va-item"><span class="va-dot" style="background:var(--copper);"></span><span class="va-name">Auth flow redesign</span><span class="va-when">2d late</span></div>
+            <div class="va-item"><span class="va-dot" style="background:var(--honey);"></span><span class="va-name">API rate limiting</span><span class="va-when">today</span></div>
+            <div class="va-item"><span class="va-dot" style="background:var(--honey);"></span><span class="va-name">Landing page copy review</span><span class="va-when">today</span></div>
+            <div class="va-item"><span class="va-dot" style="background:var(--olive);"></span><span class="va-name">Write onboarding docs</span><span class="va-when">tmrw</span></div>
+            <div class="va-item"><span class="va-dot" style="background:var(--lichen);"></span><span class="va-name">Mobile nav polish</span><span class="va-when">Apr 5</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ B: Date on left, task on right ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">B — Date Column</span>
+        <span class="option-tag">Scannable</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .vb .sl { margin-bottom: 8px; }
+          .vb-item { display: flex; align-items: baseline; gap: 0; padding: 5px 0; border-bottom: 1px solid #f2f0ec; }
+          .vb-item:last-child { border-bottom: none; }
+          .vb-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--pewter); width: 52px; flex-shrink: 0; }
+          .vb-date.overdue { color: var(--copper); font-weight: 600; }
+          .vb-date.today { color: var(--honey); font-weight: 600; }
+          .vb-name { flex: 1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .vb-board { font-size: 10px; color: var(--pewter); flex-shrink: 0; }
+        </style>
+        <div class="vb">
+          <div class="sl">Up next</div>
+          <div class="vb-item"><span class="vb-date overdue">2d late</span><span class="vb-name">Auth flow redesign</span><span class="vb-board">Product Launch</span></div>
+          <div class="vb-item"><span class="vb-date today">today</span><span class="vb-name">API rate limiting</span><span class="vb-board">Product Launch</span></div>
+          <div class="vb-item"><span class="vb-date today">today</span><span class="vb-name">Landing page copy review</span><span class="vb-board">Marketing</span></div>
+          <div class="vb-item"><span class="vb-date">Apr 2</span><span class="vb-name">Write onboarding docs</span><span class="vb-board">Product Launch</span></div>
+          <div class="vb-item"><span class="vb-date">Apr 5</span><span class="vb-name">Mobile nav polish</span><span class="vb-board">Design System</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ C: Pill tags ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">C — Pill Tags</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .vc .sl { margin-bottom: 8px; }
+          .vc-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+          .vc-tag {
+            font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600;
+            padding: 2px 8px; border-radius: 10px; flex-shrink: 0; min-width: 48px; text-align: center;
+          }
+          .vc-tag.overdue { background: #F0E0D2; color: #7A5C44; }
+          .vc-tag.today { background: #F5EDCF; color: #8B7322; }
+          .vc-tag.soon { background: #EEF2D6; color: #6B7A12; }
+          .vc-tag.later { background: #E8E2DB; color: #5C5C57; }
+          .vc-name { flex: 1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .vc-check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #E0DBD5; flex-shrink: 0; }
+        </style>
+        <div class="vc">
+          <div class="sl">Up next</div>
+          <div class="vc-item"><span class="vc-tag overdue">2d late</span><span class="vc-name">Auth flow redesign</span><span class="vc-check"></span></div>
+          <div class="vc-item"><span class="vc-tag today">today</span><span class="vc-name">API rate limiting</span><span class="vc-check"></span></div>
+          <div class="vc-item"><span class="vc-tag today">today</span><span class="vc-name">Landing page copy review</span><span class="vc-check"></span></div>
+          <div class="vc-item"><span class="vc-tag soon">tmrw</span><span class="vc-name">Write onboarding docs</span><span class="vc-check"></span></div>
+          <div class="vc-item"><span class="vc-tag later">Apr 5</span><span class="vc-name">Mobile nav polish</span><span class="vc-check"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ D: Card rows with left accent ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">D — Accent Cards</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .vd .sl { margin-bottom: 8px; }
+          .vd-item {
+            display: flex; align-items: center; gap: 10px;
+            background: #FAF8F6; border: 1px solid #E0DBD5; border-radius: 8px;
+            padding: 8px 10px; margin-bottom: 4px; border-left: 3px solid;
+          }
+          .vd-item.overdue { border-left-color: var(--copper); }
+          .vd-item.today { border-left-color: var(--honey); }
+          .vd-item.soon { border-left-color: var(--olive); }
+          .vd-item.later { border-left-color: var(--lichen); }
+          .vd-name { flex: 1; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .vd-when { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--pewter); flex-shrink: 0; }
+          .vd-check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #E0DBD5; flex-shrink: 0; }
+        </style>
+        <div class="vd">
+          <div class="sl">Up next</div>
+          <div class="vd-item overdue"><span class="vd-name">Auth flow redesign</span><span class="vd-when">2d late</span><span class="vd-check"></span></div>
+          <div class="vd-item today"><span class="vd-name">API rate limiting</span><span class="vd-when">today</span><span class="vd-check"></span></div>
+          <div class="vd-item today"><span class="vd-name">Landing page copy review</span><span class="vd-when">today</span><span class="vd-check"></span></div>
+          <div class="vd-item soon"><span class="vd-name">Write onboarding docs</span><span class="vd-when">Apr 2</span><span class="vd-check"></span></div>
+          <div class="vd-item later"><span class="vd-name">Mobile nav polish</span><span class="vd-when">Apr 5</span><span class="vd-check"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ E: Grouped compact with subtle headers ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">E — Grouped Tight</span>
+        <span class="option-tag">Readable</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .ve .sl { margin-bottom: 8px; }
+          .ve-group + .ve-group { margin-top: 8px; }
+          .ve-glabel { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 2px 0; display: flex; align-items: center; gap: 5px; }
+          .ve-glabel .dot { width: 5px; height: 5px; border-radius: 50%; }
+          .ve-glabel.overdue { color: var(--copper); }
+          .ve-glabel.today { color: var(--honey); }
+          .ve-glabel.soon { color: var(--olive); }
+          .ve-glabel.later { color: var(--pewter); }
+          .ve-item { display: flex; align-items: center; gap: 8px; padding: 4px 0 4px 10px; }
+          .ve-name { flex: 1; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .ve-check { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid #E0DBD5; flex-shrink: 0; }
+        </style>
+        <div class="ve">
+          <div class="sl">Up next</div>
+          <div class="ve-group">
+            <div class="ve-glabel overdue"><span class="dot" style="background:var(--copper);"></span> Overdue</div>
+            <div class="ve-item"><span class="ve-name">Auth flow redesign</span><span class="ve-check"></span></div>
+          </div>
+          <div class="ve-group">
+            <div class="ve-glabel today"><span class="dot" style="background:var(--honey);"></span> Today</div>
+            <div class="ve-item"><span class="ve-name">API rate limiting</span><span class="ve-check"></span></div>
+            <div class="ve-item"><span class="ve-name">Landing page copy review</span><span class="ve-check"></span></div>
+          </div>
+          <div class="ve-group">
+            <div class="ve-glabel soon"><span class="dot" style="background:var(--olive);"></span> Tomorrow</div>
+            <div class="ve-item"><span class="ve-name">Write onboarding docs</span><span class="ve-check"></span></div>
+          </div>
+          <div class="ve-group">
+            <div class="ve-glabel later"><span class="dot" style="background:var(--lichen);"></span> This week</div>
+            <div class="ve-item"><span class="ve-name">Mobile nav polish</span><span class="ve-check"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ F: Table-like with columns ═══ -->
+    <div class="option">
+      <div class="option-header">
+        <span class="option-label">F — Table</span>
+      </div>
+      <div class="option-body">
+        <style>
+          .vf .sl { margin-bottom: 8px; }
+          .vf-table { width: 100%; border-collapse: collapse; }
+          .vf-table th { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--pewter); text-transform: uppercase; letter-spacing: 1px; text-align: left; padding: 0 0 6px; font-weight: 500; border-bottom: 1px solid #E8E2DB; }
+          .vf-table td { padding: 6px 0; border-bottom: 1px solid #f5f5f3; font-size: 12px; vertical-align: middle; }
+          .vf-table tr:last-child td { border-bottom: none; }
+          .vf-status { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+          .vf-name { font-weight: 500; }
+          .vf-when { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--pewter); }
+          .vf-board { font-size: 10px; color: var(--pewter); }
+        </style>
+        <div class="vf">
+          <div class="sl">Up next</div>
+          <table class="vf-table">
+            <thead><tr><th></th><th>Task</th><th>When</th><th>Board</th></tr></thead>
+            <tbody>
+              <tr><td><span class="vf-status" style="background:var(--copper);"></span></td><td class="vf-name">Auth flow redesign</td><td class="vf-when">2d late</td><td class="vf-board">Product Launch</td></tr>
+              <tr><td><span class="vf-status" style="background:var(--honey);"></span></td><td class="vf-name">API rate limiting</td><td class="vf-when">today</td><td class="vf-board">Product Launch</td></tr>
+              <tr><td><span class="vf-status" style="background:var(--honey);"></span></td><td class="vf-name">Landing page copy</td><td class="vf-when">today</td><td class="vf-board">Marketing</td></tr>
+              <tr><td><span class="vf-status" style="background:var(--olive);"></span></td><td class="vf-name">Write onboarding docs</td><td class="vf-when">Apr 2</td><td class="vf-board">Product Launch</td></tr>
+              <tr><td><span class="vf-status" style="background:var(--lichen);"></span></td><td class="vf-name">Mobile nav polish</td><td class="vf-when">Apr 5</td><td class="vf-board">Design System</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

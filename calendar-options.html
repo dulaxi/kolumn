@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar Heatmap Options</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: #F2EDE8; padding: 32px; }
+    h1 { font-size: 20px; color: #1B1B18; margin-bottom: 6px; }
+    .subtitle { font-size: 12px; color: #8E8E89; margin-bottom: 32px; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+
+    .option { margin-bottom: 40px; border: 1px solid #E0DBD5; border-radius: 16px; background: white; overflow: hidden; }
+    .option-header { background: #FAF8F6; padding: 12px 20px; border-bottom: 1px solid #E0DBD5; display: flex; align-items: center; gap: 8px; }
+    .option-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #8E8E89; }
+    .option-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+    .tag-green { color: #6B7A12; background: #EEF2D6; }
+    .tag-blue { color: #5C5C57; background: #E8E2DB; }
+    .option-body { padding: 20px; }
+    .option-desc { font-size: 12px; color: #8E8E89; margin-bottom: 16px; }
+
+    .cal-header { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #8E8E89; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .cal-header .material-symbols-outlined { font-size: 16px; }
+
+    .day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 3px; }
+    .day-label { font-size: 9px; font-weight: 700; color: #C4BFB8; text-align: center; }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Calendar Heatmap — Style Options</h1>
+  <p class="subtitle">Different looks for the monthly calendar, all at 220px width</p>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- OPTION A: Minimal dots — no numbers, just intensity -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="option">
+    <div class="option-header">
+      <span class="option-label">A — Minimal Dots</span>
+      <span class="option-tag tag-green">Cleanest</span>
+    </div>
+    <div class="option-body" style="max-width: 240px;">
+      <div class="option-desc">No numbers, no legend. Just dots that get brighter with more tasks. Today has a ring.</div>
+      <div class="cal-header">
+        <span class="material-symbols-outlined" style="color:#8E8E89;">calendar_month</span>
+        April 2026
+      </div>
+      <div class="day-labels">
+        <div class="day-label">M</div><div class="day-label">T</div><div class="day-label">W</div>
+        <div class="day-label">T</div><div class="day-label">F</div><div class="day-label">S</div><div class="day-label">S</div>
+      </div>
+      <div class="cal-grid">
+        <!-- empty offset for April 2026 (starts Wednesday) -->
+        <div></div><div></div>
+        <!-- 1-30 -->
+        <div style="aspect-ratio:1; border-radius:50%; background:#A8BA32; outline:2px solid #1B1B18; outline-offset:1px;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#C2D64A;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+
+        <div style="aspect-ratio:1; border-radius:50%; background:#A8BA32;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#C2D64A;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#D4A843;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#C2D64A;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+
+        <div style="aspect-ratio:1; border-radius:50%; background:#A8BA32;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#A8BA32;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#D4A843;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#E8E2DB;"></div>
+
+        <div style="aspect-ratio:1; border-radius:50%; background:#EEF2D6;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#EEF2D6;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#EEF2D6;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#EEF2D6;"></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#F2EDE8;"></div>
+      </div>
+      <!-- Inline legend: just a gradient bar -->
+      <div style="display:flex; align-items:center; gap:6px; margin-top:10px;">
+        <span style="font-size:9px; color:#C4BFB8;">Less</span>
+        <div style="display:flex; gap:2px;">
+          <span style="width:10px; height:10px; border-radius:50%; background:#F2EDE8;"></span>
+          <span style="width:10px; height:10px; border-radius:50%; background:#EEF2D6;"></span>
+          <span style="width:10px; height:10px; border-radius:50%; background:#C2D64A;"></span>
+          <span style="width:10px; height:10px; border-radius:50%; background:#A8BA32;"></span>
+        </div>
+        <span style="font-size:9px; color:#C4BFB8;">More</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- OPTION B: Numbered squares with subtle task count -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="option">
+    <div class="option-header">
+      <span class="option-label">B — Numbered with Task Badges</span>
+      <span class="option-tag tag-blue">Informative</span>
+    </div>
+    <div class="option-body" style="max-width: 240px;">
+      <div class="option-desc">Day numbers visible, tiny task count badge in corner for days with tasks. Rounded squares.</div>
+      <div class="cal-header">
+        <span class="material-symbols-outlined" style="color:#8E8E89;">calendar_month</span>
+        April 2026
+      </div>
+      <div class="day-labels">
+        <div class="day-label">M</div><div class="day-label">T</div><div class="day-label">W</div>
+        <div class="day-label">T</div><div class="day-label">F</div><div class="day-label">S</div><div class="day-label">S</div>
+      </div>
+      <div class="cal-grid">
+        <div></div><div></div>
+        <!-- Day cells with numbers -->
+        <div style="aspect-ratio:1; border-radius:6px; background:#A8BA32; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18; position:relative; outline:2px solid #1B1B18; outline-offset:0px;">1<span style="position:absolute; top:-3px; right:-3px; width:12px; height:12px; background:#1B1B18; color:white; border-radius:50%; font-size:7px; display:flex; align-items:center; justify-content:center;">3</span></div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">2</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#C2D64A; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18; position:relative;">3<span style="position:absolute; top:-3px; right:-3px; width:12px; height:12px; background:#1B1B18; color:white; border-radius:50%; font-size:7px; display:flex; align-items:center; justify-content:center;">2</span></div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">4</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">5</div>
+
+        <div style="aspect-ratio:1; border-radius:6px; background:#A8BA32; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18; position:relative;">6<span style="position:absolute; top:-3px; right:-3px; width:12px; height:12px; background:#1B1B18; color:white; border-radius:50%; font-size:7px; display:flex; align-items:center; justify-content:center;">4</span></div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#C2D64A; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18;">7</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#D4A843; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18;">8</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">9</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">10</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">11</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">12</div>
+
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">13</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">14</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#EEF2D6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">15</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">16</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">17</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">18</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">19</div>
+
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">20</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">21</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">22</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">23</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">24</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">25</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">26</div>
+
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">27</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">28</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">29</div>
+        <div style="aspect-ratio:1; border-radius:6px; background:#FAF8F6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">30</div>
+      </div>
+      <!-- No separate legend — badges explain themselves -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- OPTION C: GitHub-style single color intensity -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="option">
+    <div class="option-header">
+      <span class="option-label">C — GitHub-Style (Single Hue)</span>
+      <span class="option-tag tag-green">Familiar</span>
+    </div>
+    <div class="option-body" style="max-width: 240px;">
+      <div class="option-desc">All lime, just varies in intensity. Day numbers, rounded squares. GitHub contribution graph feel.</div>
+      <div class="cal-header">
+        <span class="material-symbols-outlined" style="color:#8E8E89;">calendar_month</span>
+        April 2026
+      </div>
+      <div class="day-labels">
+        <div class="day-label">M</div><div class="day-label">T</div><div class="day-label">W</div>
+        <div class="day-label">T</div><div class="day-label">F</div><div class="day-label">S</div><div class="day-label">S</div>
+      </div>
+      <div class="cal-grid">
+        <div></div><div></div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#8BA32E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:white; outline:2px solid #1B1B18; outline-offset:0px;">1</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">2</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#C2D64A; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18;">3</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">4</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">5</div>
+
+        <div style="aspect-ratio:1; border-radius:4px; background:#8BA32E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:white;">6</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#A8BA32; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18;">7</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#EEF2D6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">8</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#C2D64A; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#1B1B18;">9</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">10</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">11</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">12</div>
+
+        <div style="aspect-ratio:1; border-radius:4px; background:#EEF2D6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">13</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">14</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#EEF2D6; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">15</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">16</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">17</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">18</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">19</div>
+
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">20</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">21</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">22</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">23</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">24</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">25</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">26</div>
+
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">27</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">28</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">29</div>
+        <div style="aspect-ratio:1; border-radius:4px; background:#F2EDE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">30</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; margin-top:8px; justify-content:flex-end;">
+        <span style="font-size:8px; color:#C4BFB8;">Less</span>
+        <span style="width:8px; height:8px; border-radius:2px; background:#F2EDE8;"></span>
+        <span style="width:8px; height:8px; border-radius:2px; background:#EEF2D6;"></span>
+        <span style="width:8px; height:8px; border-radius:2px; background:#C2D64A;"></span>
+        <span style="width:8px; height:8px; border-radius:2px; background:#A8BA32;"></span>
+        <span style="width:8px; height:8px; border-radius:2px; background:#8BA32E;"></span>
+        <span style="font-size:8px; color:#C4BFB8;">More</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- OPTION D: Ink style, no color — just strokes -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="option">
+    <div class="option-header">
+      <span class="option-label">D — Ink & Stroke</span>
+      <span class="option-tag tag-blue">Typographic</span>
+    </div>
+    <div class="option-body" style="max-width: 240px;">
+      <div class="option-desc">Monochrome. Days with tasks get a filled ink circle. Today has a lime ring. No color noise.</div>
+      <div class="cal-header">
+        <span class="material-symbols-outlined" style="color:#8E8E89;">calendar_month</span>
+        April 2026
+      </div>
+      <div class="day-labels">
+        <div class="day-label">M</div><div class="day-label">T</div><div class="day-label">W</div>
+        <div class="day-label">T</div><div class="day-label">F</div><div class="day-label">S</div><div class="day-label">S</div>
+      </div>
+      <div class="cal-grid">
+        <div></div><div></div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#1B1B18; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white; outline:2px solid #C2D64A; outline-offset:2px;">1</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">2</div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#1B1B18; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">3</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">4</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">5</div>
+
+        <div style="aspect-ratio:1; border-radius:50%; background:#1B1B18; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">6</div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#5C5C57; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:white;">7</div>
+        <div style="aspect-ratio:1; border-radius:50%; border:1.5px solid #E0DBD5; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">8</div>
+        <div style="aspect-ratio:1; border-radius:50%; background:#5C5C57; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:white;">9</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">10</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">11</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">12</div>
+
+        <div style="aspect-ratio:1; border-radius:50%; border:1.5px solid #E0DBD5; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">13</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">14</div>
+        <div style="aspect-ratio:1; border-radius:50%; border:1.5px solid #E0DBD5; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#8E8E89;">15</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">16</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">17</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">18</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">19</div>
+
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">20</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">21</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">22</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">23</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">24</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">25</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#E0DBD5;">26</div>
+
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">27</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">28</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">29</div>
+        <div style="aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; color:#C4BFB8;">30</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:9px; color:#8E8E89;">
+        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px; height:8px; border-radius:50%; background:#1B1B18;"></span> 3+ tasks</span>
+        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px; height:8px; border-radius:50%; background:#5C5C57;"></span> 1-2 tasks</span>
+        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px; height:8px; border-radius:50%; border:1.5px solid #E0DBD5;"></span> Due</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

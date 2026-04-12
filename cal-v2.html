@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar Styles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Manrope', -apple-system, system-ui, sans-serif; background: #eeeae3; padding: 32px; color: #3c402b; }
+    h1 { font-size: 20px; margin-bottom: 6px; }
+    .subtitle { font-size: 12px; color: #656461; margin-bottom: 32px; }
+
+    .option { margin-bottom: 36px; border: 1px solid #E0DBD5; border-radius: 12px; background: white; overflow: hidden; display: inline-block; vertical-align: top; margin-right: 20px; }
+    .option-header { background: #f7f5f1; padding: 10px 16px; border-bottom: 1px solid #E0DBD5; font-size: 11px; font-weight: 700; color: #656461; text-transform: uppercase; letter-spacing: 1.2px; }
+    .option-body { padding: 18px; width: 260px; }
+
+    .cal-head { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #3c402b; }
+    .g7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .dl { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500; color: #c9c5bf; text-align: center; padding-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Calendar — Style Options</h1>
+  <p class="subtitle">Same data, different treatment. 260px width to fit right sidebar.</p>
+
+  <!-- ═══ A: Underline indicator ═══ -->
+  <div class="option">
+    <div class="option-header">A — Underline Indicator</div>
+    <div class="option-body">
+      <style>
+        .ca .c { aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:#656461; position:relative; gap:2px; }
+        .ca .c.wk { color:#c9c5bf; }
+        .ca .c.today { background:#3c402b; color:#c4e456; font-weight:700; }
+        .ca .c.has { color:#3c402b; font-weight:600; }
+        .ca .c .bar { width:14px; height:2px; border-radius:1px; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 ca">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1<span class="bar" style="background:#c27a4a;"></span></div>
+        <div class="c">2</div>
+        <div class="c has">3<span class="bar" style="background:#a4b55b;"></span></div>
+        <div class="c">4</div>
+        <div class="c wk">5</div>
+        <div class="c has">6<span class="bar" style="background:#a4b55b;"></span></div>
+        <div class="c has">7<span class="bar" style="background:#d4a843;"></span></div>
+        <div class="c has">8<span class="bar" style="background:#c27a4a;"></span></div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c wk">11</div>
+        <div class="c wk">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c has">15<span class="bar" style="background:#a4b55b;"></span></div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c wk">18</div>
+        <div class="c wk">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c wk">25</div>
+        <div class="c wk">26</div>
+        <div class="c">27</div>
+        <div class="c has">28<span class="bar" style="background:#a4b55b;"></span></div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ B: Ring / outline on task days ═══ -->
+  <div class="option">
+    <div class="option-header">B — Ring Days</div>
+    <div class="option-body">
+      <style>
+        .cb .c { aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:#656461; }
+        .cb .c.wk { color:#c9c5bf; }
+        .cb .c.today { background:#3c402b; color:#c4e456; font-weight:700; }
+        .cb .c.has { outline:2px solid #a4b55b; outline-offset:-2px; color:#3c402b; font-weight:600; }
+        .cb .c.has.hot { outline-color:#c27a4a; }
+        .cb .c.has.warm { outline-color:#d4a843; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 cb">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1</div>
+        <div class="c">2</div>
+        <div class="c has">3</div>
+        <div class="c">4</div>
+        <div class="c wk">5</div>
+        <div class="c has">6</div>
+        <div class="c has warm">7</div>
+        <div class="c has hot">8</div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c wk">11</div>
+        <div class="c wk">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c has">15</div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c wk">18</div>
+        <div class="c wk">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c wk">25</div>
+        <div class="c wk">26</div>
+        <div class="c">27</div>
+        <div class="c has">28</div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ C: Side stripe ═══ -->
+  <div class="option">
+    <div class="option-header">C — Left Stripe</div>
+    <div class="option-body">
+      <style>
+        .cc2 .c { aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:#656461; position:relative; }
+        .cc2 .c.wk { color:#c9c5bf; }
+        .cc2 .c.today { background:#3c402b; color:#c4e456; font-weight:700; }
+        .cc2 .c.has { color:#3c402b; font-weight:600; }
+        .cc2 .c .stripe { position:absolute; left:1px; top:20%; bottom:20%; width:2.5px; border-radius:2px; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 cc2">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1<span class="stripe" style="background:#c27a4a;"></span></div>
+        <div class="c">2</div>
+        <div class="c has">3<span class="stripe" style="background:#a4b55b;"></span></div>
+        <div class="c">4</div>
+        <div class="c wk">5</div>
+        <div class="c has">6<span class="stripe" style="background:#a4b55b;"></span></div>
+        <div class="c has">7<span class="stripe" style="background:#d4a843;"></span></div>
+        <div class="c has">8<span class="stripe" style="background:#c27a4a;"></span></div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c wk">11</div>
+        <div class="c wk">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c has">15<span class="stripe" style="background:#a4b55b;"></span></div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c wk">18</div>
+        <div class="c wk">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c wk">25</div>
+        <div class="c wk">26</div>
+        <div class="c">27</div>
+        <div class="c has">28<span class="stripe" style="background:#a4b55b;"></span></div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+  <br style="clear:both;" />
+
+  <!-- ═══ D: Filled square with count ═══ -->
+  <div class="option">
+    <div class="option-header">D — Filled + Count</div>
+    <div class="option-body">
+      <style>
+        .cd .c { aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:#656461; }
+        .cd .c.wk { color:#c9c5bf; }
+        .cd .c.today { background:#3c402b; color:#c4e456; font-weight:700; border-radius:6px; }
+        .cd .c.t1 { background:#e9ebe2; color:#3c402b; font-weight:600; }
+        .cd .c.t2 { background:#d2d6c5; color:#3c402b; font-weight:700; }
+        .cd .c.t3 { background:#a4b55b; color:white; font-weight:700; }
+        .cd .c.hot { background:#c27a4a; color:white; font-weight:700; }
+        .cd .c.warm { background:#d4a843; color:white; font-weight:700; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 cd">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1</div>
+        <div class="c">2</div>
+        <div class="c t2">3</div>
+        <div class="c">4</div>
+        <div class="c wk">5</div>
+        <div class="c t3">6</div>
+        <div class="c warm">7</div>
+        <div class="c hot">8</div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c wk">11</div>
+        <div class="c wk">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c t1">15</div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c wk">18</div>
+        <div class="c wk">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c wk">25</div>
+        <div class="c wk">26</div>
+        <div class="c">27</div>
+        <div class="c t1">28</div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ E: Bottom dot + number ═══ -->
+  <div class="option">
+    <div class="option-header">E — Number + Bottom Dot</div>
+    <div class="option-body">
+      <style>
+        .ce .c { aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:#656461; gap:1px; }
+        .ce .c.wk { color:#c9c5bf; }
+        .ce .c.today { background:#3c402b; color:#c4e456; font-weight:700; }
+        .ce .c.has { color:#3c402b; font-weight:600; }
+        .ce .c .num { font-family: 'IBM Plex Mono', monospace; font-size:8px; font-weight:600; color:white; background:#3c402b; width:14px; height:14px; border-radius:7px; display:flex; align-items:center; justify-content:center; margin-top:-1px; }
+        .ce .c.today .num { background:#c4e456; color:#3c402b; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 ce">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1<span class="num">3</span></div>
+        <div class="c">2</div>
+        <div class="c has">3<span class="num">2</span></div>
+        <div class="c">4</div>
+        <div class="c wk">5</div>
+        <div class="c has">6<span class="num">4</span></div>
+        <div class="c has">7<span class="num">1</span></div>
+        <div class="c has">8<span class="num">2</span></div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c wk">11</div>
+        <div class="c wk">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c has">15<span class="num">1</span></div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c wk">18</div>
+        <div class="c wk">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c wk">25</div>
+        <div class="c wk">26</div>
+        <div class="c">27</div>
+        <div class="c has">28<span class="num">1</span></div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ F: Minimal — just bold text ═══ -->
+  <div class="option">
+    <div class="option-header">F — Pure Typography</div>
+    <div class="option-body">
+      <style>
+        .cf .c { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:400; color:#c9c5bf; }
+        .cf .c.has { color:#3c402b; font-weight:700; }
+        .cf .c.today { color:#3c402b; font-weight:800; font-size:14px; text-decoration:underline; text-decoration-color:#c4e456; text-underline-offset:3px; text-decoration-thickness:2px; }
+        .cf .c.hot { color:#c27a4a; font-weight:700; }
+        .cf .c.warm { color:#d4a843; font-weight:700; }
+      </style>
+      <div class="cal-head">April</div>
+      <div class="g7"><div class="dl">Mo</div><div class="dl">Tu</div><div class="dl">We</div><div class="dl">Th</div><div class="dl">Fr</div><div class="dl">Sa</div><div class="dl">Su</div></div>
+      <div class="g7 cf">
+        <div class="c"></div><div class="c"></div>
+        <div class="c today">1</div>
+        <div class="c">2</div>
+        <div class="c has">3</div>
+        <div class="c">4</div>
+        <div class="c">5</div>
+        <div class="c has">6</div>
+        <div class="c warm">7</div>
+        <div class="c hot">8</div>
+        <div class="c">9</div>
+        <div class="c">10</div>
+        <div class="c">11</div>
+        <div class="c">12</div>
+        <div class="c">13</div>
+        <div class="c">14</div>
+        <div class="c has">15</div>
+        <div class="c">16</div>
+        <div class="c">17</div>
+        <div class="c">18</div>
+        <div class="c">19</div>
+        <div class="c">20</div>
+        <div class="c">21</div>
+        <div class="c">22</div>
+        <div class="c">23</div>
+        <div class="c">24</div>
+        <div class="c">25</div>
+        <div class="c">26</div>
+        <div class="c">27</div>
+        <div class="c has">28</div>
+        <div class="c">29</div>
+        <div class="c">30</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

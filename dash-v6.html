@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --vellum: #eeeae3;
+      --ghost: #f7f5f1;
+      --foam: #e9ebe2;
+      --lichen: #d2d6c5;
+      --moss: #3c402b;
+      --moss-shadow: rgba(60,64,43,0.2);
+      --dark-grey: #656461;
+      --pewter: #c9c5bf;
+      --acid: #c4e456;
+      --olive: #a4b55b;
+      --copper: #c27a4a;
+      --honey: #d4a843;
+      --red: #e8612b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Manrope', -apple-system, system-ui, sans-serif;
+      background: #FAF8F6; color: #1B1B18;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      height: 100vh; max-width: 1040px; margin: 0 auto;
+      padding: 36px 32px 20px;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .header .date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--dark-grey); margin-bottom: 6px;
+    }
+    .header h1 {
+      font-family: 'Spectral', serif; font-size: 30px; font-weight: 600;
+      letter-spacing: -0.3px; line-height: 1.15;
+    }
+    .header h1 b { font-weight: 600; color: var(--olive); }
+
+    .pills { display: flex; gap: 8px; padding-bottom: 6px; }
+    .pill {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; color: var(--moss);
+      background: white; border: 1px solid #E0DBD5;
+      border-radius: 12px; padding: 6px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex; align-items: center; gap: 6px;
+      cursor: default; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .pill:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .pill .n { font-weight: 700; font-size: 14px; }
+
+    /* ── Content ── */
+    .content {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 32px; min-height: 0;
+    }
+
+    .col-l { display: flex; flex-direction: column; gap: 24px; min-height: 0; overflow: hidden; }
+    .col-r { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+    /* ── Section label ── */
+    .sl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 600; color: var(--pewter);
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+    }
+
+    /* ── Boards ── */
+    .boards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .board {
+      background: white; border: 1px solid #E0DBD5;
+      border-radius: 12px; padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s;
+      text-align: left;
+    }
+    .board:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #C4BFB8; }
+    .board-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .board-icon { width: 20px; height: 20px; color: var(--dark-grey); }
+    .board-name { font-size: 13px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .board-count { font-size: 11px; color: var(--dark-grey); }
+    .board-bar { height: 4px; border-radius: 4px; overflow: hidden; display: flex; background: var(--foam); margin-bottom: 8px; }
+    .board-seg { height: 100%; }
+    .board-cols { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 6px; }
+    .board-col { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--dark-grey); }
+    .board-col-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .board-updated {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; color: var(--pewter);
+    }
+
+    /* ── Timeline ── */
+    .timeline { flex: 1; overflow-y: auto; min-height: 0; }
+    .tl-grp + .tl-grp { margin-top: 8px; }
+    .tl-glabel {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; padding: 2px 0;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .tl-glabel .dot { width: 5px; height: 5px; border-radius: 50%; }
+    .tl-glabel.overdue { color: var(--copper); }
+    .tl-glabel.today { color: var(--honey); }
+    .tl-glabel.soon { color: var(--olive); }
+    .tl-glabel.later { color: var(--pewter); }
+    .tl-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 0 4px 10px; cursor: pointer;
+    }
+    .tl-row:hover .tl-name { color: var(--olive); }
+    .tl-name { flex: 1; font-size: 12px; font-weight: 500; transition: color 0.1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-o {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 1.5px solid var(--lichen); flex-shrink: 0;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tl-o:hover { border-color: var(--olive); background: var(--foam); }
+
+    /* ── Calendar ── */
+    .cal {
+      background: white; border: 1px solid #E0DBD5;
+      border-radius: 12px; padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .cal-head { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-dl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; font-weight: 500; color: var(--pewter);
+      text-align: center; padding-bottom: 4px;
+    }
+    .cc {
+      aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500; color: var(--dark-grey); cursor: default;
+    }
+    .cc.today { background: var(--moss); color: var(--acid); font-weight: 700; }
+    .cc.has { color: var(--moss); font-weight: 600; outline: 2px solid var(--olive); outline-offset: -2px; }
+    .cc.has.hot { outline-color: var(--copper); }
+    .cc.has.warm { outline-color: var(--honey); }
+    .cc.wk { color: var(--pewter); }
+
+    /* ── Activity ── */
+    .activity { flex: 1; overflow-y: auto; min-height: 0; }
+    .act-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid #E8E2DB;
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-icon {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .act-icon .material-symbols-outlined {
+      font-size: 13px; line-height: 13px;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .act-text { font-size: 12px; font-weight: 500; color: #1B1B18; line-height: 1.4; }
+    .act-time {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; color: #8E8E89; margin-top: 1px;
+    }
+
+    /* ── Footer ── */
+    .foot {
+      margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--foam);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .streak { display: flex; align-items: center; gap: 8px; }
+    .streak-dots { display: flex; gap: 3px; }
+    .sd {
+      width: 18px; height: 18px; border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sd-d { background: var(--acid); color: var(--moss); }
+    .sd-t { background: var(--moss); color: var(--acid); }
+    .sd-f { background: var(--foam); color: var(--lichen); }
+    .streak-txt {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--dark-grey);
+    }
+    .streak-txt strong { color: var(--moss); }
+    .foot-q { font-family: 'Spectral', serif; font-size: 12px; color: var(--pewter); font-style: italic; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="date">Tue, Apr 1, 2026</div>
+      <h1>Morning, <b>Alex</b></h1>
+    </div>
+    <div class="pills">
+      <div class="pill"><span class="n" style="color:var(--honey);">2</span> due today</div>
+      <div class="pill"><span class="n" style="color:var(--copper);">1</span> overdue</div>
+      <div class="pill"><span class="n" style="color:var(--olive);">4</span> done y'day</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="col-l">
+      <div>
+        <div class="sl">Boards</div>
+        <div class="boards">
+          <div class="board">
+            <div class="board-header">
+              <span class="material-symbols-outlined" style="font-size:18px; color:var(--dark-grey);">rocket_launch</span>
+              <div class="board-name">Product Launch</div>
+              <div class="board-count">25 tasks</div>
+            </div>
+            <div class="board-bar">
+              <div class="board-seg" style="width:20%; background:#d2d6c5;"></div>
+              <div class="board-seg" style="width:8%; background:#a4b55b;"></div>
+              <div class="board-seg" style="width:72%; background:#3c402b;"></div>
+            </div>
+            <div class="board-cols">
+              <span class="board-col"><span class="board-col-dot" style="background:#d2d6c5;"></span> To Do</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#a4b55b;"></span> In Progress</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#3c402b;"></span> Done</span>
+            </div>
+            <div class="board-updated">Updated 2 hours ago</div>
+          </div>
+
+          <div class="board">
+            <div class="board-header">
+              <span class="material-symbols-outlined" style="font-size:18px; color:var(--dark-grey);">palette</span>
+              <div class="board-name">Design System</div>
+              <div class="board-count">20 tasks</div>
+            </div>
+            <div class="board-bar">
+              <div class="board-seg" style="width:40%; background:#d2d6c5;"></div>
+              <div class="board-seg" style="width:15%; background:#a4b55b;"></div>
+              <div class="board-seg" style="width:45%; background:#3c402b;"></div>
+            </div>
+            <div class="board-cols">
+              <span class="board-col"><span class="board-col-dot" style="background:#d2d6c5;"></span> To Do</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#a4b55b;"></span> In Progress</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#3c402b;"></span> Done</span>
+            </div>
+            <div class="board-updated">Updated 5 hours ago</div>
+          </div>
+
+          <div class="board">
+            <div class="board-header">
+              <span class="material-symbols-outlined" style="font-size:18px; color:var(--dark-grey);">campaign</span>
+              <div class="board-name">Marketing</div>
+              <div class="board-count">12 tasks</div>
+            </div>
+            <div class="board-bar">
+              <div class="board-seg" style="width:100%; background:#3c402b;"></div>
+            </div>
+            <div class="board-cols">
+              <span class="board-col"><span class="board-col-dot" style="background:#3c402b;"></span> Done</span>
+            </div>
+            <div class="board-updated">Updated yesterday</div>
+          </div>
+
+          <div class="board">
+            <div class="board-header">
+              <span class="material-symbols-outlined" style="font-size:18px; color:var(--dark-grey);">terminal</span>
+              <div class="board-name">Backend v2</div>
+              <div class="board-count">15 tasks</div>
+            </div>
+            <div class="board-bar">
+              <div class="board-seg" style="width:60%; background:#d2d6c5;"></div>
+              <div class="board-seg" style="width:20%; background:#a4b55b;"></div>
+              <div class="board-seg" style="width:20%; background:#3c402b;"></div>
+            </div>
+            <div class="board-cols">
+              <span class="board-col"><span class="board-col-dot" style="background:#d2d6c5;"></span> To Do</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#a4b55b;"></span> In Progress</span>
+              <span class="board-col"><span class="board-col-dot" style="background:#3c402b;"></span> Done</span>
+            </div>
+            <div class="board-updated">Updated 3 days ago</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="sl">Up next</div>
+        <div class="tl-grp">
+          <div class="tl-glabel overdue"><span class="dot" style="background:var(--copper);"></span> Overdue</div>
+          <div class="tl-row"><span class="tl-name">Auth flow redesign</span><div class="tl-o"></div></div>
+        </div>
+        <div class="tl-grp">
+          <div class="tl-glabel today"><span class="dot" style="background:var(--honey);"></span> Today</div>
+          <div class="tl-row"><span class="tl-name">API rate limiting</span><div class="tl-o"></div></div>
+          <div class="tl-row"><span class="tl-name">Landing page copy review</span><div class="tl-o"></div></div>
+        </div>
+        <div class="tl-grp">
+          <div class="tl-glabel soon"><span class="dot" style="background:var(--olive);"></span> Tomorrow</div>
+          <div class="tl-row"><span class="tl-name">Write onboarding docs</span><div class="tl-o"></div></div>
+        </div>
+        <div class="tl-grp">
+          <div class="tl-glabel later"><span class="dot" style="background:var(--lichen);"></span> This week</div>
+          <div class="tl-row"><span class="tl-name">Mobile nav polish</span><div class="tl-o"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-r">
+      <div class="cal">
+        <div class="cal-head">April</div>
+        <div class="cal-grid">
+          <div class="cal-dl">Mo</div><div class="cal-dl">Tu</div><div class="cal-dl">We</div>
+          <div class="cal-dl">Th</div><div class="cal-dl">Fr</div><div class="cal-dl">Sa</div><div class="cal-dl">Su</div>
+        </div>
+        <div class="cal-grid">
+          <div></div><div></div>
+          <div class="cc today">1</div>
+          <div class="cc">2</div>
+          <div class="cc has">3</div>
+          <div class="cc">4</div>
+          <div class="cc wk">5</div>
+          <div class="cc has">6</div>
+          <div class="cc has warm">7</div>
+          <div class="cc has hot">8</div>
+          <div class="cc">9</div>
+          <div class="cc">10</div>
+          <div class="cc wk">11</div>
+          <div class="cc wk">12</div>
+          <div class="cc">13</div>
+          <div class="cc">14</div>
+          <div class="cc has">15</div>
+          <div class="cc">16</div>
+          <div class="cc">17</div>
+          <div class="cc wk">18</div>
+          <div class="cc wk">19</div>
+          <div class="cc">20</div>
+          <div class="cc">21</div>
+          <div class="cc">22</div>
+          <div class="cc">23</div>
+          <div class="cc">24</div>
+          <div class="cc wk">25</div>
+          <div class="cc wk">26</div>
+          <div class="cc">27</div>
+          <div class="cc has">28</div>
+          <div class="cc">29</div>
+          <div class="cc">30</div>
+        </div>
+      </div>
+
+      <div class="activity">
+        <div class="sl">Activity</div>
+        <div class="act-row">
+          <div class="act-icon" style="background:#EEF2D6;">
+            <span class="material-symbols-outlined" style="color:#A8BA32;">check_circle</span>
+          </div>
+          <div>
+            <div class="act-text">Completed "User signup flow"</div>
+            <div class="act-time">2 hours ago</div>
+          </div>
+        </div>
+        <div class="act-row">
+          <div class="act-icon" style="background:#EEF2D6;">
+            <span class="material-symbols-outlined" style="color:#A8BA32;">edit</span>
+          </div>
+          <div>
+            <div class="act-text">Updated "Auth flow" in Review</div>
+            <div class="act-time">3 hours ago</div>
+          </div>
+        </div>
+        <div class="act-row">
+          <div class="act-icon" style="background:#EEF2D6;">
+            <span class="material-symbols-outlined" style="color:#A8BA32;">check_circle</span>
+          </div>
+          <div>
+            <div class="act-text">Completed "DB schema v2"</div>
+            <div class="act-time">5 hours ago</div>
+          </div>
+        </div>
+        <div class="act-row">
+          <div class="act-icon" style="background:#EEF2D6;">
+            <span class="material-symbols-outlined" style="color:#A8BA32;">edit</span>
+          </div>
+          <div>
+            <div class="act-text">Updated "API rate limiting"</div>
+            <div class="act-time">yesterday</div>
+          </div>
+        </div>
+        <div class="act-row">
+          <div class="act-icon" style="background:#EEF2D6;">
+            <span class="material-symbols-outlined" style="color:#A8BA32;">edit</span>
+          </div>
+          <div>
+            <div class="act-text">Updated "Mobile nav" in To Do</div>
+            <div class="act-time">yesterday</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="streak">
+      <div class="streak-dots">
+        <div class="sd sd-d">M</div>
+        <div class="sd sd-d">T</div>
+        <div class="sd sd-d">W</div>
+        <div class="sd sd-t">T</div>
+        <div class="sd sd-f">F</div>
+        <div class="sd sd-f">S</div>
+        <div class="sd sd-f">S</div>
+      </div>
+      <div class="streak-txt"><strong>3</strong> day streak</div>
+    </div>
+    <div class="foot-q">"Small deeds done are better than great deeds planned."</div>
+  </div>
+
+</div>
+</body>
+</html>
