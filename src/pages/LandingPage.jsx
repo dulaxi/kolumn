@@ -1830,7 +1830,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className={`landing-font min-h-screen bg-[#FAF8F6] transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`landing-font min-h-screen bg-[#FAF8F6] overflow-x-hidden transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
 
       {/* ─── Nav ─── */}
       <nav className="sticky top-0 z-50 bg-[#FAF8F6]">
