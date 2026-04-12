@@ -32,11 +32,11 @@
   --animate-fadeIn: fadeIn 1s ease forwards;
 }
 
-/* Prevent horizontal overflow on all pages (mobile especially).
-   Use overflow-x:clip instead of hidden — clip does NOT create a new
-   scroll context, so position:sticky on the landing nav still works. */
-html, body {
-  overflow-x: clip;
+/* Prevent horizontal overflow on mobile only */
+@media (max-width: 639px) {
+  html, body {
+    overflow-x: clip;
+  }
 }
 
 /* ── Semantic theme tokens ── */
