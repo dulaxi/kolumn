@@ -7,7 +7,7 @@ import {
   Shield, Sparkles, MousePointerClick, ArrowUpRight,
   Check, Square, AlignLeft, User, Plus, FileText, CheckCircle2,
   LayoutDashboard, Settings, ChevronsRight, SquareKanban, Kanban as LucideKanban,
-  ChevronLeft, ChevronRight, Hash,
+  ChevronLeft, ChevronRight, Hash, Menu, X,
 } from 'lucide-react'
 import { SiGmail } from 'react-icons/si'
 import { BsSlack, BsMicrosoftTeams } from 'react-icons/bs'
@@ -1807,6 +1807,68 @@ function HeroAuthCard() {
   )
 }
 
+function MobileNav() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  return (
+    <nav className="sticky top-0 z-50 bg-[#FAF8F6]">
+      {/* Desktop nav */}
+      <div className="hidden sm:flex items-center justify-between max-w-[90rem] mx-auto" style={{ width: 'calc(100% - (2 * clamp(2rem, 1.43rem + 2.86vw, 4rem)))' }}>
+        <div className="flex items-center">
+          <Kanban size={30} weight="fill" className="text-[#8BA32E]" />
+          <span className="text-[23px] font-[450] text-[#1B1B18] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
+        </div>
+        <div className="flex items-center gap-3 py-6">
+          <Link
+            to="/login"
+            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal text-[#5C5C57] hover:text-[#1B1B18] border-[0.5px] border-[#E0DBD5] rounded-lg transition-all duration-200"
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/signup"
+            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal bg-[#1B1B18] text-white rounded-lg overflow-hidden transition-transform will-change-transform ease-[cubic-bezier(0.165,0.85,0.45,1)] duration-150 hover:scale-y-[1.015] hover:scale-x-[1.005]"
+          >
+            Get started
+          </Link>
+        </div>
+      </div>
+
+      {/* Mobile nav */}
+      <div className="flex sm:hidden items-center justify-between px-5 py-4">
+        <div className="flex items-center">
+          <Kanban size={26} weight="fill" className="text-[#8BA32E]" />
+          <span className="text-[20px] font-[450] text-[#1B1B18] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
+        </div>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-[#5C5C57] hover:bg-[#E8E2DB] transition-colors"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="sm:hidden border-t border-[#E8E2DB] bg-[#FAF8F6] px-5 pb-4 pt-3 flex flex-col gap-2 animate-dropdown">
+          <Link
+            to="/login"
+            className="flex items-center justify-center h-10 text-[15px] font-normal text-[#5C5C57] border border-[#E0DBD5] rounded-lg transition-colors hover:text-[#1B1B18]"
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/signup"
+            className="flex items-center justify-center h-10 text-[15px] font-normal bg-[#1B1B18] text-white rounded-lg"
+          >
+            Get started
+          </Link>
+        </div>
+      )}
+    </nav>
+  )
+}
+
 export default function LandingPage() {
   const user = useAuthStore((s) => s.user)
   const loading = useAuthStore((s) => s.loading)
@@ -1833,28 +1895,7 @@ export default function LandingPage() {
     <div className={`landing-font min-h-screen bg-[#FAF8F6] transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
 
       {/* ─── Nav ─── */}
-      <nav className="sticky top-0 z-50 bg-[#FAF8F6]">
-        <div className="flex items-center justify-between max-w-[90rem] mx-auto" style={{ width: 'calc(100% - (2 * clamp(2rem, 1.43rem + 2.86vw, 4rem)))' }}>
-          <div className="flex items-center">
-            <Kanban size={30} weight="fill" className="text-[#8BA32E]" />
-            <span className="text-[23px] font-[450] text-[#1B1B18] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
-          </div>
-          <div className="flex items-center gap-3 py-6">
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal text-[#5C5C57] hover:text-[#1B1B18] border-[0.5px] border-[#E0DBD5] rounded-lg transition-all duration-200"
-            >
-              Sign in
-            </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal bg-[#1B1B18] text-white rounded-lg overflow-hidden transition-transform will-change-transform ease-[cubic-bezier(0.165,0.85,0.45,1)] duration-150 hover:scale-y-[1.015] hover:scale-x-[1.005]"
-            >
-              Get started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <MobileNav />
 
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
