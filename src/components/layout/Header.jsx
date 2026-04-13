@@ -129,7 +129,7 @@ export default function Header({ title }) {
 
           {/* Mobile search results */}
           {showDropdown && (
-            <div className="absolute left-0 right-0 top-full bg-[var(--surface-card)] border-t border-[var(--border-default)] shadow-lg z-50 max-h-[70vh] overflow-y-auto">
+            <div className="absolute left-0 right-0 top-full bg-[var(--surface-card)] border-t-0.5 border-[var(--border-default)] shadow-[0_4px_16px_rgba(0,0,0,0.1)] z-50 max-h-[70vh] overflow-y-auto">
               {!hasResults && (
                 <p className="px-4 py-3 text-sm text-[var(--text-muted)]">No results found</p>
               )}
@@ -232,14 +232,14 @@ export default function Header({ title }) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg z-50 overflow-hidden animate-dropdown">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border-subtle)]">
+            <div className="absolute right-0 top-full mt-1.5 w-80 bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.1)] z-50 overflow-hidden animate-dropdown">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b-0.5 border-[var(--border-subtle)]">
                 <span className="text-sm font-semibold text-[var(--text-primary)]">Notifications</span>
                 {unreadCount > 0 && (
                   <button
                     type="button"
                     onClick={markAllAsRead}
-                    className="text-[11px] font-medium text-[#A8BA32] hover:text-[#A8BA32]"
+                    className="text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   >
                     Mark all read
                   </button>
@@ -270,7 +270,7 @@ export default function Header({ title }) {
                           }, 100)
                         }
                       }}
-                      className={`flex items-start gap-2.5 w-full px-4 py-2.5 text-left hover:bg-[var(--surface-raised)] transition-colors ${!n.read ? 'bg-[var(--accent-lime-wash)]/50' : ''}`}
+                      className={`flex items-start gap-2.5 w-full px-4 py-2.5 text-left hover:bg-[var(--surface-raised)] transition-colors ${!n.read ? 'bg-[var(--surface-raised)]' : ''}`}
                     >
                       <div className="mt-0.5 shrink-0">{icon}</div>
                       <div className="flex-1 min-w-0">
@@ -313,8 +313,8 @@ export default function Header({ title }) {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-full mt-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg py-1 z-50 w-48 animate-dropdown">
-            <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
+          <div className="absolute right-0 top-full mt-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.1)] py-1 z-50 w-48 animate-dropdown">
+            <div className="px-3 py-2 border-b-0.5 border-[var(--border-subtle)]">
               <p className="text-sm font-medium text-[var(--text-primary)] truncate">{profile?.display_name || 'User'}</p>
               <p className="text-xs text-[var(--text-muted)] truncate">{profile?.email || ''}</p>
             </div>
