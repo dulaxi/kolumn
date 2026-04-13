@@ -223,13 +223,13 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   }
 
   return (
-    <div className={`fixed bg-[var(--surface-card)] border-l border-[var(--border-default)] flex flex-col z-20 ${
+    <div className={`fixed bg-[var(--surface-card)] border-l-[0.5px] border-[var(--border-default)] flex flex-col z-20 ${
       isMobile
         ? 'inset-0'
         : 'top-16 right-0 bottom-0 w-[340px] lg:w-[420px] animate-slide-in-right'
     }`}>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 border-b border-[var(--border-subtle)]">
+      <div className="flex items-center justify-between px-5 py-2.5 border-b-[0.5px] border-[var(--border-subtle)]">
         <div className="flex items-center gap-1">
           {isMobile && (
             <button
@@ -334,7 +334,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             onChange={(e) => { setTitle(e.target.value); scheduleSave() }}
             maxLength={200}
             aria-label="Task name"
-            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[#8E8E89] ${card.completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}
+            className={`text-lg font-semibold bg-transparent border-none focus:outline-none w-full placeholder-[var(--text-faint)] ${card.completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}
             placeholder="Task name"
           />
         </div>
@@ -359,7 +359,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         />
 
         {/* Description */}
-        <div className="px-5 pt-5 pb-2 border-t border-[var(--border-subtle)] mt-1">
+        <div className="px-5 pt-5 pb-2 border-t-[0.5px] border-[var(--border-subtle)] mt-1">
           <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Description</label>
           <textarea
             value={description}
@@ -367,7 +367,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             rows={4}
             maxLength={5000}
             placeholder="Add details about this task..."
-            className="w-full text-sm text-[var(--text-secondary)] rounded-lg px-3 py-2 resize-none border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-lime-wash)] placeholder-[#8E8E89]"
+            className="w-full text-sm text-[var(--text-secondary)] rounded-xl px-3 py-2 resize-none border-[0.5px] border-[var(--border-subtle)] hover:border-[var(--border-default)] focus:border-[var(--border-default)] focus:outline-none transition-colors placeholder-[var(--text-faint)]"
           />
         </div>
 
