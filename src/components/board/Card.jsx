@@ -1,6 +1,7 @@
 import { useState, memo } from 'react'
 import { format, isPast, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
-import { Calendar, CheckSquare, CheckCircle2, FileText } from 'lucide-react'
+import { CheckCircle2, FileText } from 'lucide-react'
+import { CalendarDot, CheckSquare } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -42,7 +43,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       className={`w-full rounded-xl border-[0.5px] transition-all text-left cursor-pointer flex focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] ${
         isSelected
           ? 'bg-[var(--accent-lime-wash)]/40 border-[var(--accent-lime)]'
-          : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
+          : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
       }`}
     >
       {/* Icon — left center */}
@@ -120,7 +121,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
                     : 'bg-[#EEF2D6] text-[#A8BA32]'
                 }`}
               >
-                <Calendar className="w-3 h-3" />
+                <CalendarDot size={12} weight="bold" />
                 {isToday(dueDateObj) ? 'Today' : isYesterday(dueDateObj) ? 'Yesterday' : isTomorrow(dueDateObj) ? 'Tomorrow' : format(dueDateObj, 'MMM d')}
               </span>
             )}
@@ -138,7 +139,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
                     : 'bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[#E0DBD5]'
                 }`}
               >
-                <CheckSquare className="w-3 h-3" />
+                <CheckSquare size={12} weight="bold" />
                 {checkedCount}/{totalCount}
               </button>
             )}
