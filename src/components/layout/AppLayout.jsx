@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import WorkspaceSidebar from './WorkspaceSidebar'
 import Header from './Header'
 import SearchDialog from '../SearchDialog'
 import BottomTabBar from './BottomTabBar'
@@ -27,6 +28,7 @@ const pageTitles = {
 
 export default function AppLayout() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed)
+  const workspaceSidebarOpen = useSettingsStore((s) => s.workspaceSidebarOpen)
   const theme = useSettingsStore((s) => s.theme)
   const font = useSettingsStore((s) => s.font)
   const isDesktop = useIsDesktop()
@@ -203,9 +205,14 @@ export default function AppLayout() {
       <InlineErrorBoundary name="sidebar">
         <Sidebar />
       </InlineErrorBoundary>
+      <WorkspaceSidebar />
       <div
         className={`flex-1 min-h-0 flex flex-col transition-all duration-200 ${
-          isDesktop ? (collapsed ? 'ml-12' : 'ml-[287px]') : 'ml-0'
+          isDesktop
+            ? workspaceSidebarOpen
+              ? 'ml-[calc(3rem+280px)] xl:ml-[calc(3rem+320px)]'
+              : collapsed ? 'ml-12' : 'ml-[287px]'
+            : 'ml-0'
         }`}
       >
         <InlineErrorBoundary name="header">

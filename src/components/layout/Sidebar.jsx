@@ -45,6 +45,8 @@ export default function Sidebar() {
   const setSidebarCollapsed = useSettingsStore((s) => s.setSidebarCollapsed)
   const mobileMenuOpen = useSettingsStore((s) => s.mobileMenuOpen)
   const closeMobileMenu = useSettingsStore((s) => s.closeMobileMenu)
+  const toggleWorkspaceSidebar = useSettingsStore((s) => s.toggleWorkspaceSidebar)
+  const workspaceSidebarOpen = useSettingsStore((s) => s.workspaceSidebarOpen)
   const isDesktop = useIsDesktop()
   const isWide = useMediaQuery('(min-width: 1280px)')
 
@@ -140,10 +142,9 @@ export default function Sidebar() {
 
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { to: '/workspace', icon: Users, label: 'Workspace', badge: invitationCount },
             { to: '/calendar', icon: Calendar, label: 'Calendar' },
             { to: '/notes', icon: StickyNote, label: 'Notes' },
-          ].map(({ to, icon: Icon, label, badge }) => (
+          ].map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -152,31 +153,75 @@ export default function Sidebar() {
               className={({ isActive }) =>
                 `flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
                   isActive
-                    ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                    ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
                     : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
                 } ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`
               }
             >
               <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
                 <Icon className="w-4 h-4 shrink-0" />
-                {showCollapsed && badge > 0 && (
+              </span>
+              {!showCollapsed && <span className="truncate flex-1">{label}</span>}
+            </NavLink>
+          ))}
+
+          {/* Workspace — toggles sub-sidebar + navigates to /workspace on desktop */}
+          {isDesktop ? (
+            <button
+              type="button"
+              onClick={() => {
+                toggleWorkspaceSidebar()
+                if (!workspaceSidebarOpen) navigate('/workspace')
+              }}
+              title={showCollapsed ? 'Workspace' : undefined}
+              className={`flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
+                workspaceSidebarOpen || location.pathname === '/workspace'
+                  ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+              } ${showCollapsed ? 'justify-center px-2 w-full' : 'gap-3 py-1.5 px-4 w-full'}`}
+            >
+              <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                <Users className="w-4 h-4 shrink-0" />
+                {showCollapsed && invitationCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-[#C2D64A] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    {badge > 9 ? '9+' : badge}
+                    {invitationCount > 9 ? '9+' : invitationCount}
                   </span>
                 )}
               </span>
               {!showCollapsed && (
                 <>
-                  <span className="truncate flex-1">{label}</span>
-                  {badge > 0 && (
-                    <span className="text-[10px] font-semibold bg-[var(--accent-lime-wash)] text-[#A8BA32] px-1.5 py-0.5 rounded-full">
-                      {badge}
+                  <span className="truncate flex-1 text-left">Workspace</span>
+                  {invitationCount > 0 && (
+                    <span className="text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full">
+                      {invitationCount}
                     </span>
                   )}
                 </>
               )}
+            </button>
+          ) : (
+            <NavLink
+              to="/workspace"
+              onClick={closeMobileMenu}
+              className={({ isActive }) =>
+                `flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
+                  isActive
+                    ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                } gap-3 py-1.5 px-4`
+              }
+            >
+              <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                <Users className="w-4 h-4 shrink-0" />
+              </span>
+              <span className="truncate flex-1">Workspace</span>
+              {invitationCount > 0 && (
+                <span className="text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full">
+                  {invitationCount}
+                </span>
+              )}
             </NavLink>
-          ))}
+          )}
         </div>
 
         {/* ── Boards section ── */}
