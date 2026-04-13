@@ -1,7 +1,7 @@
 import { useState, memo } from 'react'
 import { format, isPast, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
-import { CheckCircle2, FileText } from 'lucide-react'
-import { CalendarDot, CheckSquare } from '@phosphor-icons/react'
+import { CheckCircle2 } from 'lucide-react'
+import { CalendarDot, CheckSquare, FileText } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -51,9 +51,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         <div className="w-6 h-6 rounded-[6.48px] border-0.5 border-[var(--border-default)] bg-[var(--color-cream)] shadow-sm flex items-center justify-center">
           <div className="w-4 h-4 flex items-center justify-center">
             {displayIcon ? (
-              <DynamicIcon name={displayIcon} className="w-4 h-4 text-[var(--color-mist)]" />
+              <DynamicIcon name={displayIcon} className="w-4 h-4 text-[var(--text-primary)]" />
             ) : (
-              <FileText className="w-4 h-4 text-[var(--color-mist)]" />
+              <FileText size={16} weight="regular" className="text-[var(--text-primary)]" />
             )}
           </div>
         </div>
