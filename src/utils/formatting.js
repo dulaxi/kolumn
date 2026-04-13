@@ -42,6 +42,11 @@ export function getAvatarColor(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
+export function getAvatarTextColor(bgClass) {
+  const darkBgs = ['bg-[#1B1B18]', 'bg-[#5C5C57]', 'bg-[#7A5C44]', 'bg-[#8B7355]']
+  return darkBgs.includes(bgClass) ? 'text-white' : 'text-[#1B1B18]'
+}
+
 export function getInitials(name) {
   return name
     .split(' ')

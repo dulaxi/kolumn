@@ -11,7 +11,7 @@ import DynamicIcon from './DynamicIcon'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { useNotificationStore } from '../../store/notificationStore'
 import { useTemplateStore } from '../../store/templateStore'
-import { getAvatarColor, getInitials } from '../../utils/formatting'
+import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
 import CardDetailFields from './CardDetailFields'
 import CardDetailChecklist from './CardDetailChecklist'
 import CardDetailComments from './CardDetailComments'
@@ -216,8 +216,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
       )
     }
     return (
-      <span className={`${size} rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white ${getAvatarColor(name)}`}>
-        {getInitials(name)}
+      <span className={`${size} rounded-full shrink-0 flex items-center justify-center text-[10px] font-heading ${getAvatarColor(name)} ${getAvatarTextColor(getAvatarColor(name))}`}>
+        {getInitials(name).toLowerCase()}
       </span>
     )
   }
