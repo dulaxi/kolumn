@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
-import { X, Plus, Check, User, ArrowLeft, MoreVertical, Trash2, Copy, Bookmark, Calendar, CheckCircle2, Flag } from 'lucide-react'
+import { X, Plus, Check, User, ArrowLeft, MoreVertical, Trash2, Copy, Bookmark, Calendar, CheckCircle2, Flag, Paperclip, Upload, FileIcon, Image as ImageIcon, Download } from 'lucide-react'
 import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
 import { FileText } from '@phosphor-icons/react'
 import DynamicIcon from './DynamicIcon'
@@ -59,6 +59,13 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const addTemplate = useTemplateStore((s) => s.addTemplate)
   const boardName = useBoardStore((s) => s.boards[s.cards[cardId]?.board_id]?.name || '—')
   const statusName = useBoardStore((s) => s.columns[s.cards[cardId]?.column_id]?.title || '—')
+  const attachmentItems = useBoardStore((s) => s.attachments[cardId])
+  const fetchAttachments = useBoardStore((s) => s.fetchAttachments)
+  const uploadAttachment = useBoardStore((s) => s.uploadAttachment)
+  const deleteAttachment = useBoardStore((s) => s.deleteAttachment)
+  const getAttachmentUrl = useBoardStore((s) => s.getAttachmentUrl)
+  const user = useAuthStore((s) => s.user)
+  const profile = useAuthStore((s) => s.profile)
   const isMobile = useIsMobile()
 
   const [title, setTitle] = useState(card?.title || '')
@@ -99,6 +106,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         if (cancelled || error) return
         setBoardMemberNames((data || []).map((m) => m.profiles?.display_name).filter(Boolean))
       })
+    fetchAttachments(cardId)
     return () => { cancelled = true }
   }, [cardId])
 
@@ -189,6 +197,29 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             All cards
           </button>
           <div className="flex items-center gap-1 ml-auto">
+            {/* Attach file */}
+            <label
+              className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+              title="Attach files"
+            >
+              <Paperclip className="w-4 h-4" />
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || [])
+                  for (const file of files) {
+                    try {
+                      await uploadAttachment(cardId, file, user?.id)
+                    } catch (err) {
+                      showToast.error(`Failed to upload ${file.name}`)
+                    }
+                  }
+                  e.target.value = ''
+                }}
+              />
+            </label>
             {/* Due date */}
             <div className="relative">
               <button
@@ -231,7 +262,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                     <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Copy className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Duplicate</span></div>
                   </div>
                   <div role="menuitem" onClick={() => { addTemplate({ name: card.title, title: card.title, description: card.description || '', priority: card.priority || 'medium', labels: card.labels || [], checklist: (card.checklist || []).map((item) => ({ text: item.text, done: false })) }); showToast.success('Saved as template'); setShowMenu(false) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
-                    <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bookmark className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Save template</span></div>
+                    <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bookmark className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Template</span></div>
                   </div>
                   <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />
                   <div role="menuitem" onClick={() => { deleteCard(cardId); onClose(); setShowMenu(false) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[#7A5C44]/10 text-[#7A5C44] text-xs">
@@ -298,15 +329,15 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               {/* Labels */}
               {labels.map((label, idx) => (
                 editingLabelIdx === idx ? (
-                  <span key={`${label.text}-${label.color}-edit`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 rounded-xl text-xs lowercase border border-[var(--border-default)]">
+                  <span key={`${label.text}-${label.color}-edit`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 rounded-lg text-xs lowercase border border-[var(--border-default)]">
                     <span className="invisible px-2">/{editingLabelText || label.text}</span>
                     <input value={editingLabelText} onChange={(e) => setEditingLabelText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { const t = editingLabelText.trim(); if (t) { setLabels(labels.map((l, i) => i === idx ? { ...l, text: t } : l)); scheduleSave() }; setEditingLabelIdx(null) } else if (e.key === 'Escape') { setEditingLabelIdx(null) } }}
                       onBlur={() => { const t = editingLabelText.trim(); if (t) { setLabels(labels.map((l, i) => i === idx ? { ...l, text: t } : l)); scheduleSave() }; setEditingLabelIdx(null) }}
-                      autoFocus className="absolute inset-0 h-full bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-xl focus:outline-none lowercase" style={{ width: '100%' }} />
+                      autoFocus className="absolute inset-0 h-full bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-lg focus:outline-none lowercase" style={{ width: '100%' }} />
                   </span>
                 ) : (
-                  <span key={`${label.text}-${label.color}`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 px-2 rounded-xl text-xs lowercase group/label cursor-pointer" onClick={() => { setEditingLabelIdx(idx); setEditingLabelText(label.text) }}>
+                  <span key={`${label.text}-${label.color}`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 px-2 rounded-lg text-xs lowercase group/label cursor-pointer" onClick={() => { setEditingLabelIdx(idx); setEditingLabelText(label.text) }}>
                     /{label.text}
                     <button type="button" onClick={(e) => { e.stopPropagation(); setLabels(labels.filter((_, i) => i !== idx)); scheduleSave() }} className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/label:opacity-100 transition-all">
                       <X className="w-2.5 h-2.5" />
@@ -315,11 +346,11 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 )
               ))}
               {showLabelForm ? (
-                <span className="inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 rounded-xl text-xs lowercase border border-[var(--border-default)]">
+                <span className="inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 rounded-lg text-xs lowercase border border-[var(--border-default)]">
                   <input value={newLabelText} onChange={(e) => setNewLabelText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { const t = newLabelText.trim(); if (t) { setLabels([...labels, { text: t, color: newLabelColor }]); setNewLabelText(''); setShowLabelForm(false); scheduleSave() } } else if (e.key === 'Escape') { setShowLabelForm(false); setNewLabelText('') } }}
                     onBlur={() => { const t = newLabelText.trim(); if (t) { setLabels([...labels, { text: t, color: newLabelColor }]); setNewLabelText(''); scheduleSave() }; setShowLabelForm(false) }}
-                    autoFocus placeholder="/label" className="h-full bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-xl focus:outline-none lowercase w-16" />
+                    autoFocus placeholder="/label" className="h-full bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-lg focus:outline-none lowercase w-16" />
                 </span>
               ) : (
                 <button type="button" onClick={() => setShowLabelForm(true)} className="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-lg text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors">
@@ -329,18 +360,29 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             </div>
           </div>
           {/* Assignee — right aligned */}
+          {(() => {
+            const isMe = profile?.display_name && assignee.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
+            const lightColors = ['bg-[#8E8E89]', 'bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]', 'bg-[#C27A4A]']
+            const iconText = lightColors.includes(profile?.color) ? 'text-[#1B1B18]' : 'text-white'
+            return (
           <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => { setShowAssigneePicker(!showAssigneePicker); setAssigneeSearch('') }}
               className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                assignee.trim()
+                isMe && profile?.icon
+                  ? `${iconText} ${profile.color}`
+                  : assignee.trim()
                   ? `${getAvatarColor(assignee)} text-[9px] font-bold text-white`
                   : 'bg-[var(--surface-hover)] text-[var(--text-faint)] hover:text-[var(--text-muted)]'
               }`}
               title={assignee.trim() || 'Assign someone'}
             >
-              {assignee.trim() ? getInitials(assignee) : <User className="w-3.5 h-3.5" />}
+              {isMe && profile?.icon
+                ? <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
+                : assignee.trim()
+                ? getInitials(assignee)
+                : <User className="w-3.5 h-3.5" />}
             </button>
             <button
               type="button"
@@ -390,6 +432,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               </div>
             )}
           </div>
+          )
+          })()}
         </div>
 
         {/* Content */}
@@ -439,6 +483,76 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               />
             </div>
           </div>
+
+          {/* Files — only shown when files exist */}
+          {attachmentItems && attachmentItems.length > 0 && (
+          <div className="w-full py-4 mt-4 border-t-0.5 border-[var(--border-subtle)]">
+            <div className="h-6 w-full flex flex-row items-center justify-between gap-4 mb-1">
+              <h3 className="text-[var(--text-secondary)] text-sm font-semibold">Files</h3>
+            </div>
+            {(
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3 mt-3">
+                {attachmentItems.map((file) => {
+                  const ext = (file.file_name || '').split('.').pop()?.toLowerCase() || 'file'
+                  const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)
+                  return (
+                    <li key={file.id} className="relative group/file">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const url = await getAttachmentUrl(file.storage_path)
+                            if (url) window.open(url, '_blank')
+                          } catch (err) {
+                            showToast.error('Failed to open file')
+                          }
+                        }}
+                        className="w-full rounded-lg text-left block cursor-pointer transition-all border border-[var(--color-sand)] flex flex-col justify-between gap-2.5 overflow-hidden px-2.5 py-2 bg-[var(--surface-card)] hover:border-[var(--color-mist)] shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.04)]"
+                        style={{ height: 120, minWidth: '100%' }}
+                        aria-label={`${file.file_name}, ${ext}`}
+                      >
+                        <div className="flex flex-col gap-1 min-h-0">
+                          <h3 className="text-[12px] break-words text-[var(--text-primary)] line-clamp-3">
+                            {file.file_name}
+                          </h3>
+                          {file.file_size > 0 && (
+                            <p className="text-[10px] line-clamp-1 break-words text-[var(--text-faint)]">
+                              {file.file_size < 1024 ? `${file.file_size} B` : file.file_size < 1048576 ? `${(file.file_size / 1024).toFixed(1)} KB` : `${(file.file_size / 1048576).toFixed(1)} MB`}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <div className="relative flex flex-row items-center gap-1 justify-between">
+                            <div className="flex flex-row gap-1 shrink min-w-0">
+                              <div className="min-w-0 h-[18px] flex flex-row items-center justify-center gap-0.5 px-1 border-0.5 border-[var(--border-default)] shadow-sm rounded bg-[var(--surface-card)]/70 backdrop-blur-sm font-medium">
+                                <p className="uppercase truncate text-[var(--text-secondary)] text-[11px] leading-[13px]">{ext}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                      {/* Delete badge on hover */}
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          try {
+                            await deleteAttachment(cardId, file.id, file.storage_path)
+                          } catch (err) {
+                            showToast.error('Failed to delete')
+                          }
+                        }}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[#7A5C44] hover:bg-[var(--surface-hover)] opacity-0 group-hover/file:opacity-100 transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+          )}
         </div>
       </div>
     </div>
