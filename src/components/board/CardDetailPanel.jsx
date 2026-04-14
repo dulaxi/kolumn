@@ -7,6 +7,7 @@ import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { supabase } from '../../lib/supabase'
 import { useIsMobile } from '../../hooks/useMediaQuery'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import IconPicker from './IconPicker'
 import { getAvatarColor, getInitials } from '../../utils/formatting'
 import { showToast } from '../../utils/toast'
@@ -74,9 +75,19 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const [checklist, setChecklist] = useState(card?.checklist ? card.checklist.map((item) => ({ ...item })) : [])
   const [newCheckItem, setNewCheckItem] = useState('')
   const [priority, setPriority] = useState(card?.priority || 'medium')
-  const [showPriorityPicker, setShowPriorityPicker] = useState(false)
   const [dueDate, setDueDate] = useState(card?.due_date || '')
-  const [editingDueDate, setEditingDueDate] = useState(false)
+  // Single openMenu value: 'menu' | 'priority' | 'due' | 'assignee' | 'icon' | null
+  const [openMenu, setOpenMenu] = useState(null)
+  const toggleMenu = (name) => setOpenMenu((cur) => cur === name ? null : name)
+
+  useEffect(() => {
+    if (!openMenu) return
+    const handler = (e) => {
+      if (!e.target.closest('[data-menu-root]')) setOpenMenu(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [openMenu])
   const titleRef = useRef(null)
   const [labels, setLabels] = useState(card?.labels ? [...card.labels] : [])
   const [showLabelForm, setShowLabelForm] = useState(false)
@@ -84,10 +95,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const [newLabelColor, setNewLabelColor] = useState('blue')
   const [editingLabelIdx, setEditingLabelIdx] = useState(null)
   const [editingLabelText, setEditingLabelText] = useState('')
-  const [showIconPicker, setShowIconPicker] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
   const [assignee, setAssignee] = useState(card?.assignee_name || '')
-  const [showAssigneePicker, setShowAssigneePicker] = useState(false)
   const [assigneeSearch, setAssigneeSearch] = useState('')
   const [boardMemberNames, setBoardMemberNames] = useState([])
 
@@ -197,6 +205,51 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             All cards
           </button>
           <div className="flex items-center gap-1 ml-auto">
+            {/* Due date */}
+            <div className="relative" data-menu-root>
+              {(() => {
+                let dateLabel = null
+                let dateColor = 'text-[var(--text-muted)]'
+                if (dueDate) {
+                  const d = new Date(dueDate)
+                  const today = new Date()
+                  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
+                  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+                  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+                  if (sameDay(d, today)) { dateLabel = 'Today'; dateColor = 'text-[#D4A843]' }
+                  else if (sameDay(d, tomorrow)) { dateLabel = 'Tomorrow'; dateColor = 'text-[#A8BA32]' }
+                  else if (sameDay(d, yesterday)) { dateLabel = 'Yesterday'; dateColor = 'text-[#C27A4A]' }
+                  else if (d < today) { dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); dateColor = 'text-[#C27A4A]' }
+                  else { dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); dateColor = 'text-[var(--text-secondary)]' }
+                }
+                return (
+                  <button
+                    type="button"
+                    onClick={() => toggleMenu('due')}
+                    className={`h-8 rounded-md flex items-center gap-1.5 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer ${dueDate ? 'px-2' : 'w-8 justify-center'} ${dateColor}`}
+                    title={dueDate ? `Due: ${new Date(dueDate).toLocaleDateString()}` : 'Set due date'}
+                  >
+                    <Calendar className="w-4 h-4" />
+                    {dateLabel && <span className="text-xs font-medium">{dateLabel}</span>}
+                  </button>
+                )
+              })()}
+              {openMenu === 'due' && (
+                <div className="absolute right-0 top-full mt-1 p-2 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
+                  <input
+                    type="date"
+                    value={dueDate ? dueDate.split('T')[0] : ''}
+                    onChange={(e) => {
+                      setDueDate(e.target.value ? `${e.target.value}T23:59:59` : '')
+                      setOpenMenu(null)
+                      scheduleSave()
+                    }}
+                    autoFocus
+                    className="text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
+                  />
+                </div>
+              )}
+            </div>
             {/* Attach file */}
             <label
               className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
@@ -220,74 +273,48 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 }}
               />
             </label>
-            {/* Due date */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setEditingDueDate(!editingDueDate)}
-                className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-                title={dueDate ? `Due: ${new Date(dueDate).toLocaleDateString()}` : 'Set due date'}
-              >
-                <Calendar className="w-4 h-4" />
-              </button>
-              {editingDueDate && (
-                <div className="absolute right-0 top-full mt-1 p-2 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
-                  <input
-                    type="date"
-                    value={dueDate ? dueDate.split('T')[0] : ''}
-                    onChange={(e) => {
-                      setDueDate(e.target.value ? `${e.target.value}T23:59:59` : '')
-                      setEditingDueDate(false)
-                      scheduleSave()
-                    }}
-                    autoFocus
-                    className="text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
-                  />
-                </div>
-              )}
-            </div>
             {/* 3-dot menu */}
-            <div className="relative">
+            <div className="relative" data-menu-root>
               <button
                 type="button"
-                onClick={() => setShowMenu(!showMenu)}
+                onClick={() => toggleMenu('menu')}
                 aria-label="More options"
                 className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
               >
                 <MoreVertical className="w-5 h-5" />
               </button>
-              {showMenu && (
+              {openMenu === 'menu' && (
                 <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[8rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
-                  <div role="menuitem" onClick={() => { duplicateCard(cardId); showToast.success('Duplicated'); setShowMenu(false) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
+                  <div role="menuitem" onClick={() => { duplicateCard(cardId); showToast.success('Duplicated'); setOpenMenu(null) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
                     <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Copy className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Duplicate</span></div>
                   </div>
-                  <div role="menuitem" onClick={() => { addTemplate({ name: card.title, title: card.title, description: card.description || '', priority: card.priority || 'medium', labels: card.labels || [], checklist: (card.checklist || []).map((item) => ({ text: item.text, done: false })) }); showToast.success('Saved as template'); setShowMenu(false) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
+                  <div role="menuitem" onClick={() => { addTemplate({ name: card.title, title: card.title, description: card.description || '', priority: card.priority || 'medium', labels: card.labels || [], checklist: (card.checklist || []).map((item) => ({ text: item.text, done: false })) }); showToast.success('Saved as template'); setOpenMenu(null) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
                     <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bookmark className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Template</span></div>
                   </div>
                   <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />
-                  <div role="menuitem" onClick={() => { deleteCard(cardId); onClose(); setShowMenu(false) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[#7A5C44]/10 text-[#7A5C44] text-xs">
+                  <div role="menuitem" onClick={() => { deleteCard(cardId); onClose(); setOpenMenu(null) }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[#7A5C44]/10 text-[#7A5C44] text-xs">
                     <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 className="w-4 h-4 shrink-0" /></div><span className="flex-1 truncate">Delete</span></div>
                   </div>
                 </div>
               )}
             </div>
             {/* Priority flag */}
-            <div className="relative">
+            <div className="relative" data-menu-root>
               <button
                 type="button"
-                onClick={() => setShowPriorityPicker(!showPriorityPicker)}
+                onClick={() => toggleMenu('priority')}
                 className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
               >
                 <Flag className="w-4 h-4" fill={priColor} style={{ color: priColor }} />
               </button>
-              {showPriorityPicker && (
+              {openMenu === 'priority' && (
                 <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[8rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
                   {[
                     { value: 'low', label: 'Low', color: '#A8BA32' },
                     { value: 'medium', label: 'Medium', color: '#D4A843' },
                     { value: 'high', label: 'High', color: '#C27A4A' },
                   ].map((opt) => (
-                    <div key={opt.value} role="menuitem" onClick={() => { setPriority(opt.value); setShowPriorityPicker(false); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
+                    <div key={opt.value} role="menuitem" onClick={() => { setPriority(opt.value); setOpenMenu(null); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs">
                       <div className="flex items-center gap-2 w-full"><Flag className="w-3.5 h-3.5 shrink-0" fill={opt.color} style={{ color: opt.color }} /><span className="flex-1 truncate">{opt.label}</span></div>
                     </div>
                   ))}
@@ -300,18 +327,18 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         {/* Icon + Title + Labels + Assignee */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className="relative">
+            <div className="relative" data-menu-root>
               <button
                 type="button"
-                onClick={() => setShowIconPicker(!showIconPicker)}
+                onClick={() => toggleMenu('icon')}
                 className="flex w-10 h-10 shrink-0 items-center justify-center rounded-lg border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] hover:border-[var(--color-mist)] transition-colors cursor-pointer"
               >
                 <div className="w-5 h-5 flex items-center justify-center">
                   {card.icon ? <DynamicIcon name={card.icon} className="w-5 h-5 text-[var(--text-primary)]" /> : <FileText size={20} weight="regular" className="text-[var(--text-muted)]" />}
                 </div>
               </button>
-              {showIconPicker && (
-                <IconPicker value={card.icon} onChange={(icon) => { updateCard(cardId, { icon }); setShowIconPicker(false) }} onClose={() => setShowIconPicker(false)} />
+              {openMenu === 'icon' && (
+                <IconPicker value={card.icon} onChange={(icon) => { updateCard(cardId, { icon }); setOpenMenu(null) }} onClose={() => setOpenMenu(null)} />
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap min-w-0 flex-1">
@@ -365,10 +392,10 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             const lightColors = ['bg-[#8E8E89]', 'bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]', 'bg-[#C27A4A]']
             const iconText = lightColors.includes(profile?.color) ? 'text-[#1B1B18]' : 'text-white'
             return (
-          <div className="relative shrink-0">
+          <div className="relative shrink-0" data-menu-root>
             <button
               type="button"
-              onClick={() => { setShowAssigneePicker(!showAssigneePicker); setAssigneeSearch('') }}
+              onClick={() => { toggleMenu('assignee'); setAssigneeSearch('') }}
               className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                 isMe && profile?.icon
                   ? `${iconText} ${profile.color}`
@@ -386,20 +413,20 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             </button>
             <button
               type="button"
-              onClick={() => { setShowAssigneePicker(!showAssigneePicker); setAssigneeSearch('') }}
+              onClick={() => { toggleMenu('assignee'); setAssigneeSearch('') }}
               className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <Plus className="w-2 h-2" />
             </button>
-            {showAssigneePicker && (
+            {openMenu === 'assignee' && (
               <div className="absolute right-0 top-full mt-2 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[12rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
                 <div className="px-1.5 pb-1.5">
                   <input
                     value={assigneeSearch}
                     onChange={(e) => setAssigneeSearch(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') { const name = assigneeSearch.trim(); if (name) { setAssignee(name); scheduleSave() }; setShowAssigneePicker(false) }
-                      else if (e.key === 'Escape') { setShowAssigneePicker(false) }
+                      if (e.key === 'Enter') { const name = assigneeSearch.trim(); if (name) { setAssignee(name); scheduleSave() }; setOpenMenu(null) }
+                      else if (e.key === 'Escape') { setOpenMenu(null) }
                     }}
                     autoFocus
                     placeholder="Search or type name..."
@@ -408,7 +435,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 </div>
                 <div className="max-h-48 overflow-y-auto">
                   {assignee.trim() && (
-                    <div role="menuitem" onClick={() => { setAssignee(''); setShowAssigneePicker(false); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-muted)]">
+                    <div role="menuitem" onClick={() => { setAssignee(''); setOpenMenu(null); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-muted)]">
                       <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X className="w-3.5 h-3.5" /></div><span className="flex-1 truncate">Unassign</span></div>
                     </div>
                   )}
@@ -416,14 +443,14 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   {boardMemberNames
                     .filter((m) => !assigneeSearch.trim() || m.toLowerCase().includes(assigneeSearch.trim().toLowerCase()))
                     .map((member) => (
-                      <div key={member} role="menuitem" onClick={() => { setAssignee(member); setShowAssigneePicker(false); scheduleSave() }} className={`min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs ${assignee === member ? 'bg-[var(--surface-hover)] font-medium' : ''}`}>
+                      <div key={member} role="menuitem" onClick={() => { setAssignee(member); setOpenMenu(null); scheduleSave() }} className={`min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs ${assignee === member ? 'bg-[var(--surface-hover)] font-medium' : ''}`}>
                         <div className="flex items-center gap-2 w-full"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${getAvatarColor(member)}`}>{getInitials(member)}</span><span className="flex-1 truncate">{member}</span></div>
                       </div>
                     ))}
                   {assigneeSearch.trim() && !boardMemberNames.some((m) => m.toLowerCase() === assigneeSearch.trim().toLowerCase()) && (
                     <>
                       <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />
-                      <div role="menuitem" onClick={() => { setAssignee(assigneeSearch.trim()); setShowAssigneePicker(false); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-secondary)]">
+                      <div role="menuitem" onClick={() => { setAssignee(assigneeSearch.trim()); setOpenMenu(null); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-secondary)]">
                         <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus className="w-3.5 h-3.5" /></div><span className="flex-1 truncate">Add "{assigneeSearch.trim()}"</span></div>
                       </div>
                     </>
