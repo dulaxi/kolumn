@@ -9,9 +9,28 @@ export const useSettingsStore = create(
       font: 'mona-sans',
       mobileMenuOpen: false,
       favoriteBoards: [],
+      workspaceSidebarOpen: false,
+      _sidebarBeforeWorkspace: false,
       toggleSidebar: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (val) => set({ sidebarCollapsed: val }),
+      openWorkspaceSidebar: () => set((s) => ({
+        workspaceSidebarOpen: true,
+        _sidebarBeforeWorkspace: s.sidebarCollapsed,
+        sidebarCollapsed: true,
+      })),
+      closeWorkspaceSidebar: () => set((s) => ({
+        workspaceSidebarOpen: false,
+        sidebarCollapsed: s._sidebarBeforeWorkspace,
+      })),
+      toggleWorkspaceSidebar: () => {
+        const s = get()
+        if (s.workspaceSidebarOpen) {
+          set({ workspaceSidebarOpen: false, sidebarCollapsed: s._sidebarBeforeWorkspace })
+        } else {
+          set({ workspaceSidebarOpen: true, _sidebarBeforeWorkspace: s.sidebarCollapsed, sidebarCollapsed: true })
+        }
+      },
       toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
       closeMobileMenu: () => set({ mobileMenuOpen: false }),
       setTheme: (theme) => {
