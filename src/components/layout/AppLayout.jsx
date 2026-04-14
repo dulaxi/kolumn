@@ -10,7 +10,7 @@ import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useAuthStore } from '../../store/authStore'
 import { useBoardStore } from '../../store/boardStore'
 import { useNoteStore } from '../../store/noteStore'
-import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { useNotificationStore } from '../../store/notificationStore'
 import { hasLocalData, migrateLocalData } from '../../lib/migrateLocalData'
@@ -55,8 +55,8 @@ export default function AppLayout() {
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
   const unsubscribeAll = useBoardStore((s) => s.unsubscribeAll)
   const fetchNotes = useNoteStore((s) => s.fetchNotes)
-  const fetchInvitations = useWorkspaceStore((s) => s.fetchInvitations)
-  const fetchSharedBoards = useWorkspaceStore((s) => s.fetchSharedBoards)
+  const fetchInvitations = useBoardSharingStore((s) => s.fetchInvitations)
+  const fetchSharedBoards = useBoardSharingStore((s) => s.fetchSharedBoards)
   const fetchWorkspaces = useWorkspacesStore((s) => s.fetchWorkspaces)
   const fetchWorkspaceInvitations = useWorkspacesStore((s) => s.fetchInvitations)
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications)

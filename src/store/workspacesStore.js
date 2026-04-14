@@ -6,9 +6,14 @@ import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
 
 /**
- * workspacesStore — holds the new Workspaces feature (team/org containers).
- * Named "workspacesStore" (plural) to avoid collision with the legacy
- * `workspaceStore` which handles board-level invitations/shared boards.
+ * workspacesStore — the Workspaces feature (team/org containers).
+ *
+ * Tables: `workspaces`, `workspace_members`, `workspace_invitations`.
+ *
+ * Sits alongside `boardSharingStore` which handles the lightweight
+ * per-board sharing flow (`board_members`, `board_invitations`). Boards
+ * can live in either: workspace-scoped (workspace_id set) OR personal
+ * (workspace_id null, optionally shared via board_members).
  */
 export const useWorkspacesStore = create(
   persist(

@@ -22,7 +22,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
-import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { Kanban as PhosphorKanban, SidebarSimple } from '@phosphor-icons/react'
 import DynamicIcon from '../board/DynamicIcon'
@@ -40,7 +40,7 @@ const navItems = [
 ]
 
 export default function Sidebar() {
-  const boardInvitationCount = useWorkspaceStore((s) => s.invitations.length)
+  const boardInvitationCount = useBoardSharingStore((s) => s.invitations.length)
   const workspaceInvitationCount = useWorkspacesStore((s) => s.invitations.length)
   const invitationCount = boardInvitationCount + workspaceInvitationCount
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed)
@@ -68,7 +68,7 @@ export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const sharedBoards = useWorkspaceStore((s) => s.sharedBoards)
+  const sharedBoards = useBoardSharingStore((s) => s.sharedBoards)
   const [boardsOpen, setBoardsOpen] = useState(true)
   const [workspaceOpen, setWorkspaceOpen] = useState(true)
   const [iconPickerBoardId, setIconPickerBoardId] = useState(null)

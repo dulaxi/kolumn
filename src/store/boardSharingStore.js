@@ -5,7 +5,19 @@ import { useBoardStore } from './boardStore'
 import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
 
-export const useWorkspaceStore = create((set, get) => ({
+/**
+ * boardSharingStore — legacy per-board sharing (one-off invites to a single board).
+ *
+ * Distinct from `workspacesStore` which owns the newer team-level Workspaces
+ * feature. Board sharing stays as a lightweight way to share a personal board
+ * without creating a whole workspace (e.g. one-off client access). If board
+ * sharing is ever retired, all of this — plus the `board_members` /
+ * `board_invitations` tables — can be removed in one sweep.
+ *
+ * Renamed from `workspaceStore` in CL-1 so the two concerns don't collide
+ * in imports and so the singular/plural difference stops being load-bearing.
+ */
+export const useBoardSharingStore = create((set, get) => ({
   invitations: [],
   sharedBoards: [],
   loading: false,
@@ -17,8 +29,13 @@ export const useWorkspaceStore = create((set, get) => ({
   // FETCH INVITATIONS
   // ============================================================
   fetchInvitations: async () => {
-    const profile = useAuthStore.getState().profile
-    if (!profile?.email) return
+    // Use user.email (synchronous with user in authStore) instead of
+    // profile.email — profile is a separate round-trip and AppLayout's
+    // [user] effect fires before it lands, which used to cause this
+    // function to silently return with no invitations.
+    const user = useAuthStore.getState().user
+    const email = user?.email?.toLowerCase()
+    if (!email) return
 
     if (get().invitations.length === 0 && get().sharedBoards.length === 0) set({ loading: true })
 
@@ -35,7 +52,7 @@ export const useWorkspaceStore = create((set, get) => ({
           boards(id, name, icon),
           inviter:profiles!board_invitations_invited_by_profiles_fkey(id, display_name, email, color)
         `)
-        .eq('invited_email', profile.email)
+        .eq('invited_email', email)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
@@ -63,14 +80,16 @@ export const useWorkspaceStore = create((set, get) => ({
     if (get().invitations.length === 0 && get().sharedBoards.length === 0) set({ loading: true })
 
     try {
-      // Get boards where the user is a member but NOT the owner
+      // Boards where the user is a member but NOT the owner AND not a workspace
+      // board (workspace boards have their own sidebar section and shouldn't
+      // double-appear under "Shared with me").
       const { data: memberships, error: memberError } = await supabase
         .from('board_members')
         .select(`
           board_id,
           role,
           created_at,
-          boards(id, name, icon, owner_id, created_at)
+          boards(id, name, icon, owner_id, workspace_id, created_at)
         `)
         .eq('user_id', user.id)
         .neq('role', 'owner')
@@ -86,9 +105,15 @@ export const useWorkspaceStore = create((set, get) => ({
         return
       }
 
-      // Collect unique owner IDs and board IDs for enrichment
-      const ownerIds = [...new Set(memberships.map((m) => m.boards?.owner_id).filter(Boolean))]
-      const boardIds = memberships.map((m) => m.board_id)
+      // Filter out workspace boards — they render under their workspace heading
+      const personalShared = memberships.filter((m) => m.boards && !m.boards.workspace_id)
+      const ownerIds = [...new Set(personalShared.map((m) => m.boards?.owner_id).filter(Boolean))]
+      const boardIds = personalShared.map((m) => m.board_id)
+
+      if (boardIds.length === 0) {
+        set({ sharedBoards: [], loading: false })
+        return
+      }
 
       // Fetch owner profiles and member counts in parallel
       const [profilesRes, countsRes] = await Promise.all([
@@ -104,7 +129,6 @@ export const useWorkspaceStore = create((set, get) => ({
       if (profilesRes.error) logError('Failed to fetch owner profiles:', profilesRes.error)
       if (countsRes.error) logError('Failed to fetch member counts:', countsRes.error)
 
-      // Build lookup maps
       const ownerMap = {}
       ;(profilesRes.data || []).forEach((p) => { ownerMap[p.id] = p })
 
@@ -113,18 +137,15 @@ export const useWorkspaceStore = create((set, get) => ({
         countMap[row.board_id] = (countMap[row.board_id] || 0) + 1
       })
 
-      // Enrich shared boards
-      const sharedBoards = memberships
-        .filter((m) => m.boards) // skip if board was deleted
-        .map((m) => {
-          const ownerProfile = ownerMap[m.boards.owner_id]
-          return {
-            ...m.boards,
-            ownerName: ownerProfile?.display_name || 'Unknown',
-            ownerColor: ownerProfile?.color || 'bg-[#E0DBD5]',
-            memberCount: countMap[m.board_id] || 0,
-          }
-        })
+      const sharedBoards = personalShared.map((m) => {
+        const ownerProfile = ownerMap[m.boards.owner_id]
+        return {
+          ...m.boards,
+          ownerName: ownerProfile?.display_name || 'Unknown',
+          ownerColor: ownerProfile?.color || 'bg-[#E0DBD5]',
+          memberCount: countMap[m.board_id] || 0,
+        }
+      })
 
       set({ sharedBoards, loading: false })
     } catch (err) {
