@@ -74,12 +74,21 @@ export default function Sidebar() {
   const [renameValue, setRenameValue] = useState('')
   const [confirmDeleteBoardId, setConfirmDeleteBoardId] = useState(null)
 
-  // Only show boards the user owns in the Boards dropdown (shared boards go under Workspace)
-  const ownedBoards = Object.fromEntries(
-    Object.entries(allBoards).filter(([, b]) => b.owner_id === user?.id)
+  // "Boards" section = personal boards only (owned by me, not tied to a workspace).
+  // Workspace boards live under the Spaces section below.
+  const workspaces = useWorkspacesStore((s) => s.workspaces)
+  const setActiveWorkspace = useWorkspacesStore((s) => s.setActiveWorkspace)
+  const collapsedSpaces = useSettingsStore((s) => s.collapsedSpaces)
+  const toggleSpaceCollapsed = useSettingsStore((s) => s.toggleSpaceCollapsed)
+  const boardsCollapsed = useSettingsStore((s) => s.boardsCollapsed)
+  const toggleBoardsCollapsed = useSettingsStore((s) => s.toggleBoardsCollapsed)
+  const sharedBoardsCollapsed = useSettingsStore((s) => s.sharedBoardsCollapsed)
+  const toggleSharedBoardsCollapsed = useSettingsStore((s) => s.toggleSharedBoardsCollapsed)
+  const personalBoards = Object.values(allBoards).filter(
+    (b) => b.owner_id === user?.id && !b.workspace_id,
   )
-
-  const sortedOwnedBoards = Object.values(ownedBoards)
+  const sortedOwnedBoards = personalBoards
+  const workspaceList = Object.values(workspaces)
 
   const isBoardsActive = location.pathname.startsWith('/boards')
 
@@ -233,32 +242,49 @@ export default function Sidebar() {
         {/* ── Boards section ── */}
         {!showCollapsed && (
           <div className="pt-4">
-            <div className="flex items-center justify-between px-4 mb-1">
-              <span className="text-xs text-[var(--text-muted)] select-none">Boards</span>
-              <button
-                type="button"
-                onClick={() => {
-                  navigate('/boards')
-                  let attempts = 0
-                  let handled = false
-                  const onHandled = () => { handled = true }
-                  window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
-                  const tryDispatch = () => {
-                    if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
-                    window.dispatchEvent(new CustomEvent('kolumn:create-board'))
-                    if (++attempts < 10) setTimeout(tryDispatch, 100)
-                  }
-                  setTimeout(tryDispatch, 50)
-                  closeMobileMenu()
-                }}
-                className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
-                title="New board"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-expanded={!boardsCollapsed}
+              onClick={toggleBoardsCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBoardsCollapsed() }
+              }}
+              className="flex items-center justify-between gap-2 px-4 mb-1 group/boards cursor-pointer select-none"
+              title={boardsCollapsed ? 'Show boards' : 'Hide boards'}
+            >
+              <span className="text-xs text-[var(--text-muted)] truncate">Boards</span>
+              <span className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/boards:opacity-75 transition-opacity">
+                  {boardsCollapsed ? 'Show' : 'Hide'}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate('/boards')
+                    let attempts = 0
+                    let handled = false
+                    const onHandled = () => { handled = true }
+                    window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
+                    const tryDispatch = () => {
+                      if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
+                      window.dispatchEvent(new CustomEvent('kolumn:create-board'))
+                      if (++attempts < 10) setTimeout(tryDispatch, 100)
+                    }
+                    setTimeout(tryDispatch, 50)
+                    closeMobileMenu()
+                  }}
+                  className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+                  title="New board"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </span>
             </div>
 
-            <div className="flex flex-col gap-px">
+            <div className={`flex flex-col gap-px ${boardsCollapsed ? 'hidden' : ''}`}>
+              {/* Owned boards */}
               {sortedOwnedBoards.map((board) => (
                 <div
                   key={board.id}
@@ -340,37 +366,142 @@ export default function Sidebar() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
 
-              {/* Shared boards */}
-              {sharedBoards.length > 0 && (
-                <>
-                  <div className="flex items-center px-4 pt-3 mb-1">
-                    <span className="text-xs text-[var(--text-muted)] select-none">Shared with me</span>
-                  </div>
-                  {sharedBoards.map((board) => (
+        {/* ── Workspaces: each workspace name is its own small subheading ── */}
+        {!showCollapsed && workspaceList.map((ws) => {
+          const wsBoards = Object.values(allBoards).filter((b) => b.workspace_id === ws.id)
+          const isCollapsed = !!collapsedSpaces[ws.id]
+          return (
+            <div key={ws.id}>
+              <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={!isCollapsed}
+                onClick={() => toggleSpaceCollapsed(ws.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSpaceCollapsed(ws.id) }
+                }}
+                className="flex items-center justify-between gap-2 px-4 pt-4 mb-1 group/ws cursor-pointer select-none"
+                title={isCollapsed ? `Show ${ws.name} boards` : `Hide ${ws.name} boards`}
+              >
+                <span className="text-xs text-[var(--text-muted)] truncate">
+                  {ws.name}
+                </span>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/ws:opacity-75 transition-opacity">
+                    {isCollapsed ? 'Show' : 'Hide'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate('/boards')
+                      let attempts = 0
+                      let handled = false
+                      const onHandled = () => { handled = true }
+                      window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
+                      const tryDispatch = () => {
+                        if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
+                        window.dispatchEvent(new CustomEvent('kolumn:create-board', { detail: { workspaceId: ws.id } }))
+                        if (++attempts < 10) setTimeout(tryDispatch, 100)
+                      }
+                      setTimeout(tryDispatch, 50)
+                      closeMobileMenu()
+                    }}
+                    className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+                    title={`New board in ${ws.name}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              </div>
+
+              <div className={`flex flex-col gap-px ${isCollapsed ? 'hidden' : ''}`}>
+                {wsBoards.map((board) => {
+                  const canDelete = board.owner_id === user?.id
+                  return (
                     <div
                       key={board.id}
-                      onClick={() => { setActiveBoard(board.id); navigate('/boards'); closeMobileMenu() }}
-                      className={`flex items-center w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 cursor-pointer overflow-hidden ${
+                      onClick={() => handleSelectBoard(board.id)}
+                      className={`flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 group cursor-pointer overflow-hidden ${
                         isBoardsActive && activeBoardId === board.id
                           ? 'text-[var(--text-primary)] bg-[var(--accent-lime-wash)]'
-                          : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                          : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                       }`}
                     >
                       <span className="flex items-center gap-3 truncate">
                         <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
                           {board.icon ? (
-                            <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-muted)]" />
+                            <DynamicIcon name={board.icon} className={`w-4 h-4 ${isBoardsActive && activeBoardId === board.id ? 'text-[#8BA32E]' : 'text-[var(--text-muted)]'}`} />
                           ) : (
-                            <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
+                            <Kanban className={`w-4 h-4 ${isBoardsActive && activeBoardId === board.id ? 'text-[#8BA32E]' : 'text-[var(--text-muted)]'}`} />
                           )}
                         </span>
                         <span className="truncate">{board.name}</span>
                       </span>
+                      {canDelete && (
+                        <span className="flex items-center gap-0.5 shrink-0">
+                          <Trash2
+                            role="button"
+                            aria-label={`Delete board ${board.name}`}
+                            className="w-3.5 h-3.5 text-[var(--text-muted)] hover:text-[#7A5C44] opacity-0 group-hover:opacity-100 shrink-0"
+                            onClick={(e) => handleDeleteBoard(e, board.id)}
+                          />
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </>
-              )}
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* ── Shared with me (always at the bottom) ── */}
+        {!showCollapsed && sharedBoards.length > 0 && (
+          <div className="pt-4">
+            <div
+              role="button"
+              tabIndex={0}
+              aria-expanded={!sharedBoardsCollapsed}
+              onClick={toggleSharedBoardsCollapsed}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSharedBoardsCollapsed() }
+              }}
+              className="flex items-center justify-between gap-2 px-4 mb-1 group/shared cursor-pointer select-none"
+              title={sharedBoardsCollapsed ? 'Show shared boards' : 'Hide shared boards'}
+            >
+              <span className="text-xs text-[var(--text-muted)] truncate">Shared with me</span>
+              <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/shared:opacity-75 transition-opacity">
+                {sharedBoardsCollapsed ? 'Show' : 'Hide'}
+              </span>
+            </div>
+            <div className={`flex flex-col gap-px ${sharedBoardsCollapsed ? 'hidden' : ''}`}>
+              {sharedBoards.map((board) => (
+                <div
+                  key={board.id}
+                  onClick={() => { setActiveBoard(board.id); navigate('/boards'); closeMobileMenu() }}
+                  className={`flex items-center w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 cursor-pointer overflow-hidden ${
+                    isBoardsActive && activeBoardId === board.id
+                      ? 'text-[var(--text-primary)] bg-[var(--accent-lime-wash)]'
+                      : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+                  }`}
+                >
+                  <span className="flex items-center gap-3 truncate">
+                    <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
+                      {board.icon ? (
+                        <DynamicIcon name={board.icon} className="w-4 h-4 text-[var(--text-muted)]" />
+                      ) : (
+                        <Kanban className="w-4 h-4 text-[var(--text-muted)]" />
+                      )}
+                    </span>
+                    <span className="truncate">{board.name}</span>
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}

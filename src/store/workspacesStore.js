@@ -328,7 +328,16 @@ export const useWorkspacesStore = create(
     }),
     {
       name: 'kolumn-workspaces',
-      partialize: (s) => ({ activeWorkspaceId: s.activeWorkspaceId }),
+      // Do NOT persist activeWorkspaceId — each session should start in the
+      // Personal scope. Users opt into a workspace by clicking it in the
+      // sub-sidebar. Persisting across reloads caused personal boards to
+      // appear "missing" when returning to the app with a workspace still
+      // marked active from a prior session.
+      partialize: () => ({}),
+      // Wipe any stale activeWorkspaceId carried over from pre-fix localStorage.
+      onRehydrateStorage: () => (state) => {
+        if (state) state.activeWorkspaceId = null
+      },
     }
   )
 )

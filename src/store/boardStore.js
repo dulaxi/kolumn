@@ -182,7 +182,7 @@ export const useBoardStore = create((set, get) => ({
     }
   },
 
-  addBoard: async (name, icon, customColumns) => {
+  addBoard: async (name, icon, customColumns, workspaceId = null) => {
     if (!boardCreateLimiter()) { showToast.warn('Too many boards created — slow down'); return null }
     const sanitizedName = sanitizeTitle(name) || 'Untitled Board'
 
@@ -192,7 +192,7 @@ export const useBoardStore = create((set, get) => ({
 
     const boardId = crypto.randomUUID()
 
-    const validated = boardInsertSchema.safeParse({ id: boardId, name: sanitizedName, icon: icon || null, owner_id: user.id })
+    const validated = boardInsertSchema.safeParse({ id: boardId, name: sanitizedName, icon: icon || null, owner_id: user.id, workspace_id: workspaceId || null })
     if (!validated.success) {
       logError('Board validation failed:', validated.error.flatten())
       showToast.error('Invalid board data')

@@ -88,7 +88,7 @@ function SkeletonPreview({ columns }) {
   )
 }
 
-export default function CreateBoardModal({ onClose }) {
+export default function CreateBoardModal({ onClose, workspaceId = null }) {
   const isMobile = useIsMobile()
   const addBoard = useBoardStore((s) => s.addBoard)
 
@@ -130,12 +130,12 @@ export default function CreateBoardModal({ onClose }) {
 
     setCreating(true)
     try {
-      const id = await addBoard(trimmed, icon, template.columns)
+      const id = await addBoard(trimmed, icon, template.columns, workspaceId)
       if (id) onClose()
     } finally {
       setCreating(false)
     }
-  }, [name, icon, template, creating, addBoard, onClose])
+  }, [name, icon, template, creating, addBoard, onClose, workspaceId])
 
   const handleKeyDown = useCallback(
     (e) => {

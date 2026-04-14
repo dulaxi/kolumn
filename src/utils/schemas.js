@@ -58,6 +58,7 @@ export const boardInsertSchema = z.object({
   name: requiredTrimmedString(200),
   owner_id: z.string().min(1),
   icon: z.string().nullable().default(null),
+  workspace_id: z.string().nullable().optional(),
 })
 
 // ─────────────────────────────────────────────

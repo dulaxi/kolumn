@@ -13,6 +13,7 @@ export default function BoardsPage() {
   const [filters, setFilters] = useState({ priority: [], assignee: null, label: [], due: null })
   const [sortBy, setSortBy] = useState('manual')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createInWorkspaceId, setCreateInWorkspaceId] = useState(null)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const boards = useBoardStore((s) => s.boards)
 
@@ -40,7 +41,11 @@ export default function BoardsPage() {
       const cardId = await addCard(activeBoardId, firstCol.id, { title: '' })
       if (cardId) setInlineCardId(cardId)
     }
-    const openCreate = () => { setShowCreateModal(true); window.dispatchEvent(new CustomEvent('kolumn:create-board-ack')) }
+    const openCreate = (e) => {
+      setCreateInWorkspaceId(e?.detail?.workspaceId || null)
+      setShowCreateModal(true)
+      window.dispatchEvent(new CustomEvent('kolumn:create-board-ack'))
+    }
     window.addEventListener('kolumn:open-card', openCard)
     window.addEventListener('kolumn:close-panel', closePanel)
     window.addEventListener('kolumn:new-card', newCard)
@@ -121,7 +126,10 @@ export default function BoardsPage() {
       )}
 
       {showCreateModal && (
-        <CreateBoardModal onClose={() => setShowCreateModal(false)} />
+        <CreateBoardModal
+          onClose={() => { setShowCreateModal(false); setCreateInWorkspaceId(null) }}
+          workspaceId={createInWorkspaceId}
+        />
       )}
     </div>
   )
