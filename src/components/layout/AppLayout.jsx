@@ -231,7 +231,7 @@ export default function AppLayout() {
         {/* Page heading — OUTSIDE the scroll container so it stays pinned.
             /boards owns its own heading row (inline with Share/Sort/Filter). */}
         {isDesktop && !['/dashboard', '/workspace', '/boards'].includes(basePath) && (
-          <div className="shrink-0 px-4 sm:px-8 max-w-4xl mx-auto w-full">
+          <div className={`shrink-0 px-4 sm:px-8 w-full ${['/calendar', '/notes'].includes(basePath) ? '' : 'max-w-4xl mx-auto'}`}>
             <header className="flex items-end h-8 md:h-8 shrink-0 mb-[26px]">
               <h1 className="font-heading text-2xl text-[var(--text-primary)] flex items-center gap-2 min-w-0">
                 <span className="truncate">{title}</span>
