@@ -19,7 +19,7 @@ import OfflineBanner from './OfflineBanner'
 import InlineErrorBoundary from '../InlineErrorBoundary'
 
 const pageTitles = {
-  '/dashboard': 'Dashboard',
+  '/dashboard': 'Home',
   '/boards': 'Boards',
   '/calendar': 'Calendar',
   '/notes': 'Notes',

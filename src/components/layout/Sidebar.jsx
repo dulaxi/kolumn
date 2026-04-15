@@ -1,7 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
-  LayoutDashboard,
   Kanban,
   Calendar,
   StickyNote,
@@ -34,7 +33,6 @@ function KolumnLogo({ size = 30 }) {
 }
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/notes', icon: StickyNote, label: 'Notes' },
 ]
@@ -126,14 +124,21 @@ export default function Sidebar() {
             : `w-[287px] ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
         }`}
       >
-      {/* Logo */}
+      {/* Logo — clicks to Home */}
       <div className={`flex items-center ${showCollapsed ? 'justify-center px-1 h-12' : 'gap-2 px-4 h-16'}`}>
-        <KolumnLogo size={showCollapsed ? 22 : 30} />
-        {!showCollapsed && (
-          <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
-            Kolumn
-          </span>
-        )}
+        <button
+          type="button"
+          onClick={() => { closeMobileMenu(); navigate('/dashboard') }}
+          aria-label="Go to Home"
+          className="flex items-center gap-2 cursor-pointer"
+        >
+          <KolumnLogo size={showCollapsed ? 22 : 30} />
+          {!showCollapsed && (
+            <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+              Kolumn
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Nav items */}
@@ -154,7 +159,6 @@ export default function Sidebar() {
           </button>
 
           {[
-            { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { to: '/calendar', icon: Calendar, label: 'Calendar' },
             { to: '/notes', icon: StickyNote, label: 'Notes' },
           ].map(({ to, icon: Icon, label }) => (
