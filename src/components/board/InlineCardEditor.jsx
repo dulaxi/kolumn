@@ -3,12 +3,11 @@ import { CheckCircle2, Check, Plus, X, Calendar, User, Flag } from 'lucide-react
 import { FileText, CalendarDot, CheckSquare } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
-import { useWorkspacesStore } from '../../store/workspacesStore'
-import { supabase } from '../../lib/supabase'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
+import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
 import { parseISO } from 'date-fns'
 import { formatDueDateLabel, dueDateBadgeClass } from '../../utils/dateUtils'
@@ -43,7 +42,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
 
   const [showDescription, setShowDescription] = useState(() => !!card?.description)
   const [newLabelText, setNewLabelText] = useState('')
-  const [boardMemberNames, setBoardMemberNames] = useState([])
+  const boardMemberNames = useBoardMemberNames(card)
   const [assigneeSearch, setAssigneeSearch] = useState('')
   const newLabelTextRef = useRef('')
   newLabelTextRef.current = newLabelText
@@ -56,53 +55,6 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
       }
     }
   })
-
-  // Resolve whether this card's board is scoped to a workspace
-  const board = useBoardStore((s) => (card && s.boards ? s.boards[card.board_id] : null))
-  const workspaceId = board?.workspace_id || null
-  const workspaceMembers = useWorkspacesStore((s) => (workspaceId ? s.members[workspaceId] : null))
-
-  // Fetch assignee list — workspace members when board belongs to a workspace,
-  // otherwise fall back to board_members.
-  useEffect(() => {
-    if (!card) return
-    let cancelled = false
-
-    if (workspaceId) {
-      useWorkspacesStore.getState().fetchMembers(workspaceId)
-      return () => { cancelled = true }
-    }
-
-    // Two-step fetch: board_members → profiles. PostgREST can't auto-embed
-    // profiles here because board_members.user_id FKs to auth.users, not
-    // profiles directly — so the old nested-select returned null and the
-    // picker silently showed no one.
-    ;(async () => {
-      const { data: rows, error } = await supabase
-        .from('board_members')
-        .select('user_id')
-        .eq('board_id', card.board_id)
-      if (cancelled || error || !rows?.length) {
-        if (!cancelled && !error) setBoardMemberNames([])
-        return
-      }
-      const userIds = rows.map((r) => r.user_id)
-      const { data: profiles, error: pErr } = await supabase
-        .from('profiles')
-        .select('id, display_name')
-        .in('id', userIds)
-      if (cancelled || pErr) return
-      setBoardMemberNames((profiles || []).map((p) => p.display_name).filter(Boolean))
-    })()
-    return () => { cancelled = true }
-  }, [card?.board_id, workspaceId])
-
-  // Mirror workspacesStore.members into boardMemberNames for workspace boards
-  useEffect(() => {
-    if (!workspaceId) return
-    const names = (workspaceMembers || []).map((m) => m.display_name).filter(Boolean)
-    setBoardMemberNames(names)
-  }, [workspaceId, workspaceMembers])
 
   const titleRef = useRef(null)
   const rootRef = useRef(null)
