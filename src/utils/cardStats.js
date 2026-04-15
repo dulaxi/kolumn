@@ -1,9 +1,15 @@
 import { isToday, isPast, isYesterday, parseISO, startOfDay, subDays, format } from 'date-fns'
 
 export function computeTaskStats(cards, columns, displayName) {
-  const allCards = Object.values(cards).filter(
-    (c) => !c.archived && c.assignee_name && c.assignee_name === displayName
-  )
+  const allCards = Object.values(cards).filter((c) => {
+    if (c.archived) return false
+    // Multi-assignee: I "own" the card if I'm in assignees[] — falls back
+    // to legacy single assignee_name for un-migrated cards.
+    const names = (c.assignees && c.assignees.length)
+      ? c.assignees
+      : (c.assignee_name ? [c.assignee_name] : [])
+    return names.includes(displayName)
+  })
   const allColumns = Object.values(columns)
 
   const doneColumnIds = new Set(

@@ -118,7 +118,12 @@ export default function AppLayout() {
       let dueToday = 0
       Object.values(cards).forEach((card) => {
         if (card.completed || card.archived || !card.due_date) return
-        if (displayName && card.assignee_name !== displayName) return
+        if (displayName) {
+          const names = (card.assignees && card.assignees.length)
+            ? card.assignees
+            : (card.assignee_name ? [card.assignee_name] : [])
+          if (!names.includes(displayName)) return
+        }
         const dueDateStr = card.due_date.split('T')[0]
         if (dueDateStr < todayStr) overdue++
         else if (dueDateStr === todayStr) dueToday++

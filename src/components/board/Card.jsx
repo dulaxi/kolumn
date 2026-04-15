@@ -9,7 +9,11 @@ import DynamicIcon from './DynamicIcon'
 import { LABEL_BG, PRIORITY_DOT, getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
-  const { title, description, labels, priority, due_date: dueDate, checklist, assignee_name: assignee, task_number: taskNumber, completed, icon } = card
+  const { title, description, labels, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
+  const assignees = (card.assignees && card.assignees.length)
+    ? card.assignees
+    : (card.assignee_name ? [card.assignee_name] : [])
   const displayIcon = iconOverride || icon
   const updateCard = useBoardStore((s) => s.updateCard)
   const profile = useAuthStore((s) => s.profile)
@@ -27,7 +31,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
     updateCard(card.id, { checklist: updated })
   }
   const hasDescription = description && description.trim().length > 0
-  const hasAssignee = assignee && assignee.trim().length > 0
+  const hasAssignee = assignees.length > 0
 
   const dueDateObj = dueDate ? parseISO(dueDate) : null
   const overdue = dueDateObj ? isPast(dueDateObj) : false
@@ -133,22 +137,37 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           </div>
 
           {hasAssignee && (() => {
-            const isMe = profile?.display_name && assignee.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const lightColors = ['bg-[#8E8E89]', 'bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]', 'bg-[#C27A4A]']
+            const isMeName = (n) => profile?.display_name && n.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const iconText = lightColors.includes(profile?.color) ? 'text-[#1B1B18]' : 'text-white'
-            return isMe && profile.icon ? (
-              <span
-                className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ${iconText} ${profile.color}`}
-                title={assignee}
-              >
-                <DynamicIcon name={profile.icon} className="w-3 h-3" />
-              </span>
-            ) : (
-              <span
-                className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[10px] font-heading ${getAvatarColor(assignee)} ${getAvatarTextColor(getAvatarColor(assignee))}`}
-                title={assignee}
-              >
-                {getInitials(assignee).toLowerCase()}
+            const maxVisible = 3
+            const visible = assignees.slice(0, maxVisible)
+            const overflow = Math.max(0, assignees.length - maxVisible)
+            return (
+              <span className="flex -space-x-1.5" title={assignees.join(', ')}>
+                {visible.map((name) => {
+                  const isMe = isMeName(name)
+                  return isMe && profile?.icon ? (
+                    <span
+                      key={name}
+                      className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${iconText} ${profile.color}`}
+                    >
+                      <DynamicIcon name={profile.icon} className="w-3 h-3" />
+                    </span>
+                  ) : (
+                    <span
+                      key={name}
+                      className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] text-[10px] font-heading ${getAvatarColor(name)} ${getAvatarTextColor(getAvatarColor(name))}`}
+                    >
+                      {getInitials(name).toLowerCase()}
+                    </span>
+                  )
+                })}
+                {overflow > 0 && (
+                  <span className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] bg-[var(--surface-hover)] text-[9px] font-medium text-[var(--text-secondary)]">
+                    +{overflow}
+                  </span>
+                )}
               </span>
             )
           })()}

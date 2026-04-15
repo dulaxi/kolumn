@@ -5,7 +5,14 @@ export function filterCards(cards, filters) {
 
   return cards.filter((card) => {
     if (filters.priority?.length && !filters.priority.includes(card.priority)) return false
-    if (filters.assignee && card.assignee_name !== filters.assignee) return false
+    if (filters.assignee) {
+      // Multi-assignee: card matches if any assignee name equals the filter.
+      // Fall back to legacy single assignee_name for un-migrated cards.
+      const names = (card.assignees && card.assignees.length)
+        ? card.assignees
+        : (card.assignee_name ? [card.assignee_name] : [])
+      if (!names.some((n) => n === filters.assignee)) return false
+    }
     if (filters.label?.length && !(card.labels || []).some((l) => filters.label.includes(l.text))) return false
     if (filters.due) {
       const d = card.due_date ? parseISO(card.due_date) : null

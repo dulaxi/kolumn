@@ -98,13 +98,18 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const [newLabelColor, setNewLabelColor] = useState('blue')
   const [editingLabelIdx, setEditingLabelIdx] = useState(null)
   const [editingLabelText, setEditingLabelText] = useState('')
-  const [assignee, setAssignee] = useState(card?.assignee_name || '')
+  // Multi-assignee: array of display names. Falls back to legacy single
+  // assignee_name for cards not yet migrated / re-saved.
+  const initialAssignees = card?.assignees?.length
+    ? card.assignees
+    : (card?.assignee_name ? [card.assignee_name] : [])
+  const [assignees, setAssignees] = useState(initialAssignees)
   const [assigneeSearch, setAssigneeSearch] = useState('')
   const [boardMemberNames, setBoardMemberNames] = useState([])
 
   const isDirtyRef = useRef(false)
   const autoSaveTimerRef = useRef(null)
-  const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', labels: card?.labels ? [...card.labels] : [], assignee: card?.assignee_name || '', dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
+  const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', labels: card?.labels ? [...card.labels] : [], assignees: [...initialAssignees], dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
 
   // Resolve which board this card belongs to, and whether it's scoped to a workspace
   const board = useBoardStore((s) => (card ? s.boards[card.board_id] : null))
@@ -119,15 +124,27 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
       // Workspace board → source assignee list from workspace_members (whole team)
       useWorkspacesStore.getState().fetchMembers(workspaceId)
     } else {
-      // Personal board → original board_members fetch
-      supabase
-        .from('board_members')
-        .select('user_id, profiles(id, display_name)')
-        .eq('board_id', card.board_id)
-        .then(({ data, error }) => {
-          if (cancelled || error) return
-          setBoardMemberNames((data || []).map((m) => m.profiles?.display_name).filter(Boolean))
-        })
+      // Personal board → fetch board_members then profiles in two steps.
+      // The old single-query `profiles(...)` embed returned null because
+      // board_members.user_id FKs to auth.users (not profiles), so PostgREST
+      // can't auto-resolve the join — same problem the workspace fetch had.
+      ;(async () => {
+        const { data: rows, error } = await supabase
+          .from('board_members')
+          .select('user_id')
+          .eq('board_id', card.board_id)
+        if (cancelled || error || !rows?.length) {
+          if (!cancelled && !error) setBoardMemberNames([])
+          return
+        }
+        const userIds = rows.map((r) => r.user_id)
+        const { data: profiles, error: pErr } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', userIds)
+        if (cancelled || pErr) return
+        setBoardMemberNames((profiles || []).map((p) => p.display_name).filter(Boolean))
+      })()
     }
     fetchAttachments(cardId)
     return () => { cancelled = true }
@@ -150,7 +167,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           title: d.title.trim() || card?.title || 'Untitled task',
           description: d.description,
           labels: d.labels,
-          assignee_name: d.assignee.trim(),
+          assignees: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
           priority: d.priority,
@@ -161,7 +178,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   }, [cardId, card?.title])
 
   useEffect(() => {
-    formDataRef.current = { title, description, labels, assignee, dueDate, checklist, priority }
+    formDataRef.current = { title, description, labels, assignees, dueDate, checklist, priority }
   })
 
   useEffect(() => {
@@ -173,7 +190,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           title: d.title.trim() || 'Untitled task',
           description: d.description,
           labels: d.labels,
-          assignee_name: d.assignee.trim(),
+          assignees: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
           priority: d.priority,
@@ -198,7 +215,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const handleSave = () => {
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
     isDirtyRef.current = false
-    updateCard(cardId, { title: title.trim() || card.title, description, labels, assignee_name: assignee.trim(), due_date: dueDate || null, checklist, priority })
+    updateCard(cardId, { title: title.trim() || card.title, description, labels, assignees, due_date: dueDate || null, checklist, priority })
   }
 
   const handleSaveAndClose = () => { handleSave(); onClose() }
@@ -408,72 +425,156 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               )}
             </div>
           </div>
-          {/* Assignee — right aligned */}
+          {/* Assignees — multi-select, right aligned */}
           {(() => {
-            const isMe = profile?.display_name && assignee.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const lightColors = ['bg-[#8E8E89]', 'bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]', 'bg-[#C27A4A]']
+            const isMeName = (n) => profile?.display_name && n.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const iconText = lightColors.includes(profile?.color) ? 'text-[#1B1B18]' : 'text-white'
+            const maxVisible = 3
+            const visible = assignees.slice(0, maxVisible)
+            const overflow = Math.max(0, assignees.length - maxVisible)
+
+            const toggleAssignee = (name) => {
+              const next = assignees.some((a) => a.toLowerCase() === name.toLowerCase())
+                ? assignees.filter((a) => a.toLowerCase() !== name.toLowerCase())
+                : [...assignees, name]
+              setAssignees(next)
+              scheduleSave()
+            }
+
             return (
           <div className="relative shrink-0" data-menu-root>
             <button
               type="button"
               onClick={() => { toggleMenu('assignee'); setAssigneeSearch('') }}
-              className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-                isMe && profile?.icon
-                  ? `${iconText} ${profile.color}`
-                  : assignee.trim()
-                  ? `${getAvatarColor(assignee)} text-[9px] font-bold text-white`
-                  : 'bg-[var(--surface-hover)] text-[var(--text-faint)] hover:text-[var(--text-muted)]'
-              }`}
-              title={assignee.trim() || 'Assign someone'}
+              className="flex items-center cursor-pointer"
+              title={assignees.length === 0 ? 'Assign someone' : assignees.join(', ')}
             >
-              {isMe && profile?.icon
-                ? <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
-                : assignee.trim()
-                ? getInitials(assignee)
-                : <User className="w-3.5 h-3.5" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => { toggleMenu('assignee'); setAssigneeSearch('') }}
-              className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] transition-colors"
-            >
-              <Plus className="w-2 h-2" />
+              {assignees.length === 0 ? (
+                <span className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--surface-hover)] text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors">
+                  <User className="w-3.5 h-3.5" />
+                </span>
+              ) : (
+                <span className="flex -space-x-2">
+                  {visible.map((name) => {
+                    const isMe = isMeName(name)
+                    return (
+                      <span
+                        key={name}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center ring-2 ring-[var(--surface-page)] ${
+                          isMe && profile?.icon
+                            ? `${iconText} ${profile.color}`
+                            : `${getAvatarColor(name)} text-[9px] font-bold text-white`
+                        }`}
+                      >
+                        {isMe && profile?.icon
+                          ? <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
+                          : getInitials(name)}
+                      </span>
+                    )
+                  })}
+                  {overflow > 0 && (
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center ring-2 ring-[var(--surface-page)] bg-[var(--surface-hover)] text-[10px] font-medium text-[var(--text-secondary)]">
+                      +{overflow}
+                    </span>
+                  )}
+                </span>
+              )}
             </button>
             {openMenu === 'assignee' && (
-              <div className="absolute right-0 top-full mt-2 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[12rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[14rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
                 <div className="px-1.5 pb-1.5">
                   <input
                     value={assigneeSearch}
                     onChange={(e) => setAssigneeSearch(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') { const name = assigneeSearch.trim(); if (name) { setAssignee(name); scheduleSave() }; setOpenMenu(null) }
-                      else if (e.key === 'Escape') { setOpenMenu(null) }
+                      if (e.key === 'Enter') {
+                        const name = assigneeSearch.trim()
+                        if (!name) return
+                        // Add if not already there (picker stays open)
+                        if (!assignees.some((a) => a.toLowerCase() === name.toLowerCase())) {
+                          toggleAssignee(name)
+                        }
+                        setAssigneeSearch('')
+                      } else if (e.key === 'Escape') {
+                        setOpenMenu(null)
+                      }
                     }}
                     autoFocus
                     placeholder="Search or type name..."
                     className="w-full text-sm rounded-lg px-2 py-1.5 border border-[var(--border-default)] hover:border-[var(--color-mist)] focus:border-[var(--border-focus)] focus:outline-none placeholder-[var(--text-faint)]"
                   />
                 </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {assignee.trim() && (
-                    <div role="menuitem" onClick={() => { setAssignee(''); setOpenMenu(null); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-muted)]">
-                      <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X className="w-3.5 h-3.5" /></div><span className="flex-1 truncate">Unassign</span></div>
-                    </div>
-                  )}
-                  {assignee.trim() && boardMemberNames.length > 0 && <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />}
-                  {boardMemberNames
-                    .filter((m) => !assigneeSearch.trim() || m.toLowerCase().includes(assigneeSearch.trim().toLowerCase()))
-                    .map((member) => (
-                      <div key={member} role="menuitem" onClick={() => { setAssignee(member); setOpenMenu(null); scheduleSave() }} className={`min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs ${assignee === member ? 'bg-[var(--surface-hover)] font-medium' : ''}`}>
-                        <div className="flex items-center gap-2 w-full"><span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${getAvatarColor(member)}`}>{getInitials(member)}</span><span className="flex-1 truncate">{member}</span></div>
+                <div className="max-h-56 overflow-y-auto">
+                  {/* Already-selected external names (not in board member list) shown first */}
+                  {assignees
+                    .filter((a) => !boardMemberNames.some((m) => m.toLowerCase() === a.toLowerCase()))
+                    .filter((a) => !assigneeSearch.trim() || a.toLowerCase().includes(assigneeSearch.trim().toLowerCase()))
+                    .map((name) => (
+                      <div
+                        key={`ext-${name}`}
+                        role="menuitem"
+                        onClick={() => toggleAssignee(name)}
+                        className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs bg-[var(--surface-hover)] font-medium"
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${getAvatarColor(name)}`}>{getInitials(name)}</span>
+                          <span className="flex-1 truncate">{name}</span>
+                        </div>
+                        <Check className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
                       </div>
                     ))}
-                  {assigneeSearch.trim() && !boardMemberNames.some((m) => m.toLowerCase() === assigneeSearch.trim().toLowerCase()) && (
+                  {/* Board/workspace members */}
+                  {boardMemberNames
+                    .filter((m) => !assigneeSearch.trim() || m.toLowerCase().includes(assigneeSearch.trim().toLowerCase()))
+                    .map((member) => {
+                      const checked = assignees.some((a) => a.toLowerCase() === member.toLowerCase())
+                      return (
+                        <div
+                          key={member}
+                          role="menuitem"
+                          onClick={() => toggleAssignee(member)}
+                          className={`min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs ${checked ? 'bg-[var(--surface-hover)] font-medium' : ''}`}
+                        >
+                          <div className="flex items-center gap-2 w-full">
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${getAvatarColor(member)}`}>{getInitials(member)}</span>
+                            <span className="flex-1 truncate">{member}</span>
+                          </div>
+                          {checked && <Check className="w-3.5 h-3.5 text-[var(--text-secondary)]" />}
+                        </div>
+                      )
+                    })}
+                  {/* Free-text "add" when search doesn't match anyone and not already assigned */}
+                  {assigneeSearch.trim() &&
+                    !boardMemberNames.some((m) => m.toLowerCase() === assigneeSearch.trim().toLowerCase()) &&
+                    !assignees.some((a) => a.toLowerCase() === assigneeSearch.trim().toLowerCase()) && (
                     <>
                       <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />
-                      <div role="menuitem" onClick={() => { setAssignee(assigneeSearch.trim()); setOpenMenu(null); scheduleSave() }} className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-secondary)]">
-                        <div className="flex items-center gap-2 w-full"><div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus className="w-3.5 h-3.5" /></div><span className="flex-1 truncate">Add "{assigneeSearch.trim()}"</span></div>
+                      <div
+                        role="menuitem"
+                        onClick={() => { toggleAssignee(assigneeSearch.trim()); setAssigneeSearch('') }}
+                        className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-secondary)]"
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus className="w-3.5 h-3.5" /></div>
+                          <span className="flex-1 truncate">Add "{assigneeSearch.trim()}"</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Clear all */}
+                  {assignees.length > 0 && (
+                    <>
+                      <div role="separator" className="h-[0.5px] bg-[var(--border-subtle)] my-1.5 mx-2" />
+                      <div
+                        role="menuitem"
+                        onClick={() => { setAssignees([]); scheduleSave() }}
+                        className="min-h-7 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs text-[var(--text-muted)]"
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <div style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X className="w-3.5 h-3.5" /></div>
+                          <span className="flex-1 truncate">Clear all</span>
+                        </div>
                       </div>
                     </>
                   )}
