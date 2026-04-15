@@ -9,13 +9,36 @@ vi.mock('../store/boardStore', () => ({
   useBoardStore: vi.fn((sel) => sel({
     cards: {
       c1: {
-        id: 'c1', title: 'Untitled task', description: '', assignee_name: '',
+        id: 'c1', title: 'Untitled task', description: '', assignee_name: '', assignees: [],
         priority: 'medium', due_date: '', labels: [], checklist: [], icon: null, task_number: 1,
+        board_id: 'b1',
       },
     },
+    boards: { b1: { id: 'b1', workspace_id: null } },
+    _tempIdMap: {},
     updateCard: mockUpdateCard,
     deleteCard: mockDeleteCard,
   })),
+}))
+vi.mock('../store/authStore', () => ({
+  useAuthStore: vi.fn((sel) => sel({
+    profile: { display_name: 'Alice', icon: null, color: 'bg-blue-200' },
+  })),
+}))
+vi.mock('../store/workspacesStore', () => ({
+  useWorkspacesStore: Object.assign(
+    vi.fn((sel) => sel({ members: {}, fetchMembers: vi.fn() })),
+    { getState: () => ({ fetchMembers: vi.fn() }) },
+  ),
+}))
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    from: () => ({
+      select: () => ({
+        eq: () => Promise.resolve({ data: [], error: null }),
+      }),
+    }),
+  },
 }))
 vi.mock('../components/board/DynamicIcon', () => ({
   default: ({ name }) => <span data-testid="icon">{name}</span>,

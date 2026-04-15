@@ -153,7 +153,7 @@ describe('filterCards', () => {
       makeCard({ id: '1', due_date: null }),
       makeCard({ id: '2', due_date: today }),
     ]
-    const result = filterCards(cards, { due: 'none' })
+    const result = filterCards(cards, { due: 'no_date' })
     expect(result.map((c) => c.id)).toEqual(['1'])
   })
 

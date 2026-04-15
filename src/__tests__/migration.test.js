@@ -8,9 +8,13 @@ vi.mock('../lib/supabase', () => {
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({ data: { id: 'new-1' }, error: null }),
-    then: (r) => Promise.resolve({ data: { id: 'new-1' }, error: null }).then(r),
-    catch: (r) => Promise.resolve({ data: { id: 'new-1' }, error: null }).catch(r),
+    // PostgREST builders are thenable: awaiting them resolves to { data, error }
+    then: (r) => Promise.resolve({ data: [], error: null }).then(r),
+    catch: (r) => Promise.resolve({ data: [], error: null }).catch(r),
   })
   return {
     supabase: {

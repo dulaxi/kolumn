@@ -41,22 +41,36 @@ describe('Card', () => {
     expect(screen.getByText('Fix login bug')).toBeInTheDocument()
   })
 
-  test('renders task number', () => {
-    render(<Card card={baseCard} onClick={vi.fn()} />)
-    expect(screen.getByText('Task #3')).toBeInTheDocument()
-  })
+  // Note: task number is not rendered on the card face by design — only in
+  // CardDetailPanel header. Removed previous "renders task number" test.
 
-  test('renders labels', () => {
+  test('renders labels with slash prefix', () => {
     const card = { ...baseCard, labels: [{ text: 'bug', color: 'red' }, { text: 'urgent', color: 'yellow' }] }
     render(<Card card={card} onClick={vi.fn()} />)
-    expect(screen.getByText('bug')).toBeInTheDocument()
-    expect(screen.getByText('urgent')).toBeInTheDocument()
+    // Card renders labels as "/labelname" (lowercase, slash-prefixed)
+    expect(screen.getByText('/bug')).toBeInTheDocument()
+    expect(screen.getByText('/urgent')).toBeInTheDocument()
   })
 
-  test('renders assignee initials', () => {
+  test('renders assignee initials (lowercase)', () => {
     const card = { ...baseCard, assignee_name: 'Bob Smith' }
     render(<Card card={card} onClick={vi.fn()} />)
-    expect(screen.getByText('BS')).toBeInTheDocument()
+    // Initials are rendered lowercase to match the Claude-style aesthetic
+    expect(screen.getByText('bs')).toBeInTheDocument()
+  })
+
+  test('renders multiple assignees as stacked avatars', () => {
+    const card = { ...baseCard, assignees: ['Bob Smith', 'Carol Jones'] }
+    render(<Card card={card} onClick={vi.fn()} />)
+    expect(screen.getByText('bs')).toBeInTheDocument()
+    expect(screen.getByText('cj')).toBeInTheDocument()
+  })
+
+  test('shows +N overflow when more than 3 assignees', () => {
+    const card = { ...baseCard, assignees: ['Alice A.', 'Bob B.', 'Carol C.', 'Dave D.', 'Eve E.'] }
+    render(<Card card={card} onClick={vi.fn()} />)
+    // 3 visible + "+2" overflow pill
+    expect(screen.getByText('+2')).toBeInTheDocument()
   })
 
   test('renders checklist count', () => {

@@ -46,7 +46,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   const [assigneeSearch, setAssigneeSearch] = useState('')
 
   // Resolve whether this card's board is scoped to a workspace
-  const board = useBoardStore((s) => (card ? s.boards[card.board_id] : null))
+  const board = useBoardStore((s) => (card && s.boards ? s.boards[card.board_id] : null))
   const workspaceId = board?.workspace_id || null
   const workspaceMembers = useWorkspacesStore((s) => (workspaceId ? s.members[workspaceId] : null))
 

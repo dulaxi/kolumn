@@ -30,7 +30,7 @@ describe('LoginPage', () => {
   test('renders email and password inputs', () => {
     render(<LoginPage />)
     expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Your password')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument()
   })
 
   test('shows error on failed login', async () => {
@@ -38,7 +38,7 @@ describe('LoginPage', () => {
     render(<LoginPage />)
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@test.com')
-    await userEvent.type(screen.getByPlaceholderText('Your password'), 'wrong')
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'wrong')
     screen.getByRole('button', { name: /sign in/i }).click()
 
     await waitFor(() => {
@@ -51,7 +51,7 @@ describe('LoginPage', () => {
     render(<LoginPage />)
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@test.com')
-    await userEvent.type(screen.getByPlaceholderText('Your password'), 'correct')
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'correct')
     screen.getByRole('button', { name: /sign in/i }).click()
 
     await waitFor(() => {
@@ -70,15 +70,15 @@ describe('SignupPage', () => {
     render(<SignupPage />)
     expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Min 6 characters')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('At least 6 characters')).toBeInTheDocument()
   })
 
   test('shows error for short password', async () => {
     render(<SignupPage />)
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
-    await userEvent.type(screen.getByPlaceholderText('Min 6 characters'), 'abc')
-    screen.getByRole('button', { name: /sign up/i }).click()
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'abc')
+    screen.getByRole('button', { name: /create account/i }).click()
 
     await waitFor(() => {
       expect(screen.getByText('Password must be at least 6 characters')).toBeInTheDocument()
@@ -91,8 +91,8 @@ describe('SignupPage', () => {
     render(<SignupPage />)
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
-    await userEvent.type(screen.getByPlaceholderText('Min 6 characters'), 'password123')
-    screen.getByRole('button', { name: /sign up/i }).click()
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'password123', 'test')
@@ -105,8 +105,8 @@ describe('SignupPage', () => {
 
     await userEvent.type(screen.getByPlaceholderText('Your name'), 'Alice')
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
-    await userEvent.type(screen.getByPlaceholderText('Min 6 characters'), 'password123')
-    screen.getByRole('button', { name: /sign up/i }).click()
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })

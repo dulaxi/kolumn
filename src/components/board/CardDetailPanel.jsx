@@ -112,7 +112,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', labels: card?.labels ? [...card.labels] : [], assignees: [...initialAssignees], dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
 
   // Resolve which board this card belongs to, and whether it's scoped to a workspace
-  const board = useBoardStore((s) => (card ? s.boards[card.board_id] : null))
+  const board = useBoardStore((s) => (card && s.boards ? s.boards[card.board_id] : null))
   const workspaceId = board?.workspace_id || null
   const workspaceMembers = useWorkspacesStore((s) => (workspaceId ? s.members[workspaceId] : null))
 
