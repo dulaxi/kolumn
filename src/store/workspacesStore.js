@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
+import { fetchProfilesByIds } from '../utils/supabaseHelpers'
 
 /**
  * workspacesStore — the Workspaces feature (team/org containers).
@@ -107,18 +108,7 @@ export const useWorkspacesStore = create(
             return
           }
 
-          // Step 2: fetch profiles for those user ids in a single round-trip
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, display_name, icon, color, email')
-            .in('id', userIds)
-
-          if (profileError) {
-            logError('Failed to fetch member profiles:', profileError)
-            return
-          }
-
-          const profileById = new Map((profiles || []).map((p) => [p.id, p]))
+          const profileById = await fetchProfilesByIds(userIds)
 
           const members = rows.map((r) => {
             const p = profileById.get(r.user_id)

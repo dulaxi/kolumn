@@ -3,13 +3,15 @@ import { CheckCircle2, Check, Plus, X, Calendar, User, Flag } from 'lucide-react
 import { FileText, CalendarDot, CheckSquare } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
-import { useWorkspacesStore } from '../../store/workspacesStore'
-import { supabase } from '../../lib/supabase'
 import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
+import { useMenuState } from '../../hooks/useMenuState'
+import { useCardEditState } from '../../hooks/useCardEditState'
+import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
-import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
-import { format, isPast, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
+import { formatDueDateLabel, dueDateBadgeClass } from '../../utils/dateUtils'
+import Avatar from '../ui/Avatar'
 
 /**
  * InlineCardEditor — matches the new Card.jsx layout 1:1.
@@ -28,69 +30,31 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   const deleteCard = useBoardStore((s) => s.deleteCard)
   const profile = useAuthStore((s) => s.profile)
 
-  const [title, setTitle] = useState(() => card?.title === 'Untitled task' ? '' : (card?.title || ''))
-  const [assignees, setAssignees] = useState(() => {
-    if (card?.assignees?.length) return card.assignees
-    return card?.assignee_name ? [card.assignee_name] : []
-  })
-  const [priority, setPriority] = useState(() => card?.priority || 'medium')
-  const [dueDate, setDueDate] = useState(() => card?.due_date || '')
-  const [labels, setLabels] = useState(() => card?.labels ? [...card.labels] : [])
-  const [description, setDescription] = useState(() => card?.description || '')
-  const [checklist, setChecklist] = useState(() => card?.checklist ? [...card.checklist] : [])
+  const {
+    title, setTitle,
+    assignees, setAssignees,
+    priority, setPriority,
+    dueDate, setDueDate,
+    labels, setLabels,
+    description, setDescription,
+    checklist, setChecklist,
+  } = useCardEditState(card, { treatUntitledAsEmpty: true })
 
-  const [openMenu, setOpenMenu] = useState(null) // 'icon' | 'priority' | 'date' | 'label' | 'assignee' | null
   const [showDescription, setShowDescription] = useState(() => !!card?.description)
   const [newLabelText, setNewLabelText] = useState('')
-  const [boardMemberNames, setBoardMemberNames] = useState([])
+  const boardMemberNames = useBoardMemberNames(card)
   const [assigneeSearch, setAssigneeSearch] = useState('')
-
-  // Resolve whether this card's board is scoped to a workspace
-  const board = useBoardStore((s) => (card && s.boards ? s.boards[card.board_id] : null))
-  const workspaceId = board?.workspace_id || null
-  const workspaceMembers = useWorkspacesStore((s) => (workspaceId ? s.members[workspaceId] : null))
-
-  // Fetch assignee list — workspace members when board belongs to a workspace,
-  // otherwise fall back to board_members.
-  useEffect(() => {
-    if (!card) return
-    let cancelled = false
-
-    if (workspaceId) {
-      useWorkspacesStore.getState().fetchMembers(workspaceId)
-      return () => { cancelled = true }
-    }
-
-    // Two-step fetch: board_members → profiles. PostgREST can't auto-embed
-    // profiles here because board_members.user_id FKs to auth.users, not
-    // profiles directly — so the old nested-select returned null and the
-    // picker silently showed no one.
-    ;(async () => {
-      const { data: rows, error } = await supabase
-        .from('board_members')
-        .select('user_id')
-        .eq('board_id', card.board_id)
-      if (cancelled || error || !rows?.length) {
-        if (!cancelled && !error) setBoardMemberNames([])
-        return
+  const newLabelTextRef = useRef('')
+  newLabelTextRef.current = newLabelText
+  const [openMenu, setOpenMenu] = useMenuState((closing) => {
+    if (closing === 'label') {
+      const trimmed = newLabelTextRef.current.trim()
+      if (trimmed) {
+        setLabels((prev) => [...prev, { text: trimmed, color: 'gray' }])
+        setNewLabelText('')
       }
-      const userIds = rows.map((r) => r.user_id)
-      const { data: profiles, error: pErr } = await supabase
-        .from('profiles')
-        .select('id, display_name')
-        .in('id', userIds)
-      if (cancelled || pErr) return
-      setBoardMemberNames((profiles || []).map((p) => p.display_name).filter(Boolean))
-    })()
-    return () => { cancelled = true }
-  }, [card?.board_id, workspaceId])
-
-  // Mirror workspacesStore.members into boardMemberNames for workspace boards
-  useEffect(() => {
-    if (!workspaceId) return
-    const names = (workspaceMembers || []).map((m) => m.display_name).filter(Boolean)
-    setBoardMemberNames(names)
-  }, [workspaceId, workspaceMembers])
+    }
+  })
 
   const titleRef = useRef(null)
   const rootRef = useRef(null)
@@ -98,27 +62,6 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   useEffect(() => {
     if (titleRef.current) titleRef.current.focus()
   }, [])
-
-  // Close menus on outside click — save pending label if any
-  useEffect(() => {
-    if (!openMenu) return
-    const handler = (e) => {
-      // Ignore clicks inside portaled pickers (icon picker, etc)
-      if (e.target.closest('[data-icon-picker]')) return
-      if (!e.target.closest('[data-menu-root]')) {
-        if (openMenu === 'label') {
-          const trimmed = newLabelText.trim()
-          if (trimmed) {
-            setLabels((prev) => [...prev, { text: trimmed, color: 'gray' }])
-            setNewLabelText('')
-          }
-        }
-        setOpenMenu(null)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [openMenu, newLabelText])
 
   if (!card) return null
 
@@ -324,18 +267,10 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               <button
                 type="button"
                 onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
-                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
-                  isYesterday(dueDateObj) || (isPast(dueDateObj) && !isToday(dueDateObj))
-                    ? 'bg-[#F2D9C7] text-[#C27A4A]'
-                    : isToday(dueDateObj)
-                    ? 'bg-[#F5EDCF] text-[#D4A843]'
-                    : isTomorrow(dueDateObj)
-                    ? 'bg-[#EEF2D6] text-[#A8BA32]'
-                    : 'bg-[#EEF2D6] text-[#A8BA32]'
-                }`}
+                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}
               >
                 <CalendarDot size={12} weight="bold" />
-                {isToday(dueDateObj) ? 'Today' : isYesterday(dueDateObj) ? 'Yesterday' : isTomorrow(dueDateObj) ? 'Tomorrow' : format(dueDateObj, 'MMM d')}
+                {formatDueDateLabel(dueDateObj)}
               </button>
             ) : (
               <button
@@ -421,16 +356,16 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                       {visible.map((name) => {
                         const isMe = isMeName(name)
                         return (
-                          <span
-                            key={name}
-                            className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-page)] ${
-                              isMe && profile?.icon
-                                ? `${iconText} ${profile.color}`
-                                : `${getAvatarColor(name)} ${getAvatarTextColor(getAvatarColor(name))} text-[9px] font-heading`
-                            }`}
-                          >
-                            {isMe && profile?.icon ? <DynamicIcon name={profile.icon} className="w-3 h-3" /> : getInitials(name).toLowerCase()}
-                          </span>
+                          isMe && profile?.icon ? (
+                            <span
+                              key={name}
+                              className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-page)] ${iconText} ${profile.color}`}
+                            >
+                              <DynamicIcon name={profile.icon} className="w-3 h-3" />
+                            </span>
+                          ) : (
+                            <Avatar key={name} name={name} size="sm" ringed className="ring-[var(--surface-page)]" />
+                          )
                         )
                       })}
                       {overflow > 0 && (
@@ -481,9 +416,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                             className="min-h-7 px-2 py-1 rounded-lg cursor-pointer grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs bg-[var(--surface-hover)] font-medium"
                           >
                             <div className="flex items-center gap-2 w-full">
-                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-heading ${getAvatarColor(name)} ${getAvatarTextColor(getAvatarColor(name))}`}>
-                                {getInitials(name).toLowerCase()}
-                              </span>
+                              <Avatar name={name} className="text-[8px]" />
                               <span className="flex-1 truncate">{name}</span>
                             </div>
                             <Check className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
@@ -502,9 +435,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                               className={`min-h-7 px-2 py-1 rounded-lg cursor-pointer grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-xs ${checked ? 'bg-[var(--surface-hover)] font-medium' : ''}`}
                             >
                               <div className="flex items-center gap-2 w-full">
-                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-heading ${getAvatarColor(member)} ${getAvatarTextColor(getAvatarColor(member))}`}>
-                                  {getInitials(member).toLowerCase()}
-                                </span>
+                                <Avatar name={member} className="text-[8px]" />
                                 <span className="flex-1 truncate">{member}</span>
                               </div>
                               {checked && <Check className="w-3.5 h-3.5 text-[var(--text-secondary)]" />}

@@ -1,12 +1,14 @@
 import { useState, memo } from 'react'
-import { format, isPast, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
+import { isPast, parseISO } from 'date-fns'
 import { CheckCircle2 } from 'lucide-react'
 import { CalendarDot, CheckSquare, FileText } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
-import { LABEL_BG, PRIORITY_DOT, getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
+import { LABEL_BG, PRIORITY_DOT } from '../../utils/formatting'
+import { formatDueDateLabel, dueDateBadgeClass } from '../../utils/dateUtils'
+import Avatar from '../ui/Avatar'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
   const { title, description, labels, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
@@ -101,19 +103,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {dueDateObj && (
-              <span
-                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
-                  isYesterday(dueDateObj) || (isPast(dueDateObj) && !isToday(dueDateObj))
-                    ? 'bg-[#F2D9C7] text-[#C27A4A]'
-                    : isToday(dueDateObj)
-                    ? 'bg-[#F5EDCF] text-[#D4A843]'
-                    : isTomorrow(dueDateObj)
-                    ? 'bg-[#EEF2D6] text-[#A8BA32]'
-                    : 'bg-[#EEF2D6] text-[#A8BA32]'
-                }`}
-              >
+              <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}>
                 <CalendarDot size={12} weight="bold" />
-                {isToday(dueDateObj) ? 'Today' : isYesterday(dueDateObj) ? 'Yesterday' : isTomorrow(dueDateObj) ? 'Tomorrow' : format(dueDateObj, 'MMM d')}
+                {formatDueDateLabel(dueDateObj)}
               </span>
             )}
 
@@ -155,12 +147,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
                       <DynamicIcon name={profile.icon} className="w-3 h-3" />
                     </span>
                   ) : (
-                    <span
-                      key={name}
-                      className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] text-[10px] font-heading ${getAvatarColor(name)} ${getAvatarTextColor(getAvatarColor(name))}`}
-                    >
-                      {getInitials(name).toLowerCase()}
-                    </span>
+                    <Avatar key={name} name={name} size="sm" ringed className="text-[10px]" />
                   )
                 })}
                 {overflow > 0 && (

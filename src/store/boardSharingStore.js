@@ -4,6 +4,7 @@ import { useAuthStore } from './authStore'
 import { useBoardStore } from './boardStore'
 import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
+import { fetchProfilesByIds } from '../utils/supabaseHelpers'
 
 /**
  * boardSharingStore — legacy per-board sharing (one-off invites to a single board).
@@ -119,22 +120,15 @@ export const useBoardSharingStore = create((set, get) => ({
         return
       }
 
-      // Fetch owner profiles and member counts in parallel
-      const [profilesRes, countsRes] = await Promise.all([
-        ownerIds.length > 0
-          ? supabase.from('profiles').select('id, display_name, color').in('id', ownerIds)
-          : { data: [], error: null },
+      const [ownerMap, countsRes] = await Promise.all([
+        fetchProfilesByIds(ownerIds, 'id, display_name, color'),
         supabase
           .from('board_members')
           .select('board_id', { count: 'exact', head: false })
           .in('board_id', boardIds),
       ])
 
-      if (profilesRes.error) logError('Failed to fetch owner profiles:', profilesRes.error)
       if (countsRes.error) logError('Failed to fetch member counts:', countsRes.error)
-
-      const ownerMap = {}
-      ;(profilesRes.data || []).forEach((p) => { ownerMap[p.id] = p })
 
       const countMap = {}
       ;(countsRes.data || []).forEach((row) => {
@@ -142,7 +136,7 @@ export const useBoardSharingStore = create((set, get) => ({
       })
 
       const sharedBoards = personalShared.map((m) => {
-        const ownerProfile = ownerMap[m.boards.owner_id]
+        const ownerProfile = ownerMap.get(m.boards.owner_id)
         return {
           ...m.boards,
           ownerName: ownerProfile?.display_name || 'Unknown',
