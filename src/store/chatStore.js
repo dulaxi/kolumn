@@ -1,6 +1,7 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-export const useChatStore = create((set, get) => ({
+export const useChatStore = create(persist((set, get) => ({
   conversations: {},
   messages: {},
   activeConversationId: null,
@@ -106,4 +107,7 @@ export const useChatStore = create((set, get) => ({
     set({ streamingConversationId: null })
     get().generateTitle(conversationId)
   },
+}), {
+  name: 'kolumn-chat',
+  partialize: (s) => ({ conversations: s.conversations, messages: s.messages }),
 }))

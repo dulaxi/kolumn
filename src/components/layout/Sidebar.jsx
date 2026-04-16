@@ -19,7 +19,6 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { useChatStore } from '../../store/chatStore'
 import { Kanban as PhosphorKanban, SidebarSimple, ChatsCircle, MagnifyingGlass, CalendarDots, Notepad, UsersThree } from '@phosphor-icons/react'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
@@ -60,8 +59,6 @@ export default function Sidebar() {
   const navigate = useNavigate()
 
   const sharedBoards = useBoardSharingStore((s) => s.sharedBoards)
-  const chatConversations = useChatStore((s) => s.getConversationsSorted())
-  const [chatsOpen, setChatsOpen] = useState(true)
   const [boardsOpen, setBoardsOpen] = useState(true)
   const [workspaceOpen, setWorkspaceOpen] = useState(true)
   const [iconPickerBoardId, setIconPickerBoardId] = useState(null)
@@ -153,51 +150,24 @@ export default function Sidebar() {
             {!showCollapsed && <span className="truncate flex-1 text-left">Search</span>}
           </button>
 
-          {/* Chat — expandable conversation list */}
-          <button
-            type="button"
-            onClick={() => { if (showCollapsed) { closeMobileMenu(); navigate('/dashboard') } else { setChatsOpen(!chatsOpen) } }}
+          {/* Chat */}
+          <NavLink
+            to="/chat"
+            onClick={closeMobileMenu}
             title={showCollapsed ? 'Chat' : undefined}
-            className={`flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden w-full ${
-              location.pathname.startsWith('/chat') || location.pathname === '/dashboard'
-                ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
-                : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
-            } ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`}
+            className={({ isActive }) =>
+              `flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
+                isActive || location.pathname.startsWith('/chat')
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+              } ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`
+            }
           >
             <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
               <ChatsCircle size={16} weight="regular" className="shrink-0" />
             </span>
-            {!showCollapsed && (
-              <>
-                <span className="truncate flex-1 text-left">Chat</span>
-                <Plus
-                  className="w-3.5 h-3.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                  onClick={(e) => { e.stopPropagation(); closeMobileMenu(); navigate('/dashboard') }}
-                />
-              </>
-            )}
-          </button>
-
-          {!showCollapsed && chatsOpen && chatConversations.length > 0 && (
-            <div className="flex flex-col gap-px">
-              {chatConversations.map((conv) => (
-                <NavLink
-                  key={conv.id}
-                  to={`/chat/${conv.id}`}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    `flex items-center h-7 rounded-lg text-[13px] transition-colors duration-75 overflow-hidden gap-3 py-1 px-4 pl-11 ${
-                      isActive
-                        ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                        : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
-                    }`
-                  }
-                >
-                  <span className="truncate">{conv.title}</span>
-                </NavLink>
-              ))}
-            </div>
-          )}
+            {!showCollapsed && <span className="truncate flex-1">Chats</span>}
+          </NavLink>
 
           {[
             { to: '/calendar', icon: CalendarDots, label: 'Calendar' },
