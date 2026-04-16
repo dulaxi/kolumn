@@ -2,10 +2,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
   Kanban,
-  Calendar,
-  StickyNote,
   Settings,
-  Search,
   ChevronsLeft,
   ChevronsRight,
   ChevronDown,
@@ -13,7 +10,6 @@ import {
   Plus,
   Trash2,
   Layers,
-  Users,
   Briefcase,
   GripVertical,
 } from 'lucide-react'
@@ -23,7 +19,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { Kanban as PhosphorKanban, SidebarSimple } from '@phosphor-icons/react'
+import { Kanban as PhosphorKanban, SidebarSimple, ChatsCircle, MagnifyingGlass, CalendarDots, Notepad, UsersThree } from '@phosphor-icons/react'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
 import ConfirmModal from '../board/ConfirmModal'
@@ -32,10 +28,6 @@ function KolumnLogo({ size = 30 }) {
   return <PhosphorKanban size={size} weight="fill" className="shrink-0 text-[#8BA32E]" />
 }
 
-const navItems = [
-  { to: '/calendar', icon: Calendar, label: 'Calendar' },
-  { to: '/notes', icon: StickyNote, label: 'Notes' },
-]
 
 export default function Sidebar() {
   const boardInvitationCount = useBoardSharingStore((s) => s.invitations.length)
@@ -153,14 +145,33 @@ export default function Sidebar() {
             className={`flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`}
           >
             <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
-              <Search className="w-4 h-4 shrink-0" />
+              <MagnifyingGlass size={16} weight="regular" className="shrink-0" />
             </span>
             {!showCollapsed && <span className="truncate flex-1 text-left">Search</span>}
           </button>
 
+          {/* Chat — AI conversations */}
+          <NavLink
+            to="/dashboard"
+            onClick={closeMobileMenu}
+            title={showCollapsed ? 'Chat' : undefined}
+            className={({ isActive }) =>
+              `flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
+                isActive
+                  ? 'bg-[var(--accent-lime-wash)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+              } ${showCollapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-4'}`
+            }
+          >
+            <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
+              <ChatsCircle size={16} weight="regular" className="shrink-0" />
+            </span>
+            {!showCollapsed && <span className="truncate flex-1">Chat</span>}
+          </NavLink>
+
           {[
-            { to: '/calendar', icon: Calendar, label: 'Calendar' },
-            { to: '/notes', icon: StickyNote, label: 'Notes' },
+            { to: '/calendar', icon: CalendarDots, label: 'Calendar' },
+            { to: '/notes', icon: Notepad, label: 'Notes' },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -202,7 +213,7 @@ export default function Sidebar() {
               } ${showCollapsed ? 'justify-center px-2 w-full' : 'gap-3 py-1.5 px-4 w-full'}`}
             >
               <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
-                <Users className="w-4 h-4 shrink-0" />
+                <UsersThree className="w-4 h-4 shrink-0" />
                 {showCollapsed && invitationCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-[#C2D64A] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {invitationCount > 9 ? '9+' : invitationCount}
@@ -233,7 +244,7 @@ export default function Sidebar() {
               }
             >
               <span className="relative flex items-center justify-center" style={{ width: 16, height: 16 }}>
-                <Users className="w-4 h-4 shrink-0" />
+                <UsersThree className="w-4 h-4 shrink-0" />
               </span>
               <span className="truncate flex-1">Workspace</span>
               {invitationCount > 0 && (
@@ -256,7 +267,7 @@ export default function Sidebar() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBoardsCollapsed() }
               }}
-              className="flex items-center justify-between gap-2 px-4 mb-1 group/boards cursor-pointer select-none"
+              className="flex items-center justify-between gap-2 px-4 mb-px group/boards cursor-pointer select-none"
               title={boardsCollapsed ? 'Show boards' : 'Hide boards'}
             >
               <span className="text-xs text-[var(--text-muted)] truncate">Boards</span>
@@ -390,7 +401,7 @@ export default function Sidebar() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSpaceCollapsed(ws.id) }
                 }}
-                className="flex items-center justify-between gap-2 px-4 pt-4 mb-1 group/ws cursor-pointer select-none"
+                className="flex items-center justify-between gap-2 px-4 pt-4 mb-px group/ws cursor-pointer select-none"
                 title={isCollapsed ? `Show ${ws.name} boards` : `Hide ${ws.name} boards`}
               >
                 <span className="text-xs text-[var(--text-muted)] truncate">
@@ -507,7 +518,7 @@ export default function Sidebar() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSharedBoardsCollapsed() }
               }}
-              className="flex items-center justify-between gap-2 px-4 mb-1 group/shared cursor-pointer select-none"
+              className="flex items-center justify-between gap-2 px-4 mb-px group/shared cursor-pointer select-none"
               title={sharedBoardsCollapsed ? 'Show shared boards' : 'Hide shared boards'}
             >
               <span className="text-xs text-[var(--text-muted)] truncate">Shared with me</span>
