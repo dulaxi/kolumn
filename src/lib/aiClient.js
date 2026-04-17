@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { env } from './env'
 
-export async function streamChat({ message, history = [] }, { onText, onToolCall, onDone, onError }) {
+export async function streamChat({ message, history = [] }, { onText, onToolCall, onDone, onError, onTier }) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) {
     onError('Not authenticated')
@@ -23,6 +23,13 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
   if (!response.ok) {
     const text = await response.text()
     console.error('[aiClient] error response:', text)
+    try {
+      const err = JSON.parse(text)
+      if (err.error === 'rate_limit') {
+        onError(err.message)
+        return
+      }
+    } catch {}
     onError(`Error ${response.status}: ${text}`)
     return
   }
@@ -64,6 +71,8 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
         try {
           if (event.type === 'text') {
             onText(event.content)
+          } else if (event.type === 'tier') {
+            onTier?.(event)
           } else if (event.type === 'tool_call') {
             await onToolCall(event.action, event.params)
           } else if (event.type === 'done') {

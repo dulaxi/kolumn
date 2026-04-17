@@ -8,6 +8,7 @@ export const useChatStore = create(persist((set, get) => ({
   messages: {},
   activeConversationId: null,
   streamingConversationId: null,
+  tierInfo: null,
 
   createConversation: (title = 'New chat') => {
     const id = crypto.randomUUID()
@@ -125,6 +126,9 @@ export const useChatStore = create(persist((set, get) => ({
         onDone: () => {
           set({ streamingConversationId: null })
           get().generateTitle(conversationId)
+        },
+        onTier: (info) => {
+          set({ tierInfo: info })
         },
         onError: (error) => {
           fullText += `\n\n*Error: ${error}*`
