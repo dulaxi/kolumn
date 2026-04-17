@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { MagnifyingGlass, ChatsCircle } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -8,7 +8,7 @@ import { formatDistanceToNow } from 'date-fns'
 export default function ChatListPage() {
   const navigate = useNavigate()
   const conversations = useChatStore((s) => s.conversations)
-  const clearAll = useChatStore((s) => s.clearAll)
+  const deleteConversation = useChatStore((s) => s.deleteConversation)
   const [search, setSearch] = useState('')
 
   const sorted = useMemo(() => {
@@ -23,26 +23,14 @@ export default function ChatListPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-2xl text-[var(--text-primary)]">Chat</h1>
-        <div className="flex items-center gap-2">
-          {Object.keys(conversations).length > 0 && (
-            <button
-              type="button"
-              onClick={() => { if (window.confirm('Delete all conversations?')) clearAll() }}
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-muted)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[#C27A4A] transition-all cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear all
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            New chat
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          New chat
+        </button>
       </div>
 
       {/* Search */}
@@ -61,11 +49,10 @@ export default function ChatListPage() {
       {sorted.length > 0 ? (
         <div className="flex flex-col gap-1">
           {sorted.map((conv) => (
-            <button
+            <div
               key={conv.id}
-              type="button"
-              onClick={() => navigate(`/chat/${conv.id}`)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-[var(--surface-hover)] transition-colors cursor-pointer group"
+              onClick={() => navigate(`/chat/${conv.id}`)}
             >
               <ChatsCircle size={18} weight="regular" className="shrink-0 text-[var(--text-faint)] group-hover:text-[var(--text-muted)]" />
               <div className="flex-1 min-w-0">
@@ -74,7 +61,15 @@ export default function ChatListPage() {
                   {formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}
                 </div>
               </div>
-            </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id) }}
+                className="shrink-0 p-1 rounded-md opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[#C27A4A] hover:bg-[var(--surface-raised)] transition-all"
+                aria-label="Delete conversation"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           ))}
         </div>
       ) : search.trim() ? (
