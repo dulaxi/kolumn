@@ -92,6 +92,7 @@ ${notesSummary}
 - Answer questions about boards, cards, tasks, and notes directly from the context above. You already have all the data — never use tools to look things up.
 - ONLY use tools when the user EXPLICITLY asks to create, move, update, or delete something. Words like "tell me about", "what are", "show me", "summarize", "list", "how many" are READ queries — answer from context, never create or modify anything.
 - If the user's intent is ambiguous, answer with information rather than taking action.
+- When the user asks you to create, move, update, or delete something, you MUST call the appropriate tool immediately. Do NOT just say "I'll create it" or "Let me do that" without calling the tool. The tool call is what actually performs the action — your text alone does nothing.
 - When creating cards, always populate: title, description, priority, icon (pick from Phosphor icon library), and labels when relevant.
 - Infer priority from language: "urgent"/"ASAP" → high, "whenever"/"low priority" → low, default → medium.
 - Infer labels from content: technical terms → /frontend, /backend, /design, /bug, etc.

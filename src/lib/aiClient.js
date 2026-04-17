@@ -18,8 +18,11 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
     body: JSON.stringify({ message, history }),
   })
 
+  console.log('[aiClient] response status:', response.status, 'content-type:', response.headers.get('content-type'))
+
   if (!response.ok) {
     const text = await response.text()
+    console.error('[aiClient] error response:', text)
     onError(`Error ${response.status}: ${text}`)
     return
   }
@@ -38,7 +41,9 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
       const { done, value } = await reader.read()
       if (done) break
 
-      buffer += decoder.decode(value, { stream: true })
+      const chunk = decoder.decode(value, { stream: true })
+      console.log('[aiClient] chunk:', chunk.slice(0, 200))
+      buffer += chunk
       const lines = buffer.split('\n')
       buffer = lines.pop() || ''
 
@@ -49,10 +54,11 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
 
         try {
           const event = JSON.parse(raw)
+          console.log('[aiClient] event:', event.type, event.content?.slice?.(0, 50) || event.action || '')
           if (event.type === 'text') {
             onText(event.content)
           } else if (event.type === 'tool_call') {
-            onToolCall(event.action, event.params)
+            await onToolCall(event.action, event.params)
           } else if (event.type === 'done') {
             onDone()
             return
