@@ -28,6 +28,7 @@ function firstColumnOf(boardId) {
 }
 
 export async function executeTool(action, params) {
+  console.log('[toolExecutor]', action, params)
   const store = useBoardStore.getState()
 
   if (action === 'create_card') {
@@ -49,7 +50,7 @@ export async function executeTool(action, params) {
       labels: params.labels || [],
       checklist,
       assignee_name: params.assignee || null,
-      due_date: params.due_date || null,
+      dueDate: params.due_date || null,
     })
     if (!tempId) return { ok: false, error: 'Failed to create card' }
 

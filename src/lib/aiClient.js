@@ -52,9 +52,16 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
         const raw = line.slice(6).trim()
         if (!raw) continue
 
+        let event
         try {
-          const event = JSON.parse(raw)
-          console.log('[aiClient] event:', event.type, event.content?.slice?.(0, 50) || event.action || '')
+          event = JSON.parse(raw)
+        } catch {
+          continue
+        }
+
+        console.log('[aiClient] event:', event.type, event.content?.slice?.(0, 50) || event.action || '')
+
+        try {
           if (event.type === 'text') {
             onText(event.content)
           } else if (event.type === 'tool_call') {
@@ -66,8 +73,8 @@ export async function streamChat({ message, history = [] }, { onText, onToolCall
             onError(event.content)
             return
           }
-        } catch {
-          // skip unparseable lines
+        } catch (callbackErr) {
+          console.error('[aiClient] callback error:', callbackErr)
         }
       }
     }
