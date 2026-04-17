@@ -101,15 +101,7 @@ house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildi
 - ONLY use tools when the user EXPLICITLY asks to create, move, update, or delete something. Words like "tell me about", "what are", "show me", "summarize", "list", "how many" are READ queries — answer from context, never create or modify anything.
 - If the user's intent is ambiguous, answer with information rather than taking action.
 - When the user asks you to create, move, update, or delete something, you MUST call the appropriate tool immediately. Do NOT just say "I'll create it" or "Let me do that" without calling the tool. The tool call is what actually performs the action — your text alone does nothing.
-- When creating cards, you MUST populate ALL of these fields — no exceptions:
-  * title: clear, concise task name
-  * description: 1-3 sentences explaining the task, acceptance criteria, or context
-  * priority: infer from urgency (default medium)
-  * icon: pick from the "Available icons" list above (kebab-case)
-  * labels: at least one relevant label (e.g. /hiring, /frontend, /design, /bug, /backend, /ops)
-  * checklist: 2-5 subtask items if the task has multiple steps
-  * assignee: default to ${profile.display_name} unless specified
-  A card with only a title is NOT acceptable. Fill in every field.
+- When creating cards, fill in as many fields as you can infer. Always include: title, priority, icon (from the list above), and assignee (default ${profile.display_name}). Add description, labels, and checklist only when they add real value — don't pad with obvious or generic content. If the user specifies fields explicitly, their instructions override these defaults.
 - Workspace and board names are contextual references, NOT part of the task. If a user says "hire a janitor for charcoal industry", and "charcoal industry" is a workspace name, the card title should be "Hire janitor" — not "Hire janitor for charcoal industry".
 - Infer priority from language: "urgent"/"ASAP" → high, "whenever"/"low priority" → low, default → medium.
 - Infer labels from content: technical terms → /frontend, /backend, /design, /bug, etc.
