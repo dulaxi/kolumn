@@ -11,7 +11,7 @@ export default function ChatPage() {
   const messages = useChatStore((s) => s.messages[id]) || []
   const streamingId = useChatStore((s) => s.streamingConversationId)
   const addMessage = useChatStore((s) => s.addMessage)
-  const mockRespond = useChatStore((s) => s.mockRespond)
+  const sendMessage = useChatStore((s) => s.sendMessage)
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function ChatPage() {
 
   const handleSend = (text) => {
     addMessage(id, { role: 'user', text })
-    mockRespond(id, text)
+    sendMessage(id, text)
   }
 
   return (

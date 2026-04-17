@@ -80,7 +80,7 @@ export default function DashboardPage() {
   const addBoard = useBoardStore((s) => s.addBoard)
   const createConversation = useChatStore((s) => s.createConversation)
   const addMessage = useChatStore((s) => s.addMessage)
-  const mockRespond = useChatStore((s) => s.mockRespond)
+  const sendMessage = useChatStore((s) => s.sendMessage)
 
   useEffect(() => { capture('feature_used', { feature: 'home' }) }, [])
 
@@ -89,7 +89,7 @@ export default function DashboardPage() {
     const convId = createConversation('New chat')
     addMessage(convId, { role: 'user', text })
     navigate(`/chat/${convId}`)
-    mockRespond(convId, text)
+    sendMessage(convId, text)
   }
 
   const handleNewBoard = () => {
