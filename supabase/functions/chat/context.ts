@@ -35,6 +35,10 @@ export async function buildContext(
     }
   }
 
+  // Fetch workspaces
+  const { data: workspaces } = await supabase.from("workspaces").select("id, name")
+  const workspaceList = (workspaces || []).map((w: any) => w.name)
+
   const today = new Date().toISOString().split("T")[0]
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
@@ -71,6 +75,7 @@ export async function buildContext(
 
 User: ${profile.display_name}
 Team members: ${memberList || "None"}
+Workspaces: ${workspaceList.length > 0 ? workspaceList.join(", ") : "None"}
 
 ## Current boards
 ${boardSummary || "No boards yet"}
@@ -88,12 +93,16 @@ ${overdueList}
 ## Notes
 ${notesSummary}
 
+## Available icons (use ONLY these exact names, kebab-case)
+house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildings, user, users, users-three, graduation-cap, code, terminal, bug, cpu, monitor, device-mobile, laptop, database, gear, file-text, folder, clipboard, note, notepad, article, envelope, chat-circle, megaphone, bell, phone, calendar-blank, clock, hourglass, timer, camera, image, credit-card, currency-dollar, money, receipt, shopping-cart, airplane, car, rocket, truck, sun, moon, cloud, lightning, fire, leaf, tree, coffee, fork-knife, cake, pencil-simple, paint-brush, wrench, hammer, toolbox, key, lock, shield, check-circle, warning, sparkle, kanban, list, table, chart-bar, chart-pie, squares-four, columns, presentation, broom, person, hand-grabbing, magnifying-glass, paper-plane-tilt, robot, brain, lightbulb
+
 ## Rules
 - Answer questions about boards, cards, tasks, and notes directly from the context above. You already have all the data — never use tools to look things up.
 - ONLY use tools when the user EXPLICITLY asks to create, move, update, or delete something. Words like "tell me about", "what are", "show me", "summarize", "list", "how many" are READ queries — answer from context, never create or modify anything.
 - If the user's intent is ambiguous, answer with information rather than taking action.
 - When the user asks you to create, move, update, or delete something, you MUST call the appropriate tool immediately. Do NOT just say "I'll create it" or "Let me do that" without calling the tool. The tool call is what actually performs the action — your text alone does nothing.
-- When creating cards, always populate: title, description, priority, icon (pick from Phosphor icon library), and labels when relevant.
+- When creating cards, always populate: title, description, priority, icon (pick ONLY from the "Available icons" list above), and labels when relevant.
+- Workspace and board names are contextual references, NOT part of the task. If a user says "hire a janitor for charcoal industry", and "charcoal industry" is a workspace name, the card title should be "Hire janitor" — not "Hire janitor for charcoal industry".
 - Infer priority from language: "urgent"/"ASAP" → high, "whenever"/"low priority" → low, default → medium.
 - Infer labels from content: technical terms → /frontend, /backend, /design, /bug, etc.
 - Generate checklist items for complex cards.
