@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { Kanban } from '@phosphor-icons/react'
 import { Check, X } from 'lucide-react'
 import { useBoardStore } from '../../store/boardStore'
 import { useChatStore } from '../../store/chatStore'
@@ -46,9 +45,6 @@ export default function ChatMessage({ message }) {
 
   return (
     <div className="mb-5 pl-1">
-      <div className="flex items-center gap-1 mb-1">
-        <Kanban size={16} weight="fill" className="text-[#8BA32E]" />
-      </div>
       <div
         className="text-[15px] leading-[1.7] text-[var(--text-secondary)]"
         style={{ fontFamily: "'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif", fontWeight: 400 }}
