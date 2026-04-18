@@ -57,12 +57,12 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
         {/* Icon container — Claude skill card style */}
-        <div className={`flex w-10 h-10 shrink-0 items-center justify-center rounded-lg ${aiCard ? 'border border-[#8BA32E] bg-[#E8DDE2]' : 'border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)]'}`}>
+        <div className={`flex w-10 h-10 shrink-0 items-center justify-center rounded-lg border-0.5 ${aiCard ? 'border-[var(--border-default)] bg-[#E8DDE2]' : 'border-[var(--border-default)] bg-[var(--surface-raised)]'}`}>
           <div className="w-5 h-5 flex items-center justify-center">
             {displayIcon ? (
-              <DynamicIcon name={displayIcon} className="w-5 h-5 text-[var(--text-primary)]" />
+              <DynamicIcon name={displayIcon} className={`w-5 h-5 ${aiCard ? 'text-[#8BA32E]' : 'text-[var(--text-primary)]'}`} />
             ) : (
-              <FileText size={20} weight="regular" className="text-[var(--text-muted)]" />
+              <FileText size={20} weight="regular" className={aiCard ? 'text-[#8BA32E]' : 'text-[var(--text-muted)]'} />
             )}
           </div>
         </div>
