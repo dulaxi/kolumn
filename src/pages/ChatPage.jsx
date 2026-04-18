@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useChatStore } from '../store/chatStore'
 import ChatMessage from '../components/chat/ChatMessage'
 import ChatInput from '../components/chat/ChatInput'
@@ -7,6 +7,7 @@ import TypingIndicator from '../components/chat/TypingIndicator'
 
 export default function ChatPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const conversation = useChatStore((s) => s.conversations[id])
   const messages = useChatStore((s) => s.messages[id]) || []
   const streamingId = useChatStore((s) => s.streamingConversationId)
