@@ -219,6 +219,11 @@ export async function executeTool(action, params) {
       updates.assignee_name = updates.assignee
       delete updates.assignee
     }
+    if (updates.checklist) {
+      updates.checklist = updates.checklist.map((text) =>
+        typeof text === 'string' ? { text, done: false } : text
+      )
+    }
 
     for (const card of cards) {
       await store.updateCard(card.id, updates)
