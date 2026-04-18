@@ -96,7 +96,7 @@ export const TOOLS = [
           items: { type: "string" },
           description: "Column names in order (defaults to To Do, In Progress, Done)",
         },
-        icon: { type: "string", description: "Phosphor icon name for the board" },
+        icon: { type: "string", description: "Phosphor icon name in kebab-case (e.g. rocket, credit-card, folder)" },
       },
       required: ["name"],
     },
@@ -128,7 +128,7 @@ export const TOOLS = [
           type: "object",
           properties: {
             priority: { type: "string", enum: ["low", "medium", "high"] },
-            assignee_name: { type: "string", description: "Display name of assignee" },
+            assignee: { type: "string", description: "Display name of assignee" },
             labels: { type: "array", items: { type: "object", properties: { text: { type: "string" }, color: { type: "string" } }, required: ["text", "color"] } },
             due_date: { type: "string", description: "Due date as YYYY-MM-DD" },
             icon: { type: "string", description: "Phosphor icon name in kebab-case" },

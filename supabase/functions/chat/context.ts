@@ -59,7 +59,7 @@ export async function buildContext(
       }
       return `${col.title} (0)`
     }).join(" | ")
-    return `- ${b.name}: ${colSummary}`
+    return `- ${b.name}: ${colSummary || "(no columns)"}`
   }).join("\n")
 
   const alertsSummary = (() => {
