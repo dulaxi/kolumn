@@ -241,6 +241,129 @@ export async function executeTool(action, params) {
     return { ok: true, completed: cards.length }
   }
 
+  if (action === 'duplicate_card') {
+    const card = findCardByTitle(params.card_title)
+    if (!card) return { ok: false, error: `Card "${params.card_title}" not found` }
+
+    const newId = await store.duplicateCard(card.id)
+    if (!newId) return { ok: false, error: 'Failed to duplicate card' }
+
+    if (params.to_board || params.to_column) {
+      const targetBoardId = params.to_board ? findBoardByName(params.to_board)?.id : card.board_id
+      if (!targetBoardId) return { ok: false, error: `Board "${params.to_board}" not found` }
+
+      const targetCol = params.to_column
+        ? findColumnByName(targetBoardId, params.to_column)
+        : firstColumnOf(targetBoardId)
+      if (targetCol) {
+        await store.updateCard(newId, { column_id: targetCol.id, board_id: targetBoardId })
+      }
+    }
+
+    return { ok: true, cardId: newId }
+  }
+
+  if (action === 'toggle_checklist') {
+    const card = findCardByTitle(params.card_title)
+    if (!card) return { ok: false, error: `Card "${params.card_title}" not found` }
+    if (!card.checklist || card.checklist.length === 0) {
+      return { ok: false, error: `Card "${params.card_title}" has no checklist` }
+    }
+
+    const updated = card.checklist.map((item, i) =>
+      params.items.includes(i) ? { ...item, done: params.done } : item
+    )
+    await store.updateCard(card.id, { checklist: updated })
+    return { ok: true }
+  }
+
+  if (action === 'update_board') {
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+
+    if (params.name) await store.renameBoard(board.id, params.name)
+    if (params.icon) await store.updateBoardIcon(board.id, params.icon)
+    return { ok: true }
+  }
+
+  if (action === 'delete_board') {
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+
+    await store.deleteBoard(board.id)
+    return { ok: true }
+  }
+
+  if (action === 'add_column') {
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+
+    await store.addColumn(board.id, params.title)
+    return { ok: true }
+  }
+
+  if (action === 'delete_column') {
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+
+    const column = findColumnByName(board.id, params.column)
+    if (!column) return { ok: false, error: `Column "${params.column}" not found in "${params.board}"` }
+
+    await store.deleteColumn(board.id, column.id)
+    return { ok: true }
+  }
+
+  if (action === 'invite_member') {
+    const workspace = findWorkspaceByName(params.workspace)
+    if (!workspace) return { ok: false, error: `Workspace "${params.workspace}" not found` }
+
+    await useWorkspacesStore.getState().inviteToWorkspace(workspace.id, params.email)
+    return { ok: true }
+  }
+
+  if (action === 'remove_member') {
+    const workspace = findWorkspaceByName(params.workspace)
+    if (!workspace) return { ok: false, error: `Workspace "${params.workspace}" not found` }
+
+    const wsStore = useWorkspacesStore.getState()
+    if (!wsStore.members[workspace.id]) {
+      await wsStore.fetchMembers(workspace.id)
+    }
+
+    const members = useWorkspacesStore.getState().members[workspace.id] || []
+    const lower = (params.display_name || '').toLowerCase()
+    const member = members.find((m) => m.display_name.toLowerCase() === lower)
+    if (!member) return { ok: false, error: `Member "${params.display_name}" not found in "${params.workspace}"` }
+
+    await useWorkspacesStore.getState().removeMember(workspace.id, member.user_id)
+    return { ok: true }
+  }
+
+  if (action === 'create_note') {
+    const noteStore = useNoteStore.getState()
+    const noteId = await noteStore.addNote(params.title)
+    if (!noteId) return { ok: false, error: 'Failed to create note' }
+
+    if (params.content) {
+      await useNoteStore.getState().updateNote(noteId, { content: params.content })
+    }
+    return { ok: true, noteId }
+  }
+
+  if (action === 'update_note') {
+    const note = findNoteByTitle(params.title)
+    if (!note) return { ok: false, error: `Note "${params.title}" not found` }
+
+    if (params.append) {
+      const existing = note.content || ''
+      const separator = existing.endsWith('\n') || existing === '' ? '' : '\n\n'
+      await useNoteStore.getState().updateNote(note.id, { content: existing + separator + params.append })
+    } else if (params.content !== undefined) {
+      await useNoteStore.getState().updateNote(note.id, { content: params.content })
+    }
+    return { ok: true }
+  }
+
   if (action === 'search_cards' || action === 'summarize_board') {
     return { ok: true, readOnly: true }
   }
