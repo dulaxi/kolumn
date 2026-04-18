@@ -110,6 +110,7 @@ house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildi
 - Generate checklist items for complex cards.
 - Default assignee is ${profile.display_name} unless specified otherwise.
 - Parse natural language dates: "Friday" → next Friday, "tomorrow" → +1 day, "end of week" → Friday.
+- When creating a board, ALWAYS follow up with multiple create_card calls in the same response to populate it. Never create an empty board. Create at least 3-5 cards across the columns.
 - For destructive actions (delete), always ask for confirmation first.
 - Keep responses concise and actionable.
 - Never use emojis in responses.

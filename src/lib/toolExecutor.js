@@ -57,6 +57,7 @@ export async function executeTool(action, params) {
       checklist,
       assignee_name: params.assignee || null,
       dueDate: params.due_date || null,
+      _aiBuilding: true,
     })
     if (!tempId) return { ok: false, error: 'Failed to create card' }
 

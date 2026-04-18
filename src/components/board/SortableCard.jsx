@@ -7,14 +7,14 @@ import AICardSkeleton from './AICardSkeleton'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 
 export default memo(function SortableCard({ card, onClick, onComplete, isSelected }) {
-  const [showSkeleton, setShowSkeleton] = useState(card._optimistic && card.title === 'Untitled task')
+  const [showSkeleton, setShowSkeleton] = useState(!!card._aiBuilding)
 
   useEffect(() => {
-    if (showSkeleton && card.title !== 'Untitled task') {
-      const timer = setTimeout(() => setShowSkeleton(false), 600)
+    if (showSkeleton) {
+      const timer = setTimeout(() => setShowSkeleton(false), 1200)
       return () => clearTimeout(timer)
     }
-  }, [showSkeleton, card.title])
+  }, [showSkeleton])
   const isMobile = useIsMobile()
   const {
     attributes,
