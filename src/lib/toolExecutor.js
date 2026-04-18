@@ -1,4 +1,6 @@
 import { useBoardStore } from '../store/boardStore'
+import { useNoteStore } from '../store/noteStore'
+import { useWorkspacesStore } from '../store/workspacesStore'
 
 function findBoardByName(name) {
   const boards = useBoardStore.getState().boards
@@ -27,7 +29,56 @@ function firstColumnOf(boardId) {
     .sort((a, b) => a.position - b.position)[0]
 }
 
-const DESTRUCTIVE_ACTIONS = ['delete_card']
+function lastColumnOf(boardId) {
+  const columns = useBoardStore.getState().columns
+  return Object.values(columns)
+    .filter((c) => c.board_id === boardId)
+    .sort((a, b) => a.position - b.position)
+    .at(-1)
+}
+
+function findCards({ board, column, card_titles }) {
+  const store = useBoardStore.getState()
+  let cards = Object.values(store.cards)
+
+  if (board) {
+    const b = findBoardByName(board)
+    if (!b) return []
+    cards = cards.filter((c) => c.board_id === b.id)
+  }
+
+  if (column) {
+    const boardId = board ? findBoardByName(board)?.id : null
+    const cols = Object.values(store.columns)
+    const lower = column.toLowerCase()
+    const matchCol = cols.find(
+      (c) => c.title.toLowerCase() === lower && (!boardId || c.board_id === boardId)
+    )
+    if (!matchCol) return []
+    cards = cards.filter((c) => c.column_id === matchCol.id)
+  }
+
+  if (card_titles && card_titles.length > 0) {
+    const lowerTitles = card_titles.map((t) => t.toLowerCase())
+    cards = cards.filter((c) => lowerTitles.includes(c.title.toLowerCase()))
+  }
+
+  return cards
+}
+
+function findNoteByTitle(title) {
+  const notes = useNoteStore.getState().notes
+  const lower = title.toLowerCase()
+  return Object.values(notes).find((n) => n.title.toLowerCase() === lower)
+}
+
+function findWorkspaceByName(name) {
+  const workspaces = useWorkspacesStore.getState().workspaces
+  const lower = name.toLowerCase()
+  return Object.values(workspaces).find((w) => w.name.toLowerCase() === lower)
+}
+
+const DESTRUCTIVE_ACTIONS = ['delete_card', 'delete_board', 'delete_column', 'remove_member']
 
 const aiBuildingCards = new Set()
 export function isAIBuilding(cardId) { return aiBuildingCards.has(cardId) }
@@ -134,6 +185,60 @@ export async function executeTool(action, params) {
       window.dispatchEvent(new CustomEvent('kolumn:ai-navigate-board'))
     }
     return { ok: true, boardId }
+  }
+
+  if (action === 'move_cards') {
+    if (!params.from_column && (!params.card_titles || params.card_titles.length === 0)) {
+      return { ok: false, error: 'Provide from_column or card_titles to filter which cards to move' }
+    }
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+
+    const toCol = findColumnByName(board.id, params.to_column)
+    if (!toCol) return { ok: false, error: `Column "${params.to_column}" not found` }
+
+    const cards = findCards({ board: params.board, column: params.from_column, card_titles: params.card_titles })
+    if (cards.length === 0) return { ok: false, error: 'No matching cards found' }
+
+    for (const card of cards) {
+      await store.updateCard(card.id, { column_id: toCol.id })
+    }
+    return { ok: true, moved: cards.length }
+  }
+
+  if (action === 'update_cards') {
+    if (!params.board && !params.column && (!params.card_titles || params.card_titles.length === 0)) {
+      return { ok: false, error: 'Provide at least one filter (board, column, or card_titles)' }
+    }
+
+    const cards = findCards({ board: params.board, column: params.column, card_titles: params.card_titles })
+    if (cards.length === 0) return { ok: false, error: 'No matching cards found' }
+
+    const updates = { ...params.updates }
+    if (updates.assignee) {
+      updates.assignee_name = updates.assignee
+      delete updates.assignee
+    }
+
+    for (const card of cards) {
+      await store.updateCard(card.id, updates)
+    }
+    return { ok: true, updated: cards.length }
+  }
+
+  if (action === 'complete_cards') {
+    if (!params.board && !params.column && (!params.card_titles || params.card_titles.length === 0)) {
+      return { ok: false, error: 'Provide at least one filter (board, column, or card_titles)' }
+    }
+
+    const cards = findCards({ board: params.board, column: params.column, card_titles: params.card_titles })
+    if (cards.length === 0) return { ok: false, error: 'No matching cards found' }
+
+    for (const card of cards) {
+      const lastCol = lastColumnOf(card.board_id)
+      await store.updateCard(card.id, { completed: true, column_id: lastCol?.id || card.column_id })
+    }
+    return { ok: true, completed: cards.length }
   }
 
   if (action === 'search_cards' || action === 'summarize_board') {
