@@ -283,7 +283,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
       onDragCancel={handleDragCancel}
     >
       <QuickAddBar boardId={boardId} />
-      <div className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
+      <div data-board-scroll className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
         {/* Column drag reorder disabled for now — SortableColumn + reorderColumns ready when needed */}
         {boardColumns.map((column) => (
           <Column

@@ -10,9 +10,23 @@ export default function QuickAddBar({ boardId }) {
   const [expanded, setExpanded] = useState(false)
   const [input, setInput] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [visible, setVisible] = useState(true)
   const inputRef = useRef(null)
   const expandedRef = useClickOutside(() => { if (!processing) { setExpanded(false); setInput('') } })
+  const scrollTimer = useRef(null)
   const boardName = useBoardStore((s) => s.boards[boardId]?.name)
+
+  useEffect(() => {
+    const container = document.querySelector('[data-board-scroll]')
+    if (!container) return
+    const onScroll = () => {
+      if (!expanded) setVisible(false)
+      clearTimeout(scrollTimer.current)
+      scrollTimer.current = setTimeout(() => setVisible(true), 800)
+    }
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => { container.removeEventListener('scroll', onScroll); clearTimeout(scrollTimer.current) }
+  }, [expanded])
 
   useEffect(() => {
     if (expanded && inputRef.current) inputRef.current.focus()
@@ -72,8 +86,8 @@ export default function QuickAddBar({ boardId }) {
 
   if (!expanded) {
     return (
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
-        <div className="flex items-center gap-1 h-12 px-2 rounded-[14px] bg-[var(--surface-card)]/80 backdrop-blur-md border border-[var(--color-mist)] transition-all hover:border-[var(--text-muted)]">
+      <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-30 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="flex items-center gap-1 h-12 px-2 rounded-[14px] bg-[var(--surface-card)] border border-[var(--color-mist)] transition-all hover:border-[var(--text-muted)]">
           <button
             type="button"
             onClick={() => setExpanded(true)}
