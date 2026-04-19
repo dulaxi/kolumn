@@ -70,7 +70,7 @@ export default function QuickAddBar({ boardId }) {
 
   if (!expanded) {
     return (
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -84,7 +84,7 @@ export default function QuickAddBar({ boardId }) {
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md">
+    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md">
       <div className="flex items-center gap-2 h-11 px-4 rounded-2xl bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] shadow-[0_4px_24px_rgba(0,0,0,0.1)] transition-all">
         <Sparkle size={14} weight="fill" className="shrink-0 text-[#D4B8C8]" />
         <input
