@@ -75,7 +75,7 @@ export default function BoardsPage() {
 
   return (
     <div
-      className="h-[calc(100vh-7rem)] flex flex-col"
+      className="h-full flex flex-col"
     >
       <div className="mb-4 shrink-0 flex items-start justify-between gap-4">
         <h1 className="font-heading text-2xl text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
