@@ -222,16 +222,16 @@
   color: transparent;
 }
 
-/* AI Quick Add pill bounce animations */
+/* AI Quick Add pill animations */
 @keyframes pill-bounce-in {
-  0% { transform: scale(0.3); opacity: 0; }
-  60% { transform: scale(1.04); opacity: 1; }
-  100% { transform: scale(1); }
+  0% { transform: scale(0.15) translateY(10px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1) translateY(0); }
 }
 @keyframes pill-bounce-out {
-  0% { transform: scale(1); opacity: 1; }
-  40% { transform: scale(1.03); opacity: 1; }
-  100% { transform: scale(0.3); opacity: 0; }
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  50% { opacity: 1; }
+  100% { transform: scale(0.15) translateY(10px); opacity: 0; }
 }
 
 /* AI card building shimmer */
