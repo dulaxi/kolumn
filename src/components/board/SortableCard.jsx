@@ -11,6 +11,12 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
   const [showSkeleton, setShowSkeleton] = useState(() => isAIBuilding(card.id))
 
   useEffect(() => {
+    if (!showSkeleton && isAIBuilding(card.id)) {
+      setShowSkeleton(true)
+    }
+  })
+
+  useEffect(() => {
     if (showSkeleton) {
       const timer = setTimeout(() => setShowSkeleton(false), 2000)
       return () => clearTimeout(timer)
