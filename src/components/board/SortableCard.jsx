@@ -3,22 +3,19 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
 import Card from './Card'
+import AICardSkeleton from './AICardSkeleton'
 import { useIsMobile } from '../../hooks/useMediaQuery'
+import { isAIBuilding } from '../../lib/toolExecutor'
 
 export default memo(function SortableCard({ card, onClick, onComplete, isSelected }) {
-  const [aiShimmer, setAiShimmer] = useState(false)
+  const [showSkeleton, setShowSkeleton] = useState(() => isAIBuilding(card.id))
 
   useEffect(() => {
-    if (card._aiCreatedAt) {
-      const age = Date.now() - card._aiCreatedAt
-      console.log('[SortableCard] _aiCreatedAt detected, age:', age, 'aiShimmer:', aiShimmer, 'cardId:', card.id.slice(0,8))
-      if (age < 3000 && !aiShimmer) {
-        setAiShimmer(true)
-        const timer = setTimeout(() => setAiShimmer(false), 2000)
-        return () => clearTimeout(timer)
-      }
+    if (showSkeleton) {
+      const timer = setTimeout(() => setShowSkeleton(false), 1500)
+      return () => clearTimeout(timer)
     }
-  }, [card._aiCreatedAt])
+  }, [showSkeleton])
   const isMobile = useIsMobile()
   const {
     attributes,
@@ -34,7 +31,14 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
-    ...(aiShimmer ? { outline: '2px solid #C2A0B2', outlineOffset: '-1px', borderRadius: '16px' } : {}),
+  }
+
+  if (showSkeleton) {
+    return (
+      <div ref={setNodeRef} style={style}>
+        <AICardSkeleton />
+      </div>
+    )
   }
 
   if (isMobile) {
@@ -49,7 +53,7 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
           <GripVertical className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <Card card={card} onClick={onClick} onComplete={onComplete} isSelected={isSelected} aiShimmer={aiShimmer} />
+          <Card card={card} onClick={onClick} onComplete={onComplete} isSelected={isSelected} />
         </div>
       </div>
     )

@@ -222,28 +222,16 @@
   color: transparent;
 }
 
-/* AI Quick Add pill animations */
+/* AI Quick Add pill bounce animations */
 @keyframes pill-bounce-in {
-  0% { transform: scale(0.15) translateY(10px); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: scale(1) translateY(0); }
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
 }
 @keyframes pill-bounce-out {
-  0% { transform: scale(1) translateY(0); opacity: 1; }
-  50% { opacity: 1; }
-  100% { transform: scale(0.15) translateY(10px); opacity: 0; }
-}
-
-/* AI card border shimmer */
-@keyframes ai-border-shimmer {
-  0% { border-color: #D4B8C8; box-shadow: 0 0 12px rgba(212,184,200,0.3); }
-  50% { border-color: #C2A0B2; box-shadow: 0 0 24px rgba(212,184,200,0.5); }
-  100% { border-color: #D4B8C8; box-shadow: 0 0 12px rgba(212,184,200,0.3); }
-}
-.ai-border-shimmer {
-  animation: ai-border-shimmer 1s ease-in-out infinite;
-  border-color: #D4B8C8 !important;
-  border-width: 1.5px !important;
+  0% { transform: scale(1); opacity: 1; }
+  40% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(0.3); opacity: 0; }
 }
 
 /* AI card building shimmer */
