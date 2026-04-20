@@ -117,7 +117,7 @@ export default function QuickAddBar({ boardId }) {
     <>
     <div className={`fixed inset-0 z-50 bg-black/10 transition-opacity duration-200 ${collapsing ? 'opacity-0' : 'opacity-100'}`} onClick={collapseWithAnim} />
     <div ref={expandedRef} className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4 origin-bottom ${collapsing ? 'animate-[pill-bounce-out_175ms_ease-in_forwards]' : 'animate-[pill-bounce-in_275ms_cubic-bezier(0.34,1.56,0.64,1)_forwards]'}`}>
-      <div className="flex flex-col bg-[var(--surface-card)] rounded-[20px] border border-[#E8DDE2] shadow-[0_2px_12px_rgba(212,184,200,0.12)] transition-shadow duration-200">
+      <div className="flex flex-col bg-[var(--surface-card)] rounded-[20px] border border-[#C9ADBB] shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035)] transition-shadow duration-200">
         <div className="flex flex-col m-3.5 gap-3">
           <textarea
             ref={inputRef}
