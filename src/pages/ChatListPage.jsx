@@ -20,7 +20,7 @@ export default function ChatListPage() {
   }, [conversations, search])
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-6">
+    <div className="w-full py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)]">Chat</h1>
