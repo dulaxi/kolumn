@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CaretDown, Check, Cube, MagnifyingGlass, Plus, UsersThree } from '@phosphor-icons/react'
+import { CaretDown, Check, Cube, MagnifyingGlass, Plus, SquaresFour, UsersThree } from '@phosphor-icons/react'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
@@ -113,13 +113,18 @@ export default function WorkspaceDropdown({
   }, [open])
 
   const workspaceList = useMemo(() => Object.values(workspaces), [workspaces])
-  const activeWorkspace = activeWorkspaceId ? workspaces[activeWorkspaceId] : null
+  // activeWorkspaceId encoding: null = All workspaces (aggregate, default),
+  // 'personal' = Personal (virtual; only owned + shared boards), UUID = real workspace.
+  const isAll = activeWorkspaceId === null
+  const isPersonal = activeWorkspaceId === 'personal'
+  const activeWorkspace = !isAll && !isPersonal ? workspaces[activeWorkspaceId] : null
 
+  const q = search.trim().toLowerCase()
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
     if (!q) return workspaceList
     return workspaceList.filter((w) => w.name?.toLowerCase().includes(q))
-  }, [workspaceList, search])
+  }, [workspaceList, q])
+  const personalMatchesSearch = !q || 'personal'.includes(q)
 
   const handlePick = (id) => {
     setActiveWorkspace(id)
@@ -136,10 +141,18 @@ export default function WorkspaceDropdown({
     }
   }
 
-  const triggerLabel = activeWorkspace?.name || 'Personal'
-  const triggerGlyph = activeWorkspace
-    ? <WorkspaceGlyph workspace={activeWorkspace} />
-    : <Cube className="w-5 h-5" weight="light" />
+  const triggerLabel = isAll
+    ? 'All workspaces'
+    : isPersonal
+      ? 'Personal'
+      : activeWorkspace?.name || 'All workspaces'
+  const triggerGlyph = isAll
+    ? <SquaresFour className="w-5 h-5" weight="light" />
+    : isPersonal
+      ? <Cube className="w-5 h-5" weight="light" />
+      : activeWorkspace
+        ? <WorkspaceGlyph workspace={activeWorkspace} />
+        : <SquaresFour className="w-5 h-5" weight="light" />
 
   // ── Panel content ──────────────────────────────────────────────
   const panel = (
@@ -160,31 +173,55 @@ export default function WorkspaceDropdown({
 
       {/* List — scrollable when long */}
       <div className="flex-1 min-h-0 overflow-y-auto p-1.5 pt-0">
-        {/* "Personal" option always at the top — virtual workspace, not a DB row */}
-        <button
-          type="button"
-          onClick={() => handlePick(null)}
-          className={`${ROW_BASE} w-full px-2 gap-2 text-left ${
-            activeWorkspaceId === null
-              ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
-              : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
-          }`}
-        >
-          <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-            <Cube className="w-5 h-5" weight="light" />
-          </span>
-          <span className="truncate flex-1">Personal</span>
-          {activeWorkspaceId === null && (
-            <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />
-          )}
-        </button>
+        {/* "All workspaces" — aggregate view, default. Only shown when not searching
+            (it isn't a workspace and shouldn't compete in name search). */}
+        {!q && (
+          <button
+            type="button"
+            onClick={() => handlePick(null)}
+            className={`${ROW_BASE} w-full px-2 gap-2 text-left ${
+              isAll
+                ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
+                : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
+            }`}
+          >
+            <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+              <SquaresFour className="w-5 h-5" weight="light" />
+            </span>
+            <span className="truncate flex-1">All workspaces</span>
+            {isAll && (
+              <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />
+            )}
+          </button>
+        )}
 
-        {/* Workspaces */}
-        {filtered.length === 0 ? (
+        {/* "Personal" — virtual workspace, leads the workspace list. */}
+        {personalMatchesSearch && (
+          <button
+            type="button"
+            onClick={() => handlePick('personal')}
+            className={`${ROW_BASE} w-full px-2 gap-2 text-left ${
+              isPersonal
+                ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
+                : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
+            }`}
+          >
+            <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+              <Cube className="w-5 h-5" weight="light" />
+            </span>
+            <span className="truncate flex-1">Personal</span>
+            {isPersonal && (
+              <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />
+            )}
+          </button>
+        )}
+
+        {/* Real workspaces */}
+        {filtered.length === 0 && !personalMatchesSearch ? (
           <div className="px-2 py-2 text-xs text-[var(--text-faint)] select-none">
             {workspaceList.length === 0 ? 'No workspaces yet.' : 'No matches.'}
           </div>
-        ) : (
+        ) : filtered.length === 0 ? null : (
           filtered.map((ws) => {
             const selected = ws.id === activeWorkspaceId
             return (

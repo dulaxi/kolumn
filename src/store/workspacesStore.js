@@ -24,7 +24,7 @@ export const useWorkspacesStore = create(
       members: {},               // { [workspaceId]: [{ user_id, display_name, icon, color, email, role }] }
       invitations: [],           // pending invitations received by current user
       sentInvitations: {},       // { [workspaceId]: [{ id, invited_email, invited_by, status }] }
-      activeWorkspaceId: null,   // null = Personal (not inside any workspace)
+      activeWorkspaceId: null,   // null = All workspaces (default), 'personal' = Personal, otherwise a workspace UUID
       loading: false,
 
       // ====== Setters ======
@@ -73,10 +73,15 @@ export const useWorkspacesStore = create(
             workspaces[w.id] = clean
           })
 
-          // Validate activeWorkspaceId — if the stored one no longer exists,
-          // drop back to Personal (null)
+          // Validate activeWorkspaceId — if the stored one is a UUID that no
+          // longer exists, drop back to All (null). The 'personal' sentinel
+          // is always valid (it's a virtual workspace, not a DB row).
           let { activeWorkspaceId } = get()
-          if (activeWorkspaceId && !workspaces[activeWorkspaceId]) {
+          if (
+            activeWorkspaceId &&
+            activeWorkspaceId !== 'personal' &&
+            !workspaces[activeWorkspaceId]
+          ) {
             activeWorkspaceId = null
           }
 

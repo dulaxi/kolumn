@@ -137,8 +137,10 @@ export default function Sidebar() {
   // "Boards" section = personal boards only (owned by me, not tied to a workspace).
   // Workspace boards live under the Spaces section below.
   const workspaces = useWorkspacesStore((s) => s.workspaces)
-  // Sidebar-list filter: null = Personal (only personal + shared boards); specific id = that workspace only.
-  // Driven by the WorkspaceDropdown trigger inside SidebarNav.
+  // Sidebar-list filter, driven by WorkspaceDropdown:
+  //   null         = All workspaces (default, aggregate — every section renders)
+  //   'personal'   = Personal only (personal boards + shared, no Spaces)
+  //   <uuid>       = that single workspace
   const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId)
   const collapsedSpaces = useSettingsStore((s) => s.collapsedSpaces)
   const toggleSpaceCollapsed = useSettingsStore((s) => s.toggleSpaceCollapsed)
@@ -149,16 +151,16 @@ export default function Sidebar() {
   const personalBoards = Object.values(allBoards).filter(
     (b) => b.owner_id === user?.id && !b.workspace_id,
   )
-  // When the dropdown selects a specific workspace, only that workspace's boards
-  // (and the "Shared with me" list, which is workspace-agnostic) are shown.
-  // When null ("Personal"), only Personal + Shared boards render — the Spaces
-  // section is hidden entirely so Personal feels like its own zone, not a kitchen sink.
-  const workspaceList =
-    activeWorkspaceId === null
+  // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
+  const isAll = activeWorkspaceId === null
+  const isPersonal = activeWorkspaceId === 'personal'
+  const workspaceList = isAll
+    ? Object.values(workspaces)
+    : isPersonal
       ? []
       : Object.values(workspaces).filter((ws) => ws.id === activeWorkspaceId)
-  const showPersonalBoards = activeWorkspaceId === null
-  const showSharedBoards = activeWorkspaceId === null
+  const showPersonalBoards = isAll || isPersonal
+  const showSharedBoards = isAll || isPersonal
 
   const isBoardsActive = location.pathname.startsWith('/boards')
 
