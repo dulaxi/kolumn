@@ -248,7 +248,7 @@ export default function WorkspaceDropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         className={`${ROW_BASE} w-full ${
-          collapsed ? 'justify-center px-2' : 'gap-2 py-1.5 px-2'
+          collapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-2'
         } text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]`}
       >
         <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
