@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaretDown, Gear, Keyboard, SignOut, User } from '@phosphor-icons/react'
+import { Gear, Keyboard, SignOut, User } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import { resolveProfileColor } from '../../constants/colors'
 import DynamicIcon from '../board/DynamicIcon'
@@ -82,12 +82,14 @@ export default function UserMenu({ variant = 'header', collapsed = false }) {
         >
           {avatar}
           {!collapsed && (
-            <>
-              <span className="text-sm font-medium text-[var(--text-primary)] truncate min-w-0 flex-1">
+            <div className="flex flex-col items-start min-w-0 flex-1 overflow-hidden">
+              <span className="text-sm font-medium text-[var(--text-primary)] truncate w-full">
                 {profile?.display_name || 'User'}
               </span>
-              <CaretDown size={12} weight="bold" className={`text-[var(--text-muted)] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
-            </>
+              <span className="text-xs text-[var(--text-muted)] truncate w-full">
+                {profile?.tier ? profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1) : 'Free'}
+              </span>
+            </div>
           )}
         </button>
       </Menu>
