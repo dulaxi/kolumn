@@ -21,7 +21,7 @@ Edge Functions) + Anthropic Claude API**.
 shape so far:
 
 - Sidebar tab labeled **"Builder"** using the Phosphor `Blueprint` icon
-- Standalone page with its own route (likely `/builder`)
+- Standalone page at the route `/build`
 - Sibling to the existing top-level tabs (Search, Chats, Workspace dropdown)
 
 **What it *does* is not yet designed.** Start with a brainstorming pass

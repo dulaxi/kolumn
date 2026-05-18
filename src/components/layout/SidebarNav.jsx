@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { ChatsCircle, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
+import { Blueprint, ChatsCircle, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
 import WorkspaceDropdown from './WorkspaceDropdown'
 
 const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
@@ -80,6 +80,7 @@ export default function SidebarNav({
       </button>
 
       <NavLinkRow to="/chat" end icon={ChatsCircle} label="Chats" collapsed={collapsed} onNavigate={closeMobileMenu} />
+      <NavLinkRow to="/build" icon={Blueprint} label="Builder" collapsed={collapsed} onNavigate={closeMobileMenu} />
       {/* Calendar + Notes removed — see App.jsx note. */}
 
       {/* Workspace — desktop becomes a dropdown filter; mobile keeps a plain NavLink */}
