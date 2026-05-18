@@ -18,6 +18,7 @@ import InlineErrorBoundary from '../InlineErrorBoundary'
 const pageTitles = {
   '/dashboard': 'Home',
   '/boards': 'Boards',
+  '/build': 'Builder',
   '/calendar': 'Calendar',
   '/notes': 'Notes',
   '/workspace': 'Workspace',
