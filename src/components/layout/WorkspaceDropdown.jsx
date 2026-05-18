@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CaretDown, Check, Cube, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
+import { CaretDown, Check, Cube, MagnifyingGlass, Plus, UsersThree } from '@phosphor-icons/react'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
+import WorkspaceCreateModal from '../workspace/WorkspaceCreateModal'
 
 // Panel exit animation duration (matches @keyframes dropdownOut in index.css)
 const EXIT_MS = 120
@@ -47,6 +48,7 @@ export default function WorkspaceDropdown({
   const [exiting, setExiting] = useState(false)
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const [search, setSearch] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
   const inputRef = useRef(null)
   const triggerRef = useRef(null)
   const panelRef = useRef(null)
@@ -209,7 +211,7 @@ export default function WorkspaceDropdown({
         )}
       </div>
 
-      {/* Bottom action — opens the management sub-sidebar */}
+      {/* Bottom actions — Manage opens the sub-sidebar, Create opens the modal */}
       <div className="shrink-0 border-t border-[var(--border-subtle)] p-1">
         <button
           type="button"
@@ -228,6 +230,19 @@ export default function WorkspaceDropdown({
               {invitationCount}
             </span>
           )}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            setCreateOpen(true)
+          }}
+          className={`${ROW_BASE} w-full px-2 gap-2 text-left text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]`}
+        >
+          <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+            <Plus className="w-5 h-5" weight="light" />
+          </span>
+          <span className="truncate flex-1">Create workspace</span>
         </button>
       </div>
     </div>
@@ -280,6 +295,8 @@ export default function WorkspaceDropdown({
         </div>,
         document.body,
       )}
+
+      <WorkspaceCreateModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   )
 }
