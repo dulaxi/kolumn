@@ -137,7 +137,7 @@ export default function WorkspaceDropdown({
   const triggerLabel = activeWorkspace?.name || 'Personal'
   const triggerGlyph = activeWorkspace
     ? <WorkspaceGlyph workspace={activeWorkspace} />
-    : <Cube className="w-5 h-5" weight="regular" />
+    : <Cube className="w-5 h-5" weight="light" />
 
   // ── Panel content ──────────────────────────────────────────────
   const panel = (
@@ -169,7 +169,7 @@ export default function WorkspaceDropdown({
           }`}
         >
           <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-            <Cube className="w-5 h-5" weight="regular" />
+            <Cube className="w-5 h-5" weight="light" />
           </span>
           <span className="truncate flex-1">Personal</span>
           {activeWorkspaceId === null && (
