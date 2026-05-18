@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CaretDown, Check, Cube, MagnifyingGlass, SquaresFour, UsersThree } from '@phosphor-icons/react'
+import { CaretDown, Check, Cube, MagnifyingGlass, User, UsersThree } from '@phosphor-icons/react'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
@@ -27,7 +27,7 @@ function WorkspaceGlyph({ workspace }) {
  * WorkspaceDropdown — replaces the legacy Workspace nav row in the sidebar.
  *
  * - Trigger: looks like a nav row (icon + name + chevron-down). The name
- *   reflects the currently-active workspace, or "All workspaces" if null.
+ *   reflects the currently-active workspace, or "Personal" if null.
  * - Panel: search input on top, scrollable list of options (All + each
  *   workspace), "Manage workspaces" link at the bottom to access the
  *   sub-sidebar (members, invitations, settings).
@@ -134,10 +134,10 @@ export default function WorkspaceDropdown({
     }
   }
 
-  const triggerLabel = activeWorkspace?.name || 'All workspaces'
+  const triggerLabel = activeWorkspace?.name || 'Personal'
   const triggerGlyph = activeWorkspace
     ? <WorkspaceGlyph workspace={activeWorkspace} />
-    : <SquaresFour className="w-5 h-5" weight="light" />
+    : <User className="w-5 h-5" weight="fill" style={{ color: 'var(--color-copper)' }} />
 
   // ── Panel content ──────────────────────────────────────────────
   const panel = (
@@ -158,7 +158,7 @@ export default function WorkspaceDropdown({
 
       {/* List — scrollable when long */}
       <div className="flex-1 min-h-0 overflow-y-auto p-1.5 pt-0">
-        {/* "All workspaces" option always at the top */}
+        {/* "Personal" option always at the top — virtual workspace, not a DB row */}
         <button
           type="button"
           onClick={() => handlePick(null)}
@@ -169,9 +169,13 @@ export default function WorkspaceDropdown({
           }`}
         >
           <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-            <SquaresFour className="w-5 h-5" weight={activeWorkspaceId === null ? 'fill' : 'light'} />
+            <User
+              className="w-5 h-5"
+              weight="fill"
+              style={{ color: 'var(--color-copper)' }}
+            />
           </span>
-          <span className="truncate flex-1">All workspaces</span>
+          <span className="truncate flex-1">Personal</span>
           {activeWorkspaceId === null && (
             <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />
           )}
