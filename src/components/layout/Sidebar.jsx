@@ -137,7 +137,7 @@ export default function Sidebar() {
   // "Boards" section = personal boards only (owned by me, not tied to a workspace).
   // Workspace boards live under the Spaces section below.
   const workspaces = useWorkspacesStore((s) => s.workspaces)
-  // Sidebar-list filter: null = show everything; specific id = show only that workspace.
+  // Sidebar-list filter: null = Personal (only personal + shared boards); specific id = that workspace only.
   // Driven by the WorkspaceDropdown trigger inside SidebarNav.
   const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId)
   const collapsedSpaces = useSettingsStore((s) => s.collapsedSpaces)
