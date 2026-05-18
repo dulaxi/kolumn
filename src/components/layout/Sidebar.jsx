@@ -151,10 +151,12 @@ export default function Sidebar() {
   )
   // When the dropdown selects a specific workspace, only that workspace's boards
   // (and the "Shared with me" list, which is workspace-agnostic) are shown.
-  // When null ("All workspaces"), every section renders as before.
-  const workspaceList = Object.values(workspaces).filter(
-    (ws) => activeWorkspaceId === null || ws.id === activeWorkspaceId,
-  )
+  // When null ("Personal"), only Personal + Shared boards render — the Spaces
+  // section is hidden entirely so Personal feels like its own zone, not a kitchen sink.
+  const workspaceList =
+    activeWorkspaceId === null
+      ? []
+      : Object.values(workspaces).filter((ws) => ws.id === activeWorkspaceId)
   const showPersonalBoards = activeWorkspaceId === null
   const showSharedBoards = activeWorkspaceId === null
 
