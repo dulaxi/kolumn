@@ -13,6 +13,7 @@ const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
 const UpgradeProPage = lazy(() => import('./pages/UpgradeProPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BoardsPage = lazy(() => import('./pages/BoardsPage'))
+const BuilderPage = lazy(() => import('./pages/BuilderPage'))
 // Calendar + Notes removed from the dashboard UI — they added little
 // without core differentiation. Page files still exist on disk; restore
 // the lazy imports + routes below if you want them back.
@@ -89,6 +90,7 @@ export default function App() {
             <Route path="chat" element={<ErrorBoundary><ChatListPage /></ErrorBoundary>} />
             <Route path="chat/:id" element={<ErrorBoundary><ChatPage /></ErrorBoundary>} />
             <Route path="boards/*" element={<ErrorBoundary><BoardsPage /></ErrorBoundary>} />
+            <Route path="build" element={<ErrorBoundary><BuilderPage /></ErrorBoundary>} />
             <Route path="workspace" element={<ErrorBoundary><WorkspacePage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>
