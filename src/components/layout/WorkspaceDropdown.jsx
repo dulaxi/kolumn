@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CaretDown, Check, Cube, CubeTransparent, MagnifyingGlass, Plus, SquaresFour, UsersThree } from '@phosphor-icons/react'
+import { CaretDown, Check, Cube, CubeTransparent, MagnifyingGlass, Plus, UsersThree } from '@phosphor-icons/react'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
@@ -147,12 +147,12 @@ export default function WorkspaceDropdown({
       ? 'Personal'
       : activeWorkspace?.name || 'All workspaces'
   const triggerGlyph = isAll
-    ? <SquaresFour className="w-5 h-5" weight="light" />
+    ? <CubeTransparent className="w-5 h-5" weight="light" />
     : isPersonal
-      ? <CubeTransparent className="w-5 h-5" weight="light" />
+      ? <Cube className="w-5 h-5" weight="light" />
       : activeWorkspace
         ? <WorkspaceGlyph workspace={activeWorkspace} />
-        : <SquaresFour className="w-5 h-5" weight="light" />
+        : <CubeTransparent className="w-5 h-5" weight="light" />
 
   // ── Panel content ──────────────────────────────────────────────
   const panel = (
@@ -186,7 +186,7 @@ export default function WorkspaceDropdown({
             }`}
           >
             <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-              <SquaresFour className="w-5 h-5" weight="light" />
+              <CubeTransparent className="w-5 h-5" weight="light" />
             </span>
             <span className="truncate flex-1">All workspaces</span>
             {isAll && (
@@ -207,7 +207,7 @@ export default function WorkspaceDropdown({
             }`}
           >
             <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-              <CubeTransparent className="w-5 h-5" weight="light" />
+              <Cube className="w-5 h-5" weight="light" />
             </span>
             <span className="truncate flex-1">Personal</span>
             {isPersonal && (
