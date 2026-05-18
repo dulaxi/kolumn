@@ -17,20 +17,39 @@ Edge Functions) + Anthropic Claude API**.
 
 ## Active focus (May 2026, development branch)
 
-**AI workflow rework.** Polish, harden, and instrument the Claude-powered chat
-agent. Everything in the [AI Workflow](#ai-workflow-current-branch-focus)
-section below is in scope; everything else is reference material — touch it only
-when the AI work demands it.
+**Board Builder.** A new top-level feature being scoped on this branch. Known
+shape so far:
 
-Concretely, this means: closing the tool-result loop so the model knows when its
-tool calls succeed; splitting the system prompt into cacheable + volatile blocks;
-persisting conversations to Supabase instead of localStorage; centralizing the
-model ID; resolving the dead `classifyModel()` branch (either use it or delete
-it); adding cache-token telemetry.
+- Sidebar tab labeled **"Builder"** using the Phosphor `Blueprint` icon
+- Standalone page with its own route (likely `/builder`)
+- Sibling to the existing top-level tabs (Search, Chats, Workspace dropdown)
+
+**What it *does* is not yet designed.** Start with a brainstorming pass
+(`superpowers:brainstorming`) before touching code — the name "Board Builder"
+hints at a structured way to compose a board (templates? AI-assisted
+generation? Visual wireframing of columns + card types?), but those are
+guesses, not requirements. Get the user to nail down the actual feature
+before scaffolding the route or sidebar slot.
+
+The [AI Workflow](#ai-workflow-paused--backlog-preserved) section below is
+**paused, not abandoned.** Everything in that backlog (closing the tool-result
+loop, prompt caching split, persisting conversations, model ID consolidation,
+`classifyModel()` resolution, telemetry) is still real work to do — just not
+the active surface. Don't touch AI files except in passing.
+
+**Recent context** (just landed before the focus shift):
+
+- The Workspace dropdown was redesigned into a three-state selector with a
+  tight icon vocabulary that future workspace-adjacent work should respect.
+  See [Coherency Rules](#coherency-rules) → "Workspace icon vocabulary."
+- Bottom-left of the sidebar now shows `display_name` + capitalized `tier` in
+  a two-line block (replaces the prior single-line name + caret). The
+  `profile.tier` field is the source of truth (`'free' | 'pro' | 'team'`).
 
 UI coherency rules (claude.ai-style: restrained, lime accent, Mona Sans + serif,
-1px borders, 8–12px radius) still apply — but don't go on unrelated coherency
-tangents while you're in the AI files. Refactor what you touch.
+1px borders, 8–12px radius) still apply. If Builder introduces new icons,
+prefer extending the existing Phosphor vocabulary already in use over importing
+new symbols.
 
 Bias: prefer extending an existing pattern over inventing a new one.
 
@@ -147,10 +166,14 @@ If a calendar comes back, the right shape is a **board view toggle**
 (month/week grid of cards with `due_date`) alongside the column view —
 not a top-level Calendar nav item.
 
-## AI Workflow (current branch focus)
+## AI Workflow (paused — backlog preserved)
 
-The Claude agent is the active rework target on this branch. Read this whole
-section before changing any AI-adjacent file.
+> The Claude agent **was** the active rework target until the focus shifted to
+> Board Builder (see [Active focus](#active-focus-may-2026-development-branch)).
+> Everything below is still accurate and the backlog at the end is still real
+> work — but touch these files only when Builder requires it. If you find
+> yourself making non-trivial changes here without an explicit request,
+> stop and re-read the active focus section.
 
 ### Two AI surfaces, not one
 
@@ -376,6 +399,11 @@ without a deliberate reason discussed with the user.
 - **Border radius: 8px small (buttons, inputs), 10-12px raised (cards, modals, panels).**
 - **Shadows: minimal.** Default raised shadow is `0 4px 24px rgba(27,27,24,0.10)` (matches toasts).
 - **Card field names are snake_case** (DB columns). See Key Data Shapes.
+- **Workspace icon vocabulary.** The workspace dropdown uses a tight three-icon typology — re-use it for any future workspace-adjacent surface so the visual language stays consistent:
+  - `CubeFocus` (weight=light) → aggregate / "all workspaces" view (the `null` sentinel, default)
+  - `Cube` (weight=light) → virtual / "Personal" (the `'personal'` sentinel; user's private boards + shared-with-me)
+  - `Cube` (weight=fill, color via `resolveWorkspaceColor`) → a specific real workspace (UUID). Color comes from `WORKSPACE_COLORS` in `src/constants/colors.js`.
+- **`activeWorkspaceId` sentinel encoding.** Three states: `null` = All (default, every section renders in Sidebar), `'personal'` = Personal only (personal + shared, no Spaces), UUID = that specific workspace. Anywhere you read this value as "is a real workspace" must explicitly check `value && value !== 'personal' && workspaces[value]` — naive `if (activeWorkspaceId)` will misread `'personal'` as a UUID.
 
 ## Key data shapes
 
