@@ -87,7 +87,9 @@ export default function UserMenu({ variant = 'header', collapsed = false }) {
                 {profile?.display_name || 'User'}
               </span>
               <span className="text-xs text-[var(--text-muted)] truncate w-full">
-                {profile?.tier ? profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1) : 'Free'}
+                {profile?.tier
+                  ? `${profile.tier.charAt(0).toUpperCase()}${profile.tier.slice(1)} plan`
+                  : 'Free plan'}
               </span>
             </div>
           )}
