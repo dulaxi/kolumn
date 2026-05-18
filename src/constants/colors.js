@@ -20,6 +20,53 @@ export const COLOR_DOT_CLASSES = {
   gray: 'bg-[var(--label-gray-bg)]',
 }
 
+// Workspace identity colors — Phosphor system palette.
+// Top row = saturated tones; bottom row = lighter "wash" variants for
+// quieter workspace identities. Picker is laid out as 7 cols × 2 rows,
+// so list order MUST be: 7 saturated first, then 7 washes (left→right).
+// All workspaces render with the same Cube glyph; color comes from
+// `workspaces.icon` via resolveWorkspaceColor (overloaded field —
+// existing rows with Phosphor icon names hash to a stable color).
+export const WORKSPACE_COLORS = [
+  // Saturated row
+  { name: 'copper',         hex: '#C27A4A' },
+  { name: 'honey',          hex: '#D4A843' },
+  { name: 'lime',           hex: '#C2D64A' },
+  { name: 'mauve',          hex: '#A8969E' },
+  { name: 'walnut',         hex: '#8B7355' },
+  { name: 'bark',           hex: '#7A5C44' },
+  { name: 'bark-dark',      hex: '#6B4D38' },
+  // Wash row — lighter variants of each saturated tone, darkened by
+  // ~10% from the standard Phosphor --color-*-wash tokens so they
+  // carry a touch more visual weight in the picker (otherwise they
+  // read too pastel against the modal background).
+  { name: 'copper-wash',    hex: '#DAC3B3' },
+  { name: 'honey-wash',     hex: '#DCD5BA' },
+  { name: 'lime-wash',      hex: '#D6DAC1' },
+  { name: 'mauve-wash',     hex: '#D1C7CB' },
+  { name: 'walnut-wash',    hex: '#D1C7BB' },
+  { name: 'bark-wash',      hex: '#D8CABD' },
+  { name: 'bark-dark-wash', hex: '#CEBDAD' },
+]
+
+const WORKSPACE_COLOR_MAP = Object.fromEntries(
+  WORKSPACE_COLORS.map((c) => [c.name, c.hex])
+)
+
+// Resolves a workspace to its display hex color. Reads the `icon` field
+// — if it matches a known color name, returns that hex. Otherwise falls
+// back to a deterministic hash of the workspace id (so legacy workspaces
+// with Phosphor icon names still get a stable, identifying color).
+export function resolveWorkspaceColor(workspace) {
+  const stored = workspace?.icon
+  if (stored && WORKSPACE_COLOR_MAP[stored]) return WORKSPACE_COLOR_MAP[stored]
+  const id = workspace?.id || ''
+  if (!id) return WORKSPACE_COLORS[0].hex
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return WORKSPACE_COLORS[h % WORKSPACE_COLORS.length].hex
+}
+
 // Priority options for card detail fields and inline editor
 export const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Low', dot: 'bg-[var(--color-lime-dark)]' },

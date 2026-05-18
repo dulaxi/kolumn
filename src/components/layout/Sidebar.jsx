@@ -137,6 +137,9 @@ export default function Sidebar() {
   // "Boards" section = personal boards only (owned by me, not tied to a workspace).
   // Workspace boards live under the Spaces section below.
   const workspaces = useWorkspacesStore((s) => s.workspaces)
+  // Sidebar-list filter: null = show everything; specific id = show only that workspace.
+  // Driven by the WorkspaceDropdown trigger inside SidebarNav.
+  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId)
   const collapsedSpaces = useSettingsStore((s) => s.collapsedSpaces)
   const toggleSpaceCollapsed = useSettingsStore((s) => s.toggleSpaceCollapsed)
   const boardsCollapsed = useSettingsStore((s) => s.boardsCollapsed)
@@ -146,7 +149,14 @@ export default function Sidebar() {
   const personalBoards = Object.values(allBoards).filter(
     (b) => b.owner_id === user?.id && !b.workspace_id,
   )
-  const workspaceList = Object.values(workspaces)
+  // When the dropdown selects a specific workspace, only that workspace's boards
+  // (and the "Shared with me" list, which is workspace-agnostic) are shown.
+  // When null ("All workspaces"), every section renders as before.
+  const workspaceList = Object.values(workspaces).filter(
+    (ws) => activeWorkspaceId === null || ws.id === activeWorkspaceId,
+  )
+  const showPersonalBoards = activeWorkspaceId === null
+  const showSharedBoards = activeWorkspaceId === null
 
   const isBoardsActive = location.pathname.startsWith('/boards')
 
@@ -239,8 +249,8 @@ export default function Sidebar() {
             invitationCount={invitationCount}
           />
 
-          {/* ── Boards section ── */}
-          {!showCollapsed && (
+          {/* ── Boards section ── (hidden when filtering to a specific workspace) */}
+          {!showCollapsed && showPersonalBoards && (
             <div className="pt-4">
               <SectionHeader
                 label="Boards"
@@ -287,8 +297,8 @@ export default function Sidebar() {
             )
           })}
 
-          {/* ── Shared with me ── */}
-          {!showCollapsed && sharedBoards.length > 0 && (
+          {/* ── Shared with me ── (hidden when filtering to a specific workspace) */}
+          {!showCollapsed && showSharedBoards && sharedBoards.length > 0 && (
             <div className="pt-4">
               <SectionHeader
                 label="Shared with me"

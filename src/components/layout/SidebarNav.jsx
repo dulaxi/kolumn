@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { ChatsCircle, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
-import { useWorkspacesStore } from '../../store/workspacesStore'
+import WorkspaceDropdown from './WorkspaceDropdown'
 
 const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
 
@@ -54,22 +54,13 @@ export default function SidebarNav({
   isDesktop,
   workspaceSidebarOpen,
   toggleWorkspaceSidebar,
-  pathname,
   navigate,
   closeMobileMenu,
   invitationCount = 0,
 }) {
-  const wsActive = workspaceSidebarOpen || pathname === '/workspace'
-
   const invBadge = invitationCount > 0 ? (
     <span className="text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full">
       {invitationCount}
-    </span>
-  ) : null
-
-  const invBadgeCollapsed = invitationCount > 0 ? (
-    <span className="absolute -top-1.5 -right-1.5 bg-[var(--color-lime)] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-      {invitationCount > 9 ? '9+' : invitationCount}
     </span>
   ) : null
 
@@ -91,30 +82,18 @@ export default function SidebarNav({
       <NavLinkRow to="/chat" end icon={ChatsCircle} label="Chats" collapsed={collapsed} onNavigate={closeMobileMenu} />
       {/* Calendar + Notes removed — see App.jsx note. */}
 
-      {/* Workspace — desktop button toggles sub-sidebar; mobile is a plain NavLink */}
+      {/* Workspace — desktop becomes a dropdown filter; mobile keeps a plain NavLink */}
       {isDesktop ? (
-        <button
-          type="button"
-          onClick={() => {
-            toggleWorkspaceSidebar()
+        <WorkspaceDropdown
+          collapsed={collapsed}
+          invitationCount={invitationCount}
+          onManageClick={() => {
             if (!workspaceSidebarOpen) {
-              useWorkspacesStore.getState().setActiveWorkspace(null)
+              toggleWorkspaceSidebar()
               navigate('/workspace')
             }
           }}
-          title={collapsed ? 'Workspace' : undefined}
-          className={`${ROW_BASE} ${activeClasses(wsActive)} ${layoutClasses(collapsed)} w-full`}
-        >
-          <IconSlot badge={collapsed ? invBadgeCollapsed : null}>
-            <UsersThree className="w-5 h-5 shrink-0" weight={wsActive ? 'fill' : 'light'} />
-          </IconSlot>
-          {!collapsed && (
-            <>
-              <span className="truncate flex-1 text-left">Workspace</span>
-              {invBadge}
-            </>
-          )}
-        </button>
+        />
       ) : (
         <NavLinkRow
           to="/workspace"
