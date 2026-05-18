@@ -1,5 +1,4 @@
 import { Blueprint, CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
-import Button from '../components/ui/Button'
 
 export default function BuilderPage() {
   return (
@@ -42,9 +41,13 @@ export default function BuilderPage() {
         <p className="max-w-sm text-xs text-[var(--text-muted)]">
           Describe what you want to track and we&apos;ll set up columns, labels, and starter cards.
         </p>
-        <Button variant="secondary" size="md" className="mt-2">
+        <button
+          type="button"
+          className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
           New build
-        </Button>
+        </button>
       </div>
     </div>
   )
