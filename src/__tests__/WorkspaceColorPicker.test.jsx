@@ -34,5 +34,6 @@ describe('WorkspaceColorPicker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'honey' }))
     expect(onChange).toHaveBeenCalledWith('honey')
     expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onChange.mock.invocationCallOrder[0]).toBeLessThan(onClose.mock.invocationCallOrder[0])
   })
 })
