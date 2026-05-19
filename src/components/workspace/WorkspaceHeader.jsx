@@ -53,7 +53,6 @@ export default function WorkspaceHeader({
           <WorkspaceColorPicker
             value={workspace.icon}
             onChange={handleColor}
-            onClose={() => setPickerOpen(false)}
           />
         }
       >
@@ -64,7 +63,7 @@ export default function WorkspaceHeader({
           className={`h-16 w-16 rounded-2xl border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] flex items-center justify-center transition-colors ${
             isOwner ? 'hover:border-[var(--color-mist)] cursor-pointer' : ''
           }`}
-          aria-label={isOwner ? 'Change workspace color' : undefined}
+          aria-label={isOwner ? 'Change workspace color' : 'Workspace color'}
         >
           <Cube weight="fill" className="w-7 h-7" style={{ color }} />
         </button>

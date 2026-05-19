@@ -5,7 +5,7 @@ import { WORKSPACE_COLORS } from '../constants/colors'
 
 describe('WorkspaceColorPicker', () => {
   it('renders a swatch button for every WORKSPACE_COLORS entry', () => {
-    render(<WorkspaceColorPicker value={null} onChange={() => {}} onClose={() => {}} />)
+    render(<WorkspaceColorPicker value={null} onChange={() => {}} />)
     for (const c of WORKSPACE_COLORS) {
       expect(screen.getByRole('button', { name: c.name })).toBeInTheDocument()
     }
@@ -13,7 +13,7 @@ describe('WorkspaceColorPicker', () => {
   })
 
   it('marks the swatch matching `value` as selected via aria-pressed', () => {
-    render(<WorkspaceColorPicker value="copper" onChange={() => {}} onClose={() => {}} />)
+    render(<WorkspaceColorPicker value="copper" onChange={() => {}} />)
     const copper = screen.getByRole('button', { name: 'copper' })
     expect(copper).toHaveAttribute('aria-pressed', 'true')
     const lime = screen.getByRole('button', { name: 'lime' })
@@ -21,19 +21,17 @@ describe('WorkspaceColorPicker', () => {
   })
 
   it('does not mark any swatch selected for a legacy/non-matching value', () => {
-    render(<WorkspaceColorPicker value="cube" onChange={() => {}} onClose={() => {}} />)
+    render(<WorkspaceColorPicker value="cube" onChange={() => {}} />)
     for (const c of WORKSPACE_COLORS) {
       expect(screen.getByRole('button', { name: c.name })).toHaveAttribute('aria-pressed', 'false')
     }
   })
 
-  it('calls onChange with the swatch name then onClose when a swatch is clicked', () => {
+  it('calls onChange with the swatch name when a swatch is clicked', () => {
     const onChange = vi.fn()
-    const onClose = vi.fn()
-    render(<WorkspaceColorPicker value={null} onChange={onChange} onClose={onClose} />)
+    render(<WorkspaceColorPicker value={null} onChange={onChange} />)
     fireEvent.click(screen.getByRole('button', { name: 'honey' }))
     expect(onChange).toHaveBeenCalledWith('honey')
-    expect(onClose).toHaveBeenCalledTimes(1)
-    expect(onChange.mock.invocationCallOrder[0]).toBeLessThan(onClose.mock.invocationCallOrder[0])
+    expect(onChange).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,11 +1,6 @@
 import { WORKSPACE_COLORS } from '../../constants/colors'
 
-export default function WorkspaceColorPicker({ value, onChange, onClose }) {
-  const handlePick = (name) => {
-    onChange(name)
-    onClose()
-  }
-
+export default function WorkspaceColorPicker({ value, onChange }) {
   return (
     <div className="grid grid-cols-7 gap-2 p-1">
       {WORKSPACE_COLORS.map((c) => {
@@ -14,7 +9,7 @@ export default function WorkspaceColorPicker({ value, onChange, onClose }) {
           <button
             key={c.name}
             type="button"
-            onClick={() => handlePick(c.name)}
+            onClick={() => onChange(c.name)}
             aria-label={c.name}
             aria-pressed={selected}
             title={c.name}
