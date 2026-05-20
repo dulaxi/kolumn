@@ -1314,8 +1314,39 @@ export const useBoardStore = create((set, get) => ({
         }
       })
 
+    // Labels + card_labels: unfiltered (workspace-scoped, not board-scoped)
+    const labelsSub = supabase
+      .channel('labels-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'labels' }, (payload) => {
+        set((state) => {
+          if (payload.eventType === 'DELETE') {
+            const { [payload.old.id]: _, ...rest } = state.labels
+            return { labels: rest }
+          }
+          const label = payload.new
+          return { labels: { ...state.labels, [label.id]: label } }
+        })
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'card_labels' }, (payload) => {
+        set((state) => {
+          const row = payload.eventType === 'DELETE' ? payload.old : payload.new
+          if (!row) return state
+          const cur = state.cardLabels[row.card_id]
+          const next = new Set(cur)
+          if (payload.eventType === 'DELETE') next.delete(row.label_id)
+          else next.add(row.label_id)
+          return { cardLabels: { ...state.cardLabels, [row.card_id]: next } }
+        })
+      })
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logError('Realtime labels subscription error:', err)
+          scheduleReconnect()
+        }
+      })
+
     // Columns + Cards: filtered to active board (reduces noise for multi-board users)
-    const subs = [boardsSub]
+    const subs = [boardsSub, labelsSub]
     if (activeBoardId && activeBoardId !== '__all__') {
       const boardDetailSub = supabase
         .channel(`board-detail-${activeBoardId}`)
