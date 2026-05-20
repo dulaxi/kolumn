@@ -46,3 +46,39 @@ export function selectBoardCards(boardId) {
       Object.values(cards).filter((c) => c.board_id === boardId),
   })
 }
+
+// Label selectors: pure functions (no memoization yet, as these hit a new state slice).
+
+const EMPTY_LABELS = Object.freeze([])
+
+export const selectCardLabels = (cardId) => (state) => {
+  const ids = state.cardLabels?.[cardId]
+  if (!ids || ids.size === 0) return EMPTY_LABELS
+  const out = []
+  for (const id of ids) {
+    const l = state.labels?.[id]
+    if (l && !l.archived_at) out.push(l)
+  }
+  return out.length ? out : EMPTY_LABELS
+}
+
+export const selectBoardLabels = (boardId) => (state) => {
+  const out = []
+  for (const id in state.labels) {
+    const l = state.labels[id]
+    if (l.board_id === boardId && !l.archived_at) out.push(l)
+  }
+  out.sort((a, b) => a.text.toLowerCase().localeCompare(b.text.toLowerCase()))
+  return out
+}
+
+export const selectBoardLabelByText = (boardId, text) => (state) => {
+  const target = text.trim().toLowerCase()
+  for (const id in state.labels) {
+    const l = state.labels[id]
+    if (l.board_id === boardId && !l.archived_at && l.text.toLowerCase() === target) {
+      return l
+    }
+  }
+  return undefined
+}
