@@ -1,12 +1,25 @@
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
+let mockBoardState = {
+  cards: {},
+  cardLabels: {},
+  labels: {},
+  updateCard: vi.fn(),
+}
+
 vi.mock('../store/boardStore', () => ({
-  useBoardStore: vi.fn((sel) => sel({
-    cards: {},
-    updateCard: vi.fn(),
-  })),
+  useBoardStore: vi.fn((sel) => sel(mockBoardState)),
 }))
+
+beforeEach(() => {
+  mockBoardState = {
+    cards: {},
+    cardLabels: {},
+    labels: {},
+    updateCard: vi.fn(),
+  }
+})
 vi.mock('../store/authStore', () => ({
   useAuthStore: vi.fn((sel) => sel({
     profile: { display_name: 'Alice', icon: null, color: 'bg-blue-200' },
@@ -45,7 +58,15 @@ describe('Card', () => {
   // CardDetailPanel header. Removed previous "renders task number" test.
 
   test('renders labels with slash prefix', () => {
-    const card = { ...baseCard, labels: [{ text: 'bug', color: 'red' }, { text: 'urgent', color: 'yellow' }] }
+    const card = { ...baseCard }
+    // Set up board state with labels
+    mockBoardState.labels = {
+      'l1': { id: 'l1', text: 'bug', color: 'red', board_id: 'b1' },
+      'l2': { id: 'l2', text: 'urgent', color: 'yellow', board_id: 'b1' },
+    }
+    mockBoardState.cardLabels = {
+      'c1': new Set(['l1', 'l2']),
+    }
     render(<Card card={card} onClick={vi.fn()} />)
     // Card renders labels as "/labelname" (lowercase, slash-prefixed)
     expect(screen.getByText('/bug')).toBeInTheDocument()

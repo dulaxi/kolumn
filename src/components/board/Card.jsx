@@ -7,13 +7,15 @@ import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
 import { LABEL_OUTLINE, PRIORITY_DOT } from '../../utils/formatting'
+import { selectCardLabels } from '../../store/selectors'
 import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
 import { resolveProfileColor } from '../../constants/colors'
 import { isAICreated } from '../../lib/toolExecutor'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
-  const { title, description, labels, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  const { title, description, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  const labels = useBoardStore(selectCardLabels(card.id))
   // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
   const assignees = (card.assignees && card.assignees.length)
     ? card.assignees
