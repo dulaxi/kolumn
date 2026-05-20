@@ -1397,6 +1397,110 @@ export const useBoardStore = create((set, get) => ({
     set({ subscriptions: [] })
   },
 
+  // ─── Label actions ───────────────────────────────────────────────────────────
+
+  addLabelToCard: async (cardId, text, color = null) => {
+    const card = get().cards[cardId]
+    if (!card) return
+    const { data: labelId, error } = await supabase.rpc('attach_label_by_text', {
+      p_card_id: cardId, p_text: text, p_color: color,
+    })
+    if (error) {
+      showToast.error(`Couldn't add label: ${error.message}`)
+      return
+    }
+    set((s) => {
+      const next = new Set(s.cardLabels[cardId] || [])
+      next.add(labelId)
+      return { cardLabels: { ...s.cardLabels, [cardId]: next } }
+    })
+  },
+
+  removeLabelFromCard: async (cardId, labelId) => {
+    set((s) => {
+      const cur = s.cardLabels[cardId]
+      if (!cur) return s
+      const next = new Set(cur)
+      next.delete(labelId)
+      return { cardLabels: { ...s.cardLabels, [cardId]: next } }
+    })
+    const { error } = await supabase
+      .from('card_labels')
+      .delete()
+      .eq('card_id', cardId)
+      .eq('label_id', labelId)
+    if (error) showToast.error(`Couldn't remove label: ${error.message}`)
+  },
+
+  renameLabel: async (labelId, newText) => {
+    const trimmed = newText.trim()
+    if (!trimmed) return
+    const { error } = await supabase.from('labels').update({ text: trimmed }).eq('id', labelId)
+    if (error) {
+      if (error.code === '23505') {
+        showToast.warn('A label with that name already exists — use Merge instead.')
+      } else {
+        showToast.error(`Couldn't rename label: ${error.message}`)
+      }
+      return
+    }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], text: trimmed } },
+    }))
+  },
+
+  updateLabelColor: async (labelId, color) => {
+    const { error } = await supabase.from('labels').update({ color }).eq('id', labelId)
+    if (error) { showToast.error(`Couldn't update color: ${error.message}`); return }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], color } },
+    }))
+  },
+
+  mergeLabels: async (fromId, intoId) => {
+    const { error } = await supabase.rpc('merge_labels', { p_from_id: fromId, p_into_id: intoId })
+    if (error) { showToast.error(`Couldn't merge: ${error.message}`); return }
+    set((s) => {
+      const nextLabels = { ...s.labels }
+      delete nextLabels[fromId]
+      const nextCardLabels = {}
+      for (const [cid, ids] of Object.entries(s.cardLabels)) {
+        const ns = new Set(ids)
+        if (ns.delete(fromId)) ns.add(intoId)
+        nextCardLabels[cid] = ns
+      }
+      return { labels: nextLabels, cardLabels: nextCardLabels }
+    })
+  },
+
+  archiveLabel: async (labelId) => {
+    const ts = new Date().toISOString()
+    const { error } = await supabase
+      .from('labels').update({ archived_at: ts }).eq('id', labelId)
+    if (error) { showToast.error(`Couldn't archive: ${error.message}`); return }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], archived_at: ts } },
+    }))
+  },
+
+  unarchiveLabel: async (labelId) => {
+    const { error } = await supabase
+      .from('labels').update({ archived_at: null }).eq('id', labelId)
+    if (error) {
+      if (error.code === '23505') {
+        showToast.warn('Cannot unarchive — a label with this name already exists.')
+      } else {
+        showToast.error(`Couldn't unarchive: ${error.message}`)
+      }
+      return
+    }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], archived_at: null } },
+    }))
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
   resetStore: () => {
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
