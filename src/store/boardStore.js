@@ -102,6 +102,8 @@ export const useBoardStore = create((set, get) => ({
   boards: {},
   columns: {},
   cards: {},
+  labels: {},
+  cardLabels: {},
   activeBoardId: null,
   loading: true,
   error: null,
@@ -144,6 +146,28 @@ export const useBoardStore = create((set, get) => ({
       const cardMap = {}
       ;(cardsRes.data || []).forEach((c) => { cardMap[c.id] = c })
 
+      // Fetch labels + card_labels in parallel, scoped to the loaded cards
+      const cardIds = (cardsRes.data || []).map((c) => c.id)
+      const [labelsRes, cardLabelsRes] = await Promise.all([
+        supabase.from('labels').select('*'),
+        cardIds.length === 0
+          ? Promise.resolve({ data: [], error: null })
+          : supabase.from('card_labels').select('card_id, label_id').in('card_id', cardIds),
+      ])
+      if (labelsRes.error) logError('Failed to fetch labels:', labelsRes.error)
+      if (cardLabelsRes.error) logError('Failed to fetch card_labels:', cardLabelsRes.error)
+
+      const labelMap = {}
+      ;(labelsRes.data || []).forEach((l) => { labelMap[l.id] = l })
+
+      const cardLabelMap = {}
+      ;(cardLabelsRes.data || []).forEach((cl) => {
+        const prev = cardLabelMap[cl.card_id] || new Set()
+        const next = new Set(prev)
+        next.add(cl.label_id)
+        cardLabelMap[cl.card_id] = next
+      })
+
       const firstBoardId = boardsRes.data?.length ? boardsRes.data[0].id : null
       const current = get().activeBoardId
       const saved = localStorage.getItem(ACTIVE_BOARD_KEY)
@@ -155,6 +179,8 @@ export const useBoardStore = create((set, get) => ({
         boards: boardMap,
         columns: columnMap,
         cards: cardMap,
+        labels: labelMap,
+        cardLabels: cardLabelMap,
         activeBoardId: restoredId,
         loading: false,
         error: fetchError ? { message: fetchError.message, action: 'fetchBoards' } : null,
@@ -464,7 +490,6 @@ export const useBoardStore = create((set, get) => ({
         .map((n) => sanitizeTitle(n))
         .filter(Boolean),
       assignee_name: sanitizeTitle((cardData.assignees && cardData.assignees[0]) || cardData.assignee) || '',
-      labels: cardData.labels || [],
       due_date: cardData.dueDate || null,
       priority: cardData.priority || 'medium',
       icon: cardData.icon || null,
@@ -508,7 +533,6 @@ export const useBoardStore = create((set, get) => ({
           description: optimisticCard.description,
           assignee_name: optimisticCard.assignee_name,
           assignees: optimisticCard.assignees,
-          labels: optimisticCard.labels,
           due_date: optimisticCard.due_date,
           priority: optimisticCard.priority,
           icon: optimisticCard.icon,
@@ -546,7 +570,6 @@ export const useBoardStore = create((set, get) => ({
             if (tempCurrent.assignee_name !== optimisticCard.assignee_name) merged.assignee_name = tempCurrent.assignee_name
             if (tempCurrent.priority !== optimisticCard.priority) merged.priority = tempCurrent.priority
             if (tempCurrent.due_date !== optimisticCard.due_date) merged.due_date = tempCurrent.due_date
-            if (JSON.stringify(tempCurrent.labels) !== JSON.stringify(optimisticCard.labels)) merged.labels = tempCurrent.labels
             if (JSON.stringify(tempCurrent.checklist) !== JSON.stringify(optimisticCard.checklist)) merged.checklist = tempCurrent.checklist
           }
           const { [tempId]: _, ...restCards } = s.cards
@@ -585,7 +608,6 @@ export const useBoardStore = create((set, get) => ({
       // with how the source card looks.
       assignees: card.assignees && card.assignees.length ? [...card.assignees] : undefined,
       assignee: card.assignee_name || '',
-      labels: card.labels ? [...card.labels] : [],
       dueDate: card.due_date || null,
       priority: card.priority || 'medium',
       icon: card.icon || null,
@@ -612,7 +634,6 @@ export const useBoardStore = create((set, get) => ({
     if ('priority' in updates) dbUpdates.priority = updates.priority
     if ('dueDate' in updates) dbUpdates.due_date = updates.dueDate
     if ('due_date' in updates) dbUpdates.due_date = updates.due_date
-    if ('labels' in updates) dbUpdates.labels = updates.labels
     if ('checklist' in updates) dbUpdates.checklist = updates.checklist
     if ('icon' in updates) dbUpdates.icon = updates.icon
     if ('completed' in updates) dbUpdates.completed = updates.completed
@@ -1217,7 +1238,6 @@ export const useBoardStore = create((set, get) => ({
         due_date: newDueDate,
         icon: task.icon,
         completed: false,
-        labels: task.labels || [],
         checklist: (task.checklist || []).map((item) => ({ ...item, done: false })),
         recurrence_interval: task.recurrence_interval,
         recurrence_unit: task.recurrence_unit,
@@ -1381,6 +1401,6 @@ export const useBoardStore = create((set, get) => ({
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
     subscriptions.forEach((sub) => supabase.removeChannel(sub))
-    set({ boards: {}, columns: {}, cards: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
+    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))
