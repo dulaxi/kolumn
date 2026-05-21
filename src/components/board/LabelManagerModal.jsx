@@ -146,9 +146,9 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
                       setRenameId(l.id)
                       setRenameText(l.text)
                     }}
-                    className="text-sm text-[var(--text-primary)] flex-1 text-left hover:underline truncate"
+                    className="text-sm text-[var(--text-primary)] flex-1 text-left hover:underline truncate lowercase"
                   >
-                    {l.text}
+                    /{l.text}
                   </button>
                 )}
 
@@ -300,7 +300,7 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
                       <span
                         className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || ''}`}
                       />
-                      {l.text}
+                      <span className="lowercase">/{l.text}</span>
                     </button>
                   ))}
                 {allLabels.filter(
