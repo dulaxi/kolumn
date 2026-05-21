@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 
-import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
 import { ArrowLeft, Bookmark, Calendar, Check, CheckCircle, Copy, DotsThreeVertical, Download, File, FileText, Flag, Image, Paperclip, Plus, Trash, Upload, User, X } from '@phosphor-icons/react'
 import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
@@ -10,6 +9,7 @@ import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import IconPicker from './IconPicker'
+import LabelAutocomplete from './LabelAutocomplete'
 import { formatDueDateLabel, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
 import Modal from '../ui/Modal'
@@ -21,30 +21,15 @@ import CardChecklist from './cardDetail/CardChecklist'
 import CardFiles from './cardDetail/CardFiles'
 import { showToast } from '../../utils/toast'
 import { useTemplateStore } from '../../store/templateStore'
-
-// Defense-in-depth: drop duplicate labels by (text|color) key before they
-// land in state. Same text + same color = same label; multiple instances
-// are never the user's intent and are usually a bug symptom (e.g. the
-// Enter+blur double-fire in the new-label input).
-function dedupLabels(arr) {
-  if (!Array.isArray(arr)) return arr
-  const seen = new Set()
-  const out = []
-  for (const l of arr) {
-    if (!l || typeof l.text !== 'string') continue
-    const key = `${l.text.toLowerCase()}|${l.color || ''}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    out.push(l)
-  }
-  return out
-}
+import { selectCardLabels } from '../../store/selectors'
 
 export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
   const duplicateCard = useBoardStore((s) => s.duplicateCard)
+  const addLabelToCard = useBoardStore((s) => s.addLabelToCard)
+  const removeLabelFromCard = useBoardStore((s) => s.removeLabelFromCard)
   const addTemplate = useTemplateStore((s) => s.addTemplate)
   const boardName = useBoardStore((s) => s.boards[s.cards[cardId]?.board_id]?.name || '—')
   const statusName = useBoardStore((s) => s.columns[s.cards[cardId]?.column_id]?.title || '—')
@@ -53,6 +38,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const uploadAttachment = useBoardStore((s) => s.uploadAttachment)
   const deleteAttachment = useBoardStore((s) => s.deleteAttachment)
   const getAttachmentUrl = useBoardStore((s) => s.getAttachmentUrl)
+  // Labels come from the store via selector — not local state.
+  const labels = useBoardStore(selectCardLabels(cardId))
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
   const isMobile = useIsMobile()
@@ -63,7 +50,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     checklist, setChecklist,
     priority, setPriority,
     dueDate, setDueDate,
-    labels, setLabels,
     assignees, setAssignees,
   } = useCardEditState(card)
   const [editingDescription, setEditingDescription] = useState(false)
@@ -93,17 +79,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const titleRef = useRef(null)
   const descriptionRef = useRef(null)
   const [showLabelForm, setShowLabelForm] = useState(false)
-  const [newLabelText, setNewLabelText] = useState('')
-  // Suppresses the label input's onBlur from re-firing the add/edit action
-  // after Enter (or Escape) already handled it. The DOM input gets removed
-  // when showLabelForm/editingLabelIdx flips, which triggers blur — but the
-  // blur handler's closure captures the OLD newLabelText, leading to a
-  // duplicate add. Setting this ref synchronously in onKeyDown lets onBlur
-  // bail out before re-executing.
-  const labelSubmittedRef = useRef(false)
-  const [newLabelColor, setNewLabelColor] = useState('blue')
-  const [editingLabelIdx, setEditingLabelIdx] = useState(null)
-  const [editingLabelText, setEditingLabelText] = useState('')
   // Legacy assignee fallback preserved — formDataRef initialization below still needs this local
   const initialAssignees = card?.assignees?.length
     ? card.assignees
@@ -113,7 +88,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
 
   const isDirtyRef = useRef(false)
   const autoSaveTimerRef = useRef(null)
-  const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', labels: card?.labels ? [...card.labels] : [], assignees: [...initialAssignees], dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
+  const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', assignees: [...initialAssignees], dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
 
   useEffect(() => {
     if (card) fetchAttachments(cardId)
@@ -133,7 +108,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     setDescription(card.description || '')
     setPriority(card.priority || 'medium')
     setDueDate(card.due_date || '')
-    setLabels(card.labels ? card.labels.map((l) => ({ ...l })) : [])
     setAssignees(
       card.assignees?.length
         ? [...card.assignees]
@@ -151,7 +125,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         useBoardStore.getState().updateCard(cardId, {
           title: d.title.trim() || card?.title || 'Untitled task',
           description: d.description,
-          labels: d.labels,
           assignees: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
@@ -163,7 +136,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   }, [cardId, card?.title])
 
   useEffect(() => {
-    formDataRef.current = { title, description, labels, assignees, dueDate, checklist, priority }
+    formDataRef.current = { title, description, assignees, dueDate, checklist, priority }
   })
 
   useEffect(() => {
@@ -178,7 +151,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         useBoardStore.getState().updateCard(cardId, {
           title: d.title.trim() || 'Untitled task',
           description: d.description,
-          labels: d.labels,
           assignees: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
@@ -193,7 +165,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const handleSave = () => {
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
     isDirtyRef.current = false
-    updateCard(cardId, { title: title.trim() || card.title, description, labels, assignees, due_date: dueDate || null, checklist, priority })
+    updateCard(cardId, { title: title.trim() || card.title, description, assignees, due_date: dueDate || null, checklist, priority })
   }
 
   const handleSaveAndClose = () => { handleSave(); onClose() }
@@ -231,104 +203,34 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           {/* Labels — moved out of the title row so the heading stays
               clean and labels live next to the other metadata. */}
           <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
-            {labels.map((label, idx) => (
-              editingLabelIdx === idx ? (
-                <span key={`${label.text}-${label.color}-edit`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 rounded-lg text-xs lowercase border border-[var(--border-default)]">
-                  <span className="invisible px-2">/{editingLabelText || label.text}</span>
-                  <input value={editingLabelText} onChange={(e) => setEditingLabelText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        labelSubmittedRef.current = true
-                        const t = editingLabelText.trim()
-                        if (t) {
-                          setLabels(dedupLabels(labels.map((l, i) => i === idx ? { ...l, text: t } : l)))
-                          scheduleSave()
-                        }
-                        setEditingLabelIdx(null)
-                      } else if (e.key === 'Escape') {
-                        labelSubmittedRef.current = true
-                        setEditingLabelIdx(null)
-                      }
-                    }}
-                    onBlur={() => {
-                      if (labelSubmittedRef.current) { labelSubmittedRef.current = false; return }
-                      const t = editingLabelText.trim()
-                      if (t) {
-                        setLabels(dedupLabels(labels.map((l, i) => i === idx ? { ...l, text: t } : l)))
-                        scheduleSave()
-                      }
-                      setEditingLabelIdx(null)
-                    }}
-                    autoFocus className="absolute inset-0 h-full bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-lg focus:outline-none lowercase" style={{ width: '100%' }} />
-                </span>
-              ) : (
-                <span key={`${label.text}-${label.color}`} className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 px-2 rounded-lg text-xs lowercase group/label cursor-pointer" onClick={() => { setEditingLabelIdx(idx); setEditingLabelText(label.text) }}>
-                  /{label.text}
-                  <button type="button" onClick={(e) => { e.stopPropagation(); setLabels(labels.filter((_, i) => i !== idx)); scheduleSave() }} className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/label:opacity-100 transition-all">
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </span>
-              )
+            {labels.map((l) => (
+              <span
+                key={l.id}
+                className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 px-2 rounded-lg text-xs lowercase group/label"
+              >
+                /{l.text}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); removeLabelFromCard(cardId, l.id) }}
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/label:opacity-100 transition-all"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </span>
             ))}
             {showLabelForm ? (
-              <span className="inline-flex flex-col items-stretch align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg text-xs lowercase border border-[var(--border-default)]">
-                <input value={newLabelText} onChange={(e) => setNewLabelText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      labelSubmittedRef.current = true
-                      const t = newLabelText.trim()
-                      if (t) {
-                        setLabels(dedupLabels([...labels, { text: t, color: newLabelColor }]))
-                        setNewLabelText('')
-                        setShowLabelForm(false)
-                        scheduleSave()
-                      }
-                    } else if (e.key === 'Escape') {
-                      labelSubmittedRef.current = true
-                      setShowLabelForm(false)
-                      setNewLabelText('')
-                    }
-                  }}
-                  onBlur={() => {
-                    if (labelSubmittedRef.current) { labelSubmittedRef.current = false; return }
-                    const t = newLabelText.trim()
-                    if (t) {
-                      setLabels(dedupLabels([...labels, { text: t, color: newLabelColor }]))
-                      setNewLabelText('')
-                      scheduleSave()
-                    }
-                    setShowLabelForm(false)
-                  }}
-                  autoFocus placeholder="/label" className="h-6 bg-transparent text-xs text-[var(--text-secondary)] px-2 rounded-t-lg focus:outline-none lowercase w-24" />
-                <div className="flex items-center justify-center gap-1 px-1.5 py-1 border-t border-[var(--border-default)]">
-                  {LABEL_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      // onMouseDown preventDefault keeps the input focused so
-                      // its onBlur handler (which auto-submits) doesn't fire
-                      // when picking a color.
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => setNewLabelColor(c)}
-                      aria-label={`Color: ${c}`}
-                      title={c}
-                      className={`w-3 h-3 rounded-full border ${COLOR_DOT_CLASSES[c]} ${
-                        newLabelColor === c
-                          ? 'border-[var(--text-primary)]'
-                          : 'border-transparent hover:border-[var(--border-default)]'
-                      } transition-colors`}
-                    />
-                  ))}
-                </div>
-              </span>
+              <LabelAutocomplete
+                boardId={card.board_id}
+                excludeIds={labels.map((l) => l.id)}
+                onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
+                onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
+                onManage={() => { setShowLabelForm(false) /* Task 13 will wire openLabelManager */ }}
+              />
             ) : (
               <button
                 type="button"
                 onClick={() => setShowLabelForm(true)}
                 className={`inline-flex items-center flex-shrink-0 h-6 rounded-lg text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors ${
-                  /* Empty state: show "+ Labels" so the affordance reads.
-                     Otherwise just the plus icon — labels are already
-                     visible so the meaning is implicit. */
                   labels.length === 0 ? 'gap-1 px-2 text-xs' : 'justify-center w-6'
                 }`}
               >

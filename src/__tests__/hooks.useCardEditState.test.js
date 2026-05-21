@@ -9,18 +9,17 @@ describe('useCardEditState', () => {
     expect(result.current.description).toBe('')
     expect(result.current.priority).toBe('medium')
     expect(result.current.dueDate).toBe('')
-    expect(result.current.labels).toEqual([])
+    expect(result.current.pendingLabels).toEqual([])
     expect(result.current.assignees).toEqual([])
     expect(result.current.checklist).toEqual([])
   })
 
-  test('hydrates from card fields', () => {
+  test('hydrates from card fields (no labels — labels come from store now)', () => {
     const card = {
       title: 'Hello',
       description: 'desc',
       priority: 'high',
       due_date: '2026-04-20',
-      labels: [{ text: 'bug', color: 'red' }],
       assignees: ['Alice'],
       checklist: [{ text: 'todo', done: false }],
     }
@@ -29,7 +28,7 @@ describe('useCardEditState', () => {
     expect(result.current.description).toBe('desc')
     expect(result.current.priority).toBe('high')
     expect(result.current.dueDate).toBe('2026-04-20')
-    expect(result.current.labels).toEqual([{ text: 'bug', color: 'red' }])
+    expect(result.current.pendingLabels).toEqual([])
     expect(result.current.assignees).toEqual(['Alice'])
     expect(result.current.checklist).toEqual([{ text: 'todo', done: false }])
   })
@@ -46,12 +45,10 @@ describe('useCardEditState', () => {
     expect(result.current.assignees).toEqual([])
   })
 
-  test('clones labels and checklist arrays (no shared refs)', () => {
-    const labels = [{ text: 'l', color: 'blue' }]
+  test('clones checklist array (no shared refs)', () => {
     const checklist = [{ text: 'c', done: false }]
-    const card = { labels, checklist }
+    const card = { checklist }
     const { result } = renderHook(() => useCardEditState(card))
-    expect(result.current.labels).not.toBe(labels)
     expect(result.current.checklist).not.toBe(checklist)
   })
 
@@ -73,5 +70,21 @@ describe('useCardEditState', () => {
     const card = { title: 'Untitled task' }
     const { result } = renderHook(() => useCardEditState(card))
     expect(result.current.title).toBe('Untitled task')
+  })
+
+  test('starts with empty pendingLabels for new card', () => {
+    const { result } = renderHook(() => useCardEditState(null))
+    expect(result.current.pendingLabels).toEqual([])
+  })
+
+  test('starts with empty pendingLabels for existing card', () => {
+    const { result } = renderHook(() => useCardEditState({ id: 'C1', title: 'X' }))
+    expect(result.current.pendingLabels).toEqual([])
+  })
+
+  test('setPendingLabels updates pendingLabels', () => {
+    const { result } = renderHook(() => useCardEditState(null))
+    act(() => result.current.setPendingLabels([{ text: 'bug', color: 'red' }]))
+    expect(result.current.pendingLabels).toEqual([{ text: 'bug', color: 'red' }])
   })
 })
