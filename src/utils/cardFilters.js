@@ -14,7 +14,10 @@ export function filterCards(cards, filters) {
         : (card.assignee_name ? [card.assignee_name] : [])
       if (!names.some((n) => n === filters.assignee)) return false
     }
-    if (filters.label?.length && !(card.labels || []).some((l) => filters.label.includes(l.text))) return false
+    if (filters.label?.length) {
+      const cardLabelTexts = card._labelTexts || []
+      if (!cardLabelTexts.some((t) => filters.label.includes(t))) return false
+    }
     if (filters.due) {
       const d = card.due_date ? parseDueDate(card.due_date) : null
       if (filters.due === 'overdue' && !(d && isPast(d) && !isToday(d))) return false

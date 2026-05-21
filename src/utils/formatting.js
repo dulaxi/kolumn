@@ -1,5 +1,4 @@
 export const LABEL_BG = {
-  neutral: 'bg-[var(--text-muted)]/10 text-[var(--text-muted)]',
   red: 'bg-[var(--label-red-bg)] text-[var(--label-red-text)]',
   orange: 'bg-[var(--label-orange-bg)] text-[var(--label-orange-text)]',
   yellow: 'bg-[var(--label-yellow-bg)] text-[var(--label-yellow-text)]',
@@ -11,7 +10,6 @@ export const LABEL_BG = {
 }
 
 export const LABEL_BG_QUIET = {
-  neutral: 'bg-[var(--text-muted)]/5 text-[var(--text-muted)]',
   red: 'bg-[var(--label-red-bg)]/60 text-[var(--label-red-text)]',
   orange: 'bg-[var(--label-orange-bg)]/60 text-[var(--label-orange-text)]',
   yellow: 'bg-[var(--label-yellow-bg)]/60 text-[var(--label-yellow-text)]',
@@ -25,7 +23,6 @@ export const LABEL_BG_QUIET = {
 // Exact match to the Anthropic "Upgrade pill" CSS: accent-000 text + border-400/15 border.
 // Mapped to Kolumn tokens: --text-muted text, --text-muted at 15% alpha border.
 export const LABEL_OUTLINE = {
-  neutral: 'text-[var(--text-muted)] border-[var(--text-muted)]/15',
   red: 'text-[var(--label-red-text)] border-[var(--label-red-text)]/20',
   orange: 'text-[var(--label-orange-text)] border-[var(--label-orange-text)]/20',
   yellow: 'text-[var(--label-yellow-text)] border-[var(--label-yellow-text)]/20',

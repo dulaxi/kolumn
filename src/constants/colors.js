@@ -2,14 +2,12 @@
 // All components should import from here instead of defining local copies.
 
 // Label color names used for card labels.
-// `neutral` is the muted/monochrome option — text-muted color, low-alpha border.
-// It's the closest match to Anthropic's "Upgrade" pill look (accent-000 / border-400).
-// Ordered along the color wheel (red → pink) with the two neutrals at the ends.
-export const LABEL_COLORS = ['neutral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
+// Ordered along the color wheel (red → pink) with gray at the end.
+// Must match the DB check constraint on the labels.color column.
+export const LABEL_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
 
 // Tailwind background classes for each label color (used in pickers/dots)
 export const COLOR_DOT_CLASSES = {
-  neutral: 'bg-[var(--text-muted)]/20',
   red: 'bg-[var(--label-red-bg)]',
   orange: 'bg-[var(--label-orange-bg)]',
   yellow: 'bg-[var(--label-yellow-bg)]',

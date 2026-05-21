@@ -14,12 +14,12 @@ import {
 // LABEL_COLORS
 // ─────────────────────────────────────────────
 describe('LABEL_COLORS', () => {
-  test('contains exactly 9 label color names', () => {
-    expect(LABEL_COLORS).toHaveLength(9)
+  test('contains exactly 8 label color names', () => {
+    expect(LABEL_COLORS).toHaveLength(8)
   })
 
   test('contains the expected color names', () => {
-    expect(LABEL_COLORS).toEqual(['neutral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'])
+    expect(LABEL_COLORS).toEqual(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'])
   })
 })
 

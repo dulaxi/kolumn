@@ -6,10 +6,12 @@ const mockAddCard = vi.fn().mockResolvedValue('new-card')
 vi.mock('../store/boardStore', () => ({
   useBoardStore: vi.fn((sel) => sel({
     cards: {
-      c1: { id: 'c1', column_id: 'col1', position: 0, priority: 'high', assignee_name: '', labels: [], due_date: null },
-      c2: { id: 'c2', column_id: 'col1', position: 1, priority: 'low', assignee_name: '', labels: [], due_date: null },
-      c3: { id: 'c3', column_id: 'col2', position: 0, priority: 'medium', assignee_name: '', labels: [], due_date: null },
+      c1: { id: 'c1', column_id: 'col1', position: 0, priority: 'high', assignee_name: '', due_date: null },
+      c2: { id: 'c2', column_id: 'col1', position: 1, priority: 'low', assignee_name: '', due_date: null },
+      c3: { id: 'c3', column_id: 'col2', position: 0, priority: 'medium', assignee_name: '', due_date: null },
     },
+    cardLabels: {},
+    labels: {},
     addCard: mockAddCard,
     renameColumn: vi.fn(),
     deleteColumn: vi.fn(),

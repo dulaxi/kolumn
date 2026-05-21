@@ -19,7 +19,7 @@ function generateCards(count) {
       title: `Task ${i}`,
       priority: ['low', 'medium', 'high'][i % 3],
       assignee_name: ['Alice', 'Bob', 'Charlie'][i % 3],
-      labels: i % 4 === 0 ? [{ text: 'bug', color: 'red' }] : [],
+      _labelTexts: i % 4 === 0 ? ['bug'] : [],
       due_date: i % 3 === 0 ? '2026-03-25' : null,
       completed: i % 5 === 0,
       global_task_number: i + 1,
