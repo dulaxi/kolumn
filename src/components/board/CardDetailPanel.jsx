@@ -224,7 +224,10 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 excludeIds={labels.map((l) => l.id)}
                 onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
                 onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
-                onManage={() => { setShowLabelForm(false) /* Task 13 will wire openLabelManager */ }}
+                onManage={() => {
+                  setShowLabelForm(false)
+                  window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
+                }}
               />
             ) : (
               <button

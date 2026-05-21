@@ -232,7 +232,10 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                   else setPendingLabels([...pendingLabels, { text, color }])
                   setOpenMenu(null)
                 }}
-                onManage={() => { setOpenMenu(null) /* Task 13 will wire openLabelManager */ }}
+                onManage={() => {
+                  setOpenMenu(null)
+                  window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
+                }}
               />
             ) : (
               <button

@@ -4,6 +4,7 @@ import { useBoardStore } from '../store/boardStore'
 import BoardSelector from '../components/board/BoardSelector'
 import BoardView from '../components/board/BoardView'
 import CreateBoardModal from '../components/board/CreateBoardModal'
+import LabelManagerModal from '../components/board/LabelManagerModal'
 import Button from '../components/ui/Button'
 
 const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
@@ -15,6 +16,7 @@ export default function BoardsPage() {
   const [sortBy, setSortBy] = useState('manual')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [createInWorkspaceId, setCreateInWorkspaceId] = useState(null)
+  const [labelManagerOpen, setLabelManagerOpen] = useState(false)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const boards = useBoardStore((s) => s.boards)
   const activeBoardName = useBoardStore((s) => s.boards[s.activeBoardId]?.name)
@@ -48,15 +50,18 @@ export default function BoardsPage() {
       setShowCreateModal(true)
       window.dispatchEvent(new CustomEvent('kolumn:create-board-ack'))
     }
+    const openLabelManager = () => setLabelManagerOpen(true)
     window.addEventListener('kolumn:open-card', openCard)
     window.addEventListener('kolumn:close-panel', closePanel)
     window.addEventListener('kolumn:new-card', newCard)
     window.addEventListener('kolumn:create-board', openCreate)
+    window.addEventListener('kolumn:open-label-manager', openLabelManager)
     return () => {
       window.removeEventListener('kolumn:open-card', openCard)
       window.removeEventListener('kolumn:close-panel', closePanel)
       window.removeEventListener('kolumn:new-card', newCard)
       window.removeEventListener('kolumn:create-board', openCreate)
+      window.removeEventListener('kolumn:open-label-manager', openLabelManager)
     }
   }, [activeBoardId, columns, addCard])
 
@@ -83,7 +88,7 @@ export default function BoardsPage() {
           {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
         </h1>
         <div className="shrink-0">
-          <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} />
+          <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
         </div>
       </div>
 
@@ -132,6 +137,14 @@ export default function BoardsPage() {
         <CreateBoardModal
           onClose={() => { setShowCreateModal(false); setCreateInWorkspaceId(null) }}
           workspaceId={createInWorkspaceId}
+        />
+      )}
+
+      {labelManagerOpen && activeBoardId && activeBoardId !== '__all__' && (
+        <LabelManagerModal
+          open={labelManagerOpen}
+          onClose={() => setLabelManagerOpen(false)}
+          boardId={activeBoardId}
         />
       )}
     </div>
