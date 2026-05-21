@@ -1,0 +1,320 @@
+import { useState } from 'react'
+import { X, Plus, DotsThreeVertical } from '@phosphor-icons/react'
+import Modal from '../ui/Modal'
+import Menu from '../ui/Menu'
+import { supabase } from '../../lib/supabase'
+import { useBoardStore } from '../../store/boardStore'
+import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
+
+export default function LabelManagerModal({ open, onClose, boardId }) {
+  const [showArchived, setShowArchived] = useState(false)
+  const [newOpen, setNewOpen] = useState(false)
+  const [newText, setNewText] = useState('')
+  const [newColor, setNewColor] = useState('blue')
+  const [mergePicker, setMergePicker] = useState(null) // { fromLabel }
+  const [renameId, setRenameId] = useState(null)
+  const [renameText, setRenameText] = useState('')
+
+  // Per-label dot-menu open state: { [labelId]: boolean }
+  const [dotMenuOpen, setDotMenuOpen] = useState({})
+  // Per-label color-picker menu open state: { [labelId]: boolean }
+  const [colorMenuOpen, setColorMenuOpen] = useState({})
+
+  const allLabels = useBoardStore((s) => {
+    const out = []
+    for (const id in s.labels) {
+      const l = s.labels[id]
+      if (l.board_id === boardId && (showArchived || !l.archived_at)) out.push(l)
+    }
+    out.sort((a, b) => a.text.toLowerCase().localeCompare(b.text.toLowerCase()))
+    return out
+  })
+
+  const usageById = useBoardStore((s) => {
+    const counts = {}
+    for (const cid in s.cardLabels) {
+      for (const lid of s.cardLabels[cid]) counts[lid] = (counts[lid] || 0) + 1
+    }
+    return counts
+  })
+
+  const renameLabel     = useBoardStore((s) => s.renameLabel)
+  const updateLabelColor = useBoardStore((s) => s.updateLabelColor)
+  const mergeLabels     = useBoardStore((s) => s.mergeLabels)
+  const archiveLabel    = useBoardStore((s) => s.archiveLabel)
+  const unarchiveLabel  = useBoardStore((s) => s.unarchiveLabel)
+
+  const addNewLabel = async () => {
+    const t = newText.trim()
+    if (!t) return
+    await supabase.rpc('upsert_label', { p_board_id: boardId, p_text: t, p_color: newColor })
+    setNewText('')
+    setNewOpen(false)
+    // The realtime subscription on `labels` will push the new row into state.
+  }
+
+  const toggleDotMenu = (id, val) =>
+    setDotMenuOpen((prev) => ({ ...prev, [id]: val }))
+
+  const toggleColorMenu = (id, val) =>
+    setColorMenuOpen((prev) => ({ ...prev, [id]: val }))
+
+  return (
+    <Modal open={open} onClose={onClose} contentClassName="flex items-center justify-center">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[12px] shadow-[0_4px_24px_rgba(27,27,24,0.10)] w-full max-w-md mx-4">
+        <div className="p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-[var(--text-primary)]">Labels</h2>
+            <button
+              onClick={onClose}
+              className="text-[var(--text-faint)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Label list */}
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {allLabels.length === 0 && (
+              <p className="py-4 text-xs text-[var(--text-faint)] text-center">
+                No labels yet
+              </p>
+            )}
+            {allLabels.map((l) => (
+              <div
+                key={l.id}
+                className={`flex items-center gap-3 py-2 ${l.archived_at ? 'opacity-50' : ''}`}
+              >
+                {/* Color dot — opens color picker */}
+                <Menu
+                  open={!!colorMenuOpen[l.id]}
+                  onOpenChange={(v) => toggleColorMenu(l.id, v)}
+                  placement="bottom-start"
+                  panelClassName="w-36"
+                  panel={
+                    <>
+                      {LABEL_COLORS.map((c) => (
+                        <Menu.Item
+                          key={c}
+                          onSelect={() => {
+                            updateLabelColor(l.id, c)
+                            toggleColorMenu(l.id, false)
+                          }}
+                        >
+                          <span
+                            className={`inline-block w-3 h-3 rounded-full shrink-0 ${COLOR_DOT_CLASSES[c] || ''}`}
+                          />
+                          <span className="capitalize">{c}</span>
+                        </Menu.Item>
+                      ))}
+                    </>
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleColorMenu(l.id, !colorMenuOpen[l.id])}
+                    className={`w-3 h-3 rounded-full cursor-pointer shrink-0 ${COLOR_DOT_CLASSES[l.color] || ''}`}
+                    aria-label={`Change color for ${l.text}`}
+                  />
+                </Menu>
+
+                {/* Label name — inline rename */}
+                {renameId === l.id ? (
+                  <input
+                    value={renameText}
+                    onChange={(e) => setRenameText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        renameLabel(l.id, renameText)
+                        setRenameId(null)
+                      } else if (e.key === 'Escape') {
+                        setRenameId(null)
+                      }
+                    }}
+                    onBlur={() => {
+                      renameLabel(l.id, renameText)
+                      setRenameId(null)
+                    }}
+                    autoFocus
+                    className="text-sm text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:outline-none flex-1"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRenameId(l.id)
+                      setRenameText(l.text)
+                    }}
+                    className="text-sm text-[var(--text-primary)] flex-1 text-left hover:underline truncate"
+                  >
+                    {l.text}
+                  </button>
+                )}
+
+                {/* Usage count */}
+                <span className="text-xs text-[var(--text-faint)] shrink-0">
+                  {usageById[l.id] || 0}
+                </span>
+
+                {/* Dot-menu: merge / archive / unarchive */}
+                <Menu
+                  open={!!dotMenuOpen[l.id]}
+                  onOpenChange={(v) => toggleDotMenu(l.id, v)}
+                  placement="bottom-end"
+                  panelClassName="w-40"
+                  panel={
+                    <>
+                      {!l.archived_at && (
+                        <>
+                          <Menu.Item
+                            onSelect={() => {
+                              toggleDotMenu(l.id, false)
+                              setMergePicker({ fromLabel: l })
+                            }}
+                          >
+                            Merge into…
+                          </Menu.Item>
+                          <Menu.Item
+                            destructive
+                            onSelect={() => {
+                              toggleDotMenu(l.id, false)
+                              archiveLabel(l.id)
+                            }}
+                          >
+                            Archive
+                          </Menu.Item>
+                        </>
+                      )}
+                      {l.archived_at && (
+                        <Menu.Item
+                          onSelect={() => {
+                            toggleDotMenu(l.id, false)
+                            unarchiveLabel(l.id)
+                          }}
+                        >
+                          Unarchive
+                        </Menu.Item>
+                      )}
+                    </>
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleDotMenu(l.id, !dotMenuOpen[l.id])}
+                    className="text-[var(--text-faint)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+                    aria-label={`Options for ${l.text}`}
+                  >
+                    <DotsThreeVertical className="w-4 h-4" />
+                  </button>
+                </Menu>
+              </div>
+            ))}
+          </div>
+
+          {/* New label row */}
+          {newOpen ? (
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addNewLabel()
+                  if (e.key === 'Escape') setNewOpen(false)
+                }}
+                placeholder="label name"
+                autoFocus
+                className="flex-1 text-sm text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:outline-none"
+              />
+              <div className="flex items-center gap-1">
+                {LABEL_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setNewColor(c)}
+                    className={`w-3 h-3 rounded-full ${COLOR_DOT_CLASSES[c]} ${
+                      newColor === c ? 'ring-1 ring-[var(--text-primary)]' : ''
+                    }`}
+                    aria-label={c}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addNewLabel}
+                className="text-xs text-[var(--accent-lime-dark)] hover:underline shrink-0"
+              >
+                Add
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setNewOpen(true)}
+              className="mt-3 flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              New label
+            </button>
+          )}
+
+          {/* Show archived toggle */}
+          <label className="mt-4 flex items-center gap-2 text-xs text-[var(--text-muted)] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+            />
+            Show archived
+          </label>
+        </div>
+      </div>
+
+      {/* Merge picker — nested modal */}
+      {mergePicker && (
+        <Modal
+          open
+          onClose={() => setMergePicker(null)}
+          contentClassName="flex items-center justify-center"
+          zIndex={60}
+        >
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[12px] shadow-[0_4px_24px_rgba(27,27,24,0.10)] w-full max-w-xs mx-4">
+            <div className="p-3">
+              <div className="text-sm mb-2 text-[var(--text-primary)]">
+                Merge{' '}
+                <span className="font-medium">{mergePicker.fromLabel.text}</span> into…
+              </div>
+              <div className="divide-y divide-[var(--border-subtle)] max-h-64 overflow-auto">
+                {allLabels
+                  .filter((l) => l.id !== mergePicker.fromLabel.id && !l.archived_at)
+                  .map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => {
+                        mergeLabels(mergePicker.fromLabel.id, l.id)
+                        setMergePicker(null)
+                      }}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-left hover:bg-[var(--surface-hover)] transition-colors rounded"
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || ''}`}
+                      />
+                      {l.text}
+                    </button>
+                  ))}
+                {allLabels.filter(
+                  (l) => l.id !== mergePicker.fromLabel.id && !l.archived_at
+                ).length === 0 && (
+                  <p className="py-3 text-xs text-[var(--text-faint)] text-center">
+                    No other labels to merge into
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </Modal>
+  )
+}
