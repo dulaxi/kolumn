@@ -283,25 +283,27 @@ describe('executeTool update_card — clear semantics (null)', () => {
     expect(res.cleared).toContain('icon')
   })
 
-  test('null labels clears to empty array', async () => {
+  test('null labels clears — tracked in cleared, not in store payload', async () => {
     const res = await executeTool('update_card', {
       card_title: 'Invest in stocks',
       updates: { labels: null },
       boardId: 'b1',
     })
     expect(res.ok).toBe(true)
-    expect(lastUpdateCall()[1].labels).toEqual([])
+    // Labels are synced via resolveAndSyncLabels against card_labels, not
+    // included in the cards table payload passed to store.updateCard.
+    expect('labels' in lastUpdateCall()[1]).toBe(false)
     expect(res.cleared).toContain('labels')
   })
 
-  test('empty labels array also clears', async () => {
+  test('empty labels array also clears — tracked in cleared, not in store payload', async () => {
     const res = await executeTool('update_card', {
       card_title: 'Invest in stocks',
       updates: { labels: [] },
       boardId: 'b1',
     })
     expect(res.ok).toBe(true)
-    expect(lastUpdateCall()[1].labels).toEqual([])
+    expect('labels' in lastUpdateCall()[1]).toBe(false)
     expect(res.cleared).toContain('labels')
   })
 

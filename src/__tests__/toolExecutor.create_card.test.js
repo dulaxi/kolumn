@@ -133,7 +133,9 @@ describe('executeTool create_card — defaults & path parity', () => {
     expect(cardData.priority).toBe('medium')
     expect(cardData.assignee).toBe(null)
     expect(cardData.icon).toBe(null)
-    expect(cardData.labels).toEqual([])
+    // Labels are no longer passed through addCard — they are synced separately
+    // via resolveAndSyncLabels against card_labels after the real ID is known.
+    expect('labels' in cardData).toBe(false)
     expect(cardData.checklist).toEqual([])
   })
 
@@ -153,7 +155,8 @@ describe('executeTool create_card — defaults & path parity', () => {
     expect(cardData.priority).toBe('high')
     expect(cardData.assignee).toBe('Bob')
     expect(cardData.icon).toBe('bug')
-    expect(cardData.labels).toEqual([{ text: '/frontend', color: 'blue' }])
+    // Labels are synced separately via resolveAndSyncLabels — not in addCard payload.
+    expect('labels' in cardData).toBe(false)
     expect(cardData.checklist).toEqual([
       { text: 'Reproduce', done: false },
       { text: 'Fix', done: false },

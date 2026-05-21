@@ -10,6 +10,7 @@ function createQueryBuilder(resolveWith = { data: [], error: null }) {
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),
     is: vi.fn().mockReturnThis(),
     gt: vi.fn().mockReturnThis(),

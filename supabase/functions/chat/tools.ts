@@ -12,15 +12,8 @@ export const TOOLS = [
         icon: { type: "string", description: "Phosphor icon name in kebab-case (e.g. rocket, credit-card, bug)" },
         labels: {
           type: "array",
-          items: {
-            type: "object",
-            properties: {
-              text: { type: "string" },
-              color: { type: "string", enum: ["red", "orange", "yellow", "green", "blue", "purple", "pink", "gray"] },
-            },
-            required: ["text", "color"],
-          },
-          description: "Labels to attach to the card",
+          items: { type: "string" },
+          description: "Label texts. The server matches case-insensitively against existing labels on the board; unseen texts create a new label with a deterministic color.",
         },
         checklist: {
           type: "array",
@@ -60,7 +53,7 @@ export const TOOLS = [
             description: { type: "string", description: "New description (markdown). Set to null to clear." },
             priority: { type: "string", enum: ["low", "medium", "high"], description: "New priority" },
             icon: { type: "string", description: "Phosphor icon name in kebab-case. Set to null to clear." },
-            labels: { type: "array", items: { type: "object", properties: { text: { type: "string" }, color: { type: "string" } } }, description: "Replaces all labels. Use [] or null to clear." },
+            labels: { type: "array", items: { type: "string" }, description: "Label texts. The server matches case-insensitively against existing labels on the board; unseen texts create a new label with a deterministic color. Replaces all labels. Use [] or null to clear." },
             checklist: { type: "array", items: { type: "string" }, description: "Replaces full checklist. Use [] or null to clear." },
             assignee: { type: "string", description: "Display name of assignee. Set to null to unassign." },
             due_date: { type: "string", description: "YYYY-MM-DD or ISO string. Set to null to remove the due date." },
@@ -140,7 +133,7 @@ export const TOOLS = [
             description: { type: "string", description: "Description (markdown). Set to null to clear." },
             priority: { type: "string", enum: ["low", "medium", "high"] },
             icon: { type: "string", description: "Phosphor icon name in kebab-case. Set to null to clear." },
-            labels: { type: "array", items: { type: "object", properties: { text: { type: "string" }, color: { type: "string" } } }, description: "Replaces all labels on every matched card. Use [] or null to clear." },
+            labels: { type: "array", items: { type: "string" }, description: "Label texts. The server matches case-insensitively against existing labels on the board; unseen texts create a new label with a deterministic color. Replaces all labels on every matched card. Use [] or null to clear." },
             checklist: { type: "array", items: { type: "string" }, description: "Replaces full checklist on every matched card. Use [] or null to clear." },
             assignee: { type: "string", description: "Display name. Set to null to unassign." },
             due_date: { type: "string", description: "YYYY-MM-DD. Set to null to remove the due date." },

@@ -1,6 +1,47 @@
 import { useBoardStore } from '../store/boardStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { LEGACY_ICON_REMAP } from '../components/board/DynamicIcon'
+import { supabase } from './supabase'
+
+// Resolves an array of label text strings into label IDs (via the upsert_label
+// RPC) and syncs the card_labels join table for a given card.
+//
+// Semantics:
+//   - texts === undefined  → no-op (the tool call didn't include a labels field)
+//   - texts === null / []  → clear all labels on the card
+//   - non-empty list       → resolve each text, delete rows not in result set, upsert the rest
+//
+// The boardStore realtime subscription picks up the card_labels changes and
+// updates Zustand state automatically — no manual set() calls needed here.
+async function resolveAndSyncLabels(cardId, boardId, texts) {
+  if (texts === undefined) return
+  const list = texts ?? []
+  const resolvedIds = []
+  for (const text of list) {
+    if (!text || !String(text).trim()) continue
+    const { data, error } = await supabase.rpc('upsert_label', {
+      p_board_id: boardId,
+      p_text: String(text).trim(),
+    })
+    if (error) throw error
+    if (data) resolvedIds.push(data)
+  }
+  if (resolvedIds.length === 0) {
+    await supabase.from('card_labels').delete().eq('card_id', cardId)
+  } else {
+    await supabase
+      .from('card_labels')
+      .delete()
+      .eq('card_id', cardId)
+      .not('label_id', 'in', `(${resolvedIds.join(',')})`)
+    await supabase
+      .from('card_labels')
+      .upsert(
+        resolvedIds.map((label_id) => ({ card_id: cardId, label_id })),
+        { onConflict: 'card_id,label_id' },
+      )
+  }
+}
 
 // Normalize an icon name from the model: trim, lowercase, accept only kebab-case-ish
 // strings (letters/digits/hyphens), then apply the legacy lucide→Phosphor remap.
@@ -143,7 +184,6 @@ export async function executeTool(action, params) {
       description,
       priority,
       icon,
-      labels: params.labels || [],
       checklist,
       assignee,
       dueDate: params.due_date || null,
@@ -166,6 +206,17 @@ export async function executeTool(action, params) {
       }
     }
     setTimeout(() => { aiBuildingCards.delete(tempId); aiBuildingCards.delete(cardId) }, 3000)
+
+    // Sync labels — only possible once we have the real (non-temp) card ID.
+    // If temp-ID resolution timed out, skip labels silently; the card still
+    // exists, the label sync just won't fire on this call.
+    if (cardId !== tempId && params.labels !== undefined) {
+      try {
+        await resolveAndSyncLabels(cardId, board.id, params.labels)
+      } catch (err) {
+        console.warn('[toolExecutor] create_card label sync failed:', err)
+      }
+    }
 
     return {
       ok: true,
@@ -430,11 +481,12 @@ export async function executeTool(action, params) {
     }
 
     if ('labels' in updates) {
+      // Labels are managed via card_labels, not cards.labels — resolved after
+      // store.updateCard via resolveAndSyncLabels. Still track in changed/cleared
+      // for the result summary; do NOT put labels into the store payload.
       if (updates.labels === null || (Array.isArray(updates.labels) && updates.labels.length === 0)) {
-        payload.labels = []
         cleared.push('labels')
       } else {
-        payload.labels = updates.labels
         changed.push('labels')
       }
     }
@@ -482,6 +534,16 @@ export async function executeTool(action, params) {
     }
 
     await store.updateCard(card.id, payload)
+
+    // Sync labels separately via card_labels table when the labels field was
+    // explicitly included in updates (even if set to null/[]).
+    if ('labels' in updates) {
+      try {
+        await resolveAndSyncLabels(card.id, sourceBoard.id, updates.labels)
+      } catch (err) {
+        console.warn('[toolExecutor] update_card label sync failed:', err)
+      }
+    }
 
     const sourceColumn = store.columns[card.column_id] || null
 
@@ -689,10 +751,8 @@ export async function executeTool(action, params) {
       }
       if ('priority' in updates) payload.priority = updates.priority === null ? 'medium' : updates.priority
       if ('icon' in updates) payload.icon = updates.icon === null ? null : normalizeIcon(updates.icon)
-      if ('labels' in updates) {
-        payload.labels = (updates.labels === null || (Array.isArray(updates.labels) && updates.labels.length === 0))
-          ? [] : updates.labels
-      }
+      // Labels: managed via card_labels — NOT included in the cards table payload.
+      // resolveAndSyncLabels is called per-card below after all updateCard calls.
       if ('checklist' in updates) {
         if (updates.checklist === null || (Array.isArray(updates.checklist) && updates.checklist.length === 0)) {
           payload.checklist = []
@@ -712,6 +772,16 @@ export async function executeTool(action, params) {
 
     for (const card of cards) {
       await store.updateCard(card.id, payloadResult.payload)
+    }
+    // Sync labels for every matched card when labels was explicitly in updates.
+    if ('labels' in updates) {
+      for (const card of cards) {
+        try {
+          await resolveAndSyncLabels(card.id, board.id, updates.labels)
+        } catch (err) {
+          console.warn('[toolExecutor] update_cards label sync failed for card', card.id, err)
+        }
+      }
     }
     return {
       ok: true,
@@ -837,14 +907,44 @@ export async function executeTool(action, params) {
       targetColumn = found
     }
 
+    // Snapshot source card's label IDs before duplicating, so we can copy
+    // them to the new card once the real ID is available.
+    const sourceLabelIds = [...(useBoardStore.getState().cardLabels[card.id] || [])]
+
     // store.duplicateCard handles smart-increment title + assignees copy
-    const newId = await store.duplicateCard(card.id)
-    if (!newId) return { ok: false, error: 'Failed to duplicate card' }
+    const newTempId = await store.duplicateCard(card.id)
+    if (!newTempId) return { ok: false, error: 'Failed to duplicate card' }
+
+    // Resolve temp ID → real ID (mirrors the create_card pattern)
+    let newId = newTempId
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 200))
+      const realId = useBoardStore.getState()._tempIdMap[newTempId]
+      if (realId) { newId = realId; break }
+    }
 
     // If the user picked a different target column, move the new card there.
     // Same-column duplicate is the default and skips this update.
     if (targetColumn && targetColumn.id !== card.column_id) {
       await store.updateCard(newId, { column_id: targetColumn.id })
+    }
+
+    // Labels: if params.labels was explicitly passed, resolve those; otherwise
+    // copy the source card's existing label IDs directly.
+    if (newId !== newTempId) {
+      try {
+        if (params.labels !== undefined) {
+          // Caller provided an explicit label override — resolve via text
+          await resolveAndSyncLabels(newId, sourceBoard.id, params.labels)
+        } else if (sourceLabelIds.length > 0) {
+          // Default: inherit source card's labels verbatim (no text resolution needed)
+          await supabase
+            .from('card_labels')
+            .insert(sourceLabelIds.map((label_id) => ({ card_id: newId, label_id })))
+        }
+      } catch (err) {
+        console.warn('[toolExecutor] duplicate_card label sync failed:', err)
+      }
     }
 
     const newCard = useBoardStore.getState().cards[newId] || null
