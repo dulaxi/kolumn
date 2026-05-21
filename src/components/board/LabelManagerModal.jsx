@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { X, Plus, DotsThreeVertical } from '@phosphor-icons/react'
 import Modal from '../ui/Modal'
 import Menu from '../ui/Menu'
@@ -20,23 +20,28 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
   // Per-label color-picker menu open state: { [labelId]: boolean }
   const [colorMenuOpen, setColorMenuOpen] = useState({})
 
-  const allLabels = useBoardStore((s) => {
+  // Selectors must return referentially-stable values. Read primitive slices,
+  // derive via useMemo. (See selectors.js header comment for why.)
+  const labelsMap = useBoardStore((s) => s.labels)
+  const cardLabelsMap = useBoardStore((s) => s.cardLabels)
+
+  const allLabels = useMemo(() => {
     const out = []
-    for (const id in s.labels) {
-      const l = s.labels[id]
+    for (const id in labelsMap) {
+      const l = labelsMap[id]
       if (l.board_id === boardId && (showArchived || !l.archived_at)) out.push(l)
     }
     out.sort((a, b) => a.text.toLowerCase().localeCompare(b.text.toLowerCase()))
     return out
-  })
+  }, [labelsMap, boardId, showArchived])
 
-  const usageById = useBoardStore((s) => {
+  const usageById = useMemo(() => {
     const counts = {}
-    for (const cid in s.cardLabels) {
-      for (const lid of s.cardLabels[cid]) counts[lid] = (counts[lid] || 0) + 1
+    for (const cid in cardLabelsMap) {
+      for (const lid of cardLabelsMap[cid]) counts[lid] = (counts[lid] || 0) + 1
     }
     return counts
-  })
+  }, [cardLabelsMap])
 
   const renameLabel     = useBoardStore((s) => s.renameLabel)
   const updateLabelColor = useBoardStore((s) => s.updateLabelColor)

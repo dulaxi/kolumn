@@ -31,6 +31,23 @@ describe('selectCardLabels', () => {
     const b = selectCardLabels('NONE')(state)
     expect(a).toBe(b)
   })
+
+  it('returns stable identity for non-empty result when state is unchanged', () => {
+    // Regression: previously returned a fresh array on every call, which
+    // breaks Zustand's useSyncExternalStore snapshot contract and causes
+    // "Maximum update depth exceeded" infinite re-render loops.
+    const a = selectCardLabels('C1')(state)
+    const b = selectCardLabels('C1')(state)
+    expect(a).toBe(b)
+  })
+
+  it('returns a new reference once state.labels or state.cardLabels is replaced', () => {
+    const a = selectCardLabels('C1')(state)
+    const nextState = { ...state, cardLabels: { ...state.cardLabels, C1: new Set(['L1']) } }
+    const b = selectCardLabels('C1')(nextState)
+    expect(a).not.toBe(b)
+    expect(b.map((l) => l.id)).toEqual(['L1'])
+  })
 })
 
 describe('selectBoardLabels', () => {
@@ -42,6 +59,12 @@ describe('selectBoardLabels', () => {
   it('excludes labels from other boards', () => {
     const labels = selectBoardLabels('B1')(state)
     expect(labels.find((l) => l.id === 'L4')).toBeUndefined()
+  })
+
+  it('returns stable identity for the same board when state is unchanged', () => {
+    const a = selectBoardLabels('B1')(state)
+    const b = selectBoardLabels('B1')(state)
+    expect(a).toBe(b)
   })
 })
 
