@@ -1,6 +1,6 @@
 // Single source of truth for plan definitions. Consumed by:
-//   - LandingPage pricing section (displays + CTA to /signup)
-//   - SignupPage plan-picker step (post-signup tier selection)
+//   - LandingPage pricing section (displays + CTA to /onboarding)
+//   - OnboardingPage plan-picker step (post-signup tier selection)
 //
 // Edit prices/taglines/bullets here ONCE and both surfaces update.
 //

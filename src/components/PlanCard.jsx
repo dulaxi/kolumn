@@ -7,7 +7,7 @@ import { ArrowRight, Check, CircleNotch } from '@phosphor-icons/react'
 // etc.) — they differ only in what the bottom CTA does:
 //
 //   mode="landing" (default)
-//     - CTA is a <Link> to /signup with text from plan.cta
+//     - CTA is a <Link> to /onboarding with text from plan.cta
 //
 //   mode="picker"
 //     - CTA is a <button> that calls onSelect(plan.id) so the parent
@@ -108,7 +108,7 @@ export default function PlanCard({
           )}
         </button>
       ) : (
-        <Link to="/signup" className={ctaBaseClasses}>
+        <Link to="/onboarding" className={ctaBaseClasses}>
           {plan.cta}
           <ArrowRight className="w-4 h-4" />
         </Link>

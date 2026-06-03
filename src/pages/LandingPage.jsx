@@ -2058,7 +2058,7 @@ function HeroAuthCard() {
       if (exists) {
         setMode('signin')
       } else {
-        navigate('/signup', { state: { email } })
+        navigate('/onboarding', { state: { email } })
       }
     } catch (err) {
       // If the lookup itself fails (network, RPC missing, etc.) fall back to
@@ -2170,7 +2170,7 @@ function HeroAuthCard() {
               <p className="text-center text-xs text-[var(--text-muted)] pt-1">
                 Don't have an account?{' '}
                 <Link
-                  to="/signup"
+                  to="/onboarding"
                   state={{ email }}
                   className="text-[var(--text-secondary)] underline underline-offset-2 decoration-[var(--color-sand)] hover:decoration-[var(--text-secondary)] transition-colors"
                 >
@@ -2219,7 +2219,7 @@ function MobileNav() {
             Sign in
           </a>
           <Link
-            to="/signup"
+            to="/onboarding"
             className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg overflow-hidden transition-transform will-change-transform ease-[cubic-bezier(0.165,0.85,0.45,1)] duration-150 hover:scale-y-[1.015] hover:scale-x-[1.005]"
           >
             Get started
@@ -2261,7 +2261,7 @@ function MobileNav() {
             Sign in
           </a>
           <Link
-            to="/signup"
+            to="/onboarding"
             className="flex items-center justify-center h-10 text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg"
           >
             Get started
@@ -2477,7 +2477,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
             <a href="mailto:hello@kolumn.app" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
             <a href="#sign-in" className="hover:text-[var(--text-secondary)] transition-colors">Sign in</a>
-            <Link to="/signup" className="hover:text-[var(--text-secondary)] transition-colors">Sign up</Link>
+            <Link to="/onboarding" className="hover:text-[var(--text-secondary)] transition-colors">Sign up</Link>
           </div>
         </div>
         <p className="text-center text-xs text-[var(--text-faint)] mt-4">&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>

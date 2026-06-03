@@ -990,7 +990,7 @@ export function HeroAnimation({ parentScale = 1 } = {}) {
         scrim for legibility. Closing caption (Clash Grotesk) fades up,
         CTA pill follows ~200ms behind. Pill is non-functional inside the
         sandbox (the loop restarts seconds later); the live landing will
-        wire its onClick to /signup.
+        wire its onClick to /onboarding.
       */}
       <AnimatePresence>
         {outroVisible && (

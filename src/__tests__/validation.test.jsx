@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 const mockSignIn = vi.fn()
 const mockSignUp = vi.fn()
 const mockSetTier = vi.fn()
+const mockUpdateProfile = vi.fn()
 const mockNavigate = vi.fn()
 
 vi.mock('../store/authStore', () => ({
@@ -12,68 +13,62 @@ vi.mock('../store/authStore', () => ({
     signIn: mockSignIn,
     signUp: mockSignUp,
     setTier: mockSetTier,
+    updateProfile: mockUpdateProfile,
   })),
 }))
 vi.mock('react-router-dom', () => ({
   Link: ({ children, to }) => <a href={typeof to === 'string' ? to : '#'}>{children}</a>,
   useNavigate: () => mockNavigate,
-  useLocation: () => ({ state: null, pathname: '/signup' }),
+  useLocation: () => ({ state: null, pathname: '/onboarding' }),
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
 }))
 
-import SignupPage from '../pages/SignupPage'
+import OnboardingPage from '../pages/OnboardingPage'
 
 beforeEach(() => {
   mockSignIn.mockReset()
   mockSignUp.mockReset()
   mockSetTier.mockReset()
+  mockUpdateProfile.mockReset()
   mockNavigate.mockReset()
 })
 
-describe('SignupPage', () => {
-  test('renders display name, email, password, confirm fields when arrived directly', () => {
-    render(<SignupPage />)
-    expect(screen.getByPlaceholderText('How should we greet you?')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('At least 6 characters')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Type your password again')).toBeInTheDocument()
-  })
+// Terms is now the first onboarding step. Most tests target the details
+// step, so this helper accepts terms and advances to the form fields.
+async function passTermsStep() {
+  await userEvent.click(screen.getByRole('checkbox'))
+  screen.getByRole('button', { name: /create account/i }).click()
+  await screen.findByPlaceholderText('you@example.com')
+}
 
-  test('blocks submit when passwords do not match', async () => {
-    render(<SignupPage />)
-
-    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
-    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
-    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password124')
-    await userEvent.click(screen.getByRole('checkbox'))
+describe('OnboardingPage — terms step', () => {
+  test('blocks advance when terms not accepted', async () => {
+    render(<OnboardingPage />)
     screen.getByRole('button', { name: /create account/i }).click()
-
-    await waitFor(() => {
-      expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
-    })
-    expect(mockSignUp).not.toHaveBeenCalled()
-  })
-
-  test('requires terms acceptance before submitting', async () => {
-    render(<SignupPage />)
-
-    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
-    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
-    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
-    screen.getByRole('button', { name: /create account/i }).click()
-
     await waitFor(() => {
       expect(screen.getByText('Please accept the terms to continue')).toBeInTheDocument()
     })
-    expect(mockSignUp).not.toHaveBeenCalled()
+    expect(screen.queryByPlaceholderText('you@example.com')).not.toBeInTheDocument()
+  })
+})
+
+describe('OnboardingPage — details step', () => {
+  test('renders email, password, and confirm password after accepting terms', async () => {
+    render(<OnboardingPage />)
+    await passTermsStep()
+    expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('At least 6 characters')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Type your password again')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('How should we greet you?')).not.toBeInTheDocument()
   })
 
   test('shows error for short password', async () => {
-    render(<SignupPage />)
+    render(<OnboardingPage />)
+    await passTermsStep()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
     await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'abc')
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'abc')
-    await userEvent.click(screen.getByRole('checkbox'))
     screen.getByRole('button', { name: /create account/i }).click()
 
     await waitFor(() => {
@@ -82,71 +77,267 @@ describe('SignupPage', () => {
     expect(mockSignUp).not.toHaveBeenCalled()
   })
 
-  test('falls back to email prefix when no display name', async () => {
+  test('blocks submit when passwords do not match', async () => {
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password124')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    await waitFor(() => {
+      expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
+    })
+    expect(mockSignUp).not.toHaveBeenCalled()
+  })
+
+  test('signs up using the email prefix as display name', async () => {
     mockSignUp.mockResolvedValueOnce({})
-    render(<SignupPage />)
+    render(<OnboardingPage />)
+    await passTermsStep()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'test@example.com')
     await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
-    await userEvent.click(screen.getByRole('checkbox'))
     screen.getByRole('button', { name: /create account/i }).click()
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'password123', 'test')
     })
   })
+})
 
+describe('OnboardingPage — plan step', () => {
   test('after signup, shows plan picker with one CTA per plan', async () => {
     mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
-    render(<SignupPage />)
+    render(<OnboardingPage />)
+    await passTermsStep()
 
-    await userEvent.type(screen.getByPlaceholderText('How should we greet you?'), 'Alice')
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
     await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
-    await userEvent.click(screen.getByRole('checkbox'))
     screen.getByRole('button', { name: /create account/i }).click()
 
-    // We're now on the plan step — no navigation has happened yet.
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Choose your plan/i })).toBeInTheDocument()
     })
     expect(mockNavigate).not.toHaveBeenCalled()
-    // One CTA per plan. Pro's CTA mentions the trial instead of plan name.
     expect(screen.getByRole('button', { name: /Use Kolumn for free/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Try Pro plan/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Get in touch/i })).toBeInTheDocument()
   })
 
-  test('Free plan CTA: navigates without writing to profiles', async () => {
+  test('Free plan CTA: shows the Pro trial upsell without writing tier or navigating', async () => {
     mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
-    render(<SignupPage />)
+    render(<OnboardingPage />)
+    await passTermsStep()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
     await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
-    await userEvent.click(screen.getByRole('checkbox'))
     screen.getByRole('button', { name: /create account/i }).click()
 
     const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
     freeCta.click()
 
+    // Lands on the upsell step — no nav yet, no tier write.
+    await screen.findByRole('heading', { name: /Get more out of Kolumn with Pro/i })
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(mockSetTier).not.toHaveBeenCalled()
+  })
+
+  test('Upsell Skip: routes to the disclaimer step (not dashboard yet)', async () => {
+    mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    freeCta.click()
+
+    const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
+    skipCta.click()
+
+    // Lands on the disclaimer — no /dashboard nav yet.
+    await screen.findByRole('heading', { name: /Before your first board/i })
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(mockSetTier).not.toHaveBeenCalled()
+  })
+
+  test('Disclaimer Continue: advances to the name step (not dashboard yet)', async () => {
+    mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    freeCta.click()
+
+    const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
+    skipCta.click()
+
+    const continueCta = await screen.findByRole('button', { name: /^Continue$/i })
+    continueCta.click()
+
+    await screen.findByRole('heading', { name: /What.+your name/i })
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(mockSetTier).not.toHaveBeenCalled()
+  })
+})
+
+describe('OnboardingPage — name step', () => {
+  // Helper: drive the page all the way to the name step.
+  async function reachNameStep() {
+    mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    freeCta.click()
+    const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
+    skipCta.click()
+    const disclaimerContinue = await screen.findByRole('button', { name: /^Continue$/i })
+    disclaimerContinue.click()
+    await screen.findByPlaceholderText('Enter your name')
+  }
+
+  test('Continue is disabled until a name is entered', async () => {
+    await reachNameStep()
+    expect(screen.getByRole('button', { name: /^Continue$/i })).toBeDisabled()
+    await userEvent.type(screen.getByPlaceholderText('Enter your name'), 'Alice')
+    expect(screen.getByRole('button', { name: /^Continue$/i })).not.toBeDisabled()
+  })
+
+  test('Submitting updates the profile display_name then advances to the role step', async () => {
+    mockUpdateProfile.mockResolvedValueOnce({})
+    await reachNameStep()
+
+    await userEvent.type(screen.getByPlaceholderText('Enter your name'), '  Alice Liddell  ')
+    screen.getByRole('button', { name: /^Continue$/i }).click()
+
+    await waitFor(() => {
+      // Whitespace-trimmed before write.
+      expect(mockUpdateProfile).toHaveBeenCalledWith({ display_name: 'Alice Liddell' })
+    })
+    // Lands on the role step — no /dashboard nav yet.
+    await screen.findByRole('heading', { name: /What kind of work do you do/i })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+})
+
+describe('OnboardingPage — role step', () => {
+  async function reachRoleStep() {
+    mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
+    mockUpdateProfile.mockResolvedValueOnce({})
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    freeCta.click()
+    const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
+    skipCta.click()
+    const disclaimerContinue = await screen.findByRole('button', { name: /^Continue$/i })
+    disclaimerContinue.click()
+    await userEvent.type(await screen.findByPlaceholderText('Enter your name'), 'Alice')
+    screen.getByRole('button', { name: /^Continue$/i }).click()
+    await screen.findByRole('heading', { name: /What kind of work do you do/i })
+  }
+
+  test('"I have my own topic" routes to /dashboard', async () => {
+    await reachRoleStep()
+    screen.getByRole('button', { name: /I have my own topic/i }).click()
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
     })
-    // Free is the column default — skip the write.
+  })
+
+  test('Opening the role dropdown reveals selectable options', async () => {
+    await reachRoleStep()
+    expect(screen.queryByRole('button', { name: /^Engineering$/i })).not.toBeInTheDocument()
+    screen.getByTestId('role-selector-dropdown').click()
+    expect(await screen.findByRole('button', { name: /^Engineering$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Design$/i })).toBeInTheDocument()
+  })
+
+  test('Selecting a role reveals tailored starter prompts without navigating', async () => {
+    await reachRoleStep()
+    screen.getByTestId('role-selector-dropdown').click()
+    const sales = await screen.findByRole('button', { name: /^Sales$/i })
+    sales.click()
+
+    // The 3 Sales starter prompts now appear.
+    await screen.findByRole('button', { name: /Build a deal pipeline/i })
+    expect(screen.getByRole('button', { name: /Plan an outreach queue/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Prep for a discovery call/i })).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  test('Clicking a starter prompt routes to /dashboard with role + starter state', async () => {
+    await reachRoleStep()
+    screen.getByTestId('role-selector-dropdown').click()
+    const eng = await screen.findByRole('button', { name: /^Engineering$/i })
+    eng.click()
+
+    const sprint = await screen.findByRole('button', { name: /Plan a sprint board/i })
+    sprint.click()
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', {
+        replace: true,
+        state: { role: 'engineering', starter: 'sprint' },
+      })
+    })
+  })
+
+  test('Upsell "Get Pro free for 1 week": routes to /upgrade/pro with trial state', async () => {
+    mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
+    render(<OnboardingPage />)
+    await passTermsStep()
+
+    await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
+    await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
+    await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
+    screen.getByRole('button', { name: /create account/i }).click()
+
+    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    freeCta.click()
+
+    const trialCta = await screen.findByRole('button', { name: /Get Pro free for 1 week/i })
+    trialCta.click()
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro', { state: { trial: true } })
+    })
     expect(mockSetTier).not.toHaveBeenCalled()
   })
 
   test('Pro plan CTA: routes to /upgrade/pro without writing tier yet', async () => {
     mockSignUp.mockResolvedValueOnce({ session: { user: { id: 'u1' } } })
-    render(<SignupPage />)
+    render(<OnboardingPage />)
+    await passTermsStep()
 
     await userEvent.type(screen.getByPlaceholderText('you@example.com'), 'a@b.com')
     await userEvent.type(screen.getByPlaceholderText('At least 6 characters'), 'password123')
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
-    await userEvent.click(screen.getByRole('checkbox'))
     screen.getByRole('button', { name: /create account/i }).click()
 
     const proCta = await screen.findByRole('button', { name: /Try Pro plan/i })
@@ -155,7 +346,6 @@ describe('SignupPage', () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro')
     })
-    // Tier is committed by UpgradeProPage on Subscribe, not by the picker.
     expect(mockSetTier).not.toHaveBeenCalled()
   })
 })

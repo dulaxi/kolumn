@@ -6,7 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
-const SignupPage = lazy(() => import('./pages/SignupPage'))
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
 const UpgradeProPage = lazy(() => import('./pages/UpgradeProPage'))
@@ -56,7 +56,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sandbox/landing-board" element={<LandingBoardSandbox />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/update-password" element={<UpdatePasswordPage />} />
           {/* Auth-protected but renders OUTSIDE AppLayout — checkout-style
