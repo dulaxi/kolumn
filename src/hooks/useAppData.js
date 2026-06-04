@@ -6,6 +6,7 @@ import { useBoardSharingStore } from '../store/boardSharingStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { useNotificationStore } from '../store/notificationStore'
 import { hasLocalData, migrateLocalData } from '../lib/migrateLocalData'
+import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
 import { showToast } from '../utils/toast'
 
 /**
@@ -28,6 +29,8 @@ import { showToast } from '../utils/toast'
  */
 export function useAppData() {
   const user = useAuthStore((s) => s.user)
+  const profileId = useAuthStore((s) => s.profile?.id)
+  const profileSeededAt = useAuthStore((s) => s.profile?.tour_board_seeded_at)
   const fetchBoards = useBoardStore((s) => s.fetchBoards)
   const spawnRecurringTasks = useBoardStore((s) => s.spawnRecurringTasks)
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
@@ -122,6 +125,15 @@ export function useAppData() {
     // re-running this effect for them would just thrash subscriptions.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  // Tour-board seed. Runs as soon as the profile lands (it may arrive
+  // after the initial data fetch). Idempotent: re-runs are a no-op
+  // because tour_board_seeded_at flips to a timestamp on first success,
+  // and the seeder also re-checks the DB for any partial-seed board.
+  useEffect(() => {
+    if (!profileId || profileSeededAt) return
+    trySeedOnboardingBoard(profileId)
+  }, [profileId, profileSeededAt])
 
   const handleMigrate = async () => {
     setMigrating(true)

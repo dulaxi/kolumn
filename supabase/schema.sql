@@ -10,6 +10,7 @@ create table public.profiles (
   display_name text not null default '',
   icon text,
   color text default 'bg-[#7EB8DA]',
+  tour_board_seeded_at timestamptz,
   created_at timestamptz default now()
 );
 
@@ -39,8 +40,14 @@ create table public.boards (
   icon text,
   owner_id uuid not null references auth.users(id) on delete cascade,
   next_task_number int not null default 1,
+  is_tour boolean not null default false,
   created_at timestamptz default now()
 );
+
+-- At most one tour board per user.
+create unique index if not exists boards_tour_owner_uq
+  on public.boards (owner_id)
+  where is_tour = true;
 
 alter table public.boards enable row level security;
 
