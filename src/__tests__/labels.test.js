@@ -81,16 +81,29 @@ describe('selectBoardLabelByText', () => {
 
 vi.mock('../lib/supabase', () => {
   const rpc = vi.fn()
-  const from = vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
-    is: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockResolvedValue({ error: null }),
-    update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })),
-    delete: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })) })),
-  }))
-  return { supabase: { rpc, from, channel: () => ({ on: () => ({ subscribe: () => ({}) }) }) } }
+  const singleResult = { current: { data: null, error: null } }
+  const from = vi.fn(() => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      in: vi.fn(() => builder),
+      is: vi.fn(() => builder),
+      single: vi.fn(() => Promise.resolve(singleResult.current)),
+      maybeSingle: vi.fn(() => Promise.resolve(singleResult.current)),
+      insert: vi.fn().mockResolvedValue({ error: null }),
+      update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })),
+      delete: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })) })),
+    }
+    return builder
+  })
+  return {
+    supabase: {
+      rpc,
+      from,
+      __setSingle: (v) => { singleResult.current = v },
+      channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+    },
+  }
 })
 
 vi.mock('../utils/toast', () => ({
@@ -127,6 +140,66 @@ describe('boardStore label actions', () => {
       p_card_id: 'C1', p_text: 'Bug', p_color: null,
     })
     expect(useBoardStore.getState().cardLabels.C1.has('L1')).toBe(true)
+  })
+
+  it('addLabelToCard inserts a brand-new label into state.labels so it renders', async () => {
+    // Regression: addLabelToCard used to update only cardLabels, never labels.
+    // selectCardLabels filters ids whose label object is missing, so a newly
+    // created label rendered as nothing — "I cannot create a new label".
+    const { supabase } = await import('../lib/supabase')
+    supabase.rpc.mockResolvedValueOnce({ data: 'NEW1', error: null })
+    supabase.__setSingle({
+      data: { id: 'NEW1', board_id: 'B1', text: 'shiny', color: 'blue', archived_at: null, created_at: '2026-05-20' },
+      error: null,
+    })
+
+    useBoardStore.setState({
+      cards: { C1: { id: 'C1', board_id: 'B1' } },
+      labels: {},
+      cardLabels: {},
+    })
+
+    await useBoardStore.getState().addLabelToCard('C1', 'shiny', 'blue')
+
+    const s = useBoardStore.getState()
+    expect(s.labels.NEW1).toBeTruthy()
+    expect(s.cardLabels.C1.has('NEW1')).toBe(true)
+    // And it must be visible through the selector the UI actually uses.
+    const visible = selectCardLabels('C1')(s)
+    expect(visible.map((l) => l.id)).toContain('NEW1')
+  })
+
+  it('addLabelToCard does not refetch when the label is already in state', async () => {
+    const { supabase } = await import('../lib/supabase')
+    supabase.rpc.mockResolvedValueOnce({ data: 'L1', error: null })
+
+    useBoardStore.setState({
+      cards: { C1: { id: 'C1', board_id: 'B1' } },
+      labels: { L1: { id: 'L1', board_id: 'B1', text: 'Bug', color: 'red', archived_at: null } },
+      cardLabels: {},
+    })
+
+    await useBoardStore.getState().addLabelToCard('C1', 'Bug')
+
+    // Existing label already present → no follow-up select needed.
+    expect(supabase.from).not.toHaveBeenCalled()
+    expect(useBoardStore.getState().cardLabels.C1.has('L1')).toBe(true)
+  })
+
+  it('createLabel adds a new label to state.labels and returns its id', async () => {
+    const { supabase } = await import('../lib/supabase')
+    supabase.rpc.mockResolvedValueOnce({ data: 'CL1', error: null })
+    supabase.__setSingle({
+      data: { id: 'CL1', board_id: 'B1', text: 'infra', color: 'green', archived_at: null, created_at: '2026-05-20' },
+      error: null,
+    })
+
+    useBoardStore.setState({ labels: {}, cardLabels: {} })
+
+    const id = await useBoardStore.getState().createLabel('B1', 'infra', 'green')
+
+    expect(id).toBe('CL1')
+    expect(useBoardStore.getState().labels.CL1?.text).toBe('infra')
   })
 
   it('removeLabelFromCard removes from state and calls delete', async () => {

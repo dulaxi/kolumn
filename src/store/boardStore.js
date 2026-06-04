@@ -1440,11 +1440,44 @@ export const useBoardStore = create((set, get) => ({
       showToast.error(`Couldn't add label: ${error.message}`)
       return
     }
+    // attach_label_by_text returns only the label id. For a brand-new label the
+    // label object isn't in state.labels yet, so selectCardLabels would filter
+    // it out and the chip would render as nothing. Fetch the authoritative row
+    // so the new label is visible immediately, independent of realtime.
+    let label = get().labels[labelId]
+    if (!label) {
+      const { data: row } = await supabase.from('labels').select('*').eq('id', labelId).single()
+      label = row
+    }
     set((s) => {
       const next = new Set(s.cardLabels[cardId] || [])
       next.add(labelId)
-      return { cardLabels: { ...s.cardLabels, [cardId]: next } }
+      return {
+        cardLabels: { ...s.cardLabels, [cardId]: next },
+        labels: label ? { ...s.labels, [labelId]: label } : s.labels,
+      }
     })
+  },
+
+  // Create a board label without attaching it to a card (used by the label
+  // manager modal). Returns the new/existing label id, or null on error.
+  createLabel: async (boardId, text, color = null) => {
+    const { data: labelId, error } = await supabase.rpc('upsert_label', {
+      p_board_id: boardId, p_text: text, p_color: color,
+    })
+    if (error) {
+      showToast.error(`Couldn't create label: ${error.message}`)
+      return null
+    }
+    let label = get().labels[labelId]
+    if (!label) {
+      const { data: row } = await supabase.from('labels').select('*').eq('id', labelId).single()
+      label = row
+    }
+    if (label) {
+      set((s) => ({ labels: { ...s.labels, [labelId]: label } }))
+    }
+    return labelId
   },
 
   removeLabelFromCard: async (cardId, labelId) => {

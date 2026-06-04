@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { X, Plus, DotsThreeVertical } from '@phosphor-icons/react'
 import Modal from '../ui/Modal'
 import Menu from '../ui/Menu'
-import { supabase } from '../../lib/supabase'
 import { useBoardStore } from '../../store/boardStore'
 import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
 
@@ -48,14 +47,16 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
   const mergeLabels     = useBoardStore((s) => s.mergeLabels)
   const archiveLabel    = useBoardStore((s) => s.archiveLabel)
   const unarchiveLabel  = useBoardStore((s) => s.unarchiveLabel)
+  const createLabel     = useBoardStore((s) => s.createLabel)
 
   const addNewLabel = async () => {
     const t = newText.trim()
     if (!t) return
-    await supabase.rpc('upsert_label', { p_board_id: boardId, p_text: t, p_color: newColor })
+    // createLabel inserts the new row into state.labels directly, so it appears
+    // immediately rather than waiting on a realtime event.
+    await createLabel(boardId, t, newColor)
     setNewText('')
     setNewOpen(false)
-    // The realtime subscription on `labels` will push the new row into state.
   }
 
   const toggleDotMenu = (id, val) =>
