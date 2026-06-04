@@ -7,15 +7,19 @@
 export const LABEL_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
 
 // Tailwind background classes for each label color (used in pickers/dots)
+// Solid color swatches for dots and color pickers. These use the saturated
+// `-text` token (the label's identity color, e.g. #B53333), NOT the pale `-bg`
+// wash that sits behind text in the filled-pill style — so a dot actually
+// reads as the label's color.
 export const COLOR_DOT_CLASSES = {
-  red: 'bg-[var(--label-red-bg)]',
-  orange: 'bg-[var(--label-orange-bg)]',
-  yellow: 'bg-[var(--label-yellow-bg)]',
-  green: 'bg-[var(--label-green-bg)]',
-  blue: 'bg-[var(--label-blue-bg)]',
-  purple: 'bg-[var(--label-purple-bg)]',
-  pink: 'bg-[var(--label-pink-bg)]',
-  gray: 'bg-[var(--label-gray-bg)]',
+  red: 'bg-[var(--label-red-text)]',
+  orange: 'bg-[var(--label-orange-text)]',
+  yellow: 'bg-[var(--label-yellow-text)]',
+  green: 'bg-[var(--label-green-text)]',
+  blue: 'bg-[var(--label-blue-text)]',
+  purple: 'bg-[var(--label-purple-text)]',
+  pink: 'bg-[var(--label-pink-text)]',
+  gray: 'bg-[var(--label-gray-text)]',
 }
 
 // Workspace identity colors — Phosphor system palette.
