@@ -110,7 +110,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
               <CheckCircle className={`w-4 h-4 transition-colors ${completed ? 'text-[var(--color-lime-dark)]' : priority === 'high' ? 'text-[var(--color-copper)] hover:text-[var(--color-lime-dark)]' : priority === 'low' ? 'text-[var(--color-lime-dark)] hover:text-[var(--color-logo)]' : 'text-[var(--color-honey)] hover:text-[var(--color-lime-dark)]'}`} />
             </button>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-muted)] min-w-0">
             {labels?.length > 0 && labels.map((label) => {
               const isAlt = labelStyle === 'alt'
               const onLabelClick = (e) => { e.stopPropagation(); toggleLabelStyle() }
