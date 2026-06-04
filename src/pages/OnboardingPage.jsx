@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import PlanCard from '../components/PlanCard'
@@ -112,7 +113,15 @@ export default function OnboardingPage() {
     setSlow(false)
     slowTimer.current = setTimeout(() => setSlow(true), 3000)
     try {
-      await signUp(email, password, email.split('@')[0])
+      const result = await signUp(email, password, email.split('@')[0])
+      // Fire-and-forget seed of the welcome tour board so it exists by
+      // the time the user finishes plan → upsell → disclaimer → name →
+      // role. useAppData has its own trigger as a safety net (existing
+      // users, repeat logins). Both calls dedupe via the in-flight
+      // promise map and the DB unique index on boards(owner_id) where
+      // is_tour = true.
+      const newUserId = result?.user?.id || result?.session?.user?.id
+      if (newUserId) trySeedOnboardingBoard(newUserId)
       setStep('plan')
     } catch (err) {
       setError(err.message)
