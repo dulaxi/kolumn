@@ -59,7 +59,12 @@ export const useSettingsStore = create(
       }),
       toggleBoardsCollapsed: () => set((s) => ({ boardsCollapsed: !s.boardsCollapsed })),
       toggleSharedBoardsCollapsed: () => set((s) => ({ sharedBoardsCollapsed: !s.sharedBoardsCollapsed })),
-      toggleLabelStyle: () => set((s) => ({ labelStyle: s.labelStyle === 'alt' ? 'default' : 'alt' })),
+      // Cycle through the three label render styles on tap:
+      //   default (/text prose) → alt (outline pill) → dot (color dot) → …
+      toggleLabelStyle: () => set((s) => {
+        const next = { default: 'alt', alt: 'dot', dot: 'default' }
+        return { labelStyle: next[s.labelStyle] || 'alt' }
+      }),
       toggleIconStyle: () => set((s) => ({ iconStyle: s.iconStyle === 'plain' ? 'boxed' : 'plain' })),
     }),
     {

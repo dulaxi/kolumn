@@ -10,7 +10,7 @@ import { LABEL_OUTLINE, PRIORITY_DOT } from '../../utils/formatting'
 import { selectCardLabels } from '../../store/selectors'
 import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
-import { resolveProfileColor } from '../../constants/colors'
+import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
 import { isAICreated } from '../../lib/toolExecutor'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
@@ -112,9 +112,18 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-muted)] min-w-0">
             {labels?.length > 0 && labels.map((label) => {
-              const isAlt = labelStyle === 'alt'
               const onLabelClick = (e) => { e.stopPropagation(); toggleLabelStyle() }
-              if (isAlt) {
+              if (labelStyle === 'dot') {
+                return (
+                  <span
+                    key={`${label.text}-${label.color}`}
+                    onClick={onLabelClick}
+                    title={label.text}
+                    className={`cursor-pointer w-2.5 h-2.5 rounded-full shrink-0 ${COLOR_DOT_CLASSES[label.color] || COLOR_DOT_CLASSES.gray}`}
+                  />
+                )
+              }
+              if (labelStyle === 'alt') {
                 const colorClasses = LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray
                 return (
                   <span
