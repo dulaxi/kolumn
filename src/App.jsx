@@ -23,6 +23,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'))
 const ChatListPage = lazy(() => import('./pages/ChatListPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const LandingBoardSandbox = lazy(() => import('./pages/LandingBoardSandbox'))
+const OnboardingBoardSandbox = lazy(() => import('./pages/OnboardingBoardSandbox'))
 
 function UndoListener() {
   const { toasts } = useToasterStore()
@@ -66,6 +67,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sandbox/landing-board" element={<LandingBoardSandbox />} />
+          <Route path="/sandbox/onboarding-board" element={<OnboardingBoardSandbox />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/update-password" element={<UpdatePasswordPage />} />

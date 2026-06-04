@@ -228,6 +228,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   setShowLabelForm(false)
                   window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
                 }}
+                onClose={() => setShowLabelForm(false)}
               />
             ) : (
               <button
