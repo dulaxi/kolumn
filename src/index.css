@@ -86,12 +86,13 @@
   --btn-primary-text: #FFFFFF;
   --btn-primary-hover: #333333;
 
-  --label-red-bg: #F2D9C7;    --label-red-text: #8B5A33;
-  --label-blue-bg: #DAE0F0;   --label-blue-text: #4A5578;
-  --label-green-bg: #EEF2D6;  --label-green-text: #6B7A12;
-  --label-yellow-bg: #F5EDCF; --label-yellow-text: #8B7322;
-  --label-purple-bg: #E8DDE2; --label-purple-text: #6E5A65;
-  --label-pink-bg: #F0E0D2;   --label-pink-text: #7A5C44;
+  --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
+  --label-orange-bg: #F8DDC8; --label-orange-text: #AD5A1F;
+  --label-yellow-bg: #F9EDD0; --label-yellow-text: #BD910F;
+  --label-green-bg: #DEEED4;  --label-green-text: #2F7613;
+  --label-blue-bg: #DCEBF9;   --label-blue-text: #1A5DBA;
+  --label-purple-bg: #E2DFEF; --label-purple-text: #524BA0;
+  --label-pink-bg: #F7DAE5;   --label-pink-text: #B82E67;
   --label-gray-bg: #E8E2DB;   --label-gray-text: #5C5C57;
 
   /* Profile color slots (12) — bg + paired fg. Each slot's bg+fg flips
@@ -146,12 +147,16 @@
   --btn-primary-text: #1C1C1A;
   --btn-primary-hover: #D6D2CC;  /* was #A8BA32 — slightly darker cream on hover */
 
-  --label-red-bg: #4A2A1F;    --label-red-text: #E0907C;   /* was muddy brown — pushed toward coral-red */
-  --label-blue-bg: #2A3040;   --label-blue-text: #8DA0C4;
-  --label-green-bg: #2A3520;  --label-green-text: #A8C278;
-  --label-yellow-bg: #3D3820; --label-yellow-text: #D8C078; /* was muddy brown — pushed toward true gold */
-  --label-purple-bg: #3A3040; --label-purple-text: #C4A0B8;
-  --label-pink-bg: #3D2632;   --label-pink-text: #E0A0B8;  /* was muddy brown — pushed toward rose */
+  /* Dark-theme labels — text lifted to ~70% L for legibility on dark
+     surfaces, bg deepened to ~17% L with reduced saturation. Hues match
+     the new light-theme palette. */
+  --label-red-bg: #3D1818;    --label-red-text: #E08080;
+  --label-orange-bg: #3B291C; --label-orange-text: #D9AC8C;
+  --label-yellow-bg: #3D3318; --label-yellow-text: #E0C070;
+  --label-green-bg: #1F3318;  --label-green-text: #A0C880;
+  --label-blue-bg: #1C2840;   --label-blue-text: #80A8D9;
+  --label-purple-bg: #221C3B; --label-purple-text: #A298CD;
+  --label-pink-bg: #3D1F2A;   --label-pink-text: #D980A8;
   --label-gray-bg: #333330;   --label-gray-text: #9C9A95;
 
   /* ── Phosphor palette — dark-mode overrides ──

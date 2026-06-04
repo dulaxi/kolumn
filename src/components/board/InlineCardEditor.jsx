@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { Calendar, CalendarDot, Check, CheckCircle, CheckSquare, FileText, Flag, Plus, User, X } from '@phosphor-icons/react'
+import { CalendarDot, CheckCircle, CheckSquare, FileText, Flag, Plus, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
@@ -9,10 +9,11 @@ import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
-import { parseISO } from 'date-fns'
-import { formatDueDateLabel, dueDateBadgeClass } from '../../utils/dateUtils'
+import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
 import AssigneePicker from './cardDetail/AssigneePicker'
+import LabelAutocomplete from './LabelAutocomplete'
+import { selectCardLabels } from '../../store/selectors'
 
 /**
  * InlineCardEditor — matches the new Card.jsx layout 1:1.
@@ -20,7 +21,7 @@ import AssigneePicker from './cardDetail/AssigneePicker'
  *   - Icon container → click opens IconPicker
  *   - Title → inline input inside the title row
  *   - Check circle → priority color, click cycles priority
- *   - Labels row → /label chips + inline add
+ *   - Labels row → label chips from store + LabelAutocomplete
  *   - Bottom row → date pill, checklist, assignee avatar (all clickable)
  *   - Description textarea appears inline when focused
  */
@@ -29,44 +30,68 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   const card = useBoardStore((s) => s.cards[s._tempIdMap?.[rawCardId] || rawCardId])
   const updateCard = useBoardStore((s) => s.updateCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
+  const addLabelToCard = useBoardStore((s) => s.addLabelToCard)
+  const removeLabelFromCard = useBoardStore((s) => s.removeLabelFromCard)
+  const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const profile = useAuthStore((s) => s.profile)
+
+  const isExistingCard = !!card?.id && !card?._optimistic
+
+  // For existing (already-persisted) cards, labels come from the store.
+  // useBoardStore selector must be called unconditionally — use resolvedId
+  // and let the selector return EMPTY_LABELS if the card isn't found.
+  const persistedLabels = useBoardStore(selectCardLabels(resolvedId))
 
   const {
     title, setTitle,
     assignees, setAssignees,
     priority, setPriority,
     dueDate, setDueDate,
-    labels, setLabels,
+    pendingLabels, setPendingLabels,
     description, setDescription,
     checklist, setChecklist,
   } = useCardEditState(card, { treatUntitledAsEmpty: true })
 
   const [showDescription, setShowDescription] = useState(() => !!card?.description)
-  const [newLabelText, setNewLabelText] = useState('')
   const boardMemberNames = useBoardMemberNames(card)
-  const newLabelTextRef = useRef('')
-  newLabelTextRef.current = newLabelText
-  const [openMenu, setOpenMenu] = useMenuState((closing) => {
-    if (closing === 'label') {
-      const trimmed = newLabelTextRef.current.trim()
-      if (trimmed) {
-        setLabels((prev) => [...prev, { text: trimmed, color: 'gray' }])
-        setNewLabelText('')
-      }
-    }
-  })
+  const [openMenu, setOpenMenu] = useMenuState()
 
   const titleRef = useRef(null)
   const rootRef = useRef(null)
+
+  // Track pending labels to flush once the tempId resolves to a real card ID.
+  const pendingLabelsRef = useRef(pendingLabels)
+  pendingLabelsRef.current = pendingLabels
 
   useEffect(() => {
     if (titleRef.current) titleRef.current.focus()
   }, [])
 
+  // Flush pendingLabels once the optimistic card becomes a real persisted card.
+  // resolvedId changes from tempId → realId when _tempIdMap is updated.
+  useEffect(() => {
+    if (!resolvedId || resolvedId === rawCardId) return
+    // resolvedId is now the real card ID
+    const toFlush = pendingLabelsRef.current
+    if (toFlush.length === 0) return
+    for (const p of toFlush) {
+      addLabelToCard(resolvedId, p.text, p.color)
+    }
+    setPendingLabels([])
+  }, [resolvedId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!card) return null
 
   const priOption = PRIORITY_OPTIONS.find((p) => p.value === priority) || PRIORITY_OPTIONS[1]
   const priColor = priority === 'high' ? '#C27A4A' : priority === 'low' ? '#A8BA32' : '#D4A843'
+
+  // Combined display: persisted labels (from store) for existing cards,
+  // or pending labels for new (optimistic) cards.
+  const displayedLabels = isExistingCard
+    ? persistedLabels.map((l) => ({ key: l.id, text: l.text, color: l.color, persistedId: l.id }))
+    : pendingLabels.map((p, i) => ({ key: `pending-${i}-${p.text}`, text: p.text, color: p.color, pendingIdx: i }))
+
+  const boardIdForLabels = card?.board_id || activeBoardId
 
   const handleSave = () => {
     const trimmedTitle = title.trim()
@@ -76,10 +101,16 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
       assignees,
       priority,
       due_date: dueDate || null,
-      labels,
       description: description.trim(),
       checklist,
     })
+    // If real ID is already resolved, flush any pending labels immediately.
+    if (resolvedId !== rawCardId && pendingLabels.length > 0) {
+      for (const p of pendingLabels) {
+        addLabelToCard(resolvedId, p.text, p.color)
+      }
+      setPendingLabels([])
+    }
     onDone()
   }
 
@@ -93,18 +124,8 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     }
   }
 
-  const addLabel = () => {
-    const trimmed = newLabelText.trim()
-    if (trimmed) {
-      setLabels((prev) => [...prev, { text: trimmed, color: 'gray' }])
-      setNewLabelText('')
-    }
-  }
-
-  const dueDateObj = dueDate ? parseISO(dueDate) : null
-  const hasLabels = labels.length > 0
+  const dueDateObj = dueDate ? parseDueDate(dueDate) : null
   const hasChecklist = checklist.length > 0
-  const hasAssignee = assignees.length > 0
 
   return (
     <div
@@ -180,17 +201,17 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
             </div>
           </div>
 
-          {/* Labels inline — /label chips */}
+          {/* Labels inline — chips + LabelAutocomplete */}
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] flex-wrap">
-            {labels.map((label, idx) => (
-              <span
-                key={`${label.text}-${idx}`}
-                className="relative inline-flex items-center group/label"
-              >
-                <span className="font-medium text-[var(--text-secondary)] lowercase">/{label.text}</span>
+            {displayedLabels.map((d) => (
+              <span key={d.key} className="relative inline-flex items-center group/label">
+                <span className="font-medium text-[var(--text-secondary)] lowercase">/{d.text}</span>
                 <button
                   type="button"
-                  onClick={() => setLabels(labels.filter((_, i) => i !== idx))}
+                  onClick={() => {
+                    if (isExistingCard) removeLabelFromCard(resolvedId, d.persistedId)
+                    else setPendingLabels(pendingLabels.filter((_, i) => i !== d.pendingIdx))
+                  }}
                   className="ml-0.5 opacity-0 group-hover/label:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] transition-opacity"
                 >
                   <X className="w-2.5 h-2.5" />
@@ -198,31 +219,23 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               </span>
             ))}
             {openMenu === 'label' ? (
-              <input
-                value={newLabelText}
-                onChange={(e) => setNewLabelText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    addLabel()
-                    // stay open for next label
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setNewLabelText('')
-                    setOpenMenu(null)
-                  }
-                }}
-                onBlur={() => {
-                  // save current, then close
-                  addLabel()
+              <LabelAutocomplete
+                boardId={boardIdForLabels}
+                excludeIds={isExistingCard ? persistedLabels.map((l) => l.id) : []}
+                onPick={(l) => {
+                  if (isExistingCard) addLabelToCard(resolvedId, l.text, l.color)
+                  else setPendingLabels([...pendingLabels, { text: l.text, color: l.color }])
                   setOpenMenu(null)
                 }}
-                placeholder="/label"
-                autoFocus
-                data-menu-root
-                className="text-xs text-[var(--text-secondary)] lowercase bg-transparent border-none focus:outline-none w-20 placeholder-[var(--text-faint)]"
+                onCreate={(text, color) => {
+                  if (isExistingCard) addLabelToCard(resolvedId, text, color)
+                  else setPendingLabels([...pendingLabels, { text, color }])
+                  setOpenMenu(null)
+                }}
+                onManage={() => {
+                  setOpenMenu(null)
+                  window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
+                }}
               />
             ) : (
               <button

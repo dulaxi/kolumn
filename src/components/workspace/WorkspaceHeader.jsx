@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Pencil, Users } from '@phosphor-icons/react'
-import DynamicIcon from '../board/DynamicIcon'
-import IconPicker from '../board/IconPicker'
+import { Cube, Pencil } from '@phosphor-icons/react'
+import Popover from '../ui/Popover'
+import WorkspaceColorPicker from './WorkspaceColorPicker'
+import { resolveWorkspaceColor } from '../../constants/colors'
 
 export default function WorkspaceHeader({
   workspace,
@@ -11,7 +12,10 @@ export default function WorkspaceHeader({
   onRename,
   onIconChange,
 }) {
-  const [showIconPicker, setShowIconPicker] = useState(false)
+  // `onIconChange` and `workspace.icon` are misnamed historically — the
+  // column now stores a color name (see resolveWorkspaceColor). Kept as-is
+  // to avoid a cross-cutting rename through the store + RPCs.
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const inputRef = useRef(null)
@@ -31,37 +35,39 @@ export default function WorkspaceHeader({
     setEditingName(false)
   }
 
-  const handleIcon = async (name) => {
-    setShowIconPicker(false)
+  const handleColor = async (name) => {
+    setPickerOpen(false)
     await onIconChange(name)
   }
 
+  const color = resolveWorkspaceColor(workspace)
+
   return (
     <div className="flex items-start gap-4">
-      <div className="relative shrink-0">
+      <Popover
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        placement="bottom-start"
+        className="shrink-0"
+        panel={
+          <WorkspaceColorPicker
+            value={workspace.icon}
+            onChange={handleColor}
+          />
+        }
+      >
         <button
           type="button"
-          onClick={() => isOwner && setShowIconPicker(true)}
+          onClick={() => isOwner && setPickerOpen((o) => !o)}
           disabled={!isOwner}
-          className={`h-16 w-16 rounded-2xl border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] flex items-center justify-center text-[var(--text-secondary)] ${
+          className={`h-16 w-16 rounded-2xl border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] flex items-center justify-center transition-colors ${
             isOwner ? 'hover:border-[var(--color-mist)] cursor-pointer' : ''
-          } transition-colors`}
-          aria-label={isOwner ? 'Change workspace icon' : undefined}
+          }`}
+          aria-label={isOwner ? 'Change workspace color' : 'Workspace color'}
         >
-          {workspace.icon ? (
-            <DynamicIcon name={workspace.icon} className="w-7 h-7" />
-          ) : (
-            <Users className="w-7 h-7" strokeWidth={1.5} />
-          )}
+          <Cube weight="fill" className="w-7 h-7" style={{ color }} />
         </button>
-        {showIconPicker && (
-          <IconPicker
-            value={workspace.icon}
-            onChange={handleIcon}
-            onClose={() => setShowIconPicker(false)}
-          />
-        )}
-      </div>
+      </Popover>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

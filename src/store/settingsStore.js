@@ -12,6 +12,8 @@ export const useSettingsStore = create(
       collapsedSpaces: {}, // { [workspaceId]: true } — persists workspace collapse state
       boardsCollapsed: false,
       sharedBoardsCollapsed: false,
+      labelStyle: 'default',
+      iconStyle: 'boxed',
       workspaceSidebarOpen: false,
       _sidebarBeforeWorkspace: false,
       toggleSidebar: () =>
@@ -57,6 +59,13 @@ export const useSettingsStore = create(
       }),
       toggleBoardsCollapsed: () => set((s) => ({ boardsCollapsed: !s.boardsCollapsed })),
       toggleSharedBoardsCollapsed: () => set((s) => ({ sharedBoardsCollapsed: !s.sharedBoardsCollapsed })),
+      // Cycle through the three label render styles on tap:
+      //   default (/text prose) → alt (outline pill) → dot (color dot) → …
+      toggleLabelStyle: () => set((s) => {
+        const next = { default: 'alt', alt: 'dot', dot: 'default' }
+        return { labelStyle: next[s.labelStyle] || 'alt' }
+      }),
+      toggleIconStyle: () => set((s) => ({ iconStyle: s.iconStyle === 'plain' ? 'boxed' : 'plain' })),
     }),
     {
       name: 'kolumn-settings',

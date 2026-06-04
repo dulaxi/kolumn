@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confirmation Popups — Kolumn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+<style>
+  :root {
+    --surface-page: #FAF7F2;
+    --surface-card: #FDFCFA;
+    --surface-raised: #F2EDE8;
+    --surface-hover: #E8E2DB;
+    --border-default: #E5DFD3;
+    --border-subtle: #EBE5D8;
+    --text-primary: #1B1B18;
+    --text-secondary: #38383A;
+    --text-muted: #57534e;
+    --text-faint: #8B8A82;
+
+    --color-copper: #B95D2C;
+    --color-copper-wash: #F8DDC8;
+    --color-honey: #BD910F;
+    --color-honey-wash: #F9EDD0;
+    --color-lime: #C2D64A;
+    --color-lime-dark: #A8BA32;
+    --color-lime-wash: #EEF2D6;
+    --color-lime-soft: #D4E07A;
+    --color-mist: #D6CFC0;
+    --color-mauve-cream: #F0EBE3;
+
+    --btn-primary-bg: #1B1B18;
+    --btn-primary-text: #FAF7F2;
+    --btn-primary-hover: #333333;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    font-family: 'Mona Sans', system-ui, sans-serif;
+    font-weight: 400;
+    background: var(--surface-page);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+  h2 { font-size: 13px; margin: 36px 0 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+  p.intro { color: var(--text-muted); font-size: 13px; margin: 0 0 24px; max-width: 760px; }
+
+  .wrap { max-width: 1200px; margin: 0 auto; }
+
+  /* ────── Surface that simulates the page beneath the modal ────── */
+  .stage {
+    background: var(--surface-page);
+    border: 1px dashed var(--color-mist);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(27,27,24,0.04);
+    pointer-events: none;
+  }
+  .stage-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .stage-label .chip {
+    background: var(--surface-raised);
+    border: 0.5px solid var(--border-default);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    color: var(--text-primary);
+  }
+  .stage-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ────── The popup itself — actual ConfirmModal markup ────── */
+  .modal {
+    background: var(--surface-card);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(27,27,24,0.18);
+    width: 100%;
+    max-width: 384px;
+    padding: 20px;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .modal-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--color-copper-wash);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-icon-wrap i { font-size: 20px; color: var(--color-copper); }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .modal-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px 48px;
+  }
+  .modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* ────── Buttons — match Button.jsx variants ────── */
+  .btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 120ms, border-color 120ms, color 120ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover { background: var(--surface-raised); color: var(--text-primary); }
+  .btn-destructive {
+    background: var(--color-copper);
+    color: white;
+  }
+  .btn-destructive:hover { background: #A14F25; }
+  .btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+  }
+  .btn-primary:hover { background: var(--btn-primary-hover); }
+
+  /* ────── Inline panel variant (Settings page wipe) ────── */
+  .inline-panel {
+    background: var(--surface-card);
+    border: 1px solid var(--color-copper);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 520px;
+  }
+  .inline-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .inline-panel-header i { font-size: 16px; color: var(--color-copper); }
+  .inline-panel-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-copper);
+    margin: 0;
+  }
+  .inline-panel-body {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+  }
+
+  /* ────── Token reference table ────── */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .ref-card {
+    background: var(--surface-card);
+    border: 1px solid var(--color-mist);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .ref-card-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .ref-card-row:last-child { margin-bottom: 0; }
+  .swatch {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border-default);
+    flex-shrink: 0;
+  }
+  .ref-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .ref-card-value {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+  }
+
+  /* ────── Source meta ────── */
+  .meta {
+    margin-top: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta b { color: var(--text-muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Confirmation popups — current state</h1>
+  <p class="intro">
+    Every destructive confirmation in Kolumn at production size, faithful to the live render.
+    Five share one component (<code>ConfirmModal</code>); one is an inline panel (Settings → wipe data).
+    Use this as the visual reference when redesigning the chrome — change <code>ConfirmModal</code>
+    once and all five modals update.
+  </p>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 1. Delete board                              -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">01</span>
+      <span>Delete board</span>
+    </div>
+    <div class="stage-row">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-icon-wrap"><i class="ph ph-warning"></i></div>
+          <h3 class="modal-title">Delete board</h3>
+        </div>
+        <p class="modal-message">This will permanently delete the board and all its tasks.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-destructive">Delete</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Sidebar → board row → Trash icon
+        <b>Source:</b> Sidebar.jsx:346
+        <b>Destructive scope:</b> board + all its columns + all cards
+        <b>Reversibility:</b> 5s undo toast after dismiss
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 2. Leave board                               -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">02</span>
+      <span>Leave board</span>
+    </div>
+    <div class="stage-row">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-icon-wrap"><i class="ph ph-warning"></i></div>
+          <h3 class="modal-title">Leave board</h3>
+        </div>
+        <p class="modal-message">You'll lose access to this board. The owner can re-invite you later.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-destructive">Leave</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Sidebar / WorkspaceSidebar / BoardShareModal (three sites)
+        <b>Source:</b> Sidebar.jsx:358 / WorkspaceSidebar.jsx:210 / BoardShareModal.jsx:340
+        <b>Destructive scope:</b> revokes user's membership; data preserved
+        <b>Reversibility:</b> no — owner must re-invite
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 3. Delete column                             -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">03</span>
+      <span>Delete column</span>
+    </div>
+    <div class="stage-row">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-icon-wrap"><i class="ph ph-warning"></i></div>
+          <h3 class="modal-title">Delete "In Progress"</h3>
+        </div>
+        <p class="modal-message">This section has 5 task(s) that will be permanently deleted.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-destructive">Delete</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Board → column header menu → Delete column
+        <b>Source:</b> Column.jsx:272
+        <b>Destructive scope:</b> column + its cards
+        <b>Reversibility:</b> 5s undo toast
+        <b>Note:</b> title interpolates column name; message interpolates card count
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 4. Delete workspace (owner)                  -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">04</span>
+      <span>Delete workspace (owner)</span>
+    </div>
+    <div class="stage-row">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-icon-wrap"><i class="ph ph-warning"></i></div>
+          <h3 class="modal-title">Delete workspace</h3>
+        </div>
+        <p class="modal-message">This permanently removes the workspace and unlinks its boards. This cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-destructive">Confirm delete</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Workspace settings → Danger zone → Delete workspace
+        <b>Source:</b> WorkspaceDangerZone.jsx
+        <b>Destructive scope:</b> workspace metadata; boards become personal (unlinked)
+        <b>Reversibility:</b> no — boards keep their data but lose workspace
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 5. Leave workspace (member)                  -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">05</span>
+      <span>Leave workspace (member)</span>
+    </div>
+    <div class="stage-row">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-icon-wrap"><i class="ph ph-warning"></i></div>
+          <h3 class="modal-title">Leave workspace</h3>
+        </div>
+        <p class="modal-message">You'll lose access to all boards in this workspace.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-destructive">Confirm leave</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Workspace settings → Danger zone → Leave workspace
+        <b>Source:</b> WorkspaceDangerZone.jsx
+        <b>Destructive scope:</b> revokes user's workspace membership
+        <b>Reversibility:</b> no — owner must re-invite
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 6. Settings — wipe all data (inline panel)   -->
+  <!-- ─────────────────────────────────────────── -->
+  <div class="stage">
+    <div class="stage-label">
+      <span class="chip">06</span>
+      <span>Wipe all data (inline panel, not a modal)</span>
+    </div>
+    <div class="stage-row">
+      <div class="inline-panel">
+        <div class="inline-panel-header">
+          <i class="ph ph-warning"></i>
+          <h3>Confirm — this cannot be undone</h3>
+        </div>
+        <p class="inline-panel-body">Permanently delete all your boards, notes, and settings.</p>
+        <div class="modal-actions" style="justify-content: flex-start;">
+          <button class="btn btn-destructive">Yes, delete everything</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+      <div class="meta">
+        <b>Triggered from:</b> Settings page → Account → Clear all data
+        <b>Source:</b> SettingsPage.jsx
+        <b>Destructive scope:</b> all boards + notes + settings (full account wipe)
+        <b>Reversibility:</b> no
+        <b>Note:</b> the only confirmation that is NOT a modal — it's an inline expanded panel
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- Token reference                              -->
+  <!-- ─────────────────────────────────────────── -->
+  <h2>Token reference — current design</h2>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <div class="ref-card-row"><div class="swatch" style="background:var(--surface-card)"></div><span class="ref-card-label">--surface-card</span><span class="ref-card-value">#FDFCFA</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--color-copper-wash)"></div><span class="ref-card-label">--color-copper-wash</span><span class="ref-card-value">#F8DDC8</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--color-copper)"></div><span class="ref-card-label">--color-copper</span><span class="ref-card-value">#B95D2C</span></div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-card-row"><div class="swatch" style="background:var(--text-primary)"></div><span class="ref-card-label">--text-primary</span><span class="ref-card-value">#1B1B18</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--text-secondary)"></div><span class="ref-card-label">--text-secondary</span><span class="ref-card-value">#38383A</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--text-muted)"></div><span class="ref-card-label">--text-muted</span><span class="ref-card-value">#57534e</span></div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-card-row"><div class="swatch" style="background:var(--surface-raised)"></div><span class="ref-card-label">--surface-raised</span><span class="ref-card-value">#F2EDE8</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--surface-hover)"></div><span class="ref-card-label">--surface-hover</span><span class="ref-card-value">#E8E2DB</span></div>
+      <div class="ref-card-row"><div class="swatch" style="background:var(--border-default)"></div><span class="ref-card-label">--border-default</span><span class="ref-card-value">#E5DFD3</span></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- Geometry reference                           -->
+  <!-- ─────────────────────────────────────────── -->
+  <h2>Geometry reference — current ConfirmModal</h2>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <div class="ref-card-row"><span class="ref-card-label">max-width</span><span class="ref-card-value">384px (max-w-sm)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">padding</span><span class="ref-card-value">20px (p-5)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">radius</span><span class="ref-card-value">16px (rounded-2xl)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">shadow</span><span class="ref-card-value">0 12px 48px rgba(27,27,24,.18)</span></div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-card-row"><span class="ref-card-label">icon circle</span><span class="ref-card-value">36×36 (w-9 h-9)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">icon glyph</span><span class="ref-card-value">20×20 (Phosphor)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">icon-to-title gap</span><span class="ref-card-value">12px (gap-3)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">title weight</span><span class="ref-card-value">600 (semibold)</span></div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-card-row"><span class="ref-card-label">title size</span><span class="ref-card-value">14px (text-sm)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">message size</span><span class="ref-card-value">14px (text-sm)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">message left indent</span><span class="ref-card-value">48px (ml-12, aligns past icon)</span></div>
+      <div class="ref-card-row"><span class="ref-card-label">button row gap</span><span class="ref-card-value">8px (gap-2)</span></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- Possible directions to explore               -->
+  <!-- ─────────────────────────────────────────── -->
+  <h2>Redesign axes — questions to answer</h2>
+  <div class="ref-grid">
+    <div class="ref-card" style="grid-column: 1 / -1; padding: 16px 18px; font-size: 13px; line-height: 1.55;">
+      <div style="margin-bottom: 10px;">
+        <b style="color: var(--text-primary); font-weight: 600;">Tone:</b> copper (warning) vs neutral (matter-of-fact) vs full destructive red?
+      </div>
+      <div style="margin-bottom: 10px;">
+        <b style="color: var(--text-primary); font-weight: 600;">Icon:</b> warning triangle, trash, or none? Phosphor weight (regular / fill / duotone)?
+      </div>
+      <div style="margin-bottom: 10px;">
+        <b style="color: var(--text-primary); font-weight: 600;">Geometry:</b> current is icon-left / title-right / message-below-with-indent. Alternatives: icon-top-centered (more dramatic), icon-inline-with-message (compact), no-icon-large-title (most stripped).
+      </div>
+      <div style="margin-bottom: 10px;">
+        <b style="color: var(--text-primary); font-weight: 600;">Button placement:</b> right-aligned (current macOS), full-width split-pair, ghost-cancel-on-left + destructive-right.
+      </div>
+      <div style="margin-bottom: 10px;">
+        <b style="color: var(--text-primary); font-weight: 600;">Severity differentiation:</b> currently every confirm looks identical regardless of how destructive it is. "Delete one column" gets the same chrome as "Delete entire workspace". A redesign could introduce a severity axis (e.g., type-to-confirm for catastrophic actions).
+      </div>
+      <div>
+        <b style="color: var(--text-primary); font-weight: 600;">Settings inline panel (#6) consistency:</b> reshape it to match the modal chrome, or keep it deliberately different to signal "you opened this drawer yourself, no surprise modal."
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

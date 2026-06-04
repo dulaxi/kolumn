@@ -102,6 +102,8 @@ export const useBoardStore = create((set, get) => ({
   boards: {},
   columns: {},
   cards: {},
+  labels: {},
+  cardLabels: {},
   activeBoardId: null,
   loading: true,
   error: null,
@@ -144,6 +146,28 @@ export const useBoardStore = create((set, get) => ({
       const cardMap = {}
       ;(cardsRes.data || []).forEach((c) => { cardMap[c.id] = c })
 
+      // Fetch labels + card_labels in parallel, scoped to the loaded cards
+      const cardIds = (cardsRes.data || []).map((c) => c.id)
+      const [labelsRes, cardLabelsRes] = await Promise.all([
+        supabase.from('labels').select('*'),
+        cardIds.length === 0
+          ? Promise.resolve({ data: [], error: null })
+          : supabase.from('card_labels').select('card_id, label_id').in('card_id', cardIds),
+      ])
+      if (labelsRes.error) logError('Failed to fetch labels:', labelsRes.error)
+      if (cardLabelsRes.error) logError('Failed to fetch card_labels:', cardLabelsRes.error)
+
+      const labelMap = {}
+      ;(labelsRes.data || []).forEach((l) => { labelMap[l.id] = l })
+
+      const cardLabelMap = {}
+      ;(cardLabelsRes.data || []).forEach((cl) => {
+        const prev = cardLabelMap[cl.card_id] || new Set()
+        const next = new Set(prev)
+        next.add(cl.label_id)
+        cardLabelMap[cl.card_id] = next
+      })
+
       const firstBoardId = boardsRes.data?.length ? boardsRes.data[0].id : null
       const current = get().activeBoardId
       const saved = localStorage.getItem(ACTIVE_BOARD_KEY)
@@ -155,6 +179,8 @@ export const useBoardStore = create((set, get) => ({
         boards: boardMap,
         columns: columnMap,
         cards: cardMap,
+        labels: labelMap,
+        cardLabels: cardLabelMap,
         activeBoardId: restoredId,
         loading: false,
         error: fetchError ? { message: fetchError.message, action: 'fetchBoards' } : null,
@@ -464,7 +490,6 @@ export const useBoardStore = create((set, get) => ({
         .map((n) => sanitizeTitle(n))
         .filter(Boolean),
       assignee_name: sanitizeTitle((cardData.assignees && cardData.assignees[0]) || cardData.assignee) || '',
-      labels: cardData.labels || [],
       due_date: cardData.dueDate || null,
       priority: cardData.priority || 'medium',
       icon: cardData.icon || null,
@@ -508,7 +533,6 @@ export const useBoardStore = create((set, get) => ({
           description: optimisticCard.description,
           assignee_name: optimisticCard.assignee_name,
           assignees: optimisticCard.assignees,
-          labels: optimisticCard.labels,
           due_date: optimisticCard.due_date,
           priority: optimisticCard.priority,
           icon: optimisticCard.icon,
@@ -546,7 +570,6 @@ export const useBoardStore = create((set, get) => ({
             if (tempCurrent.assignee_name !== optimisticCard.assignee_name) merged.assignee_name = tempCurrent.assignee_name
             if (tempCurrent.priority !== optimisticCard.priority) merged.priority = tempCurrent.priority
             if (tempCurrent.due_date !== optimisticCard.due_date) merged.due_date = tempCurrent.due_date
-            if (JSON.stringify(tempCurrent.labels) !== JSON.stringify(optimisticCard.labels)) merged.labels = tempCurrent.labels
             if (JSON.stringify(tempCurrent.checklist) !== JSON.stringify(optimisticCard.checklist)) merged.checklist = tempCurrent.checklist
           }
           const { [tempId]: _, ...restCards } = s.cards
@@ -571,11 +594,20 @@ export const useBoardStore = create((set, get) => ({
   duplicateCard: async (cardId) => {
     const card = get().cards[cardId]
     if (!card) return null
+
+    // Duplicate uses the source title verbatim — no "(copy)" suffix. The
+    // user can rename via update_card if they want. Identical titles will
+    // trigger the executor's ambiguity error on the next title-based
+    // operation, which is an acceptable trade for clean titles by default.
     return get().addCard(card.board_id, card.column_id, {
-      title: `${card.title} (copy)`,
+      title: card.title,
       description: card.description || '',
+      // Copy BOTH the modern multi-assignee array AND the legacy single name.
+      // Without copying `assignees`, multi-assignee data is silently lost on
+      // duplicate. addCard accepts either; passing both keeps it consistent
+      // with how the source card looks.
+      assignees: card.assignees && card.assignees.length ? [...card.assignees] : undefined,
       assignee: card.assignee_name || '',
-      labels: card.labels ? [...card.labels] : [],
       dueDate: card.due_date || null,
       priority: card.priority || 'medium',
       icon: card.icon || null,
@@ -602,7 +634,6 @@ export const useBoardStore = create((set, get) => ({
     if ('priority' in updates) dbUpdates.priority = updates.priority
     if ('dueDate' in updates) dbUpdates.due_date = updates.dueDate
     if ('due_date' in updates) dbUpdates.due_date = updates.due_date
-    if ('labels' in updates) dbUpdates.labels = updates.labels
     if ('checklist' in updates) dbUpdates.checklist = updates.checklist
     if ('icon' in updates) dbUpdates.icon = updates.icon
     if ('completed' in updates) dbUpdates.completed = updates.completed
@@ -1207,7 +1238,6 @@ export const useBoardStore = create((set, get) => ({
         due_date: newDueDate,
         icon: task.icon,
         completed: false,
-        labels: task.labels || [],
         checklist: (task.checklist || []).map((item) => ({ ...item, done: false })),
         recurrence_interval: task.recurrence_interval,
         recurrence_unit: task.recurrence_unit,
@@ -1284,8 +1314,39 @@ export const useBoardStore = create((set, get) => ({
         }
       })
 
+    // Labels + card_labels: unfiltered (workspace-scoped, not board-scoped)
+    const labelsSub = supabase
+      .channel('labels-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'labels' }, (payload) => {
+        set((state) => {
+          if (payload.eventType === 'DELETE') {
+            const { [payload.old.id]: _, ...rest } = state.labels
+            return { labels: rest }
+          }
+          const label = payload.new
+          return { labels: { ...state.labels, [label.id]: label } }
+        })
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'card_labels' }, (payload) => {
+        set((state) => {
+          const row = payload.eventType === 'DELETE' ? payload.old : payload.new
+          if (!row) return state
+          const cur = state.cardLabels[row.card_id]
+          const next = new Set(cur)
+          if (payload.eventType === 'DELETE') next.delete(row.label_id)
+          else next.add(row.label_id)
+          return { cardLabels: { ...state.cardLabels, [row.card_id]: next } }
+        })
+      })
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logError('Realtime labels subscription error:', err)
+          scheduleReconnect()
+        }
+      })
+
     // Columns + Cards: filtered to active board (reduces noise for multi-board users)
-    const subs = [boardsSub]
+    const subs = [boardsSub, labelsSub]
     if (activeBoardId && activeBoardId !== '__all__') {
       const boardDetailSub = supabase
         .channel(`board-detail-${activeBoardId}`)
@@ -1367,10 +1428,147 @@ export const useBoardStore = create((set, get) => ({
     set({ subscriptions: [] })
   },
 
+  // ─── Label actions ───────────────────────────────────────────────────────────
+
+  addLabelToCard: async (cardId, text, color = null) => {
+    const card = get().cards[cardId]
+    if (!card) return
+    const { data: labelId, error } = await supabase.rpc('attach_label_by_text', {
+      p_card_id: cardId, p_text: text, p_color: color,
+    })
+    if (error) {
+      showToast.error(`Couldn't add label: ${error.message}`)
+      return
+    }
+    // attach_label_by_text returns only the label id. For a brand-new label the
+    // label object isn't in state.labels yet, so selectCardLabels would filter
+    // it out and the chip would render as nothing. Fetch the authoritative row
+    // so the new label is visible immediately, independent of realtime.
+    let label = get().labels[labelId]
+    if (!label) {
+      const { data: row } = await supabase.from('labels').select('*').eq('id', labelId).single()
+      label = row
+    }
+    set((s) => {
+      const next = new Set(s.cardLabels[cardId] || [])
+      next.add(labelId)
+      return {
+        cardLabels: { ...s.cardLabels, [cardId]: next },
+        labels: label ? { ...s.labels, [labelId]: label } : s.labels,
+      }
+    })
+  },
+
+  // Create a board label without attaching it to a card (used by the label
+  // manager modal). Returns the new/existing label id, or null on error.
+  createLabel: async (boardId, text, color = null) => {
+    const { data: labelId, error } = await supabase.rpc('upsert_label', {
+      p_board_id: boardId, p_text: text, p_color: color,
+    })
+    if (error) {
+      showToast.error(`Couldn't create label: ${error.message}`)
+      return null
+    }
+    let label = get().labels[labelId]
+    if (!label) {
+      const { data: row } = await supabase.from('labels').select('*').eq('id', labelId).single()
+      label = row
+    }
+    if (label) {
+      set((s) => ({ labels: { ...s.labels, [labelId]: label } }))
+    }
+    return labelId
+  },
+
+  removeLabelFromCard: async (cardId, labelId) => {
+    set((s) => {
+      const cur = s.cardLabels[cardId]
+      if (!cur) return s
+      const next = new Set(cur)
+      next.delete(labelId)
+      return { cardLabels: { ...s.cardLabels, [cardId]: next } }
+    })
+    const { error } = await supabase
+      .from('card_labels')
+      .delete()
+      .eq('card_id', cardId)
+      .eq('label_id', labelId)
+    if (error) showToast.error(`Couldn't remove label: ${error.message}`)
+  },
+
+  renameLabel: async (labelId, newText) => {
+    const trimmed = newText.trim()
+    if (!trimmed) return
+    const { error } = await supabase.from('labels').update({ text: trimmed }).eq('id', labelId)
+    if (error) {
+      if (error.code === '23505') {
+        showToast.warn('A label with that name already exists — use Merge instead.')
+      } else {
+        showToast.error(`Couldn't rename label: ${error.message}`)
+      }
+      return
+    }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], text: trimmed } },
+    }))
+  },
+
+  updateLabelColor: async (labelId, color) => {
+    const { error } = await supabase.from('labels').update({ color }).eq('id', labelId)
+    if (error) { showToast.error(`Couldn't update color: ${error.message}`); return }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], color } },
+    }))
+  },
+
+  mergeLabels: async (fromId, intoId) => {
+    const { error } = await supabase.rpc('merge_labels', { p_from_id: fromId, p_into_id: intoId })
+    if (error) { showToast.error(`Couldn't merge: ${error.message}`); return }
+    set((s) => {
+      const nextLabels = { ...s.labels }
+      delete nextLabels[fromId]
+      const nextCardLabels = {}
+      for (const [cid, ids] of Object.entries(s.cardLabels)) {
+        const ns = new Set(ids)
+        if (ns.delete(fromId)) ns.add(intoId)
+        nextCardLabels[cid] = ns
+      }
+      return { labels: nextLabels, cardLabels: nextCardLabels }
+    })
+  },
+
+  archiveLabel: async (labelId) => {
+    const ts = new Date().toISOString()
+    const { error } = await supabase
+      .from('labels').update({ archived_at: ts }).eq('id', labelId)
+    if (error) { showToast.error(`Couldn't archive: ${error.message}`); return }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], archived_at: ts } },
+    }))
+  },
+
+  unarchiveLabel: async (labelId) => {
+    const { error } = await supabase
+      .from('labels').update({ archived_at: null }).eq('id', labelId)
+    if (error) {
+      if (error.code === '23505') {
+        showToast.warn('Cannot unarchive — a label with this name already exists.')
+      } else {
+        showToast.error(`Couldn't unarchive: ${error.message}`)
+      }
+      return
+    }
+    set((s) => ({
+      labels: { ...s.labels, [labelId]: { ...s.labels[labelId], archived_at: null } },
+    }))
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
   resetStore: () => {
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
     subscriptions.forEach((sub) => supabase.removeChannel(sub))
-    set({ boards: {}, columns: {}, cards: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
+    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))

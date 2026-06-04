@@ -1,4 +1,5 @@
 import { isToday, isPast, isYesterday, parseISO, startOfDay, subDays, format } from 'date-fns'
+import { parseDueDate } from './dateUtils'
 
 export function computeTaskStats(cards, columns, displayName) {
   const allCards = Object.values(cards).filter((c) => {
@@ -48,7 +49,7 @@ export function computeTaskStats(cards, columns, displayName) {
     }
 
     if (card.due_date) {
-      const due = parseISO(card.due_date)
+      const due = parseDueDate(card.due_date)
       if (isToday(due)) {
         dueToday++
         dueTodayCards.push(card)

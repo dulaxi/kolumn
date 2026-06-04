@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Token viewer — Claude.ai (light + dark) vs Kolumn</title>
+
+<style id="pasted-css">
+  /* ───────────── Claude.ai semantic tokens (light fallback) ───────────── */
+  [data-theme="claude"],
+  [data-theme="claude"][data-mode="light"] {
+    --accent-brand: 15 63.1% 59.6%;
+    --accent-000: 210 73.7% 40.2%;
+    --accent-100: 210 70.9% 51.6%;
+    --accent-200: 210 70.9% 51.6%;
+    --accent-900: 211 72% 90%;
+    --accent-pro-000: 251 34.2% 33.3%;
+    --accent-pro-100: 251 40% 45.1%;
+    --accent-pro-200: 251 61% 72.2%;
+    --accent-pro-900: 253 33.3% 91.8%;
+    --bg-000: 0 0% 100%;
+    --bg-100: 48 33.3% 97.1%;
+    --bg-200: 53 28.6% 94.5%;
+    --bg-300: 48 25% 92.2%;
+    --bg-400: 50 20.7% 88.6%;
+    --bg-500: 50 20.7% 88.6%;
+    --brand-000: 15 54.2% 51.2%;
+    --brand-100: 15 54.2% 51.2%;
+    --brand-200: 15 63.1% 59.6%;
+    --brand-900: 0 0% 0%;
+    --border-100: 30 3.3% 11.8%;
+    --border-200: 30 3.3% 11.8%;
+    --border-300: 30 3.3% 11.8%;
+    --border-400: 30 3.3% 11.8%;
+    --danger-000: 0 58.6% 34.1%;
+    --danger-100: 0 56.2% 45.4%;
+    --danger-200: 0 56.2% 45.4%;
+    --danger-900: 0 50% 95%;
+    --oncolor-100: 0 0% 100%;
+    --oncolor-200: 60 6.7% 97.1%;
+    --oncolor-300: 60 6.7% 97.1%;
+    --pictogram-100: 50 20.7% 88.6%;
+    --pictogram-200: 51 16.5% 84.5%;
+    --pictogram-300: 0 0% 100%;
+    --pictogram-400: 48 33.3% 97.1%;
+    --success-000: 125 100% 18%;
+    --success-100: 103 72.3% 26.9%;
+    --success-200: 103 72.3% 26.9%;
+    --success-900: 86 45.1% 90%;
+    --text-000: 60 2.6% 7.6%;
+    --text-100: 60 2.6% 7.6%;
+    --text-200: 60 2.5% 23.3%;
+    --text-300: 60 2.5% 23.3%;
+    --text-400: 51 3.1% 43.7%;
+    --text-500: 51 3.1% 43.7%;
+    --warning-000: 45 91.8% 19%;
+    --warning-100: 39 88.8% 28%;
+    --warning-200: 39 88.8% 28%;
+    --warning-900: 38 65.9% 92%;
+  }
+
+  /* Claude dark — extracted from @media wrapper, applied via class */
+  .panel-claude-dark {
+    --accent-brand: var(--_brand-clay);
+    --accent-000: var(--_blue-200);
+    --accent-100: var(--_blue-400);
+    --accent-200: var(--_blue-400);
+    --accent-900: var(--_blue-750);
+    --accent-pro-000: var(--_violet-200);
+    --accent-pro-100: var(--_violet-400);
+    --accent-pro-200: var(--_violet-400);
+    --accent-pro-900: var(--_violet-750);
+    --bg-000: var(--_gray-750);
+    --bg-100: var(--_gray-800);
+    --bg-200: var(--_gray-840);
+    --bg-300: var(--_gray-860);
+    --bg-400: var(--_gray-900);
+    --bg-500: var(--_gray-900);
+    --brand-000: var(--_brand-clay-emphasized);
+    --brand-100: var(--_brand-clay);
+    --brand-200: var(--_brand-clay);
+    --brand-900: var(--always-black);
+    --border-100: var(--_gray-100);
+    --border-200: var(--_gray-100);
+    --border-300: var(--_gray-100);
+    --border-400: var(--_gray-100);
+    --danger-000: var(--_red-200);
+    --danger-100: var(--_red-400);
+    --danger-200: var(--_red-400);
+    --danger-900: var(--_red-750);
+    --pictogram-100: var(--_gray-650);
+    --pictogram-200: var(--_gray-700);
+    --pictogram-300: var(--_gray-750);
+    --pictogram-400: var(--_gray-800);
+    --success-000: var(--_green-200);
+    --success-100: var(--_green-400);
+    --success-200: var(--_green-400);
+    --success-900: var(--_green-750);
+    --text-000: var(--_gray-20);
+    --text-100: var(--_gray-20);
+    --text-200: var(--_gray-200);
+    --text-300: var(--_gray-200);
+    --text-400: var(--_gray-350);
+    --text-500: var(--_gray-350);
+    --warning-000: var(--_yellow-200);
+    --warning-100: var(--_yellow-400);
+    --warning-200: var(--_yellow-400);
+    --warning-900: var(--_yellow-750);
+  }
+
+  /* Claude primitives (gray complete; red 0–200 only) */
+  :root {
+    --_brand-clay: 14.8 63.1% 59.6%;
+    --_brand-clay-emphasized: 15.1 54.2% 51.2%;
+    --_gray-0: 0 0% 100%;     --_gray-10: 60 14% 99%;   --_gray-20: 60 14% 97%;
+    --_gray-30: 60 10% 96%;   --_gray-40: 60 11% 95%;   --_gray-50: 45 12% 93%;
+    --_gray-60: 48 12% 92%;   --_gray-70: 50 12% 91%;   --_gray-80: 50 11% 89%;
+    --_gray-90: 51 11% 88%;   --_gray-100: 53 12% 87%;  --_gray-150: 55 11% 80%;
+    --_gray-200: 55 9% 74%;   --_gray-250: 55 7% 68%;   --_gray-300: 55 6% 63%;
+    --_gray-350: 48 5% 57%;   --_gray-400: 45 3% 52%;   --_gray-450: 43 3% 47%;
+    --_gray-500: 40 3% 42%;   --_gray-550: 48 3% 36%;   --_gray-600: 45 3% 31%;
+    --_gray-650: 40 2% 26%;   --_gray-700: 60 3% 21%;   --_gray-750: 60 2% 17%;
+    --_gray-800: 60 2% 12%;   --_gray-810: 60 2% 12%;   --_gray-820: 60 2% 11%;
+    --_gray-830: 60 2% 10%;   --_gray-840: 60 2% 9%;    --_gray-850: 0 0% 8%;
+    --_gray-860: 0 0% 7%;     --_gray-870: 0 0% 7%;     --_gray-880: 0 0% 6%;
+    --_gray-890: 0 0% 5%;     --_gray-900: 0 0% 4%;
+    --_red-0: 0 0% 100%;      --_red-10: 0 100% 99%;    --_red-20: 0 78% 98%;
+    --_red-30: 0 85% 97%;     --_red-40: 0 78% 96%;     --_red-50: 0 67% 95%;
+    --_red-60: 0 66% 94%;     --_red-70: 0 70% 94%;     --_red-80: 0 73% 93%;
+    --_red-90: 0 76% 92%;     --_red-100: 0 78% 91%;    --_red-150: 0 77% 86%;
+    --_red-200: 0 77% 81%;
+  }
+
+  /* ───────────── Kolumn tokens (inlined from src/index.css) ───────────── */
+  /*
+    Subset: semantic surface/border/text/accent/button/label tokens.
+    Skips Phosphor palette (--color-*), profile colors, chat shadows
+    to keep the panel scannable. If a Kolumn token is missing from a
+    section, that means Kolumn doesn't have an equivalent.
+  */
+  .panel-kolumn-light {
+    --surface-page: #FAF8F6;
+    --surface-board: #FAF8F6;
+    --surface-card: #FFFFFF;
+    --surface-sidebar: #FAF8F6;
+    --surface-raised: #F2EDE8;
+    --surface-hover: #E8E2DB;
+    --surface-input: #FFFFFF;
+    --border-default: #E0DBD5;
+    --border-subtle: #E8E2DB;
+    --border-focus: #1B1B18;
+    --text-primary: #1B1B18;
+    --text-secondary: #5C5C57;
+    --text-muted: #8E8E89;
+    --text-faint: #C4BFB8;
+    --accent-lime: #C2D64A;
+    --accent-lime-dark: #A8BA32;
+    --accent-lime-wash: #EEF2D6;
+    --accent-lime-soft: #D4E07A;
+    --btn-primary-bg: #1B1B18;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #333333;
+    --label-red-bg: #F2D9C7;     --label-red-text: #8B5A33;
+    --label-blue-bg: #DAE0F0;    --label-blue-text: #4A5578;
+    --label-green-bg: #EEF2D6;   --label-green-text: #6B7A12;
+    --label-yellow-bg: #F5EDCF;  --label-yellow-text: #8B7322;
+    --label-purple-bg: #E8DDE2;  --label-purple-text: #6E5A65;
+    --label-pink-bg: #F0E0D2;    --label-pink-text: #7A5C44;
+    --label-gray-bg: #E8E2DB;    --label-gray-text: #5C5C57;
+    /* Phosphor palette — Kolumn's named-hue layer */
+    --color-cream: #F2EDE8;
+    --color-cream-dark: #E8E2DB;
+    --color-sand: #E0DBD5;
+    --color-ink: #1B1B18;
+    --color-charcoal: #5C5C57;
+    --color-stone: #8E8E89;
+    --color-mist: #C4BFB8;
+    --color-lime: #C2D64A;
+    --color-lime-dark: #A8BA32;
+    --color-lime-wash: #EEF2D6;
+    --color-logo: #8BA32E;
+    --color-copper: #C27A4A;
+    --color-copper-dark: #A86434;
+    --color-copper-wash: #F2D9C7;
+    --color-honey: #D4A843;
+    --color-honey-wash: #F5EDCF;
+    --color-walnut: #8B7355;
+    --color-bark: #7A5C44;
+    --color-bark-dark: #6B4D38;
+    --color-bark-wash: #F0E0D2;
+    --color-olive: #A8BA32;
+    --color-mauve: #A8969E;
+    --color-mauve-wash: #E8DDE2;
+    --color-mauve-cream: #F0E8EB;
+    --color-mint-wash: #D6E8E0;
+  }
+
+  /* Kolumn-alt: Claude's semantic token slots (--accent-brand, --bg-000,
+     --text-100, etc.) repopulated with Kolumn Phosphor palette values.
+     This shows "what would Claude's framework look like using only our
+     existing palette?" It's not the actual Kolumn token system — it's a
+     thought experiment about adopting Claude's structure with Kolumn's
+     colors. Annotations name the source Phosphor token for each value. */
+  .panel-kolumn-alt {
+    /* accent (Claude: blue ramp) — Kolumn's brand is lime/green, so this
+       slot maps to the existing Phosphor lime tokens. Lightness pattern
+       differs from Claude's blue because lime is already shipped at
+       different stops; matching by ROLE (primary accent) not by hue. */
+    --accent-brand: #C2D64A;     /* color-lime (Kolumn's brand hue) */
+    --accent-000: #A8BA32;       /* color-lime-dark — deepest working green */
+    --accent-100: #C2D64A;       /* color-lime — mid working green */
+    --accent-200: #D4E07A;       /* color-lime-soft (was accent-lime-soft) */
+    --accent-900: #EEF2D6;       /* color-lime-wash — pale background tint */
+
+    /* accent-pro (Claude: violet ramp) — proposed NEW mauve accent ramp
+       designed to mirror Claude's blue structure exactly. Hue 322
+       (rose-mauve, in the family of existing --color-mauve at hue 336),
+       saturation 48-52% (restrained vs Claude's 70%+, harmonizes with
+       Phosphor), lightness 40/52/52/90 (identical to Claude's blue).
+       These are NEW tokens — not in Kolumn's index.css yet. */
+    --accent-pro-000: #993374;   /* hsl(322 50% 40%) — deep mauve */
+    --accent-pro-100: #BF4A94;   /* hsl(322 48% 52%) — mid mauve */
+    --accent-pro-200: #BF4A94;   /* hsl(322 48% 52%) — same as 100 */
+    --accent-pro-900: #F3D8E9;   /* hsl(323 52% 90%) — pale mauve tint */
+
+    /* bg — Phosphor's cream/sand neutral ramp */
+    --bg-000: #FFFFFF;           /* (white, no token) */
+    --bg-100: #F2EDE8;           /* color-cream */
+    --bg-200: #E8E2DB;           /* color-cream-dark */
+    --bg-300: #E0DBD5;           /* color-sand */
+    --bg-400: #E0DBD5;           /* color-sand */
+    --bg-500: #E0DBD5;           /* color-sand */
+
+    /* brand — Kolumn's brand is lime, mirroring Claude's "000 = emphasized,
+       200 = base, 900 = anchor" pattern. */
+    --brand-000: #A8BA32;        /* color-lime-dark (emphasized green) */
+    --brand-100: #A8BA32;        /* color-lime-dark */
+    --brand-200: #C2D64A;        /* color-lime (brand baseline) */
+    --brand-900: #1B1B18;        /* color-ink (Claude uses #000; ink is Kolumn's nearest) */
+
+    /* border — matches Claude's pattern of using darkest ink for borders */
+    --border-100: #1B1B18;       /* color-ink */
+    --border-200: #1B1B18;       /* color-ink */
+    --border-300: #1B1B18;       /* color-ink */
+    --border-400: #1B1B18;       /* color-ink */
+
+    /* danger — EXACT match to Claude's red ramp (hex equivalents of
+       Claude's HSL triples). These are NEW colors for Kolumn — Phosphor
+       has no true red. Adopting these would extend the palette. */
+    --danger-000: #8A2424;       /* hsl(0 58.6% 34.1%) — deep red */
+    --danger-100: #B53333;       /* hsl(0 56.2% 45.4%) — mid red */
+    --danger-200: #B53333;       /* hsl(0 56.2% 45.4%) — mid red (same as 100) */
+    --danger-900: #F9ECEC;       /* hsl(0 50% 95%) — very pale red */
+
+    /* oncolor — text/icon on filled brand surfaces */
+    --oncolor-100: #FFFFFF;
+    --oncolor-200: #F2EDE8;      /* color-cream */
+    --oncolor-300: #F2EDE8;      /* color-cream */
+
+    /* pictogram — neutral surface ramp for icon-on-bg states */
+    --pictogram-100: #C4BFB8;    /* color-mist */
+    --pictogram-200: #E0DBD5;    /* color-sand */
+    --pictogram-300: #FFFFFF;
+    --pictogram-400: #F2EDE8;    /* color-cream */
+
+    /* success (Claude: green ramp) — clean Phosphor lime match */
+    --success-000: #8BA32E;      /* color-logo (deep green) */
+    --success-100: #A8BA32;      /* color-lime-dark */
+    --success-200: #A8BA32;      /* color-lime-dark */
+    --success-900: #EEF2D6;      /* color-lime-wash */
+
+    /* text — ink → charcoal → stone, the Phosphor neutral hierarchy */
+    --text-000: #1B1B18;         /* color-ink */
+    --text-100: #1B1B18;         /* color-ink */
+    --text-200: #5C5C57;         /* color-charcoal */
+    --text-300: #5C5C57;         /* color-charcoal */
+    --text-400: #8E8E89;         /* color-stone */
+    --text-500: #8E8E89;         /* color-stone */
+
+    /* warning (Claude: gold ramp) — Phosphor honey/walnut family */
+    --warning-000: #8B7355;      /* color-walnut (deepest gold-brown) */
+    --warning-100: #D4A843;      /* color-honey */
+    --warning-200: #D4A843;      /* color-honey */
+    --warning-900: #F5EDCF;      /* color-honey-wash */
+  }
+
+  .panel-kolumn-dark {
+    --surface-page: #1C1C1A;
+    --surface-board: #1C1C1A;
+    --surface-card: #262624;
+    --surface-sidebar: #212120;
+    --surface-raised: #2E2E2B;
+    --surface-hover: #3A3937;
+    --surface-input: #2E2E2B;
+    --border-default: #454340;
+    --border-subtle: #332F2D;
+    --border-focus: #E8E5E0;
+    --text-primary: #E8E5E0;
+    --text-secondary: #B0ADA7;
+    --text-muted: #8A8782;
+    --text-faint: #6B6966;
+    --accent-lime: #C2D64A;
+    --accent-lime-dark: #A8BA32;
+    --accent-lime-wash: #3A4920;
+    --accent-lime-soft: #7A9230;
+    --btn-primary-bg: #E8E5E0;
+    --btn-primary-text: #1C1C1A;
+    --btn-primary-hover: #D6D2CC;
+    --label-red-bg: #4A2A1F;     --label-red-text: #E0907C;
+    --label-blue-bg: #2A3040;    --label-blue-text: #8DA0C4;
+    --label-green-bg: #2A3520;   --label-green-text: #A8C278;
+    --label-yellow-bg: #3D3820;  --label-yellow-text: #D8C078;
+    --label-purple-bg: #3A3040;  --label-purple-text: #C4A0B8;
+    --label-pink-bg: #3D2632;    --label-pink-text: #E0A0B8;
+    --label-gray-bg: #333330;    --label-gray-text: #9C9A95;
+    /* Phosphor palette in dark. Tokens not explicitly overridden in
+       Kolumn's index.css (ink, charcoal, stone, lime, lime-dark,
+       copper, copper-dark, honey, olive) keep their light values per
+       the comment on line 192. Written out explicitly here so the
+       viewer doesn't depend on class layering. */
+    --color-cream: #2E2E2B;
+    --color-cream-dark: #3A3937;
+    --color-sand: #3A3937;
+    --color-ink: #1B1B18;
+    --color-charcoal: #5C5C57;
+    --color-stone: #8E8E89;
+    --color-mist: #4A4845;
+    --color-lime: #C2D64A;
+    --color-lime-dark: #A8BA32;
+    --color-lime-wash: #2A3520;
+    --color-logo: #A8BA32;
+    --color-copper: #C27A4A;
+    --color-copper-dark: #A86434;
+    --color-copper-wash: #3A2A20;
+    --color-honey: #D4A843;
+    --color-honey-wash: #3A3520;
+    --color-walnut: #B89880;
+    --color-bark: #C49878;
+    --color-bark-dark: #A87E5C;
+    --color-bark-wash: #352820;
+    --color-olive: #A8BA32;
+    --color-mauve: #C4A0B8;
+    --color-mauve-wash: #3A3040;
+    --color-mauve-cream: #2E2832;
+    --color-mint-wash: #1F3030;
+  }
+
+  /* ───────────── Viewer chrome ───────────── */
+  :root {
+    --vw-mono: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
+    --vw-text-light: #1B1B18;
+    --vw-muted-light: #7A7A75;
+    --vw-border-light: #D8D2C8;
+    --vw-text-dark: #E8E5E0;
+    --vw-muted-dark: #8E8E89;
+    --vw-border-dark: #3D3D38;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 32px 96px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #FAF7F0; color: var(--vw-text-light); line-height: 1.5;
+  }
+  header { max-width: 1600px; margin: 0 auto 24px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--vw-muted-light); font-size: 13px; max-width: 880px; }
+  .controls { margin-top: 12px; display: flex; align-items: center; gap: 8px; }
+  .toggle {
+    border: 1px solid var(--vw-border-light); background: #FFFFFF;
+    color: var(--vw-text-light); padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .toggle:hover { background: #F0EDE7; }
+  .toggle .swatch-mini {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--vw-text-light); margin-right: 6px; vertical-align: middle;
+  }
+  section { max-width: 1600px; margin: 0 auto 24px; }
+  h2 {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--vw-muted-light); margin: 0 0 12px;
+  }
+
+  /* 3-column grid for the semantic section, 2-column for primitives */
+  .trio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 1200px) { .trio { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 800px) { .trio, .pair { grid-template-columns: 1fr; } }
+
+  .panel {
+    border-radius: 12px; padding: 16px;
+    background: #FFFFFF; border: 1px solid var(--vw-border-light);
+    color: var(--vw-text-light);
+  }
+  .panel.is-dark {
+    background: #1B1B18; border-color: var(--vw-border-dark);
+    color: var(--vw-text-dark);
+  }
+  .panel-title {
+    margin: 0 0 10px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--vw-muted-light);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel.is-dark .panel-title { color: var(--vw-muted-dark); }
+
+  .grid {
+    display: grid; grid-template-columns: 1fr; gap: 6px;
+  }
+  .tile {
+    border: 1px solid var(--vw-border-light); border-radius: 6px; padding: 6px 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel.is-dark .tile { border-color: var(--vw-border-dark); }
+
+  .swatch {
+    width: 22px; height: 22px; border-radius: 4px;
+    border: 1px solid var(--vw-border-light); flex-shrink: 0;
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 6px 6px;
+    background-position: 0 0, 0 3px, 3px -3px, -3px 0;
+  }
+  .panel.is-dark .swatch { border-color: var(--vw-border-dark); }
+  .swatch-fill { width: 100%; height: 100%; border-radius: 3px; }
+
+  .info { min-width: 0; flex: 1; }
+  .name {
+    font-family: var(--vw-mono); font-size: 10px;
+    color: var(--vw-text-light); word-break: break-all; line-height: 1.3;
+  }
+  .panel.is-dark .name { color: var(--vw-text-dark); }
+  .value {
+    font-family: var(--vw-mono); font-size: 9px;
+    color: var(--vw-muted-light); margin-top: 1px;
+  }
+  .panel.is-dark .value { color: var(--vw-muted-dark); }
+  .missing { color: #B91C1C; font-style: italic; }
+  .panel.is-dark .missing { color: #EF7E7E; }
+
+  /* Proposed label palette cards */
+  .label-card {
+    border: 1px solid var(--vw-border-light); border-radius: 8px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    background: #FFFFFF;
+  }
+  .label-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .label-card-name {
+    font-size: 12px; font-weight: 600; text-transform: capitalize;
+    color: var(--vw-text-light);
+  }
+  .label-card-source {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--vw-muted-light); font-family: var(--vw-mono);
+  }
+  .label-pill-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .label-pill-filled {
+    display: inline-flex; align-items: center; padding: 2px 8px;
+    border-radius: 999px; font-size: 11px; font-weight: 500;
+    text-transform: lowercase; font-family: -apple-system, system-ui, sans-serif;
+  }
+  .label-pill-outlined {
+    display: inline-flex; align-items: center; padding: 1px 6px;
+    border: 0.5px solid; border-radius: 999px; font-size: 12px; font-weight: 500;
+    text-transform: capitalize; line-height: 1.4;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+  .label-card-meta {
+    display: grid; grid-template-columns: 60px 1fr; gap: 4px 8px;
+    font-family: var(--vw-mono); font-size: 9px;
+    color: var(--vw-muted-light);
+  }
+  .label-card-meta .k { text-align: right; }
+  .label-card-meta .v { color: var(--vw-text-light); word-break: break-all; }
+  #proposed-labels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .group-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--vw-muted-light);
+    margin: 10px 0 4px;
+  }
+  .group-label:first-child { margin-top: 0; }
+  .panel.is-dark .group-label { color: var(--vw-muted-dark); }
+
+  details {
+    margin: 16px auto; max-width: 1600px;
+    border: 1px solid var(--vw-border-light); border-radius: 8px;
+  }
+  summary {
+    cursor: pointer; padding: 10px 14px; font-size: 12px; font-weight: 500;
+    color: var(--vw-text-light); user-select: none;
+  }
+  pre {
+    margin: 0; padding: 0 14px 14px; font-family: var(--vw-mono); font-size: 10px;
+    line-height: 1.5; color: var(--vw-muted-light); overflow-x: auto;
+    max-height: 400px; overflow-y: auto; white-space: pre-wrap;
+  }
+</style>
+</head>
+
+<body data-theme="claude" data-mode="light">
+
+<header>
+  <h1>Token viewer — Claude.ai vs Kolumn</h1>
+  <p>Three semantic columns side-by-side. <strong>Left</strong>: Claude.ai tokens with their actual HSL values. <strong>Middle</strong>: Kolumn's own semantic tokens (surfaces, borders, text, labels) plus the Phosphor palette layer. <strong>Right</strong>: a "Kolumn-alt" thought experiment — Claude's token slots populated with Phosphor palette substitutes, showing what it would look like to adopt Claude's framework using only Kolumn's existing colors. The Kolumn (middle) panel can be toggled light/dark independently.</p>
+  <div class="controls">
+    <button class="toggle" id="kolumn-toggle">
+      <span class="swatch-mini" id="kolumn-toggle-swatch"></span>
+      <span id="kolumn-toggle-label">Kolumn theme: Light</span>
+    </button>
+  </div>
+</header>
+
+<section>
+  <h2>Semantic tokens (3-way: Claude · Kolumn · Kolumn-via-Phosphor)</h2>
+  <div class="trio">
+    <div class="panel">
+      <div class="panel-title">Claude · Light</div>
+      <div class="grid" data-grid="claude-light"></div>
+    </div>
+    <div class="panel panel-kolumn-light" id="kolumn-panel">
+      <div class="panel-title" id="kolumn-panel-title">Kolumn · Light</div>
+      <div class="grid" data-grid="kolumn"></div>
+    </div>
+    <div class="panel panel-kolumn-alt">
+      <div class="panel-title">Kolumn-alt · Claude slots, Phosphor values</div>
+      <div class="grid" data-grid="kolumn-alt"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Proposed label palette (7 colors, Claude-style)</h2>
+  <div class="panel">
+    <div class="grid" id="proposed-labels-grid"></div>
+  </div>
+</section>
+
+<section>
+  <h2>Claude primitives — grays (complete)</h2>
+  <div class="pair">
+    <div class="panel">
+      <div class="panel-title">Light view</div>
+      <div class="grid" data-grid="gray-light"></div>
+    </div>
+    <div class="panel is-dark">
+      <div class="panel-title">Dark view (chrome only — primitives don't theme-swap)</div>
+      <div class="grid" data-grid="gray-dark"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Claude primitives — reds (partial: 0–200 only; paste truncated)</h2>
+  <div class="pair">
+    <div class="panel">
+      <div class="panel-title">Light view</div>
+      <div class="grid" data-grid="red-light"></div>
+    </div>
+    <div class="panel is-dark">
+      <div class="panel-title">Dark view</div>
+      <div class="grid" data-grid="red-dark"></div>
+    </div>
+  </div>
+</section>
+
+<details>
+  <summary>Show pasted Claude CSS (source of truth for cols 1–2)</summary>
+  <pre id="raw-css"></pre>
+</details>
+
+<script>
+  // Claude semantic tokens grouped by role (for cleaner reading in the 3-way grid)
+  const CLAUDE_TOKENS = {
+    accent:       ['--accent-brand', '--accent-000', '--accent-100', '--accent-200', '--accent-900'],
+    'accent-pro': ['--accent-pro-000', '--accent-pro-100', '--accent-pro-200', '--accent-pro-900'],
+    bg:           ['--bg-000', '--bg-100', '--bg-200', '--bg-300', '--bg-400', '--bg-500'],
+    brand:        ['--brand-000', '--brand-100', '--brand-200', '--brand-900'],
+    border:       ['--border-100', '--border-200', '--border-300', '--border-400'],
+    danger:       ['--danger-000', '--danger-100', '--danger-200', '--danger-900'],
+    oncolor:      ['--oncolor-100', '--oncolor-200', '--oncolor-300'],
+    pictogram:    ['--pictogram-100', '--pictogram-200', '--pictogram-300', '--pictogram-400'],
+    success:      ['--success-000', '--success-100', '--success-200', '--success-900'],
+    text:         ['--text-000', '--text-100', '--text-200', '--text-300', '--text-400', '--text-500'],
+    warning:      ['--warning-000', '--warning-100', '--warning-200', '--warning-900'],
+  };
+
+  // Kolumn semantic tokens grouped by parallel role
+  const KOLUMN_TOKENS = {
+    surface:      ['--surface-page', '--surface-board', '--surface-card', '--surface-sidebar', '--surface-raised', '--surface-hover', '--surface-input'],
+    border:       ['--border-default', '--border-subtle', '--border-focus'],
+    text:         ['--text-primary', '--text-secondary', '--text-muted', '--text-faint'],
+    accent:       ['--accent-lime', '--accent-lime-dark', '--accent-lime-wash', '--accent-lime-soft'],
+    button:       ['--btn-primary-bg', '--btn-primary-text', '--btn-primary-hover'],
+    'label-bg':   ['--label-red-bg', '--label-blue-bg', '--label-green-bg', '--label-yellow-bg', '--label-purple-bg', '--label-pink-bg', '--label-gray-bg'],
+    'label-text': ['--label-red-text', '--label-blue-text', '--label-green-text', '--label-yellow-text', '--label-purple-text', '--label-pink-text', '--label-gray-text'],
+    'palette (phosphor)': [
+      '--color-cream', '--color-cream-dark', '--color-sand',
+      '--color-ink', '--color-charcoal', '--color-stone', '--color-mist',
+      '--color-lime', '--color-lime-dark', '--color-lime-wash', '--color-logo',
+      '--color-copper', '--color-copper-dark', '--color-copper-wash',
+      '--color-honey', '--color-honey-wash',
+      '--color-walnut', '--color-bark', '--color-bark-dark', '--color-bark-wash',
+      '--color-olive',
+      '--color-mauve', '--color-mauve-wash', '--color-mauve-cream',
+      '--color-mint-wash',
+    ],
+  };
+
+  const GRAYS = [0,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500,550,600,650,700,750,800,810,820,830,840,850,860,870,880,890,900];
+  const REDS = [0,10,20,30,40,50,60,70,80,90,100,150,200];
+
+  // Proposed label palette. 4 colors are user-specified (Claude HSL values
+  // lifted directly), 3 are new in the same lightness/saturation envelope
+  // to complete a 7-color chromatic spectrum. Each entry also includes a
+  // companion bg color (same hue, ~92% lightness) for filled-pill rendering.
+  const PROPOSED_LABELS = [
+    { name: 'red',    textHsl: '0 56.2% 45.4%',   textHex: '#B53333', bgHsl: '0 50% 95%',    bgHex: '#F9ECEC', source: 'your spec' },
+    { name: 'orange', textHsl: '25 70% 40%',      textHex: '#AD5A1F', bgHsl: '25 70% 92%',   bgHex: '#F8DDC8', source: 'new' },
+    { name: 'yellow', textHsl: '45 85% 40%',      textHex: '#BD910F', bgHsl: '45 80% 92%',   bgHex: '#F9EDD0', source: 'new (bumped L to stay yellow)' },
+    { name: 'green',  textHsl: '103 72.3% 26.9%', textHex: '#2F7613', bgHsl: '103 45% 92%',  bgHex: '#DEEED4', source: 'your spec' },
+    { name: 'blue',   textHsl: '210 73.7% 40.2%', textHex: '#1A5DBA', bgHsl: '210 72% 92%',  bgHex: '#DCEBF9', source: 'your spec' },
+    { name: 'violet', textHsl: '251 40% 45.1%',   textHex: '#524BA0', bgHsl: '251 40% 92%',  bgHex: '#E2DFEF', source: 'your spec' },
+    { name: 'pink',   textHsl: '335 60% 45%',     textHex: '#B82E67', bgHsl: '335 60% 92%',  bgHex: '#F7DAE5', source: 'new' },
+  ];
+
+  function el(tag, opts) {
+    const n = document.createElement(tag);
+    if (!opts) return n;
+    if (opts.cls) n.className = opts.cls;
+    if (opts.text != null) n.textContent = opts.text;
+    if (opts.style) Object.assign(n.style, opts.style);
+    if (opts.children) for (const c of opts.children) if (c) n.appendChild(c);
+    return n;
+  }
+
+  function resolveToken(varName, container) {
+    const raw = getComputedStyle(container).getPropertyValue(varName).trim();
+    if (!raw) return { color: null, raw: '' };
+    if (/^\d+(\.\d+)?\s+\d+(\.\d+)?%\s+\d+(\.\d+)?%$/.test(raw)) {
+      return { color: 'hsl(' + raw + ')', raw };
+    }
+    return { color: raw, raw };
+  }
+
+  function makeTile(varName, container) {
+    const { color, raw } = resolveToken(varName, container);
+    const swatch = el('div', { cls: 'swatch' });
+    if (color) {
+      swatch.appendChild(el('div', { cls: 'swatch-fill', style: { background: color } }));
+    }
+    const info = el('div', { cls: 'info' });
+    info.appendChild(el('div', { cls: 'name', text: varName }));
+    info.appendChild(el('div', {
+      cls: color ? 'value' : 'value missing',
+      text: color ? raw : '(unresolved)',
+    }));
+    return el('div', { cls: 'tile', children: [swatch, info] });
+  }
+
+  function fillGroupedGrid(gridKey, groups) {
+    const root = document.querySelector('[data-grid="' + gridKey + '"]');
+    if (!root) return;
+    root.replaceChildren();
+    const container = root.closest('.panel');
+    for (const [label, vars] of Object.entries(groups)) {
+      root.appendChild(el('div', { cls: 'group-label', text: label }));
+      for (const v of vars) root.appendChild(makeTile(v, container));
+    }
+  }
+
+  function fillFlatGrid(gridKey, varNames) {
+    const root = document.querySelector('[data-grid="' + gridKey + '"]');
+    if (!root) return;
+    root.replaceChildren();
+    const container = root.closest('.panel');
+    for (const v of varNames) root.appendChild(makeTile(v, container));
+  }
+
+  function renderAll() {
+    fillGroupedGrid('claude-light', CLAUDE_TOKENS);
+    fillGroupedGrid('kolumn', KOLUMN_TOKENS);
+    // Third column: same token names as Claude's column, but rendered
+    // against .panel-kolumn-alt which remaps those same names to Phosphor
+    // palette values. Lets the viewer show "Claude's structure, Kolumn's
+    // colors" side-by-side with both originals.
+    fillGroupedGrid('kolumn-alt', CLAUDE_TOKENS);
+    fillProposedLabels();
+    fillFlatGrid('gray-light', GRAYS.map(n => '--_gray-' + n));
+    fillFlatGrid('gray-dark', GRAYS.map(n => '--_gray-' + n));
+    fillFlatGrid('red-light', REDS.map(n => '--_red-' + n));
+    fillFlatGrid('red-dark', REDS.map(n => '--_red-' + n));
+  }
+
+  function fillProposedLabels() {
+    const root = document.getElementById('proposed-labels-grid');
+    root.replaceChildren();
+    for (const c of PROPOSED_LABELS) {
+      // Head row: name + "your spec" / "new" tag
+      const head = el('div', { cls: 'label-card-head', children: [
+        el('div', { cls: 'label-card-name', text: c.name }),
+        el('div', { cls: 'label-card-source', text: c.source }),
+      ]});
+
+      // Filled pill (LABEL_BG style) — pale bg + dark text
+      const filled = el('span', {
+        cls: 'label-pill-filled',
+        style: { background: c.bgHex, color: c.textHex },
+        text: '/' + c.name,
+      });
+
+      // Outlined pill (LABEL_OUTLINE / Card.jsx alt-style) — text color +
+      // 20%-alpha border, no fill. textHex + "33" appends an 8-bit alpha
+      // (~20%) to give the border its tint.
+      const outlined = el('span', {
+        cls: 'label-pill-outlined',
+        style: { color: c.textHex, borderColor: c.textHex + '33' },
+        text: c.name,
+      });
+
+      const pills = el('div', { cls: 'label-pill-row', children: [filled, outlined] });
+
+      const meta = el('div', { cls: 'label-card-meta' });
+      meta.appendChild(el('div', { cls: 'k', text: 'text:' }));
+      meta.appendChild(el('div', { cls: 'v', text: c.textHsl + '  ' + c.textHex }));
+      meta.appendChild(el('div', { cls: 'k', text: 'bg:' }));
+      meta.appendChild(el('div', { cls: 'v', text: c.bgHsl + '  ' + c.bgHex }));
+
+      root.appendChild(el('div', { cls: 'label-card', children: [head, pills, meta] }));
+    }
+  }
+
+  // Kolumn panel theme toggle (independent of Claude panels)
+  const kolumnPanel = document.getElementById('kolumn-panel');
+  const kolumnTitle = document.getElementById('kolumn-panel-title');
+  const kolumnLabel = document.getElementById('kolumn-toggle-label');
+  const kolumnSwatch = document.getElementById('kolumn-toggle-swatch');
+  let kolumnDark = false;
+
+  function applyKolumnTheme() {
+    kolumnPanel.classList.toggle('panel-kolumn-light', !kolumnDark);
+    kolumnPanel.classList.toggle('panel-kolumn-dark', kolumnDark);
+    kolumnPanel.classList.toggle('is-dark', kolumnDark);
+    kolumnTitle.textContent = kolumnDark ? 'Kolumn · Dark' : 'Kolumn · Light';
+    kolumnLabel.textContent = kolumnDark ? 'Kolumn theme: Dark' : 'Kolumn theme: Light';
+    kolumnSwatch.style.background = kolumnDark ? '#1C1C1A' : '#FAF8F6';
+    fillGroupedGrid('kolumn', KOLUMN_TOKENS);
+  }
+  document.getElementById('kolumn-toggle').addEventListener('click', () => {
+    kolumnDark = !kolumnDark;
+    applyKolumnTheme();
+  });
+
+  document.getElementById('raw-css').textContent =
+    document.getElementById('pasted-css').textContent;
+
+  renderAll();
+  applyKolumnTheme();
+</script>
+
+</body>
+</html>

@@ -14,12 +14,12 @@ import {
 // LABEL_COLORS
 // ─────────────────────────────────────────────
 describe('LABEL_COLORS', () => {
-  test('contains exactly 7 label color names', () => {
-    expect(LABEL_COLORS).toHaveLength(7)
+  test('contains exactly 8 label color names', () => {
+    expect(LABEL_COLORS).toHaveLength(8)
   })
 
   test('contains the expected color names', () => {
-    expect(LABEL_COLORS).toEqual(['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray'])
+    expect(LABEL_COLORS).toEqual(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'])
   })
 })
 
@@ -30,8 +30,8 @@ describe('COLOR_DOT_CLASSES', () => {
   test('has a Tailwind class for every label color', () => {
     for (const color of LABEL_COLORS) {
       expect(COLOR_DOT_CLASSES).toHaveProperty(color)
-      // Accept either raw hex or var(--token) syntax
-      expect(COLOR_DOT_CLASSES[color]).toMatch(/^bg-\[(#[A-Fa-f0-9]{6}|var\(--[a-z-]+\))\]$/)
+      // Accept hex or var(--token) syntax, with optional /alpha suffix
+      expect(COLOR_DOT_CLASSES[color]).toMatch(/^bg-\[(#[A-Fa-f0-9]{6}|var\(--[a-z-]+\))\](\/\d+)?$/)
     }
   })
 

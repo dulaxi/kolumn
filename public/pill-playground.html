@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pill Playground — Kolumn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+<style>
+  :root {
+    --surface-page: #FAF7F2;
+    --surface-card: #FDFCFA;
+    --surface-raised: #FFFFFF;
+    --surface-hover: #F2EDE4;
+    --border-default: #E5DFD3;
+    --border-subtle: #EBE5D8;
+    --text-primary: #1B1B18;
+    --text-secondary: #38383A;
+    --text-muted: #57534e;
+    --text-faint: #8B8A82;
+
+    --color-copper: #B95D2C;
+    --color-copper-wash: #F8DDC8;
+    --color-honey: #BD910F;
+    --color-honey-wash: #F9EDD0;
+    --color-lime: #C2D64A;
+    --color-lime-dark: #A8BA32;
+    --color-lime-wash: #EEF2D6;
+    --color-mist: #D6CFC0;
+    --color-mauve-cream: #F0EBE3;
+
+    --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
+    --label-orange-bg: #F8DDC8; --label-orange-text: #AD5A1F;
+    --label-yellow-bg: #F9EDD0; --label-yellow-text: #BD910F;
+    --label-green-bg: #DEEED4;  --label-green-text: #2F7613;
+    --label-blue-bg: #DCEBF9;   --label-blue-text: #1A5DBA;
+    --label-purple-bg: #E2DFEF; --label-purple-text: #524BA0;
+    --label-pink-bg: #F7DAE5;   --label-pink-text: #B82E67;
+    --label-gray-bg: #E8E2DB;   --label-gray-text: #5C5C57;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    font-family: 'Mona Sans', system-ui, sans-serif;
+    font-weight: 400;
+    background: var(--surface-page);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+  h2 { font-size: 14px; margin: 32px 0 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); }
+  p.intro { color: var(--text-muted); font-size: 13px; margin: 0 0 24px; max-width: 720px; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ──────────── controls ──────────── */
+  .panel {
+    background: var(--surface-card);
+    border: 1px solid var(--color-mist);
+    border-radius: 12px;
+    padding: 16px;
+    position: sticky;
+    top: 16px;
+  }
+  .control { margin-bottom: 12px; }
+  .control:last-child { margin-bottom: 0; }
+  .control label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .control label .v {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-primary);
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .control input[type="range"] {
+    width: 100%;
+    accent-color: var(--color-lime-dark);
+  }
+  .control select, .control input[type="text"] {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-default);
+    background: var(--surface-raised);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .control select:focus, .control input:focus {
+    outline: none;
+    border-color: var(--text-primary);
+  }
+  .reset {
+    margin-top: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--text-primary);
+    color: var(--surface-card);
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .reset:hover { background: var(--text-secondary); }
+
+  /* ──────────── preview pane ──────────── */
+  .preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .preview-card {
+    background: var(--surface-card);
+    border: 1px solid var(--color-mist);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 24px rgba(27,27,24,0.04);
+  }
+  .preview-card .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Pills are styled entirely inline via JS so the live preview reflects state */
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Mini card mock — to see pills in context */
+  .mock-card {
+    background: var(--surface-card);
+    border: 1px solid var(--color-mist);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(27,27,24,0.06);
+    max-width: 320px;
+  }
+  .mock-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .mock-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: var(--surface-raised);
+    border: 0.5px solid var(--border-default);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--text-primary); flex-shrink: 0;
+  }
+  .mock-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .mock-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 4px; }
+
+  /* Output */
+  pre.output {
+    background: #1B1B18;
+    color: #EEF2D6;
+    padding: 16px;
+    border-radius: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+  }
+  .copy-btn {
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: var(--surface-hover); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pill Playground</h1>
+  <p class="intro">
+    Tweak the shared pill contract. The three pills below — colored label, due-date chip, checklist chip —
+    all render with the same dimensions; only their color treatment differs. When you're happy,
+    copy the output at the bottom and tell me to apply it to <code>Card.jsx</code>.
+  </p>
+
+  <div class="grid">
+    <!-- ──────────── CONTROLS ──────────── -->
+    <div class="panel" id="controls">
+      <div class="control">
+        <label>Text size <span class="v" id="v-text-size">12px</span></label>
+        <input type="range" id="text-size" min="9" max="18" step="0.5" value="12" />
+      </div>
+      <div class="control">
+        <label>Font weight <span class="v" id="v-font-weight">500</span></label>
+        <input type="range" id="font-weight" min="300" max="800" step="50" value="500" />
+      </div>
+      <div class="control">
+        <label>Line-height <span class="v" id="v-line-height">1.4</span></label>
+        <input type="range" id="line-height" min="1.0" max="1.8" step="0.05" value="1.4" />
+      </div>
+      <div class="control">
+        <label>Letter spacing <span class="v" id="v-letter-spacing">0em</span></label>
+        <input type="range" id="letter-spacing" min="-0.04" max="0.08" step="0.005" value="0" />
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border-subtle); margin:14px 0;" />
+
+      <div class="control">
+        <label>Padding Y <span class="v" id="v-py">1px</span></label>
+        <input type="range" id="py" min="0" max="8" step="0.5" value="1" />
+      </div>
+      <div class="control">
+        <label>Padding X <span class="v" id="v-px">6px</span></label>
+        <input type="range" id="px" min="2" max="14" step="0.5" value="6" />
+      </div>
+      <div class="control">
+        <label>Border radius <span class="v" id="v-radius">999px</span></label>
+        <input type="range" id="radius" min="0" max="20" step="1" value="20" />
+      </div>
+      <div class="control">
+        <label>Border width <span class="v" id="v-bw">0.5px</span></label>
+        <input type="range" id="bw" min="0" max="2" step="0.25" value="0.5" />
+      </div>
+      <div class="control">
+        <label>Border alpha (outlined) <span class="v" id="v-balpha">1.00</span></label>
+        <input type="range" id="balpha" min="0.1" max="1" step="0.05" value="1" />
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border-subtle); margin:14px 0;" />
+
+      <div class="control">
+        <label>Icon size <span class="v" id="v-icon-size">12px</span></label>
+        <input type="range" id="icon-size" min="8" max="20" step="0.5" value="12" />
+      </div>
+      <div class="control">
+        <label>Icon weight</label>
+        <select id="icon-weight">
+          <option value="regular">regular</option>
+          <option value="bold">bold</option>
+          <option value="fill">fill</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Icon vertical nudge <span class="v" id="v-icon-nudge">-1px</span></label>
+        <input type="range" id="icon-nudge" min="-3" max="3" step="0.5" value="-1" />
+      </div>
+      <div class="control">
+        <label>Icon ↔ text gap <span class="v" id="v-gap">4px</span></label>
+        <input type="range" id="gap" min="0" max="10" step="0.5" value="4" />
+      </div>
+
+      <button class="reset" id="reset-btn">Reset to current spec</button>
+    </div>
+
+    <!-- ──────────── PREVIEW ──────────── -->
+    <div class="preview-section">
+      <div class="preview-card">
+        <div class="label">Filled — chip in context</div>
+        <div class="row" id="row-filled">
+          <!-- pills injected -->
+        </div>
+      </div>
+
+      <div class="preview-card">
+        <div class="label">Outlined — chip in context</div>
+        <div class="row" id="row-outlined">
+          <!-- pills injected -->
+        </div>
+      </div>
+
+      <div class="preview-card">
+        <div class="label">In a mock card</div>
+        <div class="mock-card">
+          <div class="mock-top">
+            <div class="mock-icon"><i class="ph ph-rocket"></i></div>
+            <div class="mock-title">Pay off my Mustang</div>
+          </div>
+          <div class="mock-meta" id="row-mock">
+            <!-- pills injected -->
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-card">
+        <div class="label">All label colors (outlined)</div>
+        <div class="swatch-row" id="row-swatches">
+          <!-- swatches injected -->
+        </div>
+      </div>
+
+      <h2>Output — paste in chat after redesign</h2>
+      <pre class="output" id="output"></pre>
+      <button class="copy-btn" id="copy-btn">Copy output</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────
+  // State + defaults (current production spec)
+  // ────────────────────────────────────────────────
+  const DEFAULTS = {
+    textSize: 12,
+    fontWeight: 500,
+    lineHeight: 1.4,
+    letterSpacing: 0,
+    py: 1,
+    px: 6,
+    radius: 20,            // visually >=half-height = pill
+    borderWidth: 0.5,
+    borderAlpha: 1.0,      // chips currently use 0.3 alpha; labels use 1.0
+    iconSize: 12,
+    iconWeight: 'regular',
+    iconNudge: -1,
+    gap: 4,
+  };
+  const state = { ...DEFAULTS };
+
+  // ────────────────────────────────────────────────
+  // DOM helpers — no innerHTML
+  // ────────────────────────────────────────────────
+  function el(tag, opts) {
+    opts = opts || {};
+    const e = document.createElement(tag);
+    if (opts.class) e.className = opts.class;
+    if (opts.text != null) e.textContent = String(opts.text);
+    if (opts.style) Object.assign(e.style, opts.style);
+    if (opts.attrs) Object.entries(opts.attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    if (opts.children) opts.children.forEach((c) => c && e.appendChild(c));
+    return e;
+  }
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  // ────────────────────────────────────────────────
+  // Color palettes
+  // ────────────────────────────────────────────────
+  const FILLED_COLORS = {
+    copper:  { bg: 'var(--color-copper-wash)',  text: 'var(--color-copper)'     },
+    honey:   { bg: 'var(--color-honey-wash)',   text: 'var(--color-honey)'      },
+    lime:    { bg: 'var(--color-lime-wash)',    text: 'var(--color-lime-dark)'  },
+    gray:    { bg: 'var(--surface-hover)',      text: 'var(--text-muted)'       },
+  };
+  const LABEL_COLORS = [
+    { name: 'red',    bg: 'var(--label-red-bg)',    text: 'var(--label-red-text)'    },
+    { name: 'orange', bg: 'var(--label-orange-bg)', text: 'var(--label-orange-text)' },
+    { name: 'yellow', bg: 'var(--label-yellow-bg)', text: 'var(--label-yellow-text)' },
+    { name: 'green',  bg: 'var(--label-green-bg)',  text: 'var(--label-green-text)'  },
+    { name: 'blue',   bg: 'var(--label-blue-bg)',   text: 'var(--label-blue-text)'   },
+    { name: 'purple', bg: 'var(--label-purple-bg)', text: 'var(--label-purple-text)' },
+    { name: 'pink',   bg: 'var(--label-pink-bg)',   text: 'var(--label-pink-text)'   },
+    { name: 'gray',   bg: 'var(--label-gray-bg)',   text: 'var(--label-gray-text)'   },
+  ];
+
+  // ────────────────────────────────────────────────
+  // Build one pill
+  // ────────────────────────────────────────────────
+  function makePill({ variant, text, color, fillStyle, icon }) {
+    // variant: 'label' (text-only) or 'chip' (icon + text)
+    // fillStyle: 'filled' | 'outlined'
+    const pill = document.createElement('span');
+    pill.style.display = 'inline-flex';
+    pill.style.alignItems = 'center';
+    pill.style.fontSize = state.textSize + 'px';
+    pill.style.fontWeight = state.fontWeight;
+    pill.style.lineHeight = state.lineHeight;
+    pill.style.letterSpacing = state.letterSpacing + 'em';
+    pill.style.padding = state.py + 'px ' + state.px + 'px';
+    pill.style.borderRadius = state.radius + 'px';
+    pill.style.borderStyle = 'solid';
+    pill.style.borderWidth = (fillStyle === 'outlined' ? state.borderWidth : 0) + 'px';
+    pill.style.gap = state.gap + 'px';
+    pill.style.whiteSpace = 'nowrap';
+
+    if (fillStyle === 'filled') {
+      pill.style.backgroundColor = color.bg;
+      pill.style.color = color.text;
+      pill.style.borderColor = 'transparent';
+    } else {
+      pill.style.backgroundColor = 'transparent';
+      pill.style.color = color.text;
+      // Approximate alpha by mixing colors — use opacity on border via color-mix or hex alpha trick
+      // Simple approach: solid color, alpha controlled via outline opacity (the entire border element)
+      // For real alpha control we'd compute rgba, but var()-based borders + opacity is good enough
+      pill.style.borderColor = color.text;
+      pill.style.borderColor = 'color-mix(in srgb, ' + color.text + ' ' + (state.borderAlpha * 100) + '%, transparent)';
+    }
+
+    if (variant === 'chip' && icon) {
+      const iconEl = document.createElement('i');
+      iconEl.className = 'ph' + (state.iconWeight === 'bold' ? '-bold' : state.iconWeight === 'fill' ? '-fill' : '') + ' ph-' + icon;
+      iconEl.style.fontSize = state.iconSize + 'px';
+      iconEl.style.marginTop = state.iconNudge + 'px';
+      iconEl.style.flexShrink = '0';
+      iconEl.style.lineHeight = '1';
+      pill.appendChild(iconEl);
+    }
+    pill.appendChild(document.createTextNode(text));
+    return pill;
+  }
+
+  // ────────────────────────────────────────────────
+  // Render everything
+  // ────────────────────────────────────────────────
+  function render() {
+    // Filled row: due date (honey) + checklist (lime) + label (red filled)
+    const filled = document.getElementById('row-filled');
+    clear(filled);
+    filled.appendChild(makePill({ variant: 'chip',  text: 'Today',   color: FILLED_COLORS.honey, fillStyle: 'filled', icon: 'calendar-dot' }));
+    filled.appendChild(makePill({ variant: 'chip',  text: '2/5',     color: FILLED_COLORS.lime,  fillStyle: 'filled', icon: 'check-square' }));
+    filled.appendChild(makePill({ variant: 'label', text: 'Urgent',  color: LABEL_COLORS[0],     fillStyle: 'filled' }));
+    filled.appendChild(makePill({ variant: 'label', text: 'Backend', color: LABEL_COLORS[4],     fillStyle: 'filled' }));
+
+    // Outlined row
+    const outlined = document.getElementById('row-outlined');
+    clear(outlined);
+    outlined.appendChild(makePill({ variant: 'chip',  text: 'Today',   color: FILLED_COLORS.honey, fillStyle: 'outlined', icon: 'calendar-dot' }));
+    outlined.appendChild(makePill({ variant: 'chip',  text: '2/5',     color: FILLED_COLORS.lime,  fillStyle: 'outlined', icon: 'check-square' }));
+    outlined.appendChild(makePill({ variant: 'label', text: 'Urgent',  color: LABEL_COLORS[0],     fillStyle: 'outlined' }));
+    outlined.appendChild(makePill({ variant: 'label', text: 'Backend', color: LABEL_COLORS[4],     fillStyle: 'outlined' }));
+
+    // Mock card row
+    const mock = document.getElementById('row-mock');
+    clear(mock);
+    mock.appendChild(makePill({ variant: 'chip',  text: 'Today', color: FILLED_COLORS.honey, fillStyle: 'outlined', icon: 'calendar-dot' }));
+    mock.appendChild(makePill({ variant: 'chip',  text: '2/5',   color: FILLED_COLORS.lime,  fillStyle: 'outlined', icon: 'check-square' }));
+    mock.appendChild(makePill({ variant: 'label', text: 'Finance', color: LABEL_COLORS[3],   fillStyle: 'outlined' }));
+
+    // Swatch row — all 8 colors
+    const sw = document.getElementById('row-swatches');
+    clear(sw);
+    LABEL_COLORS.forEach((c) => {
+      sw.appendChild(makePill({ variant: 'label', text: c.name, color: c, fillStyle: 'outlined' }));
+    });
+
+    // Output
+    updateOutput();
+  }
+
+  // ────────────────────────────────────────────────
+  // Output panel — turns state into a paste-friendly spec
+  // ────────────────────────────────────────────────
+  function tw(prop, value) {
+    // produce tailwind-ish arbitrary value for paste
+    return prop + '-[' + value + ']';
+  }
+  function updateOutput() {
+    const lines = [];
+    lines.push('SHARED PILL CONTRACT (label / due-date / checklist)');
+    lines.push('────────────────────────────────────────────');
+    lines.push('Text:           ' + state.textSize + 'px / ' + state.fontWeight + ' / lh ' + state.lineHeight + ' / tracking ' + state.letterSpacing + 'em');
+    lines.push('Padding:        ' + state.py + 'px (y) × ' + state.px + 'px (x)');
+    lines.push('Radius:         ' + state.radius + 'px');
+    lines.push('Border:         ' + state.borderWidth + 'px @ alpha ' + state.borderAlpha.toFixed(2) + ' (outlined only)');
+    lines.push('Icon:           ' + state.iconSize + 'px / weight=' + state.iconWeight + ' / nudge ' + state.iconNudge + 'px / gap ' + state.gap + 'px');
+    lines.push('');
+    lines.push('Tailwind equivalent:');
+    const textSize = state.textSize === 12 ? 'text-xs' : 'text-[' + state.textSize + 'px]';
+    const fontWeight = ({400:'font-normal',500:'font-medium',600:'font-semibold',700:'font-bold'})[state.fontWeight] || ('font-[' + state.fontWeight + ']');
+    const lh = 'leading-[' + state.lineHeight + ']';
+    const py = state.py === 1 ? 'py-px' : 'py-[' + state.py + 'px]';
+    const px = state.px === 6 ? 'px-1.5' : (state.px === 8 ? 'px-2' : 'px-[' + state.px + 'px]');
+    const rounded = state.radius >= 20 ? 'rounded-full' : 'rounded-[' + state.radius + 'px]';
+    const bw = 'border-[' + state.borderWidth + 'px]';
+    const gap = state.gap === 4 ? 'gap-1' : (state.gap === 8 ? 'gap-2' : 'gap-[' + state.gap + 'px]');
+    const cls = [textSize, fontWeight, lh, py, px, rounded, bw, gap, 'inline-flex', 'items-center'].join(' ');
+    lines.push('  ' + cls);
+    lines.push('');
+    lines.push('Icon className (Phosphor):');
+    const iconClass = ['shrink-0', state.iconNudge !== 0 ? 'mt-[' + state.iconNudge + 'px]' : ''].filter(Boolean).join(' ');
+    lines.push('  <Icon size={' + state.iconSize + '} weight="' + state.iconWeight + '" className="' + iconClass + '" />');
+    document.getElementById('output').textContent = lines.join('\n');
+  }
+
+  // ────────────────────────────────────────────────
+  // Wire up inputs
+  // ────────────────────────────────────────────────
+  const bindings = [
+    { id: 'text-size',      key: 'textSize',      out: 'v-text-size',      fmt: (v) => v + 'px' },
+    { id: 'font-weight',    key: 'fontWeight',    out: 'v-font-weight',    fmt: (v) => v },
+    { id: 'line-height',    key: 'lineHeight',    out: 'v-line-height',    fmt: (v) => Number(v).toFixed(2) },
+    { id: 'letter-spacing', key: 'letterSpacing', out: 'v-letter-spacing', fmt: (v) => Number(v).toFixed(3) + 'em' },
+    { id: 'py',             key: 'py',            out: 'v-py',             fmt: (v) => v + 'px' },
+    { id: 'px',             key: 'px',            out: 'v-px',             fmt: (v) => v + 'px' },
+    { id: 'radius',         key: 'radius',        out: 'v-radius',         fmt: (v) => v >= 20 ? '999px' : (v + 'px') },
+    { id: 'bw',             key: 'borderWidth',   out: 'v-bw',             fmt: (v) => v + 'px' },
+    { id: 'balpha',         key: 'borderAlpha',   out: 'v-balpha',         fmt: (v) => Number(v).toFixed(2) },
+    { id: 'icon-size',      key: 'iconSize',      out: 'v-icon-size',      fmt: (v) => v + 'px' },
+    { id: 'icon-nudge',     key: 'iconNudge',     out: 'v-icon-nudge',     fmt: (v) => v + 'px' },
+    { id: 'gap',            key: 'gap',           out: 'v-gap',            fmt: (v) => v + 'px' },
+  ];
+
+  bindings.forEach((b) => {
+    const inp = document.getElementById(b.id);
+    inp.value = state[b.key];
+    document.getElementById(b.out).textContent = b.fmt(state[b.key]);
+    inp.addEventListener('input', () => {
+      state[b.key] = Number(inp.value);
+      document.getElementById(b.out).textContent = b.fmt(inp.value);
+      render();
+    });
+  });
+
+  const iconWeightSel = document.getElementById('icon-weight');
+  iconWeightSel.value = state.iconWeight;
+  iconWeightSel.addEventListener('change', () => {
+    state.iconWeight = iconWeightSel.value;
+    render();
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    Object.assign(state, DEFAULTS);
+    bindings.forEach((b) => {
+      const inp = document.getElementById(b.id);
+      inp.value = state[b.key];
+      document.getElementById(b.out).textContent = b.fmt(state[b.key]);
+    });
+    iconWeightSel.value = state.iconWeight;
+    render();
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = document.getElementById('output').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 1200);
+    });
+  });
+
+  render();
+</script>
+</body>
+</html>

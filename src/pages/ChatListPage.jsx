@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ChatsCircle, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
+import { CaretDown, ChatsCircle, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
-import Button from '../components/ui/Button'
 
 export default function ChatListPage() {
   const navigate = useNavigate()
@@ -20,18 +19,27 @@ export default function ChatListPage() {
   }, [conversations, search])
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-6">
+    <div className="w-full py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)]">Chat</h1>
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          New chat
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+          >
+            Sort by Activity
+            <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            New chat
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -78,13 +86,22 @@ export default function ChatListPage() {
           No conversations matching "{search}"
         </div>
       ) : (
-        <div className="text-center py-12">
-          <ChatsCircle size={32} weight="regular" className="mx-auto mb-3 text-[var(--text-faint)]" />
-          <p className="text-sm text-[var(--text-muted)] mb-4">No conversations yet</p>
-          <Button size="sm" onClick={() => navigate('/dashboard')}>
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <ChatsCircle className="w-24 h-24 text-[var(--text-muted)]" weight="light" />
+          <h3 className="mt-2 text-base font-medium text-[var(--text-secondary)]">
+            Looking to start a chat?
+          </h3>
+          <p className="max-w-sm text-xs text-[var(--text-muted)]">
+            Ask questions about your boards, get summaries, or work through your project with Claude.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+          >
             <Plus className="w-4 h-4" />
-            Start a conversation
-          </Button>
+            New chat
+          </button>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useCallback, lazy, Suspense } from 'react'
+import { createPortal } from 'react-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import toast, { Toaster, useToasterStore } from 'react-hot-toast'
 import AppLayout from './components/layout/AppLayout'
@@ -12,6 +13,7 @@ const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
 const UpgradeProPage = lazy(() => import('./pages/UpgradeProPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BoardsPage = lazy(() => import('./pages/BoardsPage'))
+const BuilderPage = lazy(() => import('./pages/BuilderPage'))
 // Calendar + Notes removed from the dashboard UI — they added little
 // without core differentiation. Page files still exist on disk; restore
 // the lazy imports + routes below if you want them back.
@@ -44,13 +46,21 @@ function UndoListener() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-        }}
-        containerProps={{ role: 'status', 'aria-live': 'polite' }}
-      />
+      {createPortal(
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+          }}
+          // Portal-to-body + explicit z-index above any Modal (default 50).
+          // Modals also portal to body — without ALSO portaling the Toaster,
+          // it would render inside <div id="root"> (z-auto) and any modal
+          // would visually cover it regardless of the local z-index value.
+          containerStyle={{ zIndex: 100 }}
+          containerProps={{ role: 'status', 'aria-live': 'polite' }}
+        />,
+        document.body,
+      )}
       <UndoListener />
       <Suspense fallback={<div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center"><div className="text-sm text-[var(--text-muted)]">Loading...</div></div>}>
         <Routes>
@@ -80,6 +90,7 @@ export default function App() {
             <Route path="chat" element={<ErrorBoundary><ChatListPage /></ErrorBoundary>} />
             <Route path="chat/:id" element={<ErrorBoundary><ChatPage /></ErrorBoundary>} />
             <Route path="boards/*" element={<ErrorBoundary><BoardsPage /></ErrorBoundary>} />
+            <Route path="build" element={<ErrorBoundary><BuilderPage /></ErrorBoundary>} />
             <Route path="workspace" element={<ErrorBoundary><WorkspacePage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>

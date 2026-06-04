@@ -22,7 +22,7 @@ export default function SidebarBottom({ collapsed, showCollapsed, onToggle, work
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--text-muted)] shrink-0 inline-flex items-center justify-center"
         >
-          <SidebarSimple size={18} weight="regular" />
+          <SidebarSimple size={20} weight="light" />
         </button>
       </Tooltip>
     </div>

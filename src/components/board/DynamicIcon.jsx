@@ -3,7 +3,7 @@ import { memo } from 'react'
 // Forward-compat shim: legacy icon names persisted in DB (board.icon, card.icon)
 // from the old lucide era are remapped to their current Phosphor equivalents.
 // Lucide-react itself has been removed. Do not delete — would break old boards.
-const LEGACY_ICON_REMAP = {
+export const LEGACY_ICON_REMAP = {
   'grip-vertical': 'dots-six-vertical',
   'panel-right': 'sidebar-simple',
   'calendar-days': 'calendar-blank',
@@ -41,8 +41,17 @@ function toKebab(name) {
     .replace(/\d+$/, '')
 }
 
+const WEIGHT_PREFIX = {
+  thin: 'ph-thin',
+  light: 'ph-light',
+  regular: 'ph',
+  bold: 'ph-bold',
+  fill: 'ph-fill',
+  duotone: 'ph-duotone',
+}
+
 function renderPhosphor(iconName, sizePx, props) {
-  const prefix = props.weight === 'fill' ? 'ph-fill' : 'ph'
+  const prefix = WEIGHT_PREFIX[props.weight] || 'ph'
   const { weight: _, ...restProps } = props
   return (
     <i

@@ -14,14 +14,20 @@ export default function QuickAddBar({ boardId }) {
   const [input, setInput] = useState('')
   const [processing, setProcessing] = useState(false)
   const [visible, setVisible] = useState(true)
+  // Surface model text + tool errors above the pill. Set on submit completion;
+  // cleared on next submit or after a short timeout.
+  const [feedback, setFeedback] = useState(null) // { type: 'info' | 'error', text } | null
   const inputRef = useRef(null)
   const collapseWithAnim = () => {
     if (processing) return
     setCollapsing(true)
-    setTimeout(() => { setExpanded(false); setCollapsing(false); setInput('') }, 175)
+    setTimeout(() => { setExpanded(false); setCollapsing(false); setInput(''); setFeedback(null) }, 175)
   }
   const scrollTimer = useRef(null)
   const boardName = useBoardStore((s) => s.boards[boardId]?.name)
+
+  // Feedback persists until the user submits again (clears in handleSubmit)
+  // or clicks the × button. Intentionally no auto-dismiss for now.
 
   useEffect(() => {
     const container = document.querySelector('[data-board-scroll]')
@@ -43,27 +49,78 @@ export default function QuickAddBar({ boardId }) {
     const text = input.trim()
     if (!text || processing) return
     setInput('')
+    setFeedback(null)
     setProcessing(true)
 
+    // Track what came back so we can surface text or errors above the pill.
+    let modelText = ''
+    let toolFired = false
+    let toolErrorMsg = ''
+
+    // Circuit breaker: cap how many tool calls a single pill submission can
+    // execute. Defense against runaway model behavior (e.g. emitting many
+    // update_card calls in a single response). Hard ceiling; the model can
+    // still emit more, we just stop executing them.
+    const MAX_TOOL_CALLS_PER_SUBMIT = 25
+    let toolCallCount = 0
+    let circuitTripped = false
+
     try {
-      const parts = text.includes(',')
-        ? text.split(',').map((s) => s.trim()).filter(Boolean)
-        : text.includes('\n')
-        ? text.split('\n').map((s) => s.trim()).filter(Boolean)
-        : null
+      // Split candidate parts. Prefer newlines (explicit user choice); fall
+      // back to commas only when it looks like an actual list.
+      const splitParts = (sep) => text.split(sep).map((s) => s.trim()).filter(Boolean)
+      let parts = null
+      if (text.includes('\n')) {
+        parts = splitParts(/\n/)
+      } else if (text.includes(',')) {
+        const candidate = splitParts(',')
+        // Heuristic: any part starting with an explicit creation command
+        // ("Add", "Create", "Make", "New ", "I need/want/would") signals
+        // prose intent — route to the LLM so it can interpret the whole
+        // sentence as one request, not slice on every comma.
+        const commandStart = /^(add|create|make|new\s|i\s+(?:need|want|would|'d))\b/i
+        const looksLikeProse = candidate.some((p) => commandStart.test(p))
+        if (!looksLikeProse) parts = candidate
+      }
 
       if (parts && parts.length > 1) {
         for (const title of parts) {
-          await executeTool('create_card', { title, board: boardName })
+          const r = await executeTool('create_card', { title, boardId })
+          if (r) {
+            toolFired = true
+            if (!r.ok && r.error) toolErrorMsg = r.error
+          }
         }
       } else {
+        // User's local date as YYYY-MM-DD. The en-CA locale formats dates in
+        // ISO order (YYYY-MM-DD) and respects local timezone by default —
+        // unlike toISOString() which is always UTC.
+        const today = new Intl.DateTimeFormat('en-CA', {
+          year: 'numeric', month: '2-digit', day: '2-digit',
+        }).format(new Date())
         await new Promise((resolve) => {
           streamChat(
-            { message: `Create a card on board "${boardName}": ${text}` },
+            { message: text, boardId, today },
             {
-              onText: () => {},
+              onText: (chunk) => { modelText += chunk },
               onToolCall: async (action, params) => {
-                await executeTool(action, { ...params, board: boardName })
+                // Circuit breaker — see MAX_TOOL_CALLS_PER_SUBMIT comment above.
+                if (circuitTripped) return
+                toolCallCount++
+                if (toolCallCount > MAX_TOOL_CALLS_PER_SUBMIT) {
+                  circuitTripped = true
+                  toolErrorMsg = `Stopped after ${MAX_TOOL_CALLS_PER_SUBMIT} tool calls — the model emitted too many in one response. Try a smaller request or use a batch tool.`
+                  logError('[QuickAdd] circuit breaker tripped', { action, count: toolCallCount })
+                  return
+                }
+                // Inject pill context. boardId is the canonical handle (read by
+                // polished tools like create_card); board name is kept for
+                // tools that haven't been polished yet and still resolve by name.
+                const r = await executeTool(action, { ...params, board: boardName, boardId })
+                if (r) {
+                  toolFired = true
+                  if (!r.ok && r.error) toolErrorMsg = r.error
+                }
               },
               onTier: () => {},
               onDone: resolve,
@@ -74,6 +131,14 @@ export default function QuickAddBar({ boardId }) {
       }
     } catch (err) {
       logError('[QuickAdd]', err)
+    }
+
+    // Surface feedback. Tool errors take precedence; otherwise show model text
+    // if the model responded with text only (no successful tool call).
+    if (toolErrorMsg) {
+      setFeedback({ type: 'error', text: toolErrorMsg })
+    } else if (!toolFired && modelText.trim()) {
+      setFeedback({ type: 'info', text: modelText.trim() })
     }
 
     setProcessing(false)
@@ -120,6 +185,26 @@ export default function QuickAddBar({ boardId }) {
       initialFocusRef={inputRef}
     >
     <div className={`w-full max-w-2xl px-4 origin-bottom ${collapsing ? 'animate-[pill-bounce-out_175ms_ease-in_forwards]' : 'animate-[pill-bounce-in_275ms_cubic-bezier(0.34,1.56,0.64,1)_forwards]'}`}>
+      {feedback && (
+        <div
+          role={feedback.type === 'error' ? 'alert' : 'status'}
+          className={`mb-2 px-3.5 py-2.5 rounded-[10px] border bg-[var(--surface-card)] font-mono text-[12px] leading-relaxed shadow-[0_4px_24px_rgba(27,27,24,0.10)] flex items-start gap-2.5 ${
+            feedback.type === 'error'
+              ? 'border-[var(--color-copper)] text-[var(--color-copper)]'
+              : 'border-[#1B1B18] text-[var(--text-primary)]'
+          }`}
+        >
+          <span className="flex-1 whitespace-pre-wrap break-words">{feedback.text}</span>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            aria-label="Dismiss"
+            className="shrink-0 -mr-1 px-1 leading-none text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div className="flex flex-col bg-[var(--surface-card)] rounded-[20px] border border-transparent shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035),0_0_0_0.5px_rgba(224,219,213,0.6)] focus-within:shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.075),0_0_0_0.5px_rgba(174,170,164,0.6)] transition-shadow duration-200">
         <div className="flex flex-col m-3.5 gap-3">
           <textarea

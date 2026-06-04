@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Kolumn — Label palette decisions</title>
+<style>
+  :root {
+    --surface-page-light: #FAF7F0;
+    --surface-card-light: #FFFFFF;
+    --text-primary-light: #1B1B18;
+    --text-secondary-light: #4A4A45;
+    --text-muted-light: #7A7A75;
+    --border-default-light: #D8D2C8;
+
+    --surface-page-dark: #1B1B18;
+    --surface-card-dark: #242420;
+    --text-primary-dark: #E8E5E0;
+    --text-secondary-dark: #B8B5B0;
+    --text-muted-dark: #8E8E89;
+    --border-default-dark: #3D3D38;
+
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 48px 96px;
+    font-family: var(--font-ui);
+    background: var(--surface-page-light);
+    color: var(--text-primary-light);
+    line-height: 1.5;
+  }
+  header {
+    max-width: 1200px; margin: 0 auto 32px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  }
+  header h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--text-secondary-light); font-size: 13px; max-width: 560px; }
+
+  .btn {
+    appearance: none; border: 1px solid var(--border-default-light);
+    background: var(--surface-card-light); color: var(--text-primary-light);
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { background: #F0EDE7; }
+
+  section { max-width: 1200px; margin: 0 auto 48px; }
+  h2 {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted-light); margin: 0 0 12px;
+  }
+  .panel {
+    background: var(--surface-card-light); border: 1px solid var(--border-default-light);
+    border-radius: 12px; padding: 20px;
+  }
+  .panel.dark {
+    background: var(--surface-card-dark); border-color: var(--border-default-dark);
+    color: var(--text-primary-dark);
+  }
+  .panel.dark h3 { color: var(--text-primary-dark); }
+  .panel.dark .label-name { color: var(--text-secondary-dark); }
+  .panel.dark .hex { color: var(--text-muted-dark); }
+
+  .preset-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    border: 1px solid var(--border-default-light); background: var(--surface-card-light);
+    padding: 8px 14px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .preset-btn:hover { background: #F0EDE7; }
+  .preset-dots { display: inline-flex; gap: 2px; }
+  .preset-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .grid h3 {
+    margin: 0 0 12px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted-light);
+  }
+  .color-row {
+    display: grid;
+    grid-template-columns: 80px 64px 64px 1fr 1fr 32px;
+    gap: 8px; align-items: center;
+    padding: 8px 0;
+  }
+  .color-row + .color-row { border-top: 1px dashed var(--border-default-light); }
+  .panel.dark .color-row + .color-row { border-color: var(--border-default-dark); }
+  .label-name { font-size: 13px; color: var(--text-secondary-light); text-transform: capitalize; }
+  .hex { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted-light); margin-top: 2px; }
+  input[type=color] {
+    appearance: none; -webkit-appearance: none;
+    width: 40px; height: 28px; padding: 0;
+    border: 1px solid var(--border-default-light); border-radius: 6px;
+    cursor: pointer; background: none;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type=color]::-webkit-color-swatch { border: none; border-radius: 5px; }
+  .panel.dark input[type=color] { border-color: var(--border-default-dark); }
+  .field-stack { display: flex; flex-direction: column; align-items: flex-start; }
+
+  .pill-filled {
+    display: inline-flex; align-items: center; padding: 2px 8px;
+    border-radius: 999px; font-size: 11px; font-weight: 500;
+    text-transform: lowercase;
+  }
+  .pill-outline {
+    display: inline-flex; align-items: center; padding: 1px 6px;
+    border: 0.5px solid; border-radius: 999px; font-size: 12px; font-weight: 460;
+    text-transform: capitalize; line-height: 1.4;
+  }
+  .dot {
+    display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  }
+
+  pre {
+    background: var(--surface-card-light); border: 1px solid var(--border-default-light);
+    border-radius: 12px; padding: 16px; font-family: var(--font-mono); font-size: 11px;
+    line-height: 1.6; overflow-x: auto;
+    color: var(--text-secondary-light);
+  }
+  .output-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .copy-feedback { font-size: 11px; color: var(--text-muted-light); }
+  code { font-family: var(--font-mono); background: rgba(0,0,0,0.04); padding: 1px 4px; border-radius: 4px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Kolumn — label palette decisions</h1>
+    <p>Pick the bg/text hex for each of the 8 label colors, in light and dark themes. Live preview shows the dot, filled pill, and outlined pill. Copy the generated CSS at the bottom and paste it over the existing block in <code>src/index.css</code>.</p>
+  </div>
+</header>
+
+<section>
+  <h2>Presets</h2>
+  <div class="preset-row" id="presets"></div>
+</section>
+
+<section>
+  <h2>Builder</h2>
+  <div class="grid">
+    <div class="panel" id="panel-light">
+      <h3 data-h>Light theme</h3>
+      <div id="rows-light"></div>
+    </div>
+    <div class="panel dark" id="panel-dark">
+      <h3 data-h>Dark theme</h3>
+      <div id="rows-dark"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Generated CSS</h2>
+  <pre id="output"></pre>
+  <div class="output-actions">
+    <button class="btn" id="copy">Copy to clipboard</button>
+    <span class="copy-feedback" id="copy-feedback"></span>
+  </div>
+</section>
+
+<script>
+  const COLOR_NAMES = ['neutral', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray'];
+
+  const PRESETS = {
+    Current: {
+      light: {
+        neutral: { bg: '#7A7A75', text: '#7A7A75' },
+        red:     { bg: '#F2D9C7', text: '#8B5A33' },
+        blue:    { bg: '#DAE0F0', text: '#4A5578' },
+        green:   { bg: '#EEF2D6', text: '#6B7A12' },
+        yellow:  { bg: '#F5EDCF', text: '#8B7322' },
+        purple:  { bg: '#E8DDE2', text: '#6E5A65' },
+        pink:    { bg: '#F0E0D2', text: '#7A5C44' },
+        gray:    { bg: '#E8E2DB', text: '#5C5C57' },
+      },
+      dark: {
+        neutral: { bg: '#8E8E89', text: '#8E8E89' },
+        red:     { bg: '#4A2A1F', text: '#E0907C' },
+        blue:    { bg: '#2A3040', text: '#8DA0C4' },
+        green:   { bg: '#2A3520', text: '#A8C278' },
+        yellow:  { bg: '#3D3820', text: '#D8C078' },
+        purple:  { bg: '#3A3040', text: '#C4A0B8' },
+        pink:    { bg: '#3D2632', text: '#E0A0B8' },
+        gray:    { bg: '#333330', text: '#9C9A95' },
+      },
+    },
+    Vivid: {
+      light: {
+        neutral: { bg: '#9CA3AF', text: '#6B7280' },
+        red:     { bg: '#FEE2E2', text: '#B91C1C' },
+        blue:    { bg: '#DBEAFE', text: '#1D4ED8' },
+        green:   { bg: '#D1FAE5', text: '#047857' },
+        yellow:  { bg: '#FEF3C7', text: '#A16207' },
+        purple:  { bg: '#EDE9FE', text: '#6D28D9' },
+        pink:    { bg: '#FCE7F3', text: '#BE185D' },
+        gray:    { bg: '#E5E7EB', text: '#374151' },
+      },
+      dark: {
+        neutral: { bg: '#6B7280', text: '#9CA3AF' },
+        red:     { bg: '#7F1D1D', text: '#FCA5A5' },
+        blue:    { bg: '#1E3A8A', text: '#93C5FD' },
+        green:   { bg: '#14532D', text: '#86EFAC' },
+        yellow:  { bg: '#713F12', text: '#FDE047' },
+        purple:  { bg: '#581C87', text: '#D8B4FE' },
+        pink:    { bg: '#831843', text: '#F9A8D4' },
+        gray:    { bg: '#374151', text: '#D1D5DB' },
+      },
+    },
+    Muted: {
+      light: {
+        neutral: { bg: '#A8A8A3', text: '#6B6B66' },
+        red:     { bg: '#E8C4B8', text: '#8B4537' },
+        blue:    { bg: '#C8D0DC', text: '#3D4862' },
+        green:   { bg: '#D4DCC0', text: '#5A6B1C' },
+        yellow:  { bg: '#E8DEB8', text: '#7A6520' },
+        purple:  { bg: '#D8C8D2', text: '#5F4858' },
+        pink:    { bg: '#E0CCC0', text: '#6B4E3A' },
+        gray:    { bg: '#D8D2C8', text: '#4A4A45' },
+      },
+      dark: {
+        neutral: { bg: '#7A7A75', text: '#A0A09B' },
+        red:     { bg: '#3A2018', text: '#C88370' },
+        blue:    { bg: '#22283A', text: '#7A8DAE' },
+        green:   { bg: '#222B1A', text: '#94AB6C' },
+        yellow:  { bg: '#332E1A', text: '#BFA86B' },
+        purple:  { bg: '#322838', text: '#AB8CA0' },
+        pink:    { bg: '#332024', text: '#C88EA0' },
+        gray:    { bg: '#2C2C29', text: '#8E8E89' },
+      },
+    },
+    Warm: {
+      light: {
+        neutral: { bg: '#8E8E89', text: '#5C5C57' },
+        red:     { bg: '#E8B89E', text: '#7A3A1A' },
+        blue:    { bg: '#C4CDDB', text: '#3A4A6B' },
+        green:   { bg: '#D8DC9A', text: '#4A5A14' },
+        yellow:  { bg: '#E8D89A', text: '#7A5A1A' },
+        purple:  { bg: '#D4BFC8', text: '#5A3A4A' },
+        pink:    { bg: '#E5C4B0', text: '#6B3A2A' },
+        gray:    { bg: '#E0DBD2', text: '#5C5C57' },
+      },
+      dark: {
+        neutral: { bg: '#7A7A75', text: '#A8A8A3' },
+        red:     { bg: '#3D2418', text: '#D49270' },
+        blue:    { bg: '#252D3D', text: '#8AA0C4' },
+        green:   { bg: '#2A331C', text: '#B8C870' },
+        yellow:  { bg: '#3D331C', text: '#D4B870' },
+        purple:  { bg: '#3A2D38', text: '#C49AB0' },
+        pink:    { bg: '#3D2820', text: '#D4926E' },
+        gray:    { bg: '#333330', text: '#A8A8A3' },
+      },
+    },
+  };
+
+  let state = JSON.parse(JSON.stringify(PRESETS.Current));
+
+  // ---- DOM helpers (no innerHTML; create nodes + set textContent) ----
+  function el(tag, opts) {
+    const node = document.createElement(tag);
+    if (!opts) return node;
+    if (opts.cls) node.className = opts.cls;
+    if (opts.text != null) node.textContent = opts.text;
+    if (opts.style) Object.assign(node.style, opts.style);
+    if (opts.data) for (const [k, v] of Object.entries(opts.data)) node.dataset[k] = v;
+    if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
+    if (opts.children) for (const c of opts.children) if (c) node.appendChild(c);
+    return node;
+  }
+
+  function buildPresets() {
+    const root = document.getElementById('presets');
+    root.replaceChildren();
+    for (const [name, palette] of Object.entries(PRESETS)) {
+      const dots = el('span', { cls: 'preset-dots' });
+      for (const c of COLOR_NAMES) {
+        dots.appendChild(el('span', { cls: 'preset-dot', style: { background: palette.light[c].bg } }));
+      }
+      const label = el('span', { text: name });
+      const btn = el('button', { cls: 'preset-btn', children: [dots, label] });
+      btn.addEventListener('click', () => {
+        state = JSON.parse(JSON.stringify(palette));
+        render();
+      });
+      root.appendChild(btn);
+    }
+  }
+
+  function buildRow(theme, color) {
+    const v = state[theme][color];
+    // Field 1: name
+    const nameWrap = el('div', { cls: 'field-stack', children: [
+      el('div', { cls: 'label-name', text: color }),
+    ]});
+
+    // Field 2: bg input
+    const bgInput = el('input', { attrs: { type: 'color', value: v.bg }, data: { theme, color, field: 'bg' } });
+    const bgHex = el('div', { cls: 'hex', text: v.bg });
+    const bgWrap = el('div', { cls: 'field-stack', children: [bgInput, bgHex] });
+
+    // Field 3: text input
+    const textInput = el('input', { attrs: { type: 'color', value: v.text }, data: { theme, color, field: 'text' } });
+    const textHex = el('div', { cls: 'hex', text: v.text });
+    const textWrap = el('div', { cls: 'field-stack', children: [textInput, textHex] });
+
+    // Field 4: filled pill
+    const filled = el('span', {
+      cls: 'pill-filled',
+      style: { background: v.bg, color: v.text },
+      text: '/' + color,
+    });
+    const filledWrap = el('div', { children: [filled] });
+
+    // Field 5: outlined pill
+    const outlined = el('span', {
+      cls: 'pill-outline',
+      style: { color: v.text, borderColor: v.text + '33' },
+      text: color,
+    });
+    const outlinedWrap = el('div', { children: [outlined] });
+
+    // Field 6: dot
+    const dot = el('span', { cls: 'dot', style: { background: v.bg } });
+    const dotWrap = el('div', { children: [dot] });
+
+    return el('div', { cls: 'color-row', children: [nameWrap, bgWrap, textWrap, filledWrap, outlinedWrap, dotWrap] });
+  }
+
+  function render() {
+    for (const theme of ['light', 'dark']) {
+      const root = document.getElementById('rows-' + theme);
+      root.replaceChildren();
+      for (const c of COLOR_NAMES) root.appendChild(buildRow(theme, c));
+    }
+    renderOutput();
+  }
+
+  function renderOutput() {
+    const lines = [];
+    lines.push('/* Light theme — paste into :root block in src/index.css */');
+    lines.push(':root {');
+    for (const c of COLOR_NAMES) {
+      if (c === 'neutral') continue; // neutral uses --text-muted, no token of its own
+      const v = state.light[c];
+      lines.push('  --label-' + c + '-bg: ' + v.bg.toUpperCase() + ';    --label-' + c + '-text: ' + v.text.toUpperCase() + ';');
+    }
+    lines.push('}');
+    lines.push('');
+    lines.push('/* Dark theme — paste into [data-theme="dark"] block in src/index.css */');
+    lines.push('[data-theme="dark"] {');
+    for (const c of COLOR_NAMES) {
+      if (c === 'neutral') continue;
+      const v = state.dark[c];
+      lines.push('  --label-' + c + '-bg: ' + v.bg.toUpperCase() + ';    --label-' + c + '-text: ' + v.text.toUpperCase() + ';');
+    }
+    lines.push('}');
+    document.getElementById('output').textContent = lines.join('\n');
+  }
+
+  // Update state on input
+  document.body.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.tagName !== 'INPUT' || t.type !== 'color') return;
+    const { theme, color, field } = t.dataset;
+    if (!theme || !color || !field) return;
+    state[theme][color][field] = t.value;
+    render();
+  });
+
+  // Copy CSS
+  document.getElementById('copy').addEventListener('click', async () => {
+    const fb = document.getElementById('copy-feedback');
+    try {
+      await navigator.clipboard.writeText(document.getElementById('output').textContent);
+      fb.textContent = 'Copied';
+      setTimeout(() => { fb.textContent = ''; }, 1500);
+    } catch {
+      fb.textContent = 'Copy failed — select the text manually';
+    }
+  });
+
+  buildPresets();
+  render();
+</script>
+
+</body>
+</html>

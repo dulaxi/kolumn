@@ -31,23 +31,23 @@ export default function SidebarBoardItem({
   onStartRename,
 }) {
   const iconColor = active ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
-  const iconWeight = active ? 'fill' : 'regular'
+  const iconWeight = active ? 'fill' : 'light'
 
   const iconGlyph = (
     <DynamicIcon
       name={board.icon || 'cards-three'}
       weight={iconWeight}
-      className={`w-4 h-4 ${iconColor}`}
+      className={`w-5 h-5 ${iconColor}`}
     />
   )
 
   return (
     <div
       onClick={() => onSelect?.(board.id)}
-      className={`flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm transition-colors duration-75 group cursor-pointer overflow-hidden relative ${
+      className={`flex items-center justify-between w-full h-8 py-1.5 px-2 rounded-lg text-sm transition-colors duration-75 group cursor-pointer overflow-hidden relative ${
         active
           ? 'text-[var(--text-primary)] bg-[var(--color-mauve-cream)]'
-          : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+          : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]'
       }`}
     >
       <span className="flex items-center gap-3 truncate">
@@ -61,13 +61,13 @@ export default function SidebarBoardItem({
               }}
               aria-label="Change icon"
               className="shrink-0 hover:bg-[var(--border-default)] rounded p-0.5 transition-colors flex items-center justify-center"
-              style={{ width: 16, height: 16 }}
+              style={{ width: 20, height: 20 }}
             >
               {iconGlyph}
             </button>
           </Tooltip>
         ) : (
-          <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
+          <span className="flex items-center justify-center shrink-0" style={{ width: 20, height: 20 }}>
             {iconGlyph}
           </span>
         )}
@@ -104,7 +104,8 @@ export default function SidebarBoardItem({
           <Trash
             role="button"
             aria-label={`Delete board ${board.name}`}
-            className="w-3.5 h-3.5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
+            weight="light"
+            className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
             onClick={(e) => { e.stopPropagation(); onDelete?.(board.id) }}
           />
         </span>
@@ -116,7 +117,8 @@ export default function SidebarBoardItem({
             role="button"
             aria-label={`Leave board ${board.name}`}
             title="Leave board"
-            className="w-3.5 h-3.5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
+            weight="light"
+            className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
             onClick={(e) => { e.stopPropagation(); onLeave?.(board.id) }}
           />
         </span>

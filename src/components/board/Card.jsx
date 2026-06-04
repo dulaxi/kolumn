@@ -1,19 +1,21 @@
 import { useState, memo } from 'react'
-import { isPast, parseISO } from 'date-fns'
+import { isPast } from 'date-fns'
 
 import { CalendarDot, CheckCircle, CheckSquare, FileText } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
-import { LABEL_BG, PRIORITY_DOT } from '../../utils/formatting'
-import { formatDueDateLabel, dueDateBadgeClass } from '../../utils/dateUtils'
+import { LABEL_OUTLINE, PRIORITY_DOT } from '../../utils/formatting'
+import { selectCardLabels } from '../../store/selectors'
+import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
-import { resolveProfileColor } from '../../constants/colors'
+import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
 import { isAICreated } from '../../lib/toolExecutor'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
-  const { title, description, labels, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  const { title, description, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  const labels = useBoardStore(selectCardLabels(card.id))
   // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
   const assignees = (card.assignees && card.assignees.length)
     ? card.assignees
@@ -22,6 +24,10 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const updateCard = useBoardStore((s) => s.updateCard)
   const profile = useAuthStore((s) => s.profile)
   const font = useSettingsStore((s) => s.font)
+  const labelStyle = useSettingsStore((s) => s.labelStyle)
+  const toggleLabelStyle = useSettingsStore((s) => s.toggleLabelStyle)
+  const iconStyle = useSettingsStore((s) => s.iconStyle)
+  const toggleIconStyle = useSettingsStore((s) => s.toggleIconStyle)
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   const checkedCount = checklist?.filter((item) => item.done).length || 0
@@ -37,7 +43,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const hasDescription = description && description.trim().length > 0
   const hasAssignee = assignees.length > 0
 
-  const dueDateObj = dueDate ? parseISO(dueDate) : null
+  const dueDateObj = dueDate ? parseDueDate(dueDate) : null
   const overdue = dueDateObj ? isPast(dueDateObj) : false
 
   const priDot = PRIORITY_DOT[priority] || PRIORITY_DOT.medium
@@ -57,16 +63,34 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
     >
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
-        {/* Icon container — Claude skill card style */}
-        <div className="flex w-10 h-10 shrink-0 items-center justify-center rounded-lg border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)]">
-          <div className="w-5 h-5 flex items-center justify-center">
+        {/* Icon — toggleable between "boxed" (40×40 raised container) and
+            "plain" (bare 20×20 icon). Click toggles iconStyle in settingsStore.
+            stopPropagation so card-open click handler doesn't fire. */}
+        {iconStyle === 'plain' ? (
+          <div
+            onClick={(e) => { e.stopPropagation(); toggleIconStyle() }}
+            className="w-5 h-5 shrink-0 flex items-center justify-center cursor-pointer"
+          >
             {displayIcon ? (
               <DynamicIcon name={displayIcon} className="w-5 h-5 text-[var(--text-primary)]" />
             ) : (
               <FileText size={20} weight="regular" className="text-[var(--text-muted)]" />
             )}
           </div>
-        </div>
+        ) : (
+          <div
+            onClick={(e) => { e.stopPropagation(); toggleIconStyle() }}
+            className="flex w-10 h-10 shrink-0 items-center justify-center rounded-lg border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] cursor-pointer"
+          >
+            <div className="w-5 h-5 flex items-center justify-center">
+              {displayIcon ? (
+                <DynamicIcon name={displayIcon} className="w-5 h-5 text-[var(--text-primary)]" />
+              ) : (
+                <FileText size={20} weight="regular" className="text-[var(--text-muted)]" />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Title + meta */}
         <div className="flex min-w-0 grow flex-col gap-0.5">
@@ -86,10 +110,41 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
               <CheckCircle className={`w-4 h-4 transition-colors ${completed ? 'text-[var(--color-lime-dark)]' : priority === 'high' ? 'text-[var(--color-copper)] hover:text-[var(--color-lime-dark)]' : priority === 'low' ? 'text-[var(--color-lime-dark)] hover:text-[var(--color-logo)]' : 'text-[var(--color-honey)] hover:text-[var(--color-lime-dark)]'}`} />
             </button>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-            {labels?.length > 0 && labels.map((label) => (
-              <span key={`${label.text}-${label.color}`} className="font-medium text-[var(--text-secondary)] lowercase">/{label.text}</span>
-            ))}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-muted)] min-w-0">
+            {labels?.length > 0 && labels.map((label) => {
+              const onLabelClick = (e) => { e.stopPropagation(); toggleLabelStyle() }
+              if (labelStyle === 'dot') {
+                return (
+                  <span
+                    key={`${label.text}-${label.color}`}
+                    onClick={onLabelClick}
+                    title={label.text}
+                    className={`cursor-pointer w-2.5 h-2.5 rounded-full shrink-0 ${COLOR_DOT_CLASSES[label.color] || COLOR_DOT_CLASSES.gray}`}
+                  />
+                )
+              }
+              if (labelStyle === 'alt') {
+                const colorClasses = LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray
+                return (
+                  <span
+                    key={`${label.text}-${label.color}`}
+                    onClick={onLabelClick}
+                    className={`cursor-pointer text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize ${colorClasses}`}
+                  >
+                    {label.text}
+                  </span>
+                )
+              }
+              return (
+                <span
+                  key={`${label.text}-${label.color}`}
+                  onClick={onLabelClick}
+                  className="cursor-pointer font-medium text-[var(--text-secondary)] lowercase"
+                >
+                  /{label.text}
+                </span>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -106,29 +161,32 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {dueDateObj && (
-              <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}>
-                <CalendarDot size={12} weight="bold" />
+              <span
+                className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 ${dueDateOutlineClass(dueDateObj)}`}
+              >
+                <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
                 {formatDueDateLabel(dueDateObj)}
               </span>
             )}
 
-            {hasChecklist && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setChecklistOpen(!checklistOpen)
-                }}
-                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-colors ${
-                  checkedCount === totalCount
-                    ? 'bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]'
-                    : 'bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[var(--border-default)]'
-                }`}
-              >
-                <CheckSquare size={12} weight="bold" />
-                {checkedCount}/{totalCount}
-              </button>
-            )}
+            {hasChecklist && (() => {
+              const colorClasses = checkedCount === totalCount
+                ? 'text-[var(--color-lime-dark)] border-[var(--color-lime-dark)]/30'
+                : 'text-[var(--text-muted)] border-[var(--text-muted)]/30'
+              return (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setChecklistOpen(!checklistOpen)
+                  }}
+                  className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 transition-colors ${colorClasses}`}
+                >
+                  <CheckSquare size={14} weight="regular" className="shrink-0 -mt-px" />
+                  {checkedCount}/{totalCount}
+                </button>
+              )
+            })()}
           </div>
 
           {hasAssignee && (() => {
@@ -164,31 +222,27 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         </div>
       )}
 
-      {/* Expandable checklist */}
+      {/* Expandable checklist — matches CardDetailPanel's CardChecklist style:
+          CheckCircle icon button, no native checkbox. */}
       {hasChecklist && checklistOpen && (
         <div className="pt-2 border-t border-[var(--border-subtle)]" onClick={(e) => e.stopPropagation()}>
-          {/* Progress bar */}
-          <div className="w-full bg-[var(--surface-hover)] rounded-full h-1 mb-2">
-            <div
-              className={`h-1 rounded-full transition-all ${checkedCount === totalCount ? 'bg-[var(--color-lime-dark)]' : 'bg-[var(--color-lime)]'}`}
-              style={{ width: `${(checkedCount / totalCount) * 100}%` }}
-            />
-          </div>
-          <div className="space-y-1">
-            {checklist.map((item, idx) => (
-              <label key={`${item.text}-${idx}`} className="flex items-center gap-2 py-0.5 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={item.done}
-                  onChange={() => toggleCheckItem(idx)}
-                  className="w-3.5 h-3.5 rounded border-[var(--border-default)] text-[var(--color-lime)] focus:ring-1 focus:ring-[var(--color-ink)]"
+          {checklist.map((item, idx) => (
+            <div key={`${item.text}-${idx}`} className="flex items-center gap-2 py-1">
+              <button
+                type="button"
+                onClick={() => toggleCheckItem(idx)}
+                aria-label={item.done ? 'Mark incomplete' : 'Mark complete'}
+                className="shrink-0"
+              >
+                <CheckCircle
+                  className={`w-4 h-4 transition-colors ${item.done ? 'text-[var(--color-lime-dark)]' : 'text-[var(--text-faint)] hover:text-[var(--text-muted)]'}`}
                 />
-                <span className={`text-[12px] leading-snug ${item.done ? 'line-through text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'}`}>
-                  {item.text}
-                </span>
-              </label>
-            ))}
-          </div>
+              </button>
+              <span className={`text-xs ${item.done ? 'line-through text-[var(--text-faint)]' : 'text-[var(--text-secondary)]'}`}>
+                {item.text}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </button>

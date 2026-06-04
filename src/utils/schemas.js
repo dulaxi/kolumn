@@ -20,7 +20,6 @@ export const cardInsertSchema = z.object({
   description: trimmedString(5000).default(''),
   assignee_name: trimmedString(200).default(''),
   assignees: z.array(z.string()).default([]),
-  labels: z.array(z.object({ text: z.string(), color: z.string() })).default([]),
   due_date: z.string().nullable().default(null),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
   icon: z.string().nullable().default(null),
@@ -36,7 +35,6 @@ export const cardUpdateSchema = z.object({
   description: trimmedString(5000).optional(),
   assignee_name: z.string().nullable().optional(),
   assignees: z.array(z.string()).optional(),
-  labels: z.array(z.object({ text: z.string(), color: z.string() })).optional(),
   due_date: z.string().nullable().optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
   icon: z.string().nullable().optional(),
@@ -97,3 +95,22 @@ export const noteUpdateSchema = z.object({
   title: trimmedString(200).optional(),
   content: z.string().optional(),
 }).strict()
+
+// ─────────────────────────────────────────────
+// Label schemas
+// ─────────────────────────────────────────────
+export const labelSchema = z.object({
+  id: z.string(),
+  board_id: z.string(),
+  text: z.string().min(1).max(64),
+  color: z.enum(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']),
+  created_at: z.string(),
+  archived_at: z.string().nullable(),
+})
+
+export const cardLabelSchema = z.object({
+  card_id: z.string(),
+  label_id: z.string(),
+  position: z.number().int().default(0),
+  created_at: z.string(),
+})

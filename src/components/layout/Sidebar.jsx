@@ -43,7 +43,7 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.() }
       }}
-      className="flex items-center justify-between gap-2 px-4 mb-px group/sec cursor-pointer select-none"
+      className="flex items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
       title={collapsed ? `Show ${label}` : `Hide ${label}`}
     >
       <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
@@ -55,10 +55,10 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onPlusClick() }}
-            className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
             title={plusTitle}
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-5 h-5" weight="light" />
           </button>
         )}
       </span>
@@ -137,6 +137,11 @@ export default function Sidebar() {
   // "Boards" section = personal boards only (owned by me, not tied to a workspace).
   // Workspace boards live under the Spaces section below.
   const workspaces = useWorkspacesStore((s) => s.workspaces)
+  // Sidebar-list filter, driven by WorkspaceDropdown:
+  //   null         = All workspaces (default, aggregate — every section renders)
+  //   'personal'   = Personal only (personal boards + shared, no Spaces)
+  //   <uuid>       = that single workspace
+  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId)
   const collapsedSpaces = useSettingsStore((s) => s.collapsedSpaces)
   const toggleSpaceCollapsed = useSettingsStore((s) => s.toggleSpaceCollapsed)
   const boardsCollapsed = useSettingsStore((s) => s.boardsCollapsed)
@@ -146,7 +151,16 @@ export default function Sidebar() {
   const personalBoards = Object.values(allBoards).filter(
     (b) => b.owner_id === user?.id && !b.workspace_id,
   )
-  const workspaceList = Object.values(workspaces)
+  // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
+  const isAll = activeWorkspaceId === null
+  const isPersonal = activeWorkspaceId === 'personal'
+  const workspaceList = isAll
+    ? Object.values(workspaces)
+    : isPersonal
+      ? []
+      : Object.values(workspaces).filter((ws) => ws.id === activeWorkspaceId)
+  const showPersonalBoards = isAll || isPersonal
+  const showSharedBoards = isAll || isPersonal
 
   const isBoardsActive = location.pathname.startsWith('/boards')
 
@@ -210,7 +224,7 @@ export default function Sidebar() {
         }`}
       >
         {/* Logo — clicks to Home */}
-        <div className={`flex items-center ${showCollapsed ? 'justify-center px-1 h-12' : 'gap-2 px-4 h-16'}`}>
+        <div className={`flex items-center ${showCollapsed ? 'justify-center px-1 h-12' : 'gap-2 px-2 h-16'}`}>
           <button
             type="button"
             onClick={() => { closeMobileMenu(); navigate('/dashboard') }}
@@ -239,8 +253,8 @@ export default function Sidebar() {
             invitationCount={invitationCount}
           />
 
-          {/* ── Boards section ── */}
-          {!showCollapsed && (
+          {/* ── Boards section ── (hidden when filtering to a specific workspace) */}
+          {!showCollapsed && showPersonalBoards && (
             <div className="pt-4">
               <SectionHeader
                 label="Boards"
@@ -287,8 +301,8 @@ export default function Sidebar() {
             )
           })}
 
-          {/* ── Shared with me ── */}
-          {!showCollapsed && sharedBoards.length > 0 && (
+          {/* ── Shared with me ── (hidden when filtering to a specific workspace) */}
+          {!showCollapsed && showSharedBoards && sharedBoards.length > 0 && (
             <div className="pt-4">
               <SectionHeader
                 label="Shared with me"
@@ -316,15 +330,15 @@ export default function Sidebar() {
                   `flex items-center justify-center p-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <DynamicIcon
                     name={activeBoard?.icon || 'cards-three'}
-                    weight={isActive ? 'fill' : 'regular'}
-                    className="w-4 h-4 shrink-0"
+                    weight={isActive ? 'fill' : 'light'}
+                    className="w-5 h-5 shrink-0"
                   />
                 )}
               </NavLink>

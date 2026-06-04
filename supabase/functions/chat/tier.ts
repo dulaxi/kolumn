@@ -8,7 +8,13 @@ const PRO_ONLY_TOOLS = [
   "duplicate_card", "toggle_checklist",
   "update_board", "delete_board", "add_column", "delete_column",
   "invite_member", "remove_member",
-  "update_note",
+]
+
+// Tools that are NOT callable from the pill (board-scoped surface).
+// The pill operates on its host board; calling a tool that creates a
+// new top-level board doesn't fit that mental model.
+const PILL_DISALLOWED_TOOLS = [
+  "create_board",
 ]
 
 export interface TierInfo {
@@ -73,7 +79,14 @@ function classifyModel(message: string): string {
   return "claude-haiku-4-5-20251001"
 }
 
-export function filterToolsForTier(tools: readonly any[], tier: "free" | "pro"): any[] {
-  if (tier === "pro") return [...tools]
-  return tools.filter((t: any) => !PRO_ONLY_TOOLS.includes(t.name))
+export function filterToolsForTier(
+  tools: readonly any[],
+  tier: "free" | "pro",
+  opts: { pillMode?: boolean } = {},
+): any[] {
+  let filtered = tier === "pro" ? [...tools] : tools.filter((t: any) => !PRO_ONLY_TOOLS.includes(t.name))
+  if (opts.pillMode) {
+    filtered = filtered.filter((t: any) => !PILL_DISALLOWED_TOOLS.includes(t.name))
+  }
+  return filtered
 }

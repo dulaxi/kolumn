@@ -59,6 +59,8 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const renameRef = useRef(null)
 
   const allCards = useBoardStore((s) => s.cards)
+  const cardLabels = useBoardStore((s) => s.cardLabels)
+  const labels = useBoardStore((s) => s.labels)
   const tempIdMap = useBoardStore((s) => s._tempIdMap)
   const addCard = useBoardStore((s) => s.addCard)
   const renameColumn = useBoardStore((s) => s.renameColumn)
@@ -77,10 +79,15 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   )
 
   // Apply filters then sort (keep columnCards intact for DnD)
-  const filteredCards = useMemo(
-    () => sortCards(filterCards(columnCards, filters), sortBy),
-    [columnCards, filters, sortBy]
-  )
+  const filteredCards = useMemo(() => {
+    const enriched = columnCards.map((c) => ({
+      ...c,
+      _labelTexts: [...(cardLabels[c.id] || new Set())]
+        .map((lid) => labels[lid]?.text)
+        .filter(Boolean),
+    }))
+    return sortCards(filterCards(enriched, filters), sortBy)
+  }, [columnCards, cardLabels, labels, filters, sortBy])
 
   const allCardIds = useMemo(() => columnCards.map((c) => c.id), [columnCards])
   const cardIds = useMemo(() => filteredCards.map((c) => c.id), [filteredCards])

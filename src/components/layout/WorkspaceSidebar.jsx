@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, Plus, Users, X } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Cube, Plus, X } from '@phosphor-icons/react'
+import { resolveWorkspaceColor } from '../../constants/colors'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
@@ -91,8 +92,6 @@ export default function WorkspaceSidebar() {
         {/* Workspace list */}
         {workspaceList.map((ws) => {
           const isActive = activeWorkspaceId === ws.id
-          const iconWeight = isActive ? 'fill' : 'regular'
-          const iconColor = isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
           return (
             <button
               key={ws.id}
@@ -108,11 +107,7 @@ export default function WorkspaceSidebar() {
               }`}
             >
               <span className="flex size-5 items-center justify-center">
-                {ws.icon ? (
-                  <DynamicIcon name={ws.icon} weight={iconWeight} className={`w-4 h-4 ${iconColor}`} />
-                ) : (
-                  <Users weight={iconWeight} className={`w-4 h-4 ${iconColor}`} />
-                )}
+                <Cube weight="fill" className="w-4 h-4" style={{ color: resolveWorkspaceColor(ws) }} />
               </span>
               <span className="truncate text-left flex-1">{ws.name}</span>
             </button>

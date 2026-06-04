@@ -9,6 +9,8 @@ import {
   commentInsertSchema,
   noteInsertSchema,
   noteUpdateSchema,
+  labelSchema,
+  cardLabelSchema,
 } from '../utils/schemas'
 
 // ─────────────────────────────────────────────
@@ -29,7 +31,6 @@ describe('cardInsertSchema', () => {
     expect(result.data.title).toBe('My task')
     expect(result.data.priority).toBe('medium') // default
     expect(result.data.completed).toBe(false) // default
-    expect(result.data.labels).toEqual([]) // default
   })
 
   test('validates a full card with all optional fields', () => {
@@ -42,7 +43,6 @@ describe('cardInsertSchema', () => {
       title: 'Full task',
       description: 'A description',
       assignee_name: 'Alice',
-      labels: [{ text: 'bug', color: '#CF222E' }, { text: 'urgent', color: '#9A6700' }],
       due_date: '2026-04-10',
       priority: 'high',
       icon: 'AlertCircle',
@@ -53,27 +53,6 @@ describe('cardInsertSchema', () => {
     expect(result.success).toBe(true)
     expect(result.data.priority).toBe('high')
     expect(result.data.checklist).toHaveLength(1)
-  })
-
-  test('accepts object labels with text and color (C1 bug)', () => {
-    const input = {
-      board_id: 'abc-123',
-      column_id: 'col-456',
-      position: 0,
-      task_number: 1,
-      global_task_number: 1,
-      title: 'Labeled task',
-      labels: [
-        { text: 'bug', color: '#CF222E' },
-        { text: 'feature', color: '#3094FF' },
-      ],
-    }
-    const result = cardInsertSchema.safeParse(input)
-    expect(result.success).toBe(true)
-    expect(result.data.labels).toEqual([
-      { text: 'bug', color: '#CF222E' },
-      { text: 'feature', color: '#3094FF' },
-    ])
   })
 
   test('rejects missing required fields', () => {
@@ -162,14 +141,6 @@ describe('cardUpdateSchema', () => {
   test('validates empty update (no fields)', () => {
     const result = cardUpdateSchema.safeParse({})
     expect(result.success).toBe(true)
-  })
-
-  test('accepts object labels in update (C1 bug)', () => {
-    const result = cardUpdateSchema.safeParse({
-      labels: [{ text: 'urgent', color: '#CF222E' }],
-    })
-    expect(result.success).toBe(true)
-    expect(result.data.labels[0]).toEqual({ text: 'urgent', color: '#CF222E' })
   })
 
   test('rejects invalid priority in update', () => {
@@ -331,5 +302,59 @@ describe('noteUpdateSchema', () => {
   test('validates content-only update', () => {
     const result = noteUpdateSchema.safeParse({ content: '# Hello' })
     expect(result.success).toBe(true)
+  })
+})
+
+// ─────────────────────────────────────────────
+// Label Schema
+// ─────────────────────────────────────────────
+describe('labelSchema', () => {
+  test('accepts a valid label', () => {
+    expect(() => labelSchema.parse({
+      id: 'L1', board_id: 'B1', text: 'Bug', color: 'red',
+      created_at: '2026-05-20', archived_at: null,
+    })).not.toThrow()
+  })
+
+  test('rejects an invalid color', () => {
+    expect(() => labelSchema.parse({
+      id: 'L1', board_id: 'B1', text: 'Bug', color: 'neutral',
+      created_at: '2026-05-20', archived_at: null,
+    })).toThrow()
+  })
+
+  test('rejects empty text', () => {
+    expect(() => labelSchema.parse({
+      id: 'L1', board_id: 'B1', text: '', color: 'red',
+      created_at: '2026-05-20', archived_at: null,
+    })).toThrow()
+  })
+
+  test('accepts all 8 valid colors', () => {
+    const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
+    for (const color of colors) {
+      expect(() => labelSchema.parse({
+        id: 'L1', board_id: 'B1', text: 'Tag', color,
+        created_at: '2026-05-20', archived_at: null,
+      })).not.toThrow()
+    }
+  })
+})
+
+// ─────────────────────────────────────────────
+// Card Label Schema
+// ─────────────────────────────────────────────
+describe('cardLabelSchema', () => {
+  test('accepts a valid card-label join', () => {
+    expect(() => cardLabelSchema.parse({
+      card_id: 'C1', label_id: 'L1', position: 0, created_at: '2026-05-20',
+    })).not.toThrow()
+  })
+
+  test('defaults position to 0', () => {
+    const result = cardLabelSchema.parse({
+      card_id: 'C1', label_id: 'L1', created_at: '2026-05-20',
+    })
+    expect(result.position).toBe(0)
   })
 })

@@ -69,10 +69,10 @@ function IconGrid({ icons: iconList, value, onPick }) {
           className={`aspect-square flex items-center justify-center rounded-xl transition-all duration-75 cursor-pointer active:scale-90 ${
             value === name
               ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]'
-              : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
           }`}
         >
-          <DynamicIcon name={name} className="w-6 h-6" />
+          <DynamicIcon name={name} className="w-5 h-5" />
         </button>
       ))}
     </div>
@@ -142,7 +142,7 @@ export default function IconPicker({ value, onChange, onClose }) {
 
         {/* Pill search bar — iOS UISearchBar shape */}
         <div className="px-3 pt-3 pb-2">
-          <div className="flex items-center gap-2 h-9 px-3 rounded-xl bg-[var(--surface-hover)]">
+          <div className="flex items-center gap-2 h-9 px-3 rounded-xl bg-[var(--surface-raised)]">
             <MagnifyingGlass className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
             <input
               ref={inputRef}
@@ -204,7 +204,7 @@ export default function IconPicker({ value, onChange, onClose }) {
                     aria-label={tab.label}
                     className={`shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
                       activeCategory === tab.key
-                        ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                        ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]'
                         : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                     }`}
                   >

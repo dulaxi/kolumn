@@ -1,18 +1,72 @@
 // Centralized color constants — single source of truth for the design system.
 // All components should import from here instead of defining local copies.
 
-// Label color names used for card labels
-export const LABEL_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'gray']
+// Label color names used for card labels.
+// Ordered along the color wheel (red → pink) with gray at the end.
+// Must match the DB check constraint on the labels.color column.
+export const LABEL_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
 
 // Tailwind background classes for each label color (used in pickers/dots)
+// Solid color swatches for dots and color pickers. These use the saturated
+// `-text` token (the label's identity color, e.g. #B53333), NOT the pale `-bg`
+// wash that sits behind text in the filled-pill style — so a dot actually
+// reads as the label's color.
 export const COLOR_DOT_CLASSES = {
-  red: 'bg-[var(--label-red-bg)]',
-  blue: 'bg-[var(--label-blue-bg)]',
-  green: 'bg-[var(--label-green-bg)]',
-  yellow: 'bg-[var(--label-yellow-bg)]',
-  purple: 'bg-[var(--label-purple-bg)]',
-  pink: 'bg-[var(--color-bark-wash)]',
-  gray: 'bg-[var(--label-gray-bg)]',
+  red: 'bg-[var(--label-red-text)]',
+  orange: 'bg-[var(--label-orange-text)]',
+  yellow: 'bg-[var(--label-yellow-text)]',
+  green: 'bg-[var(--label-green-text)]',
+  blue: 'bg-[var(--label-blue-text)]',
+  purple: 'bg-[var(--label-purple-text)]',
+  pink: 'bg-[var(--label-pink-text)]',
+  gray: 'bg-[var(--label-gray-text)]',
+}
+
+// Workspace identity colors — Phosphor system palette.
+// Top row = saturated tones; bottom row = lighter "wash" variants for
+// quieter workspace identities. Picker is laid out as 7 cols × 2 rows,
+// so list order MUST be: 7 saturated first, then 7 washes (left→right).
+// All workspaces render with the same Cube glyph; color comes from
+// `workspaces.icon` via resolveWorkspaceColor (overloaded field —
+// existing rows with Phosphor icon names hash to a stable color).
+export const WORKSPACE_COLORS = [
+  // Saturated row
+  { name: 'copper',         hex: '#C27A4A' },
+  { name: 'honey',          hex: '#D4A843' },
+  { name: 'lime',           hex: '#C2D64A' },
+  { name: 'mauve',          hex: '#A8969E' },
+  { name: 'walnut',         hex: '#8B7355' },
+  { name: 'bark',           hex: '#7A5C44' },
+  { name: 'bark-dark',      hex: '#6B4D38' },
+  // Wash row — lighter variants of each saturated tone, darkened by
+  // ~10% from the standard Phosphor --color-*-wash tokens so they
+  // carry a touch more visual weight in the picker (otherwise they
+  // read too pastel against the modal background).
+  { name: 'copper-wash',    hex: '#DAC3B3' },
+  { name: 'honey-wash',     hex: '#DCD5BA' },
+  { name: 'lime-wash',      hex: '#D6DAC1' },
+  { name: 'mauve-wash',     hex: '#D1C7CB' },
+  { name: 'walnut-wash',    hex: '#D1C7BB' },
+  { name: 'bark-wash',      hex: '#D8CABD' },
+  { name: 'bark-dark-wash', hex: '#CEBDAD' },
+]
+
+const WORKSPACE_COLOR_MAP = Object.fromEntries(
+  WORKSPACE_COLORS.map((c) => [c.name, c.hex])
+)
+
+// Resolves a workspace to its display hex color. Reads the `icon` field
+// — if it matches a known color name, returns that hex. Otherwise falls
+// back to a deterministic hash of the workspace id (so legacy workspaces
+// with Phosphor icon names still get a stable, identifying color).
+export function resolveWorkspaceColor(workspace) {
+  const stored = workspace?.icon
+  if (stored && WORKSPACE_COLOR_MAP[stored]) return WORKSPACE_COLOR_MAP[stored]
+  const id = workspace?.id || ''
+  if (!id) return WORKSPACE_COLORS[0].hex
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return WORKSPACE_COLORS[h % WORKSPACE_COLORS.length].hex
 }
 
 // Priority options for card detail fields and inline editor

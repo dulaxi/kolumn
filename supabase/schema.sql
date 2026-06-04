@@ -130,6 +130,120 @@ as $$
   and status = 'pending'
 $$;
 
+-- Label management functions
+create or replace function public.upsert_label(
+  p_board_id uuid,
+  p_text     text,
+  p_color    text default null
+) returns uuid
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_text  text := trim(p_text);
+  v_color text := p_color;
+  v_id    uuid;
+begin
+  if v_text = '' or v_text is null then
+    raise exception 'label text required';
+  end if;
+
+  select id into v_id
+  from public.labels
+  where board_id = p_board_id
+    and lower(text) = lower(v_text)
+    and archived_at is null
+  limit 1;
+
+  if v_id is not null then
+    return v_id;
+  end if;
+
+  if v_color is null then
+    v_color := (array['red','orange','yellow','green','blue','purple','pink','gray'])
+               [(abs(hashtext(lower(v_text))) % 8) + 1];
+  end if;
+
+  if v_color not in ('red','orange','yellow','green','blue','purple','pink','gray') then
+    v_color := 'gray';
+  end if;
+
+  insert into public.labels (board_id, text, color)
+  values (p_board_id, v_text, v_color)
+  returning id into v_id;
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.upsert_label(uuid, text, text) to authenticated;
+
+create or replace function public.attach_label_by_text(
+  p_card_id  uuid,
+  p_text     text,
+  p_color    text default null
+) returns uuid
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_board_id uuid;
+  v_label_id uuid;
+begin
+  select board_id into v_board_id from public.cards where id = p_card_id;
+  if v_board_id is null then
+    raise exception 'card not found';
+  end if;
+
+  v_label_id := public.upsert_label(v_board_id, p_text, p_color);
+
+  insert into public.card_labels (card_id, label_id)
+  values (p_card_id, v_label_id)
+  on conflict (card_id, label_id) do nothing;
+
+  return v_label_id;
+end;
+$$;
+
+grant execute on function public.attach_label_by_text(uuid, text, text) to authenticated;
+
+create or replace function public.merge_labels(
+  p_from_id uuid,
+  p_into_id uuid
+) returns void
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_from_board uuid;
+  v_into_board uuid;
+begin
+  if p_from_id = p_into_id then
+    raise exception 'cannot merge label into itself';
+  end if;
+  select board_id into v_from_board from public.labels where id = p_from_id;
+  select board_id into v_into_board from public.labels where id = p_into_id;
+  if v_from_board is null or v_into_board is null then
+    raise exception 'label not found';
+  end if;
+  if v_from_board <> v_into_board then
+    raise exception 'cannot merge labels across boards';
+  end if;
+
+  insert into public.card_labels (card_id, label_id)
+  select card_id, p_into_id from public.card_labels where label_id = p_from_id
+  on conflict (card_id, label_id) do nothing;
+
+  delete from public.card_labels where label_id = p_from_id;
+  delete from public.labels       where id       = p_from_id;
+end;
+$$;
+
+grant execute on function public.merge_labels(uuid, uuid) to authenticated;
+
 -- Board members RLS (uses helper function to avoid self-referential recursion)
 create policy "Members can view board_members"
   on public.board_members for select
@@ -222,7 +336,6 @@ create table public.cards (
   due_date timestamptz,
   icon text,
   completed boolean default false,
-  labels jsonb default '[]'::jsonb,
   checklist jsonb default '[]'::jsonb,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -257,6 +370,63 @@ create policy "Members can delete cards"
   using (
     board_id in (select board_id from public.board_members where user_id = auth.uid())
   );
+
+-- ============================================================
+-- 5.1 LABELS (per-board label registry)
+-- ============================================================
+create table public.labels (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  text text not null check (length(trim(text)) > 0 and length(text) <= 64),
+  color text not null check (color in ('red','orange','yellow','green','blue','purple','pink','gray')),
+  created_at timestamptz not null default now(),
+  archived_at timestamptz
+);
+
+create unique index labels_board_text_lower_uq
+  on public.labels (board_id, lower(text))
+  where archived_at is null;
+
+create index labels_board_id_idx on public.labels (board_id);
+
+alter table public.labels enable row level security;
+
+create policy labels_select on public.labels for select
+  using (board_id in (select get_my_board_ids()));
+create policy labels_insert on public.labels for insert
+  with check (board_id in (select get_my_board_ids()));
+create policy labels_update on public.labels for update
+  using (board_id in (select get_my_board_ids()));
+create policy labels_delete on public.labels for delete
+  using (board_id in (select get_my_board_ids()));
+
+-- ============================================================
+-- 5.2 CARD_LABELS (card ↔ label join)
+-- ============================================================
+create table public.card_labels (
+  card_id uuid not null references public.cards(id) on delete cascade,
+  label_id uuid not null references public.labels(id) on delete cascade,
+  position smallint not null default 0,
+  created_at timestamptz not null default now(),
+  primary key (card_id, label_id)
+);
+
+create index card_labels_label_id_idx on public.card_labels (label_id);
+
+alter table public.card_labels enable row level security;
+
+create policy card_labels_select on public.card_labels for select
+  using (card_id in (
+    select c.id from public.cards c where c.board_id in (select get_my_board_ids())
+  ));
+create policy card_labels_insert on public.card_labels for insert
+  with check (card_id in (
+    select c.id from public.cards c where c.board_id in (select get_my_board_ids())
+  ));
+create policy card_labels_delete on public.card_labels for delete
+  using (card_id in (
+    select c.id from public.cards c where c.board_id in (select get_my_board_ids())
+  ));
 
 -- ============================================================
 -- 6. NOTES (private per user)

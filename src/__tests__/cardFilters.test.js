@@ -11,7 +11,7 @@ function makeCard(overrides = {}) {
     id: 'c1',
     priority: 'medium',
     assignee_name: '',
-    labels: [],
+    _labelTexts: [],
     due_date: null,
     ...overrides,
   }
@@ -77,9 +77,9 @@ describe('filterCards', () => {
 
   test('filters cards that have any matching label', () => {
     const cards = [
-      makeCard({ id: '1', labels: [{ text: 'bug', color: 'red' }] }),
-      makeCard({ id: '2', labels: [{ text: 'feature', color: 'blue' }] }),
-      makeCard({ id: '3', labels: [{ text: 'bug', color: 'red' }, { text: 'urgent', color: 'yellow' }] }),
+      makeCard({ id: '1', _labelTexts: ['bug'] }),
+      makeCard({ id: '2', _labelTexts: ['feature'] }),
+      makeCard({ id: '3', _labelTexts: ['bug', 'urgent'] }),
     ]
     const result = filterCards(cards, { label: ['bug'] })
     expect(result.map((c) => c.id)).toEqual(['1', '3'])
@@ -87,15 +87,15 @@ describe('filterCards', () => {
 
   test('cards with no labels are excluded when label filter active', () => {
     const cards = [
-      makeCard({ id: '1', labels: [] }),
-      makeCard({ id: '2', labels: [{ text: 'bug', color: 'red' }] }),
+      makeCard({ id: '1', _labelTexts: [] }),
+      makeCard({ id: '2', _labelTexts: ['bug'] }),
     ]
     const result = filterCards(cards, { label: ['bug'] })
     expect(result.map((c) => c.id)).toEqual(['2'])
   })
 
   test('empty label array does not filter', () => {
-    const cards = [makeCard({ id: '1', labels: [] })]
+    const cards = [makeCard({ id: '1', _labelTexts: [] })]
     expect(filterCards(cards, { label: [] })).toHaveLength(1)
   })
 

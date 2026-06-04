@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, Funnel, Users, X } from '@phosphor-icons/react'
+import { Archive, Funnel, Tag, Users, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -11,7 +11,7 @@ import ArchivedCardsPanel from './ArchivedCardsPanel'
 
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
-export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }) {
+export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, onManageLabels }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
@@ -102,6 +102,17 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy }
             >
               <Users className="w-4 h-4 -ml-0.5" />
               {isOwner ? 'Share' : 'Members'}
+            </button>
+          )}
+
+          {isRealBoard && onManageLabels && (
+            <button
+              type="button"
+              onClick={onManageLabels}
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
+            >
+              <Tag className="w-4 h-4 -ml-0.5" />
+              Labels
             </button>
           )}
 

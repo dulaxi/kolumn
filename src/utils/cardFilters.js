@@ -1,4 +1,5 @@
-import { isToday, isPast, isThisWeek, parseISO } from 'date-fns'
+import { isToday, isPast, isThisWeek } from 'date-fns'
+import { parseDueDate } from './dateUtils'
 
 export function filterCards(cards, filters) {
   if (!filters) return cards
@@ -13,9 +14,12 @@ export function filterCards(cards, filters) {
         : (card.assignee_name ? [card.assignee_name] : [])
       if (!names.some((n) => n === filters.assignee)) return false
     }
-    if (filters.label?.length && !(card.labels || []).some((l) => filters.label.includes(l.text))) return false
+    if (filters.label?.length) {
+      const cardLabelTexts = card._labelTexts || []
+      if (!cardLabelTexts.some((t) => filters.label.includes(t))) return false
+    }
     if (filters.due) {
-      const d = card.due_date ? parseISO(card.due_date) : null
+      const d = card.due_date ? parseDueDate(card.due_date) : null
       if (filters.due === 'overdue' && !(d && isPast(d) && !isToday(d))) return false
       if (filters.due === 'today' && !(d && isToday(d))) return false
       if (filters.due === 'this_week' && !(d && isThisWeek(d))) return false
