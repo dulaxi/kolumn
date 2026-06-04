@@ -12,7 +12,7 @@ export const ONBOARDING_BOARD_LABELS = {
 }
 
 export const ONBOARDING_BOARD = {
-  name: 'Welcome to Kolumn',
+  name: 'Welcome',
   icon: 'hand-waving',
   description:
     'A working board you can poke at. Drag, click, edit — every card here ' +
