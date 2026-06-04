@@ -137,7 +137,7 @@ create or replace function public.upsert_label(
   p_color    text default null
 ) returns uuid
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -185,7 +185,7 @@ create or replace function public.attach_label_by_text(
   p_color    text default null
 ) returns uuid
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -214,7 +214,7 @@ create or replace function public.merge_labels(
   p_into_id uuid
 ) returns void
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
