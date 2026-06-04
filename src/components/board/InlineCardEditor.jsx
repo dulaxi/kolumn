@@ -54,7 +54,14 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
 
   const [showDescription, setShowDescription] = useState(() => !!card?.description)
   const boardMemberNames = useBoardMemberNames(card)
-  const [openMenu, setOpenMenu] = useMenuState()
+  // useMenuState fires onClose synchronously before unmount, so we can
+  // hand control to LabelAutocomplete here to flush its typed text
+  // before its DOM node disappears (the input's onBlur is too late —
+  // by then the input is already unmounted).
+  const labelAutocompleteRef = useRef(null)
+  const [openMenu, setOpenMenu] = useMenuState((closingMenu) => {
+    if (closingMenu === 'label') labelAutocompleteRef.current?.commit()
+  })
 
   const titleRef = useRef(null)
   const rootRef = useRef(null)
@@ -220,6 +227,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
             ))}
             {openMenu === 'label' ? (
               <LabelAutocomplete
+                ref={labelAutocompleteRef}
                 boardId={boardIdForLabels}
                 excludeIds={isExistingCard ? persistedLabels.map((l) => l.id) : []}
                 onPick={(l) => {
@@ -236,6 +244,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                   setOpenMenu(null)
                   window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
                 }}
+                onClose={() => setOpenMenu(null)}
               />
             ) : (
               <button

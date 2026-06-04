@@ -51,4 +51,36 @@ describe('LabelAutocomplete', () => {
     fireEvent.click(screen.getByText(/Manage labels/i))
     expect(onManage).toHaveBeenCalled()
   })
+
+  it('blurring with typed text creates the label (click-away commit)', () => {
+    const onCreate = vi.fn()
+    render(<LabelAutocomplete boardId="B1" excludeIds={[]} onPick={() => {}} onCreate={onCreate} onManage={() => {}} />)
+    const input = screen.getByPlaceholderText('/label')
+    fireEvent.change(input, { target: { value: 'Shipped' } })
+    fireEvent.blur(input)
+    expect(onCreate).toHaveBeenCalledWith('Shipped', expect.any(String))
+  })
+
+  it('blurring with a query that matches an existing label picks it (click-away commit)', () => {
+    const onPick = vi.fn()
+    render(<LabelAutocomplete boardId="B1" excludeIds={[]} onPick={onPick} onCreate={() => {}} onManage={() => {}} />)
+    const input = screen.getByPlaceholderText('/label')
+    fireEvent.change(input, { target: { value: 'fr' } })
+    fireEvent.blur(input)
+    expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'L1' }))
+  })
+
+  it('blurring with no input calls onClose', () => {
+    const onClose = vi.fn()
+    render(<LabelAutocomplete boardId="B1" excludeIds={[]} onPick={() => {}} onCreate={() => {}} onManage={() => {}} onClose={onClose} />)
+    fireEvent.blur(screen.getByPlaceholderText('/label'))
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('Escape closes via onClose', () => {
+    const onClose = vi.fn()
+    render(<LabelAutocomplete boardId="B1" excludeIds={[]} onPick={() => {}} onCreate={() => {}} onManage={() => {}} onClose={onClose} />)
+    fireEvent.keyDown(screen.getByPlaceholderText('/label'), { key: 'Escape' })
+    expect(onClose).toHaveBeenCalled()
+  })
 })
