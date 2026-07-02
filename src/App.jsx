@@ -1,7 +1,7 @@
 import { useEffect, useCallback, lazy, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import toast, { Toaster, useToasterStore } from 'react-hot-toast'
+import { Toaster } from 'react-hot-toast'
 import AppLayout from './components/layout/AppLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -26,8 +26,6 @@ const LandingBoardSandbox = lazy(() => import('./pages/LandingBoardSandbox'))
 const OnboardingBoardSandbox = lazy(() => import('./pages/OnboardingBoardSandbox'))
 
 function UndoListener() {
-  const { toasts } = useToasterStore()
-
   const handleClick = useCallback((e) => {
     const undoBtn = e.target.closest('[data-undo-id]')
     if (undoBtn) {
@@ -65,19 +63,19 @@ export default function App() {
       <UndoListener />
       <Suspense fallback={<div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center"><div className="text-sm text-[var(--text-muted)]">Loading...</div></div>}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/sandbox/landing-board" element={<LandingBoardSandbox />} />
-          <Route path="/sandbox/onboarding-board" element={<OnboardingBoardSandbox />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/update-password" element={<UpdatePasswordPage />} />
+          <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
+          <Route path="/sandbox/landing-board" element={<ErrorBoundary><LandingBoardSandbox /></ErrorBoundary>} />
+          <Route path="/sandbox/onboarding-board" element={<ErrorBoundary><OnboardingBoardSandbox /></ErrorBoundary>} />
+          <Route path="/onboarding" element={<ErrorBoundary><OnboardingPage /></ErrorBoundary>} />
+          <Route path="/forgot-password" element={<ErrorBoundary><ForgotPasswordPage /></ErrorBoundary>} />
+          <Route path="/update-password" element={<ErrorBoundary><UpdatePasswordPage /></ErrorBoundary>} />
           {/* Auth-protected but renders OUTSIDE AppLayout — checkout-style
               focused view, no sidebar. */}
           <Route
             path="/upgrade/pro"
             element={
               <ProtectedRoute>
-                <UpgradeProPage />
+                <ErrorBoundary><UpgradeProPage /></ErrorBoundary>
               </ProtectedRoute>
             }
           />

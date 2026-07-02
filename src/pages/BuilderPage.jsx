@@ -28,6 +28,7 @@ export default function BuilderPage() {
         <input
           type="text"
           placeholder="Search builds..."
+          aria-label="Search builds"
           disabled
           className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border-[0.5px] border-[var(--border-default)] bg-[var(--surface-page)] focus:outline-none focus:border-[var(--text-primary)] placeholder:text-[var(--text-faint)] transition-colors disabled:cursor-default"
         />

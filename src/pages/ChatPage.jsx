@@ -30,8 +30,6 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length, streamingId])
 
-  console.log('[ChatPage] id:', id, 'conversation:', !!conversation, 'messages:', messages.length, messages.map(m => m.role + ':' + m.text?.slice(0,20)))
-
   if (!conversation) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-[var(--text-muted)]">

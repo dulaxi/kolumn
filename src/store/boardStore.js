@@ -9,7 +9,7 @@ import { useNotificationStore } from './notificationStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
 import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
 import { logError } from '../utils/logger'
-import { cardInsertSchema, cardUpdateSchema, boardInsertSchema, columnInsertSchema, commentInsertSchema } from '../utils/schemas'
+import { cardInsertSchema, boardInsertSchema, columnInsertSchema, commentInsertSchema } from '../utils/schemas'
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
@@ -136,6 +136,7 @@ export const useBoardStore = create((set, get) => ({
 
       // Surface first error to UI but continue with whatever data we got
       const fetchError = boardsRes.error || columnsRes.error || cardsRes.error
+      if (fetchError) showToast.error('Some boards failed to load — try refreshing')
 
       const boardMap = {}
       ;(boardsRes.data || []).forEach((b) => { boardMap[b.id] = b })

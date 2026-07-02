@@ -365,7 +365,7 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 `src/components/ui/` is the design-system layer. **Always reach for these
 primitives before hand-rolling — they encode the coherency rules.** Tests live
 in `src/__tests__/{Button,Input,Menu,Popover,Tooltip}.test.jsx`; design-decision
-mockups live in `public/{button,input,menu,ghost-buttons}-decisions.html`.
+mockups live in `docs/design-mockups/{button,input,menu,ghost-buttons}-decisions.html`.
 
 | Primitive  | API surface                                                       |
 |------------|-------------------------------------------------------------------|

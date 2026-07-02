@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { env } from './env'
+import { logError } from '../utils/logger'
 
 export async function streamChat({ message, history = [], boardId, today }, { onText, onToolCall, onDone, onError, onTier }) {
   const { data: { session } } = await supabase.auth.getSession()
@@ -27,11 +28,9 @@ export async function streamChat({ message, history = [], boardId, today }, { on
     body: JSON.stringify(body),
   })
 
-  console.log('[aiClient] response status:', response.status, 'content-type:', response.headers.get('content-type'))
-
   if (!response.ok) {
     const text = await response.text()
-    console.error('[aiClient] error response:', text)
+    logError('[aiClient] error response', { status: response.status, text })
     try {
       const err = JSON.parse(text)
       if (err.error === 'rate_limit') {
@@ -58,7 +57,6 @@ export async function streamChat({ message, history = [], boardId, today }, { on
       if (done) break
 
       const chunk = decoder.decode(value, { stream: true })
-      console.log('[aiClient] chunk:', chunk.slice(0, 200))
       buffer += chunk
       const lines = buffer.split('\n')
       buffer = lines.pop() || ''
@@ -75,8 +73,6 @@ export async function streamChat({ message, history = [], boardId, today }, { on
           continue
         }
 
-        console.log('[aiClient] event:', event.type, event.content?.slice?.(0, 50) || event.action || '')
-
         try {
           if (event.type === 'text') {
             onText(event.content)
@@ -92,7 +88,7 @@ export async function streamChat({ message, history = [], boardId, today }, { on
             return
           }
         } catch (callbackErr) {
-          console.error('[aiClient] callback error:', callbackErr)
+          logError('[aiClient] callback error', callbackErr)
         }
       }
     }

@@ -2,6 +2,7 @@ import { useBoardStore } from '../store/boardStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { LEGACY_ICON_REMAP } from '../components/board/DynamicIcon'
 import { supabase } from './supabase'
+import { logWarn } from '../utils/logger'
 
 // Resolves an array of label text strings into label IDs (via the upsert_label
 // RPC) and syncs the card_labels join table for a given card.
@@ -109,7 +110,6 @@ export function isDestructive(action) {
 }
 
 export async function executeTool(action, params) {
-  console.log('[toolExecutor]', action, params)
   const store = useBoardStore.getState()
 
   if (action === 'create_card') {
@@ -214,7 +214,7 @@ export async function executeTool(action, params) {
       try {
         await resolveAndSyncLabels(cardId, board.id, params.labels)
       } catch (err) {
-        console.warn('[toolExecutor] create_card label sync failed:', err)
+        logWarn('[toolExecutor] create_card label sync failed:', err)
       }
     }
 
@@ -541,7 +541,7 @@ export async function executeTool(action, params) {
       try {
         await resolveAndSyncLabels(card.id, sourceBoard.id, updates.labels)
       } catch (err) {
-        console.warn('[toolExecutor] update_card label sync failed:', err)
+        logWarn('[toolExecutor] update_card label sync failed:', err)
       }
     }
 
@@ -779,7 +779,7 @@ export async function executeTool(action, params) {
         try {
           await resolveAndSyncLabels(card.id, board.id, updates.labels)
         } catch (err) {
-          console.warn('[toolExecutor] update_cards label sync failed for card', card.id, err)
+          logWarn('[toolExecutor] update_cards label sync failed for card', card.id, err)
         }
       }
     }
@@ -943,7 +943,7 @@ export async function executeTool(action, params) {
             .insert(sourceLabelIds.map((label_id) => ({ card_id: newId, label_id })))
         }
       } catch (err) {
-        console.warn('[toolExecutor] duplicate_card label sync failed:', err)
+        logWarn('[toolExecutor] duplicate_card label sync failed:', err)
       }
     }
 

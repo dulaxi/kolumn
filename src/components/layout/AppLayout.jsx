@@ -19,8 +19,6 @@ const pageTitles = {
   '/dashboard': 'Home',
   '/boards': 'Boards',
   '/build': 'Builder',
-  '/calendar': 'Calendar',
-  '/notes': 'Notes',
   '/workspace': 'Workspace',
   '/settings': 'Settings',
 }
@@ -129,7 +127,7 @@ export default function AppLayout() {
         {/* Page heading — OUTSIDE the scroll container so it stays pinned.
             /boards owns its own heading row (inline with Share/Sort/Filter). */}
         {isDesktop && !['/dashboard', '/workspace', '/boards', '/build', '/chat'].includes(basePath) && (
-          <div className={`shrink-0 px-4 sm:px-8 w-full ${['/calendar', '/notes'].includes(basePath) ? '' : 'max-w-4xl mx-auto'}`}>
+          <div className="shrink-0 px-4 sm:px-8 w-full max-w-4xl mx-auto">
             <header className="flex items-end h-8 md:h-8 shrink-0 mb-[26px]">
               <h1 className="font-heading text-2xl text-[var(--text-primary)] flex items-center gap-2 min-w-0">
                 <span className="truncate">{title}</span>
@@ -137,7 +135,7 @@ export default function AppLayout() {
             </header>
           </div>
         )}
-        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : ['/calendar', '/notes'].includes(basePath) ? 'px-4 sm:px-8 pb-12' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${!isDesktop ? 'pb-20' : ''}`}>
+        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
             <div className="mb-4 bg-[var(--accent-lime-wash)] border border-[var(--color-lime)] rounded-xl p-4 flex items-center justify-between">

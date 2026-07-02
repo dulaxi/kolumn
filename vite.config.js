@@ -31,6 +31,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
+    // 'hidden' emits .map files for Sentry symbolication without adding
+    // sourceMappingURL comments to the served bundles.
+    sourcemap: 'hidden',
     rollupOptions: {
       output: {
         manualChunks(id) {
