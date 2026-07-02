@@ -17,6 +17,7 @@ export default function ChatMessage({ message }) {
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const approveToolCall = useChatStore((s) => s.approveToolCall)
   const rejectToolCall = useChatStore((s) => s.rejectToolCall)
+  const tempIdMap = useBoardStore((s) => s._tempIdMap)
 
   const openCard = (card) => {
     setActiveBoard(card.board_id)
@@ -38,7 +39,6 @@ export default function ChatMessage({ message }) {
     )
   }
 
-  const tempIdMap = useBoardStore((s) => s._tempIdMap)
   const resolvedIds = (message.cardIds || []).map((id) => tempIdMap[id] || id)
   const embeddedCards = resolvedIds.map((id) => cards[id]).filter(Boolean)
   const pending = message.pendingToolCall
