@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { Kanban, MagnifyingGlass, Notepad, X } from '@phosphor-icons/react'
+import { Kanban, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../store/boardStore'
 import { useNavigate } from 'react-router-dom'
 import Modal from './ui/Modal'

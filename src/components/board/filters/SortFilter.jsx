@@ -1,7 +1,7 @@
 import Menu from '../../ui/Menu'
 import FilterPill from './FilterPill'
 
-export const SORT_OPTIONS = [
+const SORT_OPTIONS = [
   { value: 'manual', label: 'Manual' },
   { value: 'due_date', label: 'Due date' },
   { value: 'priority', label: 'Priority' },

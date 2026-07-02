@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Check, Envelope, Plus, Users, X } from '@phosphor-icons/react'
-import { useSettingsStore } from '../store/settingsStore'
+import { Check, Plus, Users, X } from '@phosphor-icons/react'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import WorkspaceCreateModal from '../components/workspace/WorkspaceCreateModal'
 import WorkspaceDetailView from '../components/workspace/WorkspaceDetailView'

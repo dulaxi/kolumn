@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect } from 'vitest'
 import { filterCards } from '../utils/cardFilters'
 import { computeTaskStats, computeBoardSummaries } from '../utils/cardStats'
 import { buildColumnMap } from '../utils/columnGrouping'

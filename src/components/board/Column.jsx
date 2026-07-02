@@ -1,15 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { Bookmark, CaretDown, DotsSixVertical, DotsThree, Gauge, Pencil, Plus, Trash, X } from '@phosphor-icons/react'
+import { DotsSixVertical, DotsThree, Gauge, Pencil, Plus, Trash } from '@phosphor-icons/react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
-import { useAuthStore } from '../../store/authStore'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import { filterCards } from '../../utils/cardFilters'
 import { showToast } from '../../utils/toast'
 import ConfirmModal from './ConfirmModal'
-import { useTemplateStore } from '../../store/templateStore'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -47,15 +45,12 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const [renameValue, setRenameValue] = useState(column.title)
   const [editingWip, setEditingWip] = useState(false)
   const [wipValue, setWipValue] = useState(column.wip_limit || '')
-  const [showTemplates, setShowTemplates] = useState(false)
   const [visibleCount, setVisibleCount] = useState(20)
 
   useEffect(() => {
     setVisibleCount(20)
   }, [filters, sortBy])
 
-  const templates = useTemplateStore((s) => s.templates)
-  const deleteTemplate = useTemplateStore((s) => s.deleteTemplate)
   const renameRef = useRef(null)
 
   const allCards = useBoardStore((s) => s.cards)
@@ -66,7 +61,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const renameColumn = useBoardStore((s) => s.renameColumn)
   const deleteColumn = useBoardStore((s) => s.deleteColumn)
   const updateColumnWipLimit = useBoardStore((s) => s.updateColumnWipLimit)
-  const profile = useAuthStore((s) => s.profile)
 
   const { setNodeRef: setDroppableRef } = useDroppable({ id: column.id })
 
@@ -90,7 +84,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   }, [columnCards, cardLabels, labels, filters, sortBy])
 
   const allCardIds = useMemo(() => columnCards.map((c) => c.id), [columnCards])
-  const cardIds = useMemo(() => filteredCards.map((c) => c.id), [filteredCards])
   const wipLimit = column.wip_limit
   const overWip = wipLimit && columnCards.length > wipLimit
 
@@ -125,7 +118,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       if (onCreateCard && cardId) onCreateCard(cardId)
     } finally {
       setCreating(false)
-      setShowTemplates(false)
     }
   }
 

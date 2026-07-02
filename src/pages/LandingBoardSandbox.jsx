@@ -93,8 +93,6 @@ const CAPTIONS = {
 
 const OUTRO_TEXT = 'A kanban that’s still actually a kanban.'
 
-function noop() {}
-
 /* macOS-style arrow cursor — original SVG, single drop-shadow. */
 function Cursor() {
   return (

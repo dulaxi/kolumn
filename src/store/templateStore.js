@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 
 export const useTemplateStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       templates: [],
 
       addTemplate: (template) => {

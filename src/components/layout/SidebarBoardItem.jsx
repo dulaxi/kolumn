@@ -17,7 +17,6 @@ export default function SidebarBoardItem({
   deletable = false,
   leavable = false,
   onSelect,
-  onRename,
   onUpdateIcon,
   onDelete,
   onLeave,

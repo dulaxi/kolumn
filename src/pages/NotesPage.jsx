@@ -47,7 +47,7 @@ export default function NotesPage() {
 
   useEffect(() => {
     fetchNotes()
-  }, [])
+  }, [fetchNotes])
 
   useEffect(() => { capture('feature_used', { feature: 'notes' }) }, [])
 

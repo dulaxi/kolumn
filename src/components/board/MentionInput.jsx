@@ -4,7 +4,6 @@ export default function MentionInput({ value, onChange, onSubmit, members, place
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestions, setSuggestions] = useState([])
   const [selectedIdx, setSelectedIdx] = useState(0)
-  const [mentionQuery, setMentionQuery] = useState('')
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -18,7 +17,6 @@ export default function MentionInput({ value, onChange, onSubmit, members, place
 
     if (atMatch) {
       const query = atMatch[1].toLowerCase()
-      setMentionQuery(query)
       const filtered = members.filter((m) =>
         m.display_name?.toLowerCase().includes(query)
       )

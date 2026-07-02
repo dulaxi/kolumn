@@ -94,7 +94,7 @@ export default function CalendarPage() {
 
           {/* Day cells */}
           <div className="grid grid-cols-7 flex-1 auto-rows-fr border-t border-[var(--border-default)]">
-            {calendarDays.map((day, i) => {
+            {calendarDays.map((day) => {
               const dateKey = format(day, 'yyyy-MM-dd')
               const dayCards = cardsByDate[dateKey] || []
               const inMonth = isSameMonth(day, currentMonth)

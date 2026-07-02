@@ -47,7 +47,7 @@ export default function WorkspaceSidebar() {
 
   useEffect(() => {
     if (open) fetchWorkspaces()
-  }, [open])
+  }, [open, fetchWorkspaces])
 
   // Auto-close on real navigation (not initial mount or first render with stale path)
   const prevPathRef = useRef(location.pathname)

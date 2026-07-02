@@ -7,7 +7,6 @@ vi.setSystemTime(new Date(2026, 2, 25, 12, 0, 0))
 
 const today = '2026-03-25'
 const yesterday = '2026-03-24'
-const tomorrow = '2026-03-26'
 
 function makeCard(overrides = {}) {
   return {

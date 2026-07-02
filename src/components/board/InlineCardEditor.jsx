@@ -10,7 +10,6 @@ import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
 import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
-import Avatar from '../ui/Avatar'
 import AssigneePicker from './cardDetail/AssigneePicker'
 import LabelAutocomplete from './LabelAutocomplete'
 import { selectCardLabels } from '../../store/selectors'
@@ -49,7 +48,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     dueDate, setDueDate,
     pendingLabels, setPendingLabels,
     description, setDescription,
-    checklist, setChecklist,
+    checklist,
   } = useCardEditState(card, { treatUntitledAsEmpty: true })
 
   const [showDescription, setShowDescription] = useState(() => !!card?.description)

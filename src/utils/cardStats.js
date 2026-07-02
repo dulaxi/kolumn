@@ -97,7 +97,7 @@ export function computeTaskStats(cards, columns, displayName) {
   }
 }
 
-export function computeBoardSummaries(boards, columns, cards, displayName) {
+export function computeBoardSummaries(boards, columns, cards, _displayName) {
   return Object.values(boards).map((board) => {
     const boardCols = Object.values(columns)
       .filter((c) => c.board_id === board.id)

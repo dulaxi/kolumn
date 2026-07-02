@@ -38,6 +38,10 @@ export function useBoardMemberNames(card) {
     })()
 
     return () => { cancelled = true }
+    // Keyed on board_id, not the full `card` object: the store returns a new
+    // card identity on every edit, and re-running would clear + refetch member
+    // names mid-session. `card` is only used as a guard and for board_id.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card?.board_id, workspaceId])
 
   useEffect(() => {

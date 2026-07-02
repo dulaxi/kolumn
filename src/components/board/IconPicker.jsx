@@ -4,11 +4,9 @@ import { useIsMobile } from '../../hooks/useMediaQuery'
 import DynamicIcon from './DynamicIcon'
 import {
   PHOSPHOR_CATEGORIES,
-  ALL_PHOSPHOR_ICONS,
   searchPhosphor,
 } from '../../data/phosphorIcons'
 import Modal from '../ui/Modal'
-import Button from '../ui/Button'
 
 // Each category gets a representative phosphor glyph for its bottom-tab.
 // Mirrors iOS emoji-picker tabs (Recents 🕒 / Smileys 😀 / etc.) where

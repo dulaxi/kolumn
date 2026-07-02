@@ -3,6 +3,9 @@ import { memo } from 'react'
 // Forward-compat shim: legacy icon names persisted in DB (board.icon, card.icon)
 // from the old lucide era are remapped to their current Phosphor equivalents.
 // Lucide-react itself has been removed. Do not delete — would break old boards.
+// Lives alongside the component because toolExecutor.js imports it from here;
+// moving it isn't worth the churn for a fast-refresh nicety.
+// eslint-disable-next-line react-refresh/only-export-components
 export const LEGACY_ICON_REMAP = {
   'grip-vertical': 'dots-six-vertical',
   'panel-right': 'sidebar-simple',

@@ -1,20 +1,18 @@
 import { useState, memo } from 'react'
-import { isPast } from 'date-fns'
 
 import { CalendarDot, CheckCircle, CheckSquare, FileText } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import DynamicIcon from './DynamicIcon'
-import { LABEL_OUTLINE, PRIORITY_DOT } from '../../utils/formatting'
+import { LABEL_OUTLINE } from '../../utils/formatting'
 import { selectCardLabels } from '../../store/selectors'
 import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
 import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
-import { isAICreated } from '../../lib/toolExecutor'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
-  const { title, description, priority, due_date: dueDate, checklist, task_number: taskNumber, completed, icon } = card
+  const { title, description, priority, due_date: dueDate, checklist, completed, icon } = card
   const labels = useBoardStore(selectCardLabels(card.id))
   // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
   const assignees = (card.assignees && card.assignees.length)
@@ -44,10 +42,6 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const hasAssignee = assignees.length > 0
 
   const dueDateObj = dueDate ? parseDueDate(dueDate) : null
-  const overdue = dueDateObj ? isPast(dueDateObj) : false
-
-  const priDot = PRIORITY_DOT[priority] || PRIORITY_DOT.medium
-  const aiCard = isAICreated(card.id)
 
   return (
     <button

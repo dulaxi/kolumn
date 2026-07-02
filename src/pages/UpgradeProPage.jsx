@@ -149,7 +149,7 @@ export default function UpgradeProPage() {
 }
 
 // Internal: one period option in the Monthly/Yearly picker.
-function PeriodCard({ id, label, sub, badge, selected, onSelect }) {
+function PeriodCard({ label, sub, badge, selected, onSelect }) {
   return (
     <button
       type="button"

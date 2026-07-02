@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 
-import { ArrowLeft, Bookmark, Calendar, Check, CheckCircle, Copy, DotsThreeVertical, Download, File, FileText, Flag, Image, Paperclip, Plus, Trash, Upload, User, X } from '@phosphor-icons/react'
+import { ArrowLeft, Bookmark, Calendar, Copy, DotsThreeVertical, FileText, Flag, Paperclip, Plus, Trash, X } from '@phosphor-icons/react'
 import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
-import { useIsMobile } from '../../hooks/useMediaQuery'
 import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import IconPicker from './IconPicker'
 import LabelAutocomplete from './LabelAutocomplete'
 import { formatDueDateLabel, parseDueDate } from '../../utils/dateUtils'
-import Avatar from '../ui/Avatar'
 import Modal from '../ui/Modal'
 import Popover from '../ui/Popover'
 import Menu from '../ui/Menu'
@@ -31,8 +29,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const addLabelToCard = useBoardStore((s) => s.addLabelToCard)
   const removeLabelFromCard = useBoardStore((s) => s.removeLabelFromCard)
   const addTemplate = useTemplateStore((s) => s.addTemplate)
-  const boardName = useBoardStore((s) => s.boards[s.cards[cardId]?.board_id]?.name || '—')
-  const statusName = useBoardStore((s) => s.columns[s.cards[cardId]?.column_id]?.title || '—')
   const attachmentItems = useBoardStore((s) => s.attachments[cardId])
   const fetchAttachments = useBoardStore((s) => s.fetchAttachments)
   const uploadAttachment = useBoardStore((s) => s.uploadAttachment)
@@ -42,7 +38,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const labels = useBoardStore(selectCardLabels(cardId))
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
-  const isMobile = useIsMobile()
 
   const {
     title, setTitle,
@@ -73,7 +68,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     sel.addRange(range)
     el.focus()
   }, [editingDescription]) // eslint-disable-line react-hooks/exhaustive-deps
-  const [newCheckItem, setNewCheckItem] = useState('')
   // Single openMenu value: 'menu' | 'priority' | 'due' | 'assignee' | 'icon' | null
   const [openMenu, setOpenMenu, toggleMenu] = useMenuState()
   const titleRef = useRef(null)
@@ -83,7 +77,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const initialAssignees = card?.assignees?.length
     ? card.assignees
     : (card?.assignee_name ? [card.assignee_name] : [])
-  const [assigneeSearch, setAssigneeSearch] = useState('')
   const boardMemberNames = useBoardMemberNames(card)
 
   const isDirtyRef = useRef(false)
@@ -92,7 +85,10 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
 
   useEffect(() => {
     if (card) fetchAttachments(cardId)
-  }, [cardId])
+    // `card` is only an existence guard here — depending on it would refetch
+    // attachments on every card edit. fetchAttachments is a stable store action.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardId, fetchAttachments])
 
   // Re-sync local form state when the card is updated externally (AI tool
   // call, realtime broadcast from another client, etc.) and the user has no
@@ -114,6 +110,10 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         : (card.assignee_name ? [card.assignee_name] : [])
     )
     setChecklist(card.checklist ? card.checklist.map((i) => ({ ...i })) : [])
+    // Deliberately keyed on updated_at/id, not the full `card` object: the store
+    // hands back a new card identity on every optimistic edit, and re-running
+    // this sync then would clobber in-progress user input. Setters are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card?.updated_at, card?.id])
 
   const scheduleSave = useCallback(() => {
@@ -312,7 +312,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   for (const file of files) {
                     try {
                       await uploadAttachment(cardId, file, user?.id)
-                    } catch (err) {
+                    } catch {
                       showToast.error(`Failed to upload ${file.name}`)
                     }
                   }
