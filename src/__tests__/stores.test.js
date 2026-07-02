@@ -62,14 +62,23 @@ describe('boardStore', () => {
       activeBoardId: 'b1',
     })
     // deleteBoard uses undoableDelete with a 5s timer — after optimistic removal, state is already updated
-    const promise = useBoardStore.getState().deleteBoard('b1')
-    // Check optimistic removal immediately
-    const state = useBoardStore.getState()
-    expect(state.boards).not.toHaveProperty('b1')
-    expect(state.columns).not.toHaveProperty('col1')
-    expect(state.cards).not.toHaveProperty('c1')
-    expect(state.boards).toHaveProperty('b2')
-    expect(state.activeBoardId).toBe('b2')
+    vi.useFakeTimers()
+    try {
+      const promise = useBoardStore.getState().deleteBoard('b1')
+      // Check optimistic removal immediately
+      const state = useBoardStore.getState()
+      expect(state.boards).not.toHaveProperty('b1')
+      expect(state.columns).not.toHaveProperty('col1')
+      expect(state.cards).not.toHaveProperty('c1')
+      expect(state.boards).toHaveProperty('b2')
+      expect(state.activeBoardId).toBe('b2')
+      // Flush the 5s undo window so the delete settles inside the test
+      // instead of leaking a timer past environment teardown
+      await vi.runAllTimersAsync()
+      await promise
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   test('completeCard toggles completed', async () => {
@@ -87,9 +96,16 @@ describe('boardStore', () => {
       cards: { c1: { id: 'c1' }, c2: { id: 'c2' } },
     })
     // deleteCard uses undoableDelete — check optimistic removal immediately
-    const promise = useBoardStore.getState().deleteCard('c1')
-    expect(useBoardStore.getState().cards).not.toHaveProperty('c1')
-    expect(useBoardStore.getState().cards).toHaveProperty('c2')
+    vi.useFakeTimers()
+    try {
+      const promise = useBoardStore.getState().deleteCard('c1')
+      expect(useBoardStore.getState().cards).not.toHaveProperty('c1')
+      expect(useBoardStore.getState().cards).toHaveProperty('c2')
+      await vi.runAllTimersAsync()
+      await promise
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   test('moveCardLocal reorders within same column', () => {
