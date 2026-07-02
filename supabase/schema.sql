@@ -765,10 +765,20 @@ create policy "Users can view own notifications"
   to authenticated
   using (user_id = auth.uid());
 
-create policy "Authenticated users can create notifications"
+-- Notifications may only be created by a board member, for a fellow member
+-- of that same board (see 2026-07-02-tighten-notifications-insert.sql).
+create policy "Board members can notify fellow members"
   on public.notifications for insert
   to authenticated
-  with check (true);
+  with check (
+    board_id is not null
+    and board_id in (select public.get_my_board_ids())
+    and exists (
+      select 1 from public.board_members bm
+      where bm.board_id = notifications.board_id
+        and bm.user_id = notifications.user_id
+    )
+  );
 
 create policy "Users can update own notifications"
   on public.notifications for update
