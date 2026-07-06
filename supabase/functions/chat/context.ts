@@ -32,9 +32,14 @@ export async function buildContext(
     allLabels = labelsData || []
   }
 
-  // When boardId is provided (pill mode), scope every downstream snapshot to
-  // just that board. The model should not see other boards' cards or columns;
-  // the pill is a single-board action surface.
+  // Pill scoping requires BOTH mode === "pill" AND a resolvable board — the
+  // caller (index.ts) already 404s a pill request whose boardId doesn't
+  // resolve, so by the time we get here a pill call's boardId is guaranteed
+  // to match a board in allBoards. The `.find` still returns null defensively
+  // if that invariant is ever violated, in which case we fall back to the
+  // unscoped (all-boards) snapshot rather than silently scoping to nothing.
+  // The model should not see other boards' cards or columns; the pill is a
+  // single-board action surface.
   const scopedBoard = opts.mode === "pill" && opts.boardId
     ? allBoards.find((b: any) => b.id === opts.boardId)
     : null
@@ -157,8 +162,16 @@ You are operating **exclusively on the board "${scopedBoard!.name}"**. You canno
   // Honest-narration rules. Pill: tools exist, but outcomes must only be
   // reported after tool results arrive (the loop feeds them back). Chat:
   // no tools at all — never pretend an action happened.
+  // NOTE: the chat branch deliberately has NO leading "\n" — it's spliced
+  // after `chatMode ? "" : "..."` below, so in chat mode nothing precedes it
+  // on that template line. A leading "\n" here would stack with the "\n"
+  // that already ends the previous line, producing a blank line before this
+  // bullet. The pill branch keeps its leading "\n" because it's spliced
+  // after non-empty pill-only text ("- Use tools immediately...") that
+  // itself has no trailing newline — the "\n" here is what separates the
+  // two bullets.
   const toolConductRules = chatMode
-    ? `\n- You have NO tools in this chat — you cannot create, move, update, or delete anything. When the user asks for an action, say plainly that actions are done from the board itself (the quick-add pill on a board page), then help by answering from the context above. Never pretend an action happened.`
+    ? `- You have NO tools in this chat — you cannot create, move, update, or delete anything. When the user asks for an action, say plainly that actions are done from the board itself (the quick-add pill on a board page), then help by answering from the context above. Never pretend an action happened.`
     : `\n- When you call tools, do not describe their outcomes yet — say at most a brief acknowledgment like "On it…". After tool results arrive, report what actually happened, including anything that failed.
 - If the user asks for something your tools here cannot do (for example, creating a new board from the quick-add pill), say so plainly and tell them where they can do it. Never pretend an action happened.`
 
