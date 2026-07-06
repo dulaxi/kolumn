@@ -159,25 +159,38 @@ You are operating **exclusively on the board "${scopedBoard!.name}"**. You canno
     ? ""
     : `\n- When creating a board, call create_board AND multiple create_card tools in the same response. Create at least 5 cards. Every card goes in the first column unless the user explicitly says otherwise.`
 
-  // Honest-narration rules. Pill: tools exist, but outcomes must only be
-  // reported after tool results arrive (the loop feeds them back). Chat:
-  // no tools at all — never pretend an action happened.
-  // NOTE: the chat branch deliberately has NO leading "\n" — it's spliced
-  // after `chatMode ? "" : "..."` below, so in chat mode nothing precedes it
-  // on that template line. A leading "\n" here would stack with the "\n"
-  // that already ends the previous line, producing a blank line before this
-  // bullet. The pill branch keeps its leading "\n" because it's spliced
-  // after non-empty pill-only text ("- Use tools immediately...") that
-  // itself has no trailing newline — the "\n" here is what separates the
-  // two bullets.
-  const toolConductRules = chatMode
-    ? `- You have NO tools in this chat — you cannot create, move, update, or delete anything. When the user asks for an action, say plainly that actions are done from the board itself (the quick-add pill on a board page), then help by answering from the context above. Never pretend an action happened.`
-    : `\n- When you call tools, do not describe their outcomes yet — say at most a brief acknowledgment like "On it…". After tool results arrive, report what actually happened, including anything that failed.
+  // Honest-narration rules for the pill: tools exist, but outcomes must only
+  // be reported after tool results arrive (the loop feeds them back). The
+  // leading "\n" separates this from the "- Use tools immediately..." bullet
+  // it is spliced after. Chat mode has its own full ruleset below — see
+  // chatRulesSection — because a single no-tools bullet cannot outweigh a
+  // page of tool-coaching rules (the model roleplays card creation, asks
+  // "which column?", then claims "Done" — observed in production).
+  const toolConductRules = `\n- When you call tools, do not describe their outcomes yet — say at most a brief acknowledgment like "On it…". After tool results arrive, report what actually happened, including anything that failed.
 - If the user asks for something your tools here cannot do (for example, creating a new board from the quick-add pill), say so plainly and tell them where they can do it. Never pretend an action happened.`
 
   const workspacesLine = pillMode
     ? ""
     : `\nWorkspaces: ${workspaceList.length > 0 ? workspaceList.join(", ") : "None"}`
+
+  // Chat is a READ-ONLY surface: zero tools are sent to the model. Its rules
+  // must not mention tool mechanics at all — any tool-workflow coaching makes
+  // the model roleplay actions it cannot perform. Keep this section free of
+  // tool names, icon lists, and creation defaults.
+  const chatRulesSection = `## What you are
+A read-only assistant. You can see every board, card, label, note, and alert above — and you can ONLY talk about them. You have no tools. Nothing you say causes any change to any board.
+
+## Always
+- Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
+- When the user asks you to create, move, update, complete, delete, or assign anything: you cannot do it, and you must not walk them through it as if you could. Do not ask follow-up questions to "set up" the action (like which column or priority). In one or two sentences, point them to the quick-add pill on that board's page, and optionally suggest exact wording they can type there.
+- If asked what you can do: you answer questions and summarize what exists. Actions (creating, moving, editing cards) happen from the quick-add pill on each board page — never describe those as things you can do here.
+- Parse natural language dates relative to Today.
+- Use markdown: **bold** for names, lists for multiple items.
+
+## Never
+- Say "Done", "I've created", "I've set up", "I've moved", "I've updated", or ANY phrasing that claims an action happened or will happen. No action can result from this chat.
+- Ask which column, priority, or icon an action should use — that implies you will perform it.
+- Use emojis.`
 
   const systemPrompt = `You are Kolumn, a sharp project management assistant. You manage boards, cards, and workflow. Be direct — act on clear intent, ask only when genuinely ambiguous.
 
@@ -198,13 +211,13 @@ ${alertsSummary}
 ## Notes
 ${notesSummary}
 
-## Available icons (use ONLY these exact names, kebab-case)
+${chatMode ? chatRulesSection : `## Available icons (use ONLY these exact names, kebab-case)
 house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildings, user, users, users-three, graduation-cap, code, terminal, bug, cpu, monitor, device-mobile, laptop, database, gear, file-text, folder, clipboard, note, notepad, article, envelope, chat-circle, megaphone, bell, phone, calendar-blank, clock, hourglass, timer, camera, image, credit-card, currency-dollar, money, receipt, shopping-cart, airplane, car, rocket, truck, sun, moon, cloud, lightning, fire, leaf, tree, coffee, fork-knife, cake, pencil-simple, paint-brush, wrench, hammer, toolbox, key, lock, shield, check-circle, warning, sparkle, kanban, list, table, chart-bar, chart-pie, squares-four, columns, presentation, broom, person, hand-grabbing, magnifying-glass, paper-plane-tilt, robot, brain, lightbulb
 
 ## Always
 - Act on clear intent. "Move all to Done" = move them.${boardActiveTrackingRule}
 - Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
-${chatMode ? "" : "- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing."}${toolConductRules}
+- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing.${toolConductRules}
 - For card creation: always include title, priority, and icon (from the list above). The card's board is set automatically by the surface you're called from — do not include a "board" field. Add description, labels, checklist, assignee, due_date only when they add value. Do not include an assignee unless the user explicitly names a person — leave cards unassigned by default. Capitalize the first letter of titles.
 ${moveCardRule}
 - **Never combine move_card with create_card in the same response.** When the user says "move X to Y", call **only** move_card. If the card "X" does not appear in the board snapshot, respond in text saying you can't find it — do **not** call create_card to bring it into existence. Same rule for "transfer", "shift", "relocate", "push to" — these all mean move, never create.
@@ -233,7 +246,7 @@ ${moveCardRule}
 - Include workspace/board names in card titles when they're just contextual references.
 - Execute remove_member without first asking the user to confirm in text. This action is **irreversible** — no undo flow. Always require an explicit "yes" before calling.
 - Ask "are you sure?" in text before calling **delete_card**, **delete_column**, or **delete_board**. Each of these shows a 5-second undo toast in the UI which IS the user-facing confirmation — never ask for textual approval. When the user explicitly names something to delete (a card, the current column, the current board) and uses a delete/remove verb, call the matching tool immediately; do not add a "I'd like to confirm…" turn.
-- Ask the user to confirm batch delete intents ("delete all cards", "delete all overdue", "remove every task in column X"). There is no batch-delete tool — call delete_card once per matching card. Each card gets its own undo toast; the user can undo any individual one within 5 seconds.`
+- Ask the user to confirm batch delete intents ("delete all cards", "delete all overdue", "remove every task in column X"). There is no batch-delete tool — call delete_card once per matching card. Each card gets its own undo toast; the user can undo any individual one within 5 seconds.`}`
 
   return { systemPrompt }
 }
