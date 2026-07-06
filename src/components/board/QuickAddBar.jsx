@@ -3,7 +3,7 @@ import { ArrowUp, Sparkle, Waveform } from '@phosphor-icons/react'
 
 import { useBoardStore } from '../../store/boardStore'
 import { executeTool } from '../../lib/toolExecutor'
-import { streamChat } from '../../lib/aiClient'
+import { runPillLoop } from '../../lib/pillAgentLoop'
 import { logError } from '../../utils/logger'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -17,11 +17,12 @@ export default function QuickAddBar({ boardId }) {
   // Surface model text + tool errors above the pill. Set on submit completion;
   // cleared on next submit or after a short timeout.
   const [feedback, setFeedback] = useState(null) // { type: 'info' | 'error', text } | null
+  const [progress, setProgress] = useState([]) // [{ ok, label }]
   const inputRef = useRef(null)
   const collapseWithAnim = () => {
     if (processing) return
     setCollapsing(true)
-    setTimeout(() => { setExpanded(false); setCollapsing(false); setInput(''); setFeedback(null) }, 175)
+    setTimeout(() => { setExpanded(false); setCollapsing(false); setInput(''); setFeedback(null); setProgress([]) }, 175)
   }
   const scrollTimer = useRef(null)
   const boardName = useBoardStore((s) => s.boards[boardId]?.name)
@@ -50,20 +51,12 @@ export default function QuickAddBar({ boardId }) {
     if (!text || processing) return
     setInput('')
     setFeedback(null)
+    setProgress([])
     setProcessing(true)
 
-    // Track what came back so we can surface text or errors above the pill.
-    let modelText = ''
-    let toolFired = false
-    let toolErrorMsg = ''
-
-    // Circuit breaker: cap how many tool calls a single pill submission can
-    // execute. Defense against runaway model behavior (e.g. emitting many
-    // update_card calls in a single response). Hard ceiling; the model can
-    // still emit more, we just stop executing them.
-    const MAX_TOOL_CALLS_PER_SUBMIT = 25
-    let toolCallCount = 0
-    let circuitTripped = false
+    // Fast path (comma/newline split) doesn't produce model text, only
+    // tool errors — tracked locally and surfaced after the try/catch.
+    let fastPathError = ''
 
     try {
       // Split candidate parts. Prefer newlines (explicit user choice); fall
@@ -86,60 +79,41 @@ export default function QuickAddBar({ boardId }) {
       if (parts && parts.length > 1) {
         for (const title of parts) {
           const r = await executeTool('create_card', { title, boardId })
-          if (r) {
-            toolFired = true
-            if (!r.ok && r.error) toolErrorMsg = r.error
-          }
+          if (r && !r.ok && r.error) fastPathError = r.error
         }
       } else {
-        // User's local date as YYYY-MM-DD. The en-CA locale formats dates in
-        // ISO order (YYYY-MM-DD) and respects local timezone by default —
-        // unlike toISOString() which is always UTC.
         const today = new Intl.DateTimeFormat('en-CA', {
           year: 'numeric', month: '2-digit', day: '2-digit',
         }).format(new Date())
-        await new Promise((resolve) => {
-          streamChat(
-            { message: text, boardId, today },
-            {
-              onText: (chunk) => { modelText += chunk },
-              onToolCall: async (action, params) => {
-                // Circuit breaker — see MAX_TOOL_CALLS_PER_SUBMIT comment above.
-                if (circuitTripped) return
-                toolCallCount++
-                if (toolCallCount > MAX_TOOL_CALLS_PER_SUBMIT) {
-                  circuitTripped = true
-                  toolErrorMsg = `Stopped after ${MAX_TOOL_CALLS_PER_SUBMIT} tool calls — the model emitted too many in one response. Try a smaller request or use a batch tool.`
-                  logError('[QuickAdd] circuit breaker tripped', { action, count: toolCallCount })
-                  return
-                }
-                // Inject pill context. boardId is the canonical handle (read by
-                // polished tools like create_card); board name is kept for
-                // tools that haven't been polished yet and still resolve by name.
-                const r = await executeTool(action, { ...params, board: boardName, boardId })
-                if (r) {
-                  toolFired = true
-                  if (!r.ok && r.error) toolErrorMsg = r.error
-                }
-              },
-              onTier: () => {},
-              onDone: resolve,
-              onError: (err) => { logError('[QuickAdd]', err); resolve() },
-            },
-          )
-        })
+
+        const { finalText, rows, error } = await runPillLoop(
+          { text, boardId, boardName, today },
+          { onProgress: (r) => setProgress(r) },
+        )
+
+        if (error) {
+          const isLimit = /daily limit/i.test(error)
+          setFeedback({
+            type: 'error',
+            text: isLimit ? `${error} Upgrade from Settings → Plan.` : error,
+          })
+        } else if (finalText.trim()) {
+          // The model's final-round text is written AFTER seeing tool
+          // results — it is the honest confirmation (or explanation).
+          setFeedback({ type: rows.some((r) => !r.ok) ? 'error' : 'info', text: finalText.trim() })
+        } else if (rows.length && rows.every((r) => r.ok)) {
+          setFeedback(null) // progress rows already tell the story
+        } else if (rows.length && rows.some((r) => !r.ok)) {
+          // Round cap cut off narration but some steps failed — don't let
+          // the failure go silent just because the model never got to say so.
+          setFeedback({ type: 'error', text: 'Some steps failed — see the list above.' })
+        }
       }
     } catch (err) {
       logError('[QuickAdd]', err)
     }
 
-    // Surface feedback. Tool errors take precedence; otherwise show model text
-    // if the model responded with text only (no successful tool call).
-    if (toolErrorMsg) {
-      setFeedback({ type: 'error', text: toolErrorMsg })
-    } else if (!toolFired && modelText.trim()) {
-      setFeedback({ type: 'info', text: modelText.trim() })
-    }
+    if (fastPathError) setFeedback({ type: 'error', text: fastPathError })
 
     setProcessing(false)
     inputRef.current?.focus()
@@ -185,6 +159,16 @@ export default function QuickAddBar({ boardId }) {
       initialFocusRef={inputRef}
     >
     <div className={`w-full max-w-2xl px-4 origin-bottom ${collapsing ? 'animate-[pill-bounce-out_175ms_ease-in_forwards]' : 'animate-[pill-bounce-in_275ms_cubic-bezier(0.34,1.56,0.64,1)_forwards]'}`}>
+      {progress.length > 0 && (
+        <div className="mb-2 px-3.5 py-2 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-card)] font-mono text-[12px] leading-relaxed flex flex-col gap-1">
+          {progress.map((row, i) => (
+            <div key={i} className={`flex items-start gap-2 ${row.ok ? 'text-[var(--text-secondary)]' : 'text-[var(--color-copper)]'}`}>
+              <span className="shrink-0">{row.ok ? '✓' : '✗'}</span>
+              <span className="flex-1 break-words">{row.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {feedback && (
         <div
           role={feedback.type === 'error' ? 'alert' : 'status'}
