@@ -35,37 +35,42 @@ function dispatchCreateBoard(detail) {
 }
 
 function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
+  // No Tooltip on the row itself: the hover-revealed "Show/Hide" text IS the
+  // affordance, and a row-level tooltip would nest around the plus button's
+  // tooltip (double bubble, mis-anchored over the full row width).
   return (
-    <Tooltip content={collapsed ? `Show ${label}` : `Hide ${label}`}>
-      <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={!collapsed}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.() }
-        }}
-        className="flex w-full items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
-      >
-        <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
-        <span className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
-            {collapsed ? 'Show' : 'Hide'}
-          </span>
-          {onPlusClick && (
-            <Tooltip content={plusTitle}>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onPlusClick() }}
-                className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
-              >
-                <Plus className="w-5 h-5" weight="light" />
-              </button>
-            </Tooltip>
-          )}
+    <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? `Show ${label}` : `Hide ${label}`}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.() }
+      }}
+      className="flex w-full items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
+    >
+      <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
+      <span className="flex items-center gap-2 shrink-0">
+        <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
+          {collapsed ? 'Show' : 'Hide'}
         </span>
-      </div>
-    </Tooltip>
+        {/* left placement keeps the bubble inside the sidebar — the nav's
+            overflow-y-auto clips anything that crosses its right edge */}
+        {onPlusClick && (
+          <Tooltip content={plusTitle} placement="left">
+            <button
+              type="button"
+              aria-label={plusTitle}
+              onClick={(e) => { e.stopPropagation(); onPlusClick() }}
+              className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
+            >
+              <Plus className="w-5 h-5" weight="light" />
+            </button>
+          </Tooltip>
+        )}
+      </span>
+    </div>
   )
 }
 
@@ -325,12 +330,17 @@ export default function Sidebar() {
               pseudo "All tasks" id and has no icon, so it falls through too. */}
           {showCollapsed && (() => {
             const activeBoard = activeBoardId && activeBoardId !== '__all__' ? allBoards[activeBoardId] : null
+            // flex-col wrapper stretches Tooltip's inline-flex span to the
+            // rail width (the plain-block <nav> won't); w-full + h-8 on the
+            // NavLink then match SidebarNav's ROW_BASE so this rail item
+            // sizes identically to its siblings (Search/Chats/Builder).
             return (
+              <div className="flex flex-col">
               <Tooltip content={activeBoard?.name || 'Boards'} placement="right">
                 <NavLink
                   to="/boards"
                   className={({ isActive }) =>
-                    `flex items-center justify-center p-2 rounded-lg text-sm font-medium transition-colors ${
+                    `flex w-full items-center justify-center h-8 px-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
                         : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
@@ -346,6 +356,7 @@ export default function Sidebar() {
                   )}
                 </NavLink>
               </Tooltip>
+              </div>
             )
           })()}
         </nav>

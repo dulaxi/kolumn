@@ -138,7 +138,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     <div
       ref={rootRef}
       onKeyDown={handleKeyDown}
-      className="w-full flex flex-col gap-3 rounded-xl border border-[var(--text-muted)] p-4 text-left bg-[var(--surface-page)] transition-all"
+      className="w-full flex flex-col gap-3 rounded-2xl border border-[var(--text-muted)] p-4 text-left bg-[var(--surface-page)] transition-all"
     >
       {/* Top row: icon + title + check (priority) */}
       <div className="flex items-center gap-3">
