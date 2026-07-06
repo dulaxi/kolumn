@@ -13,6 +13,7 @@ import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
 import SidebarBottom from './SidebarBottom'
 import DynamicIcon from '../board/DynamicIcon'
+import Tooltip from '../ui/Tooltip'
 
 function KolumnLogo({ size = 30 }) {
   return <Kanban size={size} weight="fill" className="shrink-0 text-[var(--color-logo)]" />
@@ -35,34 +36,36 @@ function dispatchCreateBoard(detail) {
 
 function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-expanded={!collapsed}
-      onClick={onToggle}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.() }
-      }}
-      className="flex items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
-      title={collapsed ? `Show ${label}` : `Hide ${label}`}
-    >
-      <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
-      <span className="flex items-center gap-2 shrink-0">
-        <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
-          {collapsed ? 'Show' : 'Hide'}
+    <Tooltip content={collapsed ? `Show ${label}` : `Hide ${label}`}>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={!collapsed}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.() }
+        }}
+        className="flex w-full items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
+      >
+        <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
+        <span className="flex items-center gap-2 shrink-0">
+          <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
+            {collapsed ? 'Show' : 'Hide'}
+          </span>
+          {onPlusClick && (
+            <Tooltip content={plusTitle}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onPlusClick() }}
+                className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
+              >
+                <Plus className="w-5 h-5" weight="light" />
+              </button>
+            </Tooltip>
+          )}
         </span>
-        {onPlusClick && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onPlusClick() }}
-            className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
-            title={plusTitle}
-          >
-            <Plus className="w-5 h-5" weight="light" />
-          </button>
-        )}
-      </span>
-    </div>
+      </div>
+    </Tooltip>
   )
 }
 
@@ -255,7 +258,7 @@ export default function Sidebar() {
 
           {/* ── Boards section ── (hidden when filtering to a specific workspace) */}
           {!showCollapsed && showPersonalBoards && (
-            <div className="pt-4">
+            <div className="flex flex-col pt-4">
               <SectionHeader
                 label="Boards"
                 collapsed={boardsCollapsed}
@@ -277,7 +280,7 @@ export default function Sidebar() {
             const isCollapsed = !!collapsedSpaces[ws.id]
             return (
               <div key={ws.id}>
-                <div className="pt-4">
+                <div className="flex flex-col pt-4">
                   <SectionHeader
                     label={ws.name}
                     collapsed={isCollapsed}
@@ -303,7 +306,7 @@ export default function Sidebar() {
 
           {/* ── Shared with me ── (hidden when filtering to a specific workspace) */}
           {!showCollapsed && showSharedBoards && sharedBoards.length > 0 && (
-            <div className="pt-4">
+            <div className="flex flex-col pt-4">
               <SectionHeader
                 label="Shared with me"
                 collapsed={sharedBoardsCollapsed}
@@ -323,25 +326,26 @@ export default function Sidebar() {
           {showCollapsed && (() => {
             const activeBoard = activeBoardId && activeBoardId !== '__all__' ? allBoards[activeBoardId] : null
             return (
-              <NavLink
-                to="/boards"
-                title={activeBoard?.name || 'Boards'}
-                className={({ isActive }) =>
-                  `flex items-center justify-center p-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <DynamicIcon
-                    name={activeBoard?.icon || 'cards-three'}
-                    weight={isActive ? 'fill' : 'light'}
-                    className="w-5 h-5 shrink-0"
-                  />
-                )}
-              </NavLink>
+              <Tooltip content={activeBoard?.name || 'Boards'} placement="right">
+                <NavLink
+                  to="/boards"
+                  className={({ isActive }) =>
+                    `flex items-center justify-center p-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <DynamicIcon
+                      name={activeBoard?.icon || 'cards-three'}
+                      weight={isActive ? 'fill' : 'light'}
+                      className="w-5 h-5 shrink-0"
+                    />
+                  )}
+                </NavLink>
+              </Tooltip>
             )
           })()}
         </nav>

@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import Tooltip from '../components/ui/Tooltip'
 import PlanCard from '../components/PlanCard'
 import { PLANS } from '../data/plans'
 import { addDays, format } from 'date-fns'
@@ -283,14 +284,15 @@ function DevStepPicker({ step, setStep }) {
   const [collapsed, setCollapsed] = useState(false)
   if (collapsed) {
     return (
-      <button
-        type="button"
-        onClick={() => setCollapsed(false)}
-        className="fixed bottom-3 right-3 z-50 text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-md px-2 py-1 shadow-sm hover:text-[var(--text-secondary)]"
-        title="Show onboarding step picker"
-      >
-        dev · {step}
-      </button>
+      <Tooltip content="Show onboarding step picker">
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          className="fixed bottom-3 right-3 z-50 text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-md px-2 py-1 shadow-sm hover:text-[var(--text-secondary)]"
+        >
+          dev · {step}
+        </button>
+      </Tooltip>
     )
   }
   return (
@@ -310,14 +312,15 @@ function DevStepPicker({ step, setStep }) {
           {s}
         </button>
       ))}
-      <button
-        type="button"
-        onClick={() => setCollapsed(true)}
-        className="ml-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)] px-1.5 py-0.5 rounded text-[12px]"
-        title="Hide"
-      >
-        ×
-      </button>
+      <Tooltip content="Hide">
+        <button
+          type="button"
+          onClick={() => setCollapsed(true)}
+          className="ml-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)] px-1.5 py-0.5 rounded text-[12px]"
+        >
+          ×
+        </button>
+      </Tooltip>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CaretDown, Check, Cube, CubeFocus, MagnifyingGlass, Plus, UsersThree } from '@phosphor-icons/react'
+import Tooltip from '../ui/Tooltip'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
@@ -288,32 +289,33 @@ export default function WorkspaceDropdown({
   // ── Trigger + portaled panel ──────────────────────────────────
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => handleOpenChange(!open)}
-        title={collapsed ? triggerLabel : undefined}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className={`${ROW_BASE} w-full ${
-          collapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-2'
-        } text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]`}
-      >
-        <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-          {triggerGlyph}
-        </span>
-        {!collapsed && (
-          <>
-            <span className="truncate flex-1 text-left">{triggerLabel}</span>
-            {invitationCount > 0 && (
-              <span className="text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full shrink-0">
-                {invitationCount}
-              </span>
-            )}
-            <CaretDown className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" weight="bold" />
-          </>
-        )}
-      </button>
+      <Tooltip content={collapsed ? triggerLabel : undefined} placement="right">
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => handleOpenChange(!open)}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={`${ROW_BASE} w-full ${
+            collapsed ? 'justify-center px-2' : 'gap-3 py-1.5 px-2'
+          } text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]`}
+        >
+          <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+            {triggerGlyph}
+          </span>
+          {!collapsed && (
+            <>
+              <span className="truncate flex-1 text-left">{triggerLabel}</span>
+              {invitationCount > 0 && (
+                <span className="text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full shrink-0">
+                  {invitationCount}
+                </span>
+              )}
+              <CaretDown className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" weight="bold" />
+            </>
+          )}
+        </button>
+      </Tooltip>
 
       {/* Portaled panel: escapes the sidebar's overflow:auto clipping so the
           dropdown can overlay the main content area. position:fixed +

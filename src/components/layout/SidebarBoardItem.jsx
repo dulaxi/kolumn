@@ -112,14 +112,15 @@ export default function SidebarBoardItem({
 
       {leavable && (
         <span className="flex items-center gap-0.5 shrink-0">
-          <SignOut
-            role="button"
-            aria-label={`Leave board ${board.name}`}
-            title="Leave board"
-            weight="light"
-            className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
-            onClick={(e) => { e.stopPropagation(); onLeave?.(board.id) }}
-          />
+          <Tooltip content="Leave board">
+            <SignOut
+              role="button"
+              aria-label={`Leave board ${board.name}`}
+              weight="light"
+              className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 shrink-0"
+              onClick={(e) => { e.stopPropagation(); onLeave?.(board.id) }}
+            />
+          </Tooltip>
         </span>
       )}
 

@@ -7,6 +7,7 @@ import {
   searchPhosphor,
 } from '../../data/phosphorIcons'
 import Modal from '../ui/Modal'
+import Tooltip from '../ui/Tooltip'
 
 // Each category gets a representative phosphor glyph for its bottom-tab.
 // Mirrors iOS emoji-picker tabs (Recents 🕒 / Smileys 😀 / etc.) where
@@ -59,6 +60,9 @@ function IconGrid({ icons: iconList, value, onPick }) {
   return (
     <div className="grid grid-cols-7 sm:grid-cols-9 gap-1">
       {iconList.map((name) => (
+        // Deliberate exception: keep native `title` here rather than
+        // <Tooltip> — this grid renders up to ~80 buttons and the name is
+        // secondary info, so per-cell hover-delay state isn't worth it.
         <button
           key={name}
           type="button"
@@ -194,20 +198,20 @@ export default function IconPicker({ value, onChange, onClose }) {
             <div className="overflow-x-auto">
               <div className="flex items-center px-2 py-1.5 gap-0.5">
                 {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveCategory(tab.key)}
-                    title={tab.label}
-                    aria-label={tab.label}
-                    className={`shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
-                      activeCategory === tab.key
-                        ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]'
-                        : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                    }`}
-                  >
-                    <DynamicIcon name={tab.glyph} className="w-4 h-4" />
-                  </button>
+                  <Tooltip key={tab.key} content={tab.label}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveCategory(tab.key)}
+                      aria-label={tab.label}
+                      className={`shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+                        activeCategory === tab.key
+                          ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      <DynamicIcon name={tab.glyph} className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             </div>

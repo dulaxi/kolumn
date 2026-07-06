@@ -9,6 +9,7 @@ import { LABEL_OUTLINE } from '../../utils/formatting'
 import { selectCardLabels } from '../../store/selectors'
 import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../utils/dateUtils'
 import Avatar from '../ui/Avatar'
+import Tooltip from '../ui/Tooltip'
 import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
@@ -109,12 +110,12 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
               const onLabelClick = (e) => { e.stopPropagation(); toggleLabelStyle() }
               if (labelStyle === 'dot') {
                 return (
-                  <span
-                    key={`${label.text}-${label.color}`}
-                    onClick={onLabelClick}
-                    title={label.text}
-                    className={`cursor-pointer w-2.5 h-2.5 rounded-full shrink-0 ${COLOR_DOT_CLASSES[label.color] || COLOR_DOT_CLASSES.gray}`}
-                  />
+                  <Tooltip key={`${label.text}-${label.color}`} content={label.text}>
+                    <span
+                      onClick={onLabelClick}
+                      className={`cursor-pointer w-2.5 h-2.5 rounded-full shrink-0 ${COLOR_DOT_CLASSES[label.color] || COLOR_DOT_CLASSES.gray}`}
+                    />
+                  </Tooltip>
                 )
               }
               if (labelStyle === 'alt') {
@@ -190,27 +191,29 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
             const visible = assignees.slice(0, maxVisible)
             const overflow = Math.max(0, assignees.length - maxVisible)
             return (
-              <span className="flex -space-x-1.5" title={assignees.join(', ')}>
-                {visible.map((name) => {
-                  const isMe = isMeName(name)
-                  return isMe && profile?.icon ? (
-                    <span
-                      key={name}
-                      className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${profileFallback}`}
-                      style={profileStyle}
-                    >
-                      <DynamicIcon name={profile.icon} className="w-3 h-3" />
+              <Tooltip content={assignees.join(', ')}>
+                <span className="flex -space-x-1.5">
+                  {visible.map((name) => {
+                    const isMe = isMeName(name)
+                    return isMe && profile?.icon ? (
+                      <span
+                        key={name}
+                        className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${profileFallback}`}
+                        style={profileStyle}
+                      >
+                        <DynamicIcon name={profile.icon} className="w-3 h-3" />
+                      </span>
+                    ) : (
+                      <Avatar key={name} name={name} size="sm" ringed className="text-[10px]" />
+                    )
+                  })}
+                  {overflow > 0 && (
+                    <span className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] bg-[var(--surface-hover)] text-[9px] font-medium text-[var(--text-secondary)]">
+                      +{overflow}
                     </span>
-                  ) : (
-                    <Avatar key={name} name={name} size="sm" ringed className="text-[10px]" />
-                  )
-                })}
-                {overflow > 0 && (
-                  <span className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] bg-[var(--surface-hover)] text-[9px] font-medium text-[var(--text-secondary)]">
-                    +{overflow}
-                  </span>
-                )}
-              </span>
+                  )}
+                </span>
+              </Tooltip>
             )
           })()}
         </div>

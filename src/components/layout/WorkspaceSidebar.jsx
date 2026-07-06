@@ -140,43 +140,43 @@ export default function WorkspaceSidebar() {
                 const boardName = inv.boards?.name || 'Untitled board'
                 const boardIcon = inv.boards?.icon
                 return (
-                  <div
-                    key={`inv-${inv.id}`}
-                    className="flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors group"
-                    title={`Invitation to "${boardName}"`}
-                  >
-                    <span className="flex items-center gap-3 truncate">
-                      <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
-                        <DynamicIcon
-                          name={boardIcon || 'cards-three'}
-                          className="w-4 h-4 text-[var(--text-muted)]"
-                        />
+                  <Tooltip key={`inv-${inv.id}`} content={`Invitation to "${boardName}"`}>
+                    <div
+                      className="flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors group"
+                    >
+                      <span className="flex items-center gap-3 truncate">
+                        <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
+                          <DynamicIcon
+                            name={boardIcon || 'cards-three'}
+                            className="w-4 h-4 text-[var(--text-muted)]"
+                          />
+                        </span>
+                        <span className="truncate">{boardName}</span>
                       </span>
-                      <span className="truncate">{boardName}</span>
-                    </span>
-                    <span className="flex items-center gap-0.5 shrink-0">
-                      <Tooltip content="Accept" placement="top">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); acceptBoardInvitation(inv.id) }}
-                          aria-label={`Accept invitation to ${boardName}`}
-                          className="w-5 h-5 rounded inline-flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--border-default)] transition-colors"
-                        >
-                          <Check className="w-3.5 h-3.5" weight="bold" />
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Decline" placement="top">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); declineBoardInvitation(inv.id) }}
-                          aria-label={`Decline invitation to ${boardName}`}
-                          className="w-5 h-5 rounded inline-flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--border-default)] transition-colors"
-                        >
-                          <X className="w-3.5 h-3.5" weight="bold" />
-                        </button>
-                      </Tooltip>
-                    </span>
-                  </div>
+                      <span className="flex items-center gap-0.5 shrink-0">
+                        <Tooltip content="Accept" placement="top">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); acceptBoardInvitation(inv.id) }}
+                            aria-label={`Accept invitation to ${boardName}`}
+                            className="w-5 h-5 rounded inline-flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--border-default)] transition-colors"
+                          >
+                            <Check className="w-3.5 h-3.5" weight="bold" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip content="Decline" placement="top">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); declineBoardInvitation(inv.id) }}
+                            aria-label={`Decline invitation to ${boardName}`}
+                            className="w-5 h-5 rounded inline-flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--border-default)] transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" weight="bold" />
+                          </button>
+                        </Tooltip>
+                      </span>
+                    </div>
+                  </Tooltip>
                 )
               })}
               {/* Accepted shared boards — same SidebarBoardItem the main

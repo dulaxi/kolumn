@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore'
 import { resolveProfileColor } from '../../constants/colors'
 import DynamicIcon from '../board/DynamicIcon'
 import Menu from '../ui/Menu'
+import Tooltip from '../ui/Tooltip'
 
 export default function UserMenu({ variant = 'header', collapsed = false }) {
   const [open, setOpen] = useState(false)
@@ -71,29 +72,30 @@ export default function UserMenu({ variant = 'header', collapsed = false }) {
         panelClassName="w-56"
         className={collapsed ? '' : 'flex-1 min-w-0'}
       >
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="User menu"
-          title={collapsed ? profile?.display_name || 'Account' : undefined}
-          className={`flex items-center w-full rounded-lg transition-colors text-left hover:bg-[var(--surface-hover)] ${
-            collapsed ? 'justify-center p-1' : 'gap-2 p-1'
-          }`}
-        >
-          {avatar}
-          {!collapsed && (
-            <div className="flex flex-col items-start min-w-0 flex-1 overflow-hidden">
-              <span className="text-sm font-medium text-[var(--text-primary)] truncate w-full">
-                {profile?.display_name || 'User'}
-              </span>
-              <span className="text-xs text-[var(--text-muted)] truncate w-full">
-                {profile?.tier
-                  ? `${profile.tier.charAt(0).toUpperCase()}${profile.tier.slice(1)} plan`
-                  : 'Free plan'}
-              </span>
-            </div>
-          )}
-        </button>
+        <Tooltip content={collapsed ? profile?.display_name || 'Account' : undefined} placement="right">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="User menu"
+            className={`flex items-center w-full rounded-lg transition-colors text-left hover:bg-[var(--surface-hover)] ${
+              collapsed ? 'justify-center p-1' : 'gap-2 p-1'
+            }`}
+          >
+            {avatar}
+            {!collapsed && (
+              <div className="flex flex-col items-start min-w-0 flex-1 overflow-hidden">
+                <span className="text-sm font-medium text-[var(--text-primary)] truncate w-full">
+                  {profile?.display_name || 'User'}
+                </span>
+                <span className="text-xs text-[var(--text-muted)] truncate w-full">
+                  {profile?.tier
+                    ? `${profile.tier.charAt(0).toUpperCase()}${profile.tier.slice(1)} plan`
+                    : 'Free plan'}
+                </span>
+              </div>
+            )}
+          </button>
+        </Tooltip>
       </Menu>
     )
   }

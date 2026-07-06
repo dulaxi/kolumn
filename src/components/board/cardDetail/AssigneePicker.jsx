@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, Plus, User, X } from '@phosphor-icons/react'
 import Avatar from '../../ui/Avatar'
 import DynamicIcon from '../DynamicIcon'
+import Tooltip from '../../ui/Tooltip'
 import { resolveProfileColor } from '../../../constants/colors'
 
 const SIZES = {
@@ -71,11 +72,11 @@ export default function AssigneePicker({
 
   return (
     <div className="relative shrink-0" data-menu-root>
+      <Tooltip content={assignees.length === 0 ? 'Assign someone' : assignees.join(', ')}>
       <button
         type="button"
         onClick={() => { onOpenChange(open ? null : 'assignee'); setSearch('') }}
         className="flex items-center cursor-pointer"
-        title={assignees.length === 0 ? 'Assign someone' : assignees.join(', ')}
       >
         {assignees.length === 0 ? (
           <span className={`${sz.avatar} rounded-full flex items-center justify-center bg-[var(--surface-hover)] text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors`}>
@@ -106,6 +107,7 @@ export default function AssigneePicker({
           </span>
         )}
       </button>
+      </Tooltip>
 
       {open && (
         <div className={`absolute ${PLACEMENT[placement] || PLACEMENT['bottom-end']} p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl min-w-[14rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden`}>

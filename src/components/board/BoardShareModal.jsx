@@ -16,6 +16,7 @@ import Button from '../ui/Button'
 import Input from '../ui/Input'
 import DynamicIcon from './DynamicIcon'
 import ConfirmModal from './ConfirmModal'
+import Tooltip from '../ui/Tooltip'
 import { useBoardStore } from '../../store/boardStore'
 import { useNavigate } from 'react-router-dom'
 import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
@@ -283,15 +284,16 @@ export default function BoardShareModal({ board, onClose }) {
                     /* Non-owner viewing their own row: surface a Leave
                        affordance so they can exit the board without
                        hunting for the sidebar icon. */
-                    <button
-                      type="button"
-                      onClick={() => setConfirmLeaveOpen(true)}
-                      title="Leave this board"
-                      className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-hover)] transition-colors"
-                    >
-                      <SignOut className="w-3 h-3" weight="bold" />
-                      Leave
-                    </button>
+                    <Tooltip content="Leave this board">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmLeaveOpen(true)}
+                        className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-hover)] transition-colors"
+                      >
+                        <SignOut className="w-3 h-3" weight="bold" />
+                        Leave
+                      </button>
+                    </Tooltip>
                   ) : null}
                 </div>
               </div>

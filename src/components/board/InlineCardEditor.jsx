@@ -12,6 +12,7 @@ import { PRIORITY_OPTIONS } from '../../constants/colors'
 import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
 import AssigneePicker from './cardDetail/AssigneePicker'
 import LabelAutocomplete from './LabelAutocomplete'
+import Tooltip from '../ui/Tooltip'
 import { selectCardLabels } from '../../store/selectors'
 
 /**
@@ -177,14 +178,15 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
             />
             {/* Priority check circle — cycles priority on click */}
             <div className="relative shrink-0" data-menu-root>
-              <button
-                type="button"
-                onClick={() => setOpenMenu(openMenu === 'priority' ? null : 'priority')}
-                aria-label="Set priority"
-                title={`Priority: ${priOption.label}`}
-              >
-                <CheckCircle className="w-4 h-4 transition-colors" style={{ color: priColor }} />
-              </button>
+              <Tooltip content={`Priority: ${priOption.label}`}>
+                <button
+                  type="button"
+                  onClick={() => setOpenMenu(openMenu === 'priority' ? null : 'priority')}
+                  aria-label="Set priority"
+                >
+                  <CheckCircle className="w-4 h-4 transition-colors" style={{ color: priColor }} />
+                </button>
+              </Tooltip>
               {openMenu === 'priority' && (
                 <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl min-w-[8rem] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
                   {[

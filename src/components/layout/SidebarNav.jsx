@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import { Blueprint, ChatsCircle, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
 import WorkspaceDropdown from './WorkspaceDropdown'
+import Tooltip from '../ui/Tooltip'
 
-const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
+const ROW_BASE = 'flex w-full items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
 
 function activeClasses(isActive) {
   return isActive
@@ -25,27 +26,28 @@ function IconSlot({ children, badge }) {
 
 function NavLinkRow({ to, end, icon: Icon, label, collapsed, onNavigate, badge, badgeCollapsed }) {
   return (
-    <NavLink
-      to={to}
-      end={end}
-      onClick={onNavigate}
-      title={collapsed ? label : undefined}
-      className={({ isActive }) => `${ROW_BASE} ${activeClasses(isActive)} ${layoutClasses(collapsed)}`}
-    >
-      {({ isActive }) => (
-        <>
-          <IconSlot badge={collapsed ? badgeCollapsed : null}>
-            <Icon className="w-5 h-5 shrink-0" weight={isActive ? 'fill' : 'light'} />
-          </IconSlot>
-          {!collapsed && (
-            <>
-              <span className="truncate flex-1">{label}</span>
-              {badge}
-            </>
-          )}
-        </>
-      )}
-    </NavLink>
+    <Tooltip content={collapsed ? label : undefined} placement="right">
+      <NavLink
+        to={to}
+        end={end}
+        onClick={onNavigate}
+        className={({ isActive }) => `${ROW_BASE} ${activeClasses(isActive)} ${layoutClasses(collapsed)}`}
+      >
+        {({ isActive }) => (
+          <>
+            <IconSlot badge={collapsed ? badgeCollapsed : null}>
+              <Icon className="w-5 h-5 shrink-0" weight={isActive ? 'fill' : 'light'} />
+            </IconSlot>
+            {!collapsed && (
+              <>
+                <span className="truncate flex-1">{label}</span>
+                {badge}
+              </>
+            )}
+          </>
+        )}
+      </NavLink>
+    </Tooltip>
   )
 }
 
@@ -67,17 +69,18 @@ export default function SidebarNav({
   return (
     <div className="flex flex-col gap-px">
       {/* Search — fires global event, no route */}
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new CustomEvent('kolumn:focus-search'))}
-        title={collapsed ? 'Search' : undefined}
-        className={`${ROW_BASE} ${activeClasses(false)} ${layoutClasses(collapsed)}`}
-      >
-        <IconSlot>
-          <MagnifyingGlass size={20} weight="light" className="shrink-0" />
-        </IconSlot>
-        {!collapsed && <span className="truncate flex-1 text-left">Search</span>}
-      </button>
+      <Tooltip content={collapsed ? 'Search' : undefined} placement="right">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('kolumn:focus-search'))}
+          className={`${ROW_BASE} ${activeClasses(false)} ${layoutClasses(collapsed)}`}
+        >
+          <IconSlot>
+            <MagnifyingGlass size={20} weight="light" className="shrink-0" />
+          </IconSlot>
+          {!collapsed && <span className="truncate flex-1 text-left">Search</span>}
+        </button>
+      </Tooltip>
 
       <NavLinkRow to="/chat" end icon={ChatsCircle} label="Chats" collapsed={collapsed} onNavigate={closeMobileMenu} />
       <NavLinkRow to="/build" icon={Blueprint} label="Builder" collapsed={collapsed} onNavigate={closeMobileMenu} />

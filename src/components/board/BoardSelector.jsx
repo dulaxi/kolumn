@@ -8,6 +8,7 @@ import LabelFilter from './filters/LabelFilter'
 import DueFilter from './filters/DueFilter'
 import SortFilter from './filters/SortFilter'
 import ArchivedCardsPanel from './ArchivedCardsPanel'
+import Tooltip from '../ui/Tooltip'
 
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
@@ -167,22 +168,23 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                   icon takes the copper/destructive tint so the user reads it
                   as "live, click to clear." When idle, it stays faint and
                   inert-looking. */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeFilterCount > 0) clearFilters()
-                  else setShowFilters(false)
-                }}
-                aria-label={activeFilterCount > 0 ? 'Clear all filters' : 'Close filters'}
-                title={activeFilterCount > 0 ? 'Clear all filters' : 'Close filters'}
-                className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--surface-hover)] transition-colors ${
-                  activeFilterCount > 0
-                    ? 'text-[var(--color-copper)] hover:text-[var(--color-copper)]'
-                    : 'text-[var(--text-faint)] hover:text-[var(--text-secondary)]'
-                }`}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <Tooltip content={activeFilterCount > 0 ? 'Clear all filters' : 'Close filters'}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeFilterCount > 0) clearFilters()
+                    else setShowFilters(false)
+                  }}
+                  aria-label={activeFilterCount > 0 ? 'Clear all filters' : 'Close filters'}
+                  className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--surface-hover)] transition-colors ${
+                    activeFilterCount > 0
+                      ? 'text-[var(--color-copper)] hover:text-[var(--color-copper)]'
+                      : 'text-[var(--text-faint)] hover:text-[var(--text-secondary)]'
+                  }`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip>
             </div>
           )}
 
