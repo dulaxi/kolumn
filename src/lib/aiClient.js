@@ -2,19 +2,17 @@ import { supabase } from './supabase'
 import { env } from './env'
 import { logError } from '../utils/logger'
 
-export async function streamChat({ message, history = [], boardId, today }, { onText, onToolCall, onDone, onError, onTier }) {
+export async function streamChat({ message, history = [], mode, boardId, today }, { onText, onToolCall, onDone, onError, onTier }) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) {
     onError('Not authenticated')
     return
   }
 
-  // Forward boardId only when present. When provided, the edge function scopes
-  // the system prompt's board snapshot to just that board (pill mode). When
-  // absent, the prompt includes the user's full board context (chat mode).
-  // Forward today (user's local YYYY-MM-DD) so the model anchors date math
-  // to the user's clock, not the edge function's UTC server time.
-  const body = { message, history }
+  // mode identifies the surface ('pill' | 'chat'); the server enforces the
+  // (mode × tier) tool matrix. boardId scopes the pill's system prompt to
+  // its host board. today anchors date math to the user's clock, not UTC.
+  const body = { message, history, mode }
   if (boardId) body.boardId = boardId
   if (today) body.today = today
 
@@ -79,9 +77,9 @@ export async function streamChat({ message, history = [], boardId, today }, { on
           } else if (event.type === 'tier') {
             onTier?.(event)
           } else if (event.type === 'tool_call') {
-            await onToolCall(event.action, event.params)
+            await onToolCall({ id: event.id, action: event.action, params: event.params })
           } else if (event.type === 'done') {
-            onDone()
+            onDone({ stopReason: event.stopReason ?? null })
             return
           } else if (event.type === 'error') {
             onError(event.content)
@@ -92,7 +90,7 @@ export async function streamChat({ message, history = [], boardId, today }, { on
         }
       }
     }
-    onDone()
+    onDone({ stopReason: null })
   } catch (err) {
     onError(err.message)
   }
