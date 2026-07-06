@@ -128,7 +128,7 @@ export default function CalendarPage() {
 
                   {/* Event dots */}
                   {dayCards.length > 0 && (
-                    <div className="flex justify-center gap-[3px] pb-1">
+                    <div className="flex justify-center gap-1 pb-1">
                       {dayCards.slice(0, 4).map((card) => (
                         <span
                           key={card.id}

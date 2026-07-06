@@ -120,7 +120,7 @@ export default function DashboardPage() {
 
         {/* Chat input */}
         <div className="w-full">
-          <ChatInput onSend={handleSubmit} />
+          <ChatInput onSend={handleSubmit} docked={false} />
         </div>
 
         {/* Kanban-action pills */}

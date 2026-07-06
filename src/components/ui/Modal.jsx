@@ -10,6 +10,26 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',')
 
+// --- Z-index ledger (app-wide) ---------------------------------------
+// Kept here because Modal sits in the middle of the stack and is the
+// layer most likely to collide with something. Bump this comment if the
+// ledger changes; don't let per-component z-index values drift from it.
+//   z-10   Bottom tab bar (mobile nav, BottomTabBar.jsx)
+//   z-20   Floating QuickAddBar pill (collapsed state)
+//   z-40   Modal (this component's default `zIndex` prop below). The
+//          QuickAddBar's *expanded* composer is itself a Modal, so it
+//          inherits this layer once open.
+//   z-50   Overlays that must always beat a modal: Popover, Menu,
+//          Tooltip, and other in-place dropdowns. These are almost
+//          always rendered *inside* a Modal's own DOM subtree, so their
+//          z-50 only has to out-rank siblings within that local
+//          stacking context — it doesn't need to (and shouldn't) be
+//          bumped just because Modal moved from 50 to 40.
+//   z-60+  Deliberately-nested modals stacked on top of another modal
+//          (e.g. LabelManagerModal's merge-picker) — pass an explicit
+//          `zIndex` prop higher than the parent's.
+//   z-100  Toaster (App.jsx) — always on top, see note there.
+// -----------------------------------------------------------------------
 let openModalCount = 0
 let savedBodyOverflow = ''
 let savedBodyPaddingRight = ''
@@ -78,7 +98,7 @@ export default function Modal({
   backdropClassName = 'bg-[rgba(27,27,24,0.45)]',
   contentClassName = 'flex items-center justify-center',
   className = '',
-  zIndex = 50,
+  zIndex = 40,
 }) {
   const contentRef = useRef(null)
   const mouseDownInsideRef = useRef(false)

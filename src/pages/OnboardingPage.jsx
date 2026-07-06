@@ -328,7 +328,7 @@ function DevStepPicker({ step, setStep }) {
 function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
   return (
     <>
-      <div className="flex w-full flex-1 flex-col items-center justify-center gap-[30px] px-4 py-10">
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="flex w-full max-w-[450px] flex-col items-center gap-5">
           <header className="w-full max-w-md text-center mb-1">
             <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
@@ -439,7 +439,7 @@ function DetailsStep({
 }) {
   return (
     <>
-      <div className="flex w-full flex-1 flex-col items-center justify-center gap-[30px] px-4 py-10">
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="flex w-full max-w-[450px] flex-col items-center gap-5">
           <header className="w-full max-w-md text-center mb-1">
             <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
@@ -809,7 +809,7 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
   const starters = role ? STARTER_PROMPTS[role] : null
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center gap-[30px] px-4 py-10">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 text-center">
         <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
           What kind of work do you do?
@@ -907,7 +907,7 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
 
 function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center gap-[30px] px-4 py-10">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 text-center">
         <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
           What&rsquo;s your name?

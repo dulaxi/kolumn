@@ -48,7 +48,7 @@ export default function SearchDialog({ open, onClose }) {
       parts.push(
         <span
           key={found}
-          className="bg-[var(--accent-lime-wash)] text-[var(--accent-lime-dark)] rounded-[2px] px-[1px]"
+          className="bg-[var(--accent-lime-wash)] text-[var(--accent-lime-dark)] rounded-[2px] px-px"
         >
           {text.slice(found, found + needle.length)}
         </span>,

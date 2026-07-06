@@ -118,6 +118,12 @@ export default function AppLayout() {
           isDesktop
             ? workspaceSidebarOpen
               ? 'ml-[calc(3rem+280px)]'
+              // 287px isn't on the 4px spacing grid, but it must match
+              // Sidebar.jsx's `w-[287px]` exactly — box-sizing is
+              // border-box (Tailwind preflight), so that width already
+              // includes the 1px border and this offset sits flush
+              // against it with no gap or overlap. Keep both in sync if
+              // either changes.
               : collapsed ? 'ml-12' : 'ml-[287px]'
             : 'ml-0'
         }`}
@@ -129,7 +135,7 @@ export default function AppLayout() {
             /boards owns its own heading row (inline with Share/Sort/Filter). */}
         {isDesktop && !['/dashboard', '/workspace', '/boards', '/build', '/chat'].includes(basePath) && (
           <div className="shrink-0 px-4 sm:px-8 w-full max-w-4xl mx-auto">
-            <header className="flex items-end h-9 md:h-9 shrink-0 mb-[26px]">
+            <header className="flex items-end h-9 md:h-9 shrink-0 mb-6">
               <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)] flex items-center gap-2 min-w-0">
                 <span className="truncate">{title}</span>
               </h1>

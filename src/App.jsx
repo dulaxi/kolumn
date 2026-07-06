@@ -52,7 +52,8 @@ export default function App() {
           toastOptions={{
             duration: 3000,
           }}
-          // Portal-to-body + explicit z-index above any Modal (default 50).
+          // Portal-to-body + explicit z-index above any Modal (default 40 —
+          // see the full app-wide z-index ledger in Modal.jsx).
           // Modals also portal to body — without ALSO portaling the Toaster,
           // it would render inside <div id="root"> (z-auto) and any modal
           // would visually cover it regardless of the local z-index value.

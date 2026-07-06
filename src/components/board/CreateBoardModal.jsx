@@ -169,6 +169,10 @@ export default function CreateBoardModal({ onClose, workspaceId = null }) {
                 {nameError && (
                   <p
                     id="cb-name-error"
+                    // ml-[52px] = the 44px icon button (w-11) + 8px gap
+                    // (gap-2) it sits next to, so the error text lines up
+                    // under the name input, not the icon. Derived, not
+                    // arbitrary — keep in sync if either value changes.
                     className="mt-1.5 ml-[52px] text-[12px] text-[var(--color-copper)]"
                   >
                     Board name is required.
