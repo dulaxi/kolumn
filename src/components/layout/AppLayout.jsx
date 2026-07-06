@@ -7,6 +7,7 @@ import SearchDialog from '../SearchDialog'
 import ShortcutsSheet from '../ShortcutsSheet'
 import BottomTabBar from './BottomTabBar'
 import Button from '../ui/Button'
+import InlineNotice from '../ui/InlineNotice'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
@@ -138,20 +139,20 @@ export default function AppLayout() {
         <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
-            <div className="mb-4 bg-[var(--accent-lime-wash)] border border-[var(--color-lime)] rounded-xl p-4 flex items-center justify-between">
-              <div>
+            <InlineNotice variant="success" className="mb-4 justify-between font-sans">
+              <div className="flex-1">
                 <p className="text-sm font-medium text-[var(--text-primary)]">Local data detected</p>
                 <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                   Import your existing boards and notes into your account?
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Button variant="ghost" size="sm" onClick={handleSkipMigration}>Skip</Button>
-                <Button size="sm" onClick={handleMigrate} disabled={migrating} loading={migrating} loadingText="Importing">
+                <Button variant="secondary" size="sm" onClick={handleMigrate} disabled={migrating} loading={migrating} loadingText="Importing">
                   Import data
                 </Button>
               </div>
-            </div>
+            </InlineNotice>
           )}
           <Outlet />
         </main>

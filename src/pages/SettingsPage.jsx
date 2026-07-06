@@ -151,10 +151,12 @@ export default function SettingsPage() {
           {/* Icon */}
           <div className="relative">
             <label className="text-xs font-medium text-[var(--text-secondary)] mb-1 block">Icon</label>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
-              className="flex items-center gap-2 px-3 py-2 border border-[var(--border-default)] rounded-xl hover:bg-[var(--surface-raised)] transition-colors text-sm"
+              aria-expanded={showProfileIconPicker}
+              className="!justify-start !rounded-xl"
             >
               <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[var(--color-sand)]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[var(--color-sand)]'}`}>
                 {profile?.icon ? (
@@ -163,8 +165,8 @@ export default function SettingsPage() {
                   <User className="w-3.5 h-3.5" />
                 )}
               </div>
-              <span className="text-[var(--text-secondary)]">{profile?.icon || 'Choose icon'}</span>
-            </button>
+              <span className="text-[var(--text-secondary)] font-normal">{profile?.icon || 'Choose icon'}</span>
+            </Button>
             {showProfileIconPicker && (
               <IconPicker
                 value={profile?.icon}

@@ -5,6 +5,7 @@ import { CaretDown, ChatsCircle, MagnifyingGlass, Plus, X } from '@phosphor-icon
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
 import EmptyState from '../components/ui/EmptyState'
+import Button from '../components/ui/Button'
 
 export default function ChatListPage() {
   const navigate = useNavigate()
@@ -25,21 +26,14 @@ export default function ChatListPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)]">Chat</h1>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
+          <Button variant="secondary" size="sm">
             Sort by Activity
             <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
+          </Button>
+          <Button variant="accent" size="sm" onClick={() => navigate('/dashboard')}>
             <Plus className="w-4 h-4" />
             New chat
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -72,14 +66,15 @@ export default function ChatListPage() {
                   {formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id) }}
-                className="shrink-0 p-1 rounded-md opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-raised)] transition-all"
+                className="shrink-0 opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-raised)]"
                 aria-label="Delete conversation"
               >
                 <X className="w-3.5 h-3.5" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -93,14 +88,10 @@ export default function ChatListPage() {
           title="Looking to start a chat?"
           body="Ask questions about your boards, get summaries, or work through your project with Claude."
           action={
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-            >
+            <Button variant="accent" size="sm" onClick={() => navigate('/dashboard')}>
               <Plus className="w-4 h-4" />
               New chat
-            </button>
+            </Button>
           }
         />
       )}

@@ -1,5 +1,6 @@
 import { Blueprint, CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
 import EmptyState from '../components/ui/EmptyState'
+import Button from '../components/ui/Button'
 
 export default function BuilderPage() {
   return (
@@ -7,20 +8,14 @@ export default function BuilderPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)]">Builder</h1>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
+          <Button variant="secondary" size="sm">
             Sort by Activity
             <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
+          </Button>
+          <Button variant="accent" size="sm">
             <Plus className="w-4 h-4" />
             New build
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -40,13 +35,10 @@ export default function BuilderPage() {
         title="Looking to build a board?"
         body="Describe what you want to track and we'll set up columns, labels, and starter cards."
         action={
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
+          <Button variant="accent" size="sm">
             <Plus className="w-4 h-4" />
             New build
-          </button>
+          </Button>
         }
       />
     </div>

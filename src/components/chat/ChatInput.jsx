@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Plus } from '@phosphor-icons/react'
+import { ArrowUp, Plus, Waveform } from '@phosphor-icons/react'
 import Button from '../ui/Button'
 
 export default function ChatInput({ onSend, autoFocus = false }) {
@@ -56,14 +56,7 @@ export default function ChatInput({ onSend, autoFocus = false }) {
                 </Button>
               ) : (
                 <Button variant="ghost" size="icon-sm" aria-label="Use voice mode">
-                  <svg width="20" height="20" viewBox="0 0 21 21" fill="none" className="block">
-                    <rect x="0" y="7.5" height="6" fill="currentColor" width="1" rx="0.5" />
-                    <rect x="4" y="5.5" height="10" fill="currentColor" width="1" rx="0.5" />
-                    <rect x="8" y="2.5" height="16" fill="currentColor" width="1" rx="0.5" />
-                    <rect x="12" y="5.5" height="10" fill="currentColor" width="1" rx="0.5" />
-                    <rect x="16" y="2.5" height="16" fill="currentColor" width="1" rx="0.5" />
-                    <rect x="20" y="7.5" height="6" fill="currentColor" width="1" rx="0.5" />
-                  </svg>
+                  <Waveform size={20} weight="regular" />
                 </Button>
               )}
             </div>

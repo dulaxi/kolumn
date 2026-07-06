@@ -73,14 +73,15 @@ export default function WorkspacePage() {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <Tooltip content="Decline" placement="top">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => declineInvitation(inv.id)}
                           aria-label="Decline"
-                          className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+                          className="!rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                         >
                           <X className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </Tooltip>
                       <Button size="sm" onClick={() => acceptInvitation(inv.id)}>
                         <Check className="w-4 h-4" />

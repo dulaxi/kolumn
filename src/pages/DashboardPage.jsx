@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore'
 import { useBoardStore } from '../store/boardStore'
 import { useChatStore } from '../store/chatStore'
 import ChatInput from '../components/chat/ChatInput'
+import Button from '../components/ui/Button'
 
 const ACTIONS = [
   { label: 'Create a card', icon: Plus, prompt: 'Create a card: ' },
@@ -127,14 +128,15 @@ export default function DashboardPage() {
           <ul className="flex flex-wrap justify-center gap-2" aria-label="Quick actions">
             {ACTIONS.map(({ label, icon: Icon, prompt }) => (
               <li key={label}>
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => handleSubmit(prompt)}
-                  className="inline-flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-page)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer"
+                  className="!bg-[var(--surface-page)]"
                 >
                   <Icon className="w-4 h-4 text-[var(--text-muted)] -ml-0.5" />
                   <span className="whitespace-nowrap">{label}</span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

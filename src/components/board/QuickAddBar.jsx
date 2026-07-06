@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Sparkle, Waveform } from '@phosphor-icons/react'
+import { ArrowUp, Check, Plus, Sparkle, Waveform, X } from '@phosphor-icons/react'
 
 import { useBoardStore } from '../../store/boardStore'
 import { executeTool } from '../../lib/toolExecutor'
@@ -7,6 +7,7 @@ import { runPillLoop } from '../../lib/pillAgentLoop'
 import { logError } from '../../utils/logger'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
+import InlineNotice from '../ui/InlineNotice'
 
 export default function QuickAddBar({ boardId }) {
   const [expanded, setExpanded] = useState(false)
@@ -163,31 +164,22 @@ export default function QuickAddBar({ boardId }) {
         <div className="mb-2 px-3.5 py-2 rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-card)] font-mono text-[12px] leading-relaxed flex flex-col gap-1">
           {progress.map((row, i) => (
             <div key={i} className={`flex items-start gap-2 ${row.ok ? 'text-[var(--text-secondary)]' : 'text-[var(--color-copper)]'}`}>
-              <span className="shrink-0">{row.ok ? '✓' : '✗'}</span>
+              <span className="shrink-0 mt-[1px]">
+                {row.ok ? <Check size={13} weight="bold" /> : <X size={13} weight="bold" />}
+              </span>
               <span className="flex-1 break-words">{row.label}</span>
             </div>
           ))}
         </div>
       )}
       {feedback && (
-        <div
-          role={feedback.type === 'error' ? 'alert' : 'status'}
-          className={`mb-2 px-3.5 py-2.5 rounded-[10px] border bg-[var(--surface-card)] font-mono text-[12px] leading-relaxed shadow-[0_4px_24px_rgba(27,27,24,0.10)] flex items-start gap-2.5 ${
-            feedback.type === 'error'
-              ? 'border-[var(--color-copper)] text-[var(--color-copper)]'
-              : 'border-[var(--text-primary)] text-[var(--text-primary)]'
-          }`}
+        <InlineNotice
+          variant={feedback.type === 'error' ? 'error' : 'info'}
+          onDismiss={() => setFeedback(null)}
+          className="mb-2"
         >
-          <span className="flex-1 whitespace-pre-wrap break-words">{feedback.text}</span>
-          <button
-            type="button"
-            onClick={() => setFeedback(null)}
-            aria-label="Dismiss"
-            className="shrink-0 -mr-1 px-1 leading-none text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
-          >
-            ×
-          </button>
-        </div>
+          {feedback.text}
+        </InlineNotice>
       )}
       <div className="flex flex-col bg-[var(--surface-card)] rounded-[20px] border border-transparent shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035),0_0_0_0.5px_rgba(224,219,213,0.6)] focus-within:shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.075),0_0_0_0.5px_rgba(174,170,164,0.6)] transition-shadow duration-200">
         <div className="flex flex-col m-3.5 gap-3">
@@ -204,7 +196,7 @@ export default function QuickAddBar({ boardId }) {
           />
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon-sm" aria-label="Add files">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+              <Plus size={20} />
             </Button>
             <div className="flex-1" />
             {input.trim() ? (

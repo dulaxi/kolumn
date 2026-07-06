@@ -5,6 +5,7 @@ import { addMonths, addYears, format } from 'date-fns'
 import { useAuthStore } from '../store/authStore'
 import { showToast } from '../utils/toast'
 import { ArrowLeft, CreditCard, Info } from '@phosphor-icons/react'
+import Button from '../components/ui/Button'
 
 // Pricing — matches what's on the landing + signup pricing cards.
 // Yearly = 10× monthly (≈17% saved over paying month-by-month).
@@ -49,14 +50,15 @@ export default function UpgradeProPage() {
     <div className="min-h-screen bg-[var(--surface-page)]">
       {/* Back button — absolute top-left, ghost styling */}
       <header className="relative flex w-full items-center justify-center pb-5 pt-8">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon-md"
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="absolute left-4 top-8 h-9 w-9 inline-flex items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+          className="absolute left-4 top-8 !rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         >
           <ArrowLeft size={20} weight="bold" />
-        </button>
+        </Button>
       </header>
 
       <div className="flex flex-col w-full max-w-lg mx-auto px-4 pt-8 pb-16">
@@ -130,14 +132,16 @@ export default function UpgradeProPage() {
           </section>
 
           {/* ── Subscribe CTA ── */}
-          <button
-            type="button"
+          <Button
+            variant="accent"
+            size="lg"
             onClick={handleSubscribe}
-            disabled={submitting}
-            className="mt-2 w-full h-11 rounded-[0.6rem] bg-[var(--text-primary)] text-white font-medium text-base inline-flex items-center justify-center gap-2 hover:bg-[var(--btn-primary-hover)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            loading={submitting}
+            loadingText="Activating…"
+            className="mt-2 w-full"
           >
-            {submitting ? 'Activating…' : 'Activate Pro'}
-          </button>
+            Activate Pro
+          </Button>
 
           <p className="text-center text-xs text-[var(--text-muted)] mt-1 max-w-md mx-auto">
             By activating, you agree that Kolumn may charge your card on the renewal date once billing launches. Cancel anytime in settings.
