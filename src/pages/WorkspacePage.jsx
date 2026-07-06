@@ -33,7 +33,7 @@ export default function WorkspacePage() {
           {/* Illustration + heading */}
           <div className="flex flex-col items-center gap-4">
             <div className="w-24 h-24 rounded-3xl bg-[var(--surface-raised)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
-              <Users className="w-12 h-12" strokeWidth={1.25} />
+              <Users className="w-12 h-12" weight="light" />
             </div>
             <h1 className="font-heading text-center text-3xl tracking-tight text-[var(--text-primary)]">Your workspaces</h1>
             <p className="text-center text-sm text-[var(--text-muted)]">

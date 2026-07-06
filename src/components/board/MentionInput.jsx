@@ -98,7 +98,7 @@ export default function MentionInput({ value, onChange, onSubmit, members, place
                 i === selectedIdx ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
               }`}
             >
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${m.color || 'bg-[#E0DBD5]'}`}>
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${m.color || 'bg-[var(--color-sand)]'}`}>
                 {(m.display_name || '?')[0].toUpperCase()}
               </div>
               <span className="font-medium">{m.display_name}</span>

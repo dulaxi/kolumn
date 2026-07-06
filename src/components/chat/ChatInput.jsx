@@ -52,7 +52,7 @@ export default function ChatInput({ onSend, autoFocus = false }) {
               <div className="flex-1" />
               {input.trim() ? (
                 <Button size="icon-sm" onClick={handleSubmit} aria-label="Send message">
-                  <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
+                  <ArrowUp className="w-4 h-4" weight="bold" />
                 </Button>
               ) : (
                 <Button variant="ghost" size="icon-sm" aria-label="Use voice mode">

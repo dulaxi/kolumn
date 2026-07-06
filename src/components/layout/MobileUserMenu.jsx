@@ -43,7 +43,7 @@ export default function MobileUserMenu() {
         aria-label="User menu"
         className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
       >
-        <Kanban className="w-[22px] h-[22px] text-[var(--text-primary)]" strokeWidth={1.75} />
+        <Kanban className="w-[22px] h-[22px] text-[var(--text-primary)]" weight="light" />
       </button>
     </Menu>
   )

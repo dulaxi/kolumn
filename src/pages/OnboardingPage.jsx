@@ -1014,7 +1014,7 @@ function DisclaimerStep({ shareTrainingData, setShareTrainingData, onContinue })
                 className="sr-only peer"
               />
               <div className="w-9 h-5 rounded-full bg-[var(--surface-raised)] border border-[var(--color-sand)] peer-checked:bg-[var(--accent-lime)] peer-checked:border-[var(--accent-lime)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--surface-card)] peer-focus-visible:ring-[var(--text-primary)]/30 transition-colors" />
-              <div className="absolute start-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-[0_1px_2px_rgba(27,27,24,0.2)] transition-transform peer-checked:translate-x-4" />
+              <div className="absolute start-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--surface-card)] shadow-[0_1px_2px_rgba(27,27,24,0.2)] transition-transform peer-checked:translate-x-4" />
             </label>
             <p
               id="disclaimer-training-label"

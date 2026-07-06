@@ -170,7 +170,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
 
   const handleSaveAndClose = () => { handleSave(); onClose() }
 
-  const priColor = priority === 'high' ? '#C27A4A' : priority === 'low' ? '#A8BA32' : '#D4A843'
+  const priColor = priority === 'high' ? 'var(--color-copper)' : priority === 'low' ? 'var(--color-lime-dark)' : 'var(--color-honey)'
 
   return (
     <Modal
@@ -392,9 +392,9 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               panel={
                 <>
                   {[
-                    { value: 'low', label: 'Low', color: '#A8BA32' },
-                    { value: 'medium', label: 'Medium', color: '#D4A843' },
-                    { value: 'high', label: 'High', color: '#C27A4A' },
+                    { value: 'low', label: 'Low', color: 'var(--color-lime-dark)' },
+                    { value: 'medium', label: 'Medium', color: 'var(--color-honey)' },
+                    { value: 'high', label: 'High', color: 'var(--color-copper)' },
                   ].map((opt) => (
                     <Menu.Item
                       key={opt.value}

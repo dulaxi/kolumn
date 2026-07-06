@@ -121,7 +121,7 @@ export const useWorkspacesStore = create(
               user_id: r.user_id,
               display_name: p?.display_name || 'Unknown',
               icon: p?.icon || null,
-              color: p?.color || 'bg-[#E0DBD5]',
+              color: p?.color || 'bg-[var(--color-sand)]',
               email: p?.email || '',
               role: r.role,
             }

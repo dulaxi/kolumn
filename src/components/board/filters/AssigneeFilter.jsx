@@ -19,7 +19,7 @@ export default function AssigneeFilter({ filters, setFilters, assignees }) {
             selected={selected === name}
             onSelect={() => select(name)}
             icon={
-              <span className="w-5 h-5 rounded-full bg-[#E0DBD5] flex items-center justify-center text-[10px] font-medium text-[var(--text-secondary)]">
+              <span className="w-5 h-5 rounded-full bg-[var(--color-sand)] flex items-center justify-center text-[10px] font-medium text-[var(--text-secondary)]">
                 {name.charAt(0).toUpperCase()}
               </span>
             }

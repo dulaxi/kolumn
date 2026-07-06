@@ -112,7 +112,7 @@ export default function DashboardPage() {
         {/* Greeting */}
         <div className="w-full flex justify-center">
           <div className="flex items-center gap-3 text-[var(--text-primary)]" style={{ fontFamily: "'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif", fontWeight: 400, lineHeight: 1.5, fontSize: 'clamp(1.875rem, 1.2rem + 2vw, 2.5rem)' }}>
-            <Sparkle size={32} weight="fill" className="shrink-0 text-[#D4B8C8]" />
+            <Sparkle size={32} weight="fill" className="shrink-0 text-[var(--accent-sparkle)]" />
             <span className="whitespace-nowrap select-none">{pickGreeting()}, <span className="text-[var(--color-logo)]">{firstName}</span></span>
           </div>
         </div>

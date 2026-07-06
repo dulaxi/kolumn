@@ -135,7 +135,7 @@ export default function QuickAddBar({ boardId }) {
             onClick={() => setExpanded(true)}
             className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
           >
-            <Sparkle size={20} weight="fill" className="text-[#D4B8C8]" />
+            <Sparkle size={20} weight="fill" className="text-[var(--accent-sparkle)]" />
           </button>
           <div className="w-px h-5 bg-[var(--border-default)]" />
           <button
@@ -175,7 +175,7 @@ export default function QuickAddBar({ boardId }) {
           className={`mb-2 px-3.5 py-2.5 rounded-[10px] border bg-[var(--surface-card)] font-mono text-[12px] leading-relaxed shadow-[0_4px_24px_rgba(27,27,24,0.10)] flex items-start gap-2.5 ${
             feedback.type === 'error'
               ? 'border-[var(--color-copper)] text-[var(--color-copper)]'
-              : 'border-[#1B1B18] text-[var(--text-primary)]'
+              : 'border-[var(--text-primary)] text-[var(--text-primary)]'
           }`}
         >
           <span className="flex-1 whitespace-pre-wrap break-words">{feedback.text}</span>
@@ -209,7 +209,7 @@ export default function QuickAddBar({ boardId }) {
             <div className="flex-1" />
             {input.trim() ? (
               <Button size="icon-sm" onClick={handleSubmit} disabled={processing} aria-label="Send">
-                <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
+                <ArrowUp className="w-4 h-4" weight="bold" />
               </Button>
             ) : (
               <Button variant="ghost" size="icon-sm" aria-label="Voice mode">

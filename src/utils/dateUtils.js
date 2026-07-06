@@ -56,12 +56,12 @@ export function formatDueDateLabel(date, { long = false } = {}) {
 }
 
 export function dueDateColorClass(date) {
-  if (!date) return 'text-[#57534e]'
+  if (!date) return 'text-[var(--text-muted)]'
   const d = typeof date === 'string' ? parseDueDate(date) : date
   if (isYesterday(d) || (isPast(d) && !isToday(d))) return 'text-[var(--color-copper)] font-medium'
   if (isToday(d)) return 'text-[var(--color-honey)] font-medium'
   if (isTomorrow(d)) return 'text-[var(--color-lime-dark)] font-medium'
-  return 'text-[#57534e]'
+  return 'text-[var(--text-muted)]'
 }
 
 export function dueDateBadgeClass(date) {

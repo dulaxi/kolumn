@@ -19,7 +19,7 @@ const VARIANTS = {
   primary:
     'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)]',
   accent:
-    'bg-[var(--color-lime)] text-[#1B1B18] hover:bg-[var(--color-lime-dark)]',
+    'bg-[var(--color-lime)] text-[var(--color-ink)] hover:bg-[var(--color-lime-dark)]',
   secondary:
     'bg-[var(--color-cream)] text-[var(--text-primary)] border border-[var(--color-sand)] hover:bg-[var(--color-cream-dark)]',
   ghost:

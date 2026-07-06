@@ -35,6 +35,9 @@
   --color-mauve-wash: #E8DDE2;
   --color-mauve-cream: #F0E8EB;
   --color-mint-wash: #D6E8E0;
+  --accent-sparkle: #D4B8C8;
+
+  --shadow-raised: 0 4px 24px rgba(27, 27, 24, 0.10);
 
   /* Selected-state fills — two intents, two colors:
      - --accent-lime-soft: "I just toggled this on" (filter pills, icon

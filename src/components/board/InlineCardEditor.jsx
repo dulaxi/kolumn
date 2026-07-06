@@ -89,7 +89,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   if (!card) return null
 
   const priOption = PRIORITY_OPTIONS.find((p) => p.value === priority) || PRIORITY_OPTIONS[1]
-  const priColor = priority === 'high' ? '#C27A4A' : priority === 'low' ? '#A8BA32' : '#D4A843'
+  const priColor = priority === 'high' ? 'var(--color-copper)' : priority === 'low' ? 'var(--color-lime-dark)' : 'var(--color-honey)'
 
   // Combined display: persisted labels (from store) for existing cards,
   // or pending labels for new (optimistic) cards.
@@ -188,9 +188,9 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               {openMenu === 'priority' && (
                 <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[8rem] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
                   {[
-                    { value: 'low', label: 'Low', color: '#A8BA32' },
-                    { value: 'medium', label: 'Medium', color: '#D4A843' },
-                    { value: 'high', label: 'High', color: '#C27A4A' },
+                    { value: 'low', label: 'Low', color: 'var(--color-lime-dark)' },
+                    { value: 'medium', label: 'Medium', color: 'var(--color-honey)' },
+                    { value: 'high', label: 'High', color: 'var(--color-copper)' },
                   ].map((opt) => (
                     <div
                       key={opt.value}

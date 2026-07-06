@@ -34,7 +34,11 @@ export default function SettingsPage() {
   const profile = useAuthStore((s) => s.profile)
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const [showProfileIconPicker, setShowProfileIconPicker] = useState(false)
-  const isLightColor = (color) => ['bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]'].includes(color)
+  // NOTE: 'bg-[#E0DBD5]' etc. are the legacy persisted `profiles.color` values
+  // (see PROFILE_COLORS in constants/colors.js) — left as literal hex so this
+  // still matches rows written before the token system existed. The token
+  // entry alongside it is only for the no-color-set render fallback below.
+  const isLightColor = (color) => ['bg-[#E0DBD5]', 'bg-[#E8E2DB]', 'bg-[#C2D64A]', 'bg-[#A8BA32]', 'bg-[#D4A843]', 'bg-[var(--color-sand)]'].includes(color)
 
   const handleProfileUpdate = (updates) => {
     updateProfile(updates)
@@ -123,7 +127,7 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {/* Preview */}
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[var(--color-sand)]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[var(--color-sand)]'}`}>
               {profile?.icon ? (
                 <DynamicIcon name={profile.icon} className="w-5 h-5" />
               ) : (
@@ -152,7 +156,7 @@ export default function SettingsPage() {
               onClick={() => setShowProfileIconPicker(!showProfileIconPicker)}
               className="flex items-center gap-2 px-3 py-2 border border-[var(--border-default)] rounded-xl hover:bg-[var(--surface-raised)] transition-colors text-sm"
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[#E0DBD5]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[#E0DBD5]'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isLightColor(profile?.color || 'bg-[var(--color-sand)]') ? 'text-[var(--text-primary)]' : 'text-white'} ${profile?.color || 'bg-[var(--color-sand)]'}`}>
                 {profile?.icon ? (
                   <DynamicIcon name={profile.icon} className="w-3.5 h-3.5" />
                 ) : (
