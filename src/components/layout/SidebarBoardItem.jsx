@@ -49,7 +49,10 @@ export default function SidebarBoardItem({
           : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]'
       }`}
     >
-      <span className="flex items-center gap-3 truncate">
+      {/* min-w-0 (not truncate) — the name span truncates itself; an
+          overflow clip here would crop the icon's Tooltip bubble to the
+          width of icon + name (short names = clipped tooltip). */}
+      <span className="flex items-center gap-3 min-w-0">
         {editable ? (
           <Tooltip content="Change icon" placement="right">
             <button
