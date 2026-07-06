@@ -634,13 +634,13 @@ export async function executeTool(action, params) {
     const sourceColumn = store.columns[card.column_id] || null
     const snapshot = { ...card }
 
-    // Fire and forget: store.deleteCard awaits a 5-second undo window
-    // internally. If we awaited here, the pill would stay locked in
-    // "Creating..." for the full window, and the user couldn't even click
-    // the undo button. The optimistic DOM update in deleteCard is
+    // Don't await the 5s undo window — the undo toast IS the confirmation
+    // mechanism (per design decision 4). Report optimistically; if the user
+    // hits undo, the model's confirmation goes stale the same way a manual
+    // delete's would. The optimistic DOM update in deleteCard is
     // synchronous, so the user-visible state is already correct by the
     // time we return.
-    store.deleteCard(card.id)
+    store.deleteCard(card.id).catch((err) => logWarn('[toolExecutor] delete_card failed post-report:', err))
 
     return {
       ok: true,
@@ -650,6 +650,7 @@ export async function executeTool(action, params) {
         board: { id: sourceBoard.id, name: sourceBoard.name },
         column: sourceColumn ? { id: sourceColumn.id, title: sourceColumn.title } : null,
       },
+      note: 'deleted — user has a 5-second undo',
     }
   }
 
@@ -1051,9 +1052,11 @@ export async function executeTool(action, params) {
     if (!board) return { ok: false, error: 'Board not found for the given boardId' }
 
     const snapshot = { id: board.id, name: board.name, icon: board.icon }
-    // Fire-and-forget: store.deleteBoard runs the 5s undo flow internally.
-    store.deleteBoard(board.id)
-    return { ok: true, board: snapshot }
+    // Don't await the 5s undo window — the undo toast IS the confirmation
+    // mechanism (per design decision 4). See delete_card above for the
+    // full rationale.
+    store.deleteBoard(board.id).catch((err) => logWarn('[toolExecutor] delete_board failed post-report:', err))
+    return { ok: true, board: snapshot, note: 'deleted — user has a 5-second undo' }
   }
 
   if (action === 'add_column') {
@@ -1099,12 +1102,15 @@ export async function executeTool(action, params) {
     }
 
     const snapshot = { id: column.id, title: column.title }
-    // Fire-and-forget: store.deleteColumn runs the 5s undo flow internally.
-    store.deleteColumn(board.id, column.id)
+    // Don't await the 5s undo window — the undo toast IS the confirmation
+    // mechanism (per design decision 4). See delete_card above for the
+    // full rationale.
+    store.deleteColumn(board.id, column.id).catch((err) => logWarn('[toolExecutor] delete_column failed post-report:', err))
     return {
       ok: true,
       column: snapshot,
       resolved: { board: { id: board.id, name: board.name } },
+      note: 'deleted — user has a 5-second undo',
     }
   }
 
@@ -1164,5 +1170,5 @@ export async function executeTool(action, params) {
     return { ok: true, readOnly: true }
   }
 
-  return { ok: false, error: `Unknown action: ${action}` }
+  return { ok: false, error: `Unknown tool: ${action}` }
 }
