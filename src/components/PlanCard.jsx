@@ -59,7 +59,7 @@ export default function PlanCard({
 
       <h3
         className="text-3xl font-normal tracking-tight text-[var(--text-primary)]"
-        style={{ fontFamily: 'Clash Grotesk, system-ui, sans-serif' }}
+        style={{ fontFamily: 'var(--font-logo)' }}
       >
         {plan.name}
       </h3>

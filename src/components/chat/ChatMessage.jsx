@@ -36,7 +36,7 @@ export default function ChatMessage({ message }) {
     <div className="mb-5 pl-1">
       <div
         className="text-[15px] leading-[1.7] text-[var(--text-secondary)]"
-        style={{ fontFamily: "'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif", fontWeight: 400 }}
+        style={{ fontFamily: 'var(--font-logo)', fontWeight: 400 }}
       >
         <MarkdownRenderer content={message.text} />
       </div>
