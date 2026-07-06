@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { streamChat } from '../lib/aiClient'
-import { executeTool, isDestructive } from '../lib/toolExecutor'
 
 export const useChatStore = create(persist((set, get) => ({
   conversations: {},
@@ -78,34 +77,6 @@ export const useChatStore = create(persist((set, get) => ({
     }
   }),
 
-  approveToolCall: async (conversationId, messageId) => {
-    const msgs = get().messages[conversationId] || []
-    const msg = msgs.find((m) => m.id === messageId)
-    if (!msg?.pendingToolCall || msg.pendingToolCall.status !== 'pending') return
-
-    set((s) => ({
-      messages: {
-        ...s.messages,
-        [conversationId]: s.messages[conversationId].map((m) =>
-          m.id === messageId ? { ...m, pendingToolCall: { ...m.pendingToolCall, status: 'approved' } } : m
-        ),
-      },
-    }))
-
-    await executeTool(msg.pendingToolCall.action, msg.pendingToolCall.params)
-  },
-
-  rejectToolCall: (conversationId, messageId) => {
-    set((s) => ({
-      messages: {
-        ...s.messages,
-        [conversationId]: s.messages[conversationId].map((m) =>
-          m.id === messageId ? { ...m, pendingToolCall: { ...m.pendingToolCall, status: 'rejected' } } : m
-        ),
-      },
-    }))
-  },
-
   setActiveConversation: (id) => set({ activeConversationId: id }),
   setStreaming: (conversationId) => set({ streamingConversationId: conversationId }),
   clearStreaming: () => set({ streamingConversationId: null }),
@@ -121,10 +92,9 @@ export const useChatStore = create(persist((set, get) => ({
 
     const msgId = get().addMessage(conversationId, { role: 'assistant', text: '' })
     let fullText = ''
-    const collectedCardIds = []
 
     await streamChat(
-      { message: userText, history },
+      { message: userText, history, mode: 'chat' },
       {
         onText: (chunk) => {
           fullText += chunk
@@ -137,31 +107,6 @@ export const useChatStore = create(persist((set, get) => ({
             },
           }))
         },
-        onToolCall: async (action, params) => {
-          if (isDestructive(action)) {
-            set((s) => ({
-              messages: {
-                ...s.messages,
-                [conversationId]: s.messages[conversationId].map((m) =>
-                  m.id === msgId ? { ...m, pendingToolCall: { action, params, status: 'pending' } } : m
-                ),
-              },
-            }))
-            return
-          }
-          const result = await executeTool(action, params)
-          if (result.cardId) {
-            collectedCardIds.push(result.cardId)
-            set((s) => ({
-              messages: {
-                ...s.messages,
-                [conversationId]: s.messages[conversationId].map((m) =>
-                  m.id === msgId ? { ...m, cardIds: [...collectedCardIds] } : m
-                ),
-              },
-            }))
-          }
-        },
         onDone: () => {
           set({ streamingConversationId: null })
           get().generateTitle(conversationId)
@@ -170,7 +115,13 @@ export const useChatStore = create(persist((set, get) => ({
           set({ tierInfo: info })
         },
         onError: (error) => {
-          fullText += `\n\n*Error: ${error}*`
+          // Rate-limit gets a friendlier inline notice with an upgrade path;
+          // other errors keep the existing italic rendering.
+          const isLimit = /daily limit/i.test(String(error))
+          const text = isLimit
+            ? `\n\n*${error}* [Upgrade to Pro](/upgrade/pro)`
+            : `\n\n*Error: ${error}*`
+          fullText += text
           set((s) => ({
             streamingConversationId: null,
             messages: {
