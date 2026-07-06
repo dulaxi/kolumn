@@ -58,7 +58,7 @@ export default function CardFiles({ cardId, attachmentItems, getAttachmentUrl, d
                 <div>
                   <div className="relative flex flex-row items-center gap-1 justify-between">
                     <div className="flex flex-row gap-1 shrink min-w-0">
-                      <div className="min-w-0 h-[18px] flex flex-row items-center justify-center gap-0.5 px-1 border-0.5 border-[var(--border-default)] shadow-sm rounded bg-[var(--surface-card)]/70 backdrop-blur-sm font-medium">
+                      <div className="min-w-0 h-[18px] flex flex-row items-center justify-center gap-0.5 px-1 border-0.5 border-[var(--border-default)] shadow-sm rounded bg-[var(--surface-card)] font-medium">
                         <p className="uppercase truncate text-[var(--text-secondary)] text-[11px] leading-[13px]">{ext}</p>
                       </div>
                     </div>

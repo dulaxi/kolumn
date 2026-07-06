@@ -57,7 +57,7 @@ export default function WorkspaceCreateModal({ open, onClose, onCreated }) {
     >
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col text-left shadow-xl border-0.5 border-[var(--border-default)] rounded-2xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-md"
+        className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-md"
       >
         {/* Header */}
         <div className="flex items-center gap-4 justify-between">

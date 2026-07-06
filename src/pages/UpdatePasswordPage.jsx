@@ -46,7 +46,7 @@ export default function UpdatePasswordPage() {
           <p className="text-sm text-[var(--text-secondary)] mt-1">Enter your new password below</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm space-y-4">
           {error && (
             <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)] rounded-xl px-3 py-2">
               {error}

@@ -28,7 +28,7 @@ export default function PlanCard({
   const isPicker = mode === 'picker'
 
   const wrapperClasses = [
-    'relative rounded-[2rem] p-7 flex flex-col text-left',
+    'relative rounded-xl p-7 flex flex-col text-left',
     plan.primaryCta ? 'border-2' : 'border',
     plan.ghost
       ? 'bg-[var(--surface-page)] border-[var(--color-sand)]'

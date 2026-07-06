@@ -92,7 +92,7 @@ export default function NotesPage() {
   return (
     <div className="flex gap-0 flex-1 min-h-0">
       {/* Notes List */}
-      <div className={`${isMobile ? (showEditor ? 'hidden' : 'flex-1 rounded-2xl') : 'w-72 shrink-0 rounded-l-2xl'} bg-[var(--surface-card)] border border-[var(--border-default)] shadow-sm flex flex-col`}>
+      <div className={`${isMobile ? (showEditor ? 'hidden' : 'flex-1 rounded-xl') : 'w-72 shrink-0 rounded-l-xl'} bg-[var(--surface-card)] border border-[var(--border-default)] shadow-sm flex flex-col`}>
         <div className="p-3 border-b border-[var(--border-default)] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Notes</h2>
           <button
@@ -141,7 +141,7 @@ export default function NotesPage() {
       </div>
 
       {/* Editor */}
-      <div className={`${isMobile ? (showEditor ? 'flex-1 rounded-2xl border-l' : 'hidden') : 'flex-1 border-l-0 rounded-r-2xl'} bg-[var(--surface-card)] border border-[var(--border-default)] shadow-sm flex flex-col`}>
+      <div className={`${isMobile ? (showEditor ? 'flex-1 rounded-xl border-l' : 'hidden') : 'flex-1 border-l-0 rounded-r-xl'} bg-[var(--surface-card)] border border-[var(--border-default)] shadow-sm flex flex-col`}>
         {selectedNote ? (
           <>
             <div className="p-4 border-b border-[var(--border-default)] flex items-center">

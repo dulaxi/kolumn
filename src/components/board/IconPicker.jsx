@@ -125,10 +125,10 @@ export default function IconPicker({ value, onChange, onClose }) {
     >
       <div
         data-icon-picker
-        className={`bg-[var(--surface-card)] shadow-2xl flex flex-col overflow-hidden ${
+        className={`bg-[var(--surface-card)] shadow-[var(--shadow-raised)] flex flex-col overflow-hidden ${
           isMobile
-            ? 'fixed inset-x-0 bottom-0 rounded-t-2xl pb-[env(safe-area-inset-bottom)] max-h-[88vh]'
-            : 'rounded-2xl w-[460px] h-[560px]'
+            ? 'fixed inset-x-0 bottom-0 rounded-t-xl pb-[env(safe-area-inset-bottom)] max-h-[88vh]'
+            : 'rounded-xl w-[460px] h-[560px]'
         }`}
       >
         {/* iOS-style drag handle on mobile only */}

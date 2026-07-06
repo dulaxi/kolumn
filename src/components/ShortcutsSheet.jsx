@@ -13,7 +13,7 @@ export default function ShortcutsSheet({ open, onClose }) {
 
   return (
     <Modal open={open} onClose={onClose} contentClassName="flex items-center justify-center">
-      <div className="bg-[var(--surface-card)] rounded-2xl shadow-xl w-full max-w-md mx-4 p-7">
+      <div className="bg-[var(--surface-card)] rounded-xl shadow-[var(--shadow-raised)] w-full max-w-md mx-4 p-7">
         <h2 className="font-heading text-2xl text-[var(--text-primary)] mb-6">Keyboard shortcuts</h2>
 
         <ul className="divide-y divide-[var(--border-subtle)]">

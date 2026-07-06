@@ -102,7 +102,7 @@ export default function CreateBoardModal({ onClose, workspaceId = null }) {
           className={`relative bg-[var(--surface-page)] flex flex-col overflow-hidden ${
             isMobile
               ? 'fixed inset-0 rounded-none'
-              : 'rounded-2xl w-[512px] max-h-[88vh] shadow-[0_24px_72px_rgba(27,27,24,0.16)]'
+              : 'rounded-xl w-[512px] max-h-[88vh] shadow-[0_24px_72px_rgba(27,27,24,0.16)]'
           }`}
         >
           <button

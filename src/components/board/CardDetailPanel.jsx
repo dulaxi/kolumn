@@ -185,7 +185,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
       disableInitialFocus
     >
       <div
-        className="flex flex-col text-left shadow-xl border-0.5 border-[var(--border-default)] rounded-2xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-3xl min-h-[50vh] max-h-[90vh] overflow-hidden"
+        className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-3xl min-h-[50vh] max-h-[90vh] overflow-hidden"
       >
         {/* Top bar — back + labels + actions. Labels sit between the
             back button and the right-aligned action buttons so they live

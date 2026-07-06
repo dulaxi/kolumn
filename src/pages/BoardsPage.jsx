@@ -106,7 +106,7 @@ export default function BoardsPage() {
           />
         ) : Object.keys(boards).length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--surface-hover)] flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-xl bg-[var(--surface-hover)] flex items-center justify-center mb-4">
               <SquaresFour className="w-7 h-7 text-[var(--text-muted)]" />
             </div>
             <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Create your first board</h2>

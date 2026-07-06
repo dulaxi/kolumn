@@ -118,7 +118,7 @@ export default function UpgradeProPage() {
           </div>
 
           {/* ── Payment placeholder (Stripe Elements goes here later) ── */}
-          <section className="p-5 bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-2xl">
+          <section className="p-5 bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-xl">
             <div className="text-[var(--text-primary)] text-base font-medium mb-4">Payment method</div>
             <div className="flex items-start gap-3 p-4 bg-[var(--surface-raised)] rounded-lg border border-[var(--color-sand)]">
               <CreditCard size={20} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />

@@ -137,7 +137,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     <div
       ref={rootRef}
       onKeyDown={handleKeyDown}
-      className="w-full flex flex-col gap-3 rounded-2xl border border-[var(--text-muted)] p-4 text-left bg-[var(--surface-page)] transition-all"
+      className="w-full flex flex-col gap-3 rounded-xl border border-[var(--text-muted)] p-4 text-left bg-[var(--surface-page)] transition-all"
     >
       {/* Top row: icon + title + check (priority) */}
       <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                 <CheckCircle className="w-4 h-4 transition-colors" style={{ color: priColor }} />
               </button>
               {openMenu === 'priority' && (
-                <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[8rem] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
+                <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl min-w-[8rem] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
                   {[
                     { value: 'low', label: 'Low', color: 'var(--color-lime-dark)' },
                     { value: 'medium', label: 'Medium', color: 'var(--color-honey)' },
@@ -304,7 +304,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               </button>
             )}
             {openMenu === 'date' && (
-              <div className="absolute left-0 top-full mt-1 p-2 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 flex flex-col gap-1">
+              <div className="absolute left-0 top-full mt-1 p-2 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 flex flex-col gap-1">
                 <input
                   type="date"
                   value={dueDate ? dueDate.split('T')[0] : ''}

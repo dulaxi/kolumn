@@ -32,7 +32,7 @@ export default function WorkspacePage() {
         <div className="flex flex-col items-center gap-10 w-full" style={{ maxWidth: 530 }}>
           {/* Illustration + heading */}
           <div className="flex flex-col items-center gap-4">
-            <div className="w-24 h-24 rounded-3xl bg-[var(--surface-raised)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
+            <div className="w-24 h-24 rounded-xl bg-[var(--surface-raised)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
               <Users className="w-12 h-12" weight="light" />
             </div>
             <h1 className="font-heading text-center text-3xl tracking-tight text-[var(--text-primary)]">Your workspaces</h1>
@@ -53,7 +53,7 @@ export default function WorkspacePage() {
                 return (
                   <div
                     key={inv.id}
-                    className="flex items-center gap-3 w-full rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] p-4 shadow-sm"
+                    className="flex items-center gap-3 w-full rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-4 shadow-sm"
                   >
                     <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--surface-raised)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
                       {ws?.icon ? (
@@ -99,7 +99,7 @@ export default function WorkspacePage() {
             <button
               type="button"
               onClick={() => setCreateOpen(true)}
-              className="flex w-full items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 text-left shadow-sm transition-colors hover:bg-[var(--surface-raised)] cursor-pointer"
+              className="flex w-full items-center gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 text-left shadow-sm transition-colors hover:bg-[var(--surface-raised)] cursor-pointer"
             >
               <div className="flex shrink-0 items-center rounded-full bg-[var(--surface-hover)] p-1.5">
                 <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

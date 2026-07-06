@@ -108,7 +108,7 @@ export default function AssigneePicker({
       </button>
 
       {open && (
-        <div className={`absolute ${PLACEMENT[placement] || PLACEMENT['bottom-end']} p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] backdrop-blur-xl rounded-xl min-w-[14rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden`}>
+        <div className={`absolute ${PLACEMENT[placement] || PLACEMENT['bottom-end']} p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl min-w-[14rem] text-[var(--text-primary)] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 overflow-hidden`}>
           <div className="px-1.5 pb-1.5">
             <input
               value={search}

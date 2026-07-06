@@ -284,7 +284,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
         onClose={() => setEditingWip(false)}
         contentClassName="flex items-center justify-center"
       >
-        <div className="bg-[var(--surface-card)] rounded-2xl border-0.5 border-[var(--border-default)] shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full max-w-xs mx-4 p-5">
+        <div className="bg-[var(--surface-card)] rounded-xl border-0.5 border-[var(--border-default)] shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full max-w-xs mx-4 p-5">
             <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">WIP Limit</h3>
             <p className="text-xs text-[var(--text-muted)] mb-3">Maximum number of tasks in "{column.title}". Leave empty for no limit.</p>
             <Input

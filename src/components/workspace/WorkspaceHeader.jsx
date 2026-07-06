@@ -60,7 +60,7 @@ export default function WorkspaceHeader({
           type="button"
           onClick={() => isOwner && setPickerOpen((o) => !o)}
           disabled={!isOwner}
-          className={`h-16 w-16 rounded-2xl border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] flex items-center justify-center transition-colors ${
+          className={`h-16 w-16 rounded-xl border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)] flex items-center justify-center transition-colors ${
             isOwner ? 'hover:border-[var(--color-mist)] cursor-pointer' : ''
           }`}
           aria-label={isOwner ? 'Change workspace color' : 'Workspace color'}

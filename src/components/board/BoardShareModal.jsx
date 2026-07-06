@@ -164,10 +164,10 @@ export default function BoardShareModal({ board, onClose }) {
 
   return (
     <Modal open onClose={onClose} contentClassName="flex items-center justify-center">
-      <div className={`bg-[var(--surface-card)] shadow-xl ${
+      <div className={`bg-[var(--surface-card)] shadow-[var(--shadow-raised)] ${
         isMobile
           ? 'fixed inset-0'
-          : 'rounded-2xl w-full max-w-md mx-4'
+          : 'rounded-xl w-full max-w-md mx-4'
       }`}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">

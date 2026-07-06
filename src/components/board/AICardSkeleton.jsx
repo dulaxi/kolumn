@@ -1,6 +1,6 @@
 export default function AICardSkeleton() {
   return (
-    <div className="w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm bg-[var(--surface-card)] border-[var(--color-mist)]">
+    <div className="w-full flex flex-col gap-3 rounded-xl border p-4 text-left shadow-sm bg-[var(--surface-card)] border-[var(--color-mist)]">
       {/* Top row: icon + title skeleton */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 shrink-0 rounded-lg ai-skeleton-block" />

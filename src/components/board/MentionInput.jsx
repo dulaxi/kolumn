@@ -88,7 +88,7 @@ export default function MentionInput({ value, onChange, onSubmit, members, place
       />
 
       {showSuggestions && (
-        <div className="absolute bottom-full mb-1 left-0 right-0 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute bottom-full mb-1 left-0 right-0 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg shadow-[var(--shadow-raised)] z-50 overflow-hidden">
           {suggestions.map((m, i) => (
             <button
               key={m.user_id}

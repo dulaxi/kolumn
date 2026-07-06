@@ -16,7 +16,7 @@ export default function WorkspaceDangerZone({ isOwner, onDelete, onLeave }) {
   return (
     <section className="mt-12 mb-6">
       <h2 className="text-sm font-semibold text-[var(--text-primary)]">Danger zone</h2>
-      <div className="mt-3 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] p-4 flex items-center gap-4">
+      <div className="mt-3 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-4 flex items-center gap-4">
         <div className="flex-1">
           <div className="text-sm font-medium text-[var(--text-primary)]">{title}</div>
           <div className="text-xs text-[var(--text-muted)]">{description}</div>

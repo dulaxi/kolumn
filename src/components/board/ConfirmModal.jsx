@@ -16,7 +16,7 @@ export default function ConfirmModal({ title, message, confirmLabel = 'Delete', 
       initialFocusRef={confirmRef}
     >
       <div
-        className="bg-[var(--surface-card)] border border-[var(--color-copper)] rounded-2xl w-full max-w-sm mx-4 p-5"
+        className="bg-[var(--surface-card)] border border-[var(--color-copper)] rounded-xl w-full max-w-sm mx-4 p-5"
       >
         <div className="flex items-center gap-2 mb-2">
           <Warning className="w-4 h-4 text-[var(--color-copper)]" />

@@ -8,7 +8,7 @@ export default function WorkspaceMembers({ members, membersLoaded, currentUserId
       <h2 className="text-sm font-semibold text-[var(--text-primary)]">Members</h2>
       <p className="mt-1 text-xs text-[var(--text-muted)]">Everyone in this workspace can see all its boards and be assigned to cards.</p>
 
-      <div className="mt-4 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] overflow-hidden">
+      <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] overflow-hidden">
         {!membersLoaded ? (
           <div className="p-4 text-sm text-[var(--text-muted)]">Loading members…</div>
         ) : members.length === 0 ? (

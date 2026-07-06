@@ -8,7 +8,7 @@
 export default function ActionCard({ icon: Icon, title, description, onClick, to, disabled = false, variant = 'default' }) {
   const isDanger = variant === 'danger'
 
-  const baseClasses = `flex w-full items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 text-left shadow-sm transition-colors ${
+  const baseClasses = `flex w-full items-center gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 text-left shadow-sm transition-colors ${
     disabled
       ? 'opacity-50 cursor-not-allowed'
       : isDanger

@@ -115,7 +115,7 @@ export default function SettingsPage() {
     <div className="w-full">
 
       {/* My Profile */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
           <User className="w-4 h-4 text-[var(--text-secondary)]" />
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">My Profile</h2>
@@ -200,7 +200,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Theme */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Palette className="w-4 h-4 text-[var(--text-secondary)]" />
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Theme</h2>
@@ -237,7 +237,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Font */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-5 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
           <TextT className="w-4 h-4 text-[var(--text-secondary)]" />
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Font</h2>
@@ -305,7 +305,7 @@ export default function SettingsPage() {
 
       {/* Inline clear-data confirmation */}
       {confirmingClear && (
-        <div className="bg-[var(--color-copper-wash)]/40 border border-[var(--color-copper)]/40 rounded-2xl p-5 mb-4">
+        <div className="bg-[var(--color-copper-wash)]/40 border border-[var(--color-copper)]/40 rounded-xl p-5 mb-4">
           <div className="flex items-center gap-2 mb-2">
             <Warning className="w-4 h-4 text-[var(--color-copper)]" />
             <h2 className="text-sm font-semibold text-[var(--color-copper)]">Confirm — this cannot be undone</h2>

@@ -150,7 +150,7 @@ export default function DashboardPage() {
                   key={t.id}
                   type="button"
                   onClick={() => handleCreateFromTemplate(t)}
-                  className="w-full flex flex-col gap-2 rounded-2xl border-[0.5px] border-[var(--border-default)] bg-[var(--surface-page)] p-3 text-left transition-all cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--text-muted)]"
+                  className="w-full flex flex-col gap-2 rounded-xl border-[0.5px] border-[var(--border-default)] bg-[var(--surface-page)] p-3 text-left transition-all cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--text-muted)]"
                 >
                   <div className="flex items-center gap-3 w-full min-w-0">
                     <div className="flex w-9 h-9 shrink-0 items-center justify-center rounded-lg border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)]">
@@ -167,7 +167,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={handleNewBoard}
-              className="w-full flex flex-col gap-2 rounded-2xl border-[0.5px] border-dashed border-[var(--border-default)] bg-[var(--surface-page)] p-3 text-left transition-all cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--text-muted)]"
+              className="w-full flex flex-col gap-2 rounded-xl border-[0.5px] border-dashed border-[var(--border-default)] bg-[var(--surface-page)] p-3 text-left transition-all cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--text-muted)]"
             >
               <div className="flex items-center gap-3 w-full min-w-0">
                 <div className="flex w-9 h-9 shrink-0 items-center justify-center rounded-lg border-0.5 border-[var(--border-default)] bg-[var(--surface-raised)]">

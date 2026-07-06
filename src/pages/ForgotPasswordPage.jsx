@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {sent ? (
-          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm text-center">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm text-center">
             <div className="w-12 h-12 rounded-full bg-[var(--accent-lime-wash)] flex items-center justify-center mx-auto mb-3">
               <Envelope className="w-6 h-6 text-[var(--color-lime-dark)]" />
             </div>
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm space-y-4">
+          <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm space-y-4">
             {error && (
               <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)] rounded-xl px-3 py-2">
                 {error}
