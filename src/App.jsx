@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import AppLayout from './components/layout/AppLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
+import Spinner from './components/ui/Spinner'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
@@ -61,7 +62,7 @@ export default function App() {
         document.body,
       )}
       <UndoListener />
-      <Suspense fallback={<div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center"><div className="text-sm text-[var(--text-muted)]">Loading...</div></div>}>
+      <Suspense fallback={<div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center"><Spinner size={24} /></div>}>
         <Routes>
           <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
           <Route path="/sandbox/landing-board" element={<ErrorBoundary><LandingBoardSandbox /></ErrorBoundary>} />

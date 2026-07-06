@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { CaretDown, ChatsCircle, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
+import EmptyState from '../components/ui/EmptyState'
 
 export default function ChatListPage() {
   const navigate = useNavigate()
@@ -87,23 +88,21 @@ export default function ChatListPage() {
           No conversations matching "{search}"
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-          <ChatsCircle className="w-24 h-24 text-[var(--text-muted)]" weight="light" />
-          <h3 className="mt-2 text-base font-medium text-[var(--text-secondary)]">
-            Looking to start a chat?
-          </h3>
-          <p className="max-w-sm text-xs text-[var(--text-muted)]">
-            Ask questions about your boards, get summaries, or work through your project with Claude.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            New chat
-          </button>
-        </div>
+        <EmptyState
+          icon={ChatsCircle}
+          title="Looking to start a chat?"
+          body="Ask questions about your boards, get summaries, or work through your project with Claude."
+          action={
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              New chat
+            </button>
+          }
+        />
       )}
     </div>
   )

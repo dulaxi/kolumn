@@ -6,6 +6,8 @@ import BoardView from '../components/board/BoardView'
 import CreateBoardModal from '../components/board/CreateBoardModal'
 import LabelManagerModal from '../components/board/LabelManagerModal'
 import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import Spinner from '../components/ui/Spinner'
 
 const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
 
@@ -105,17 +107,18 @@ export default function BoardsPage() {
             sortBy={sortBy}
           />
         ) : Object.keys(boards).length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <div className="w-14 h-14 rounded-xl bg-[var(--surface-hover)] flex items-center justify-center mb-4">
-              <SquaresFour className="w-7 h-7 text-[var(--text-muted)]" />
-            </div>
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Create your first board</h2>
-            <p className="text-sm text-[var(--text-muted)] mb-5 max-w-xs">Organize tasks into columns that match your workflow.</p>
-            <Button onClick={() => setShowCreateModal(true)}>
-              <SquaresFour className="w-4 h-4" />
-              New Board
-            </Button>
-          </div>
+          <EmptyState
+            className="h-full"
+            icon={SquaresFour}
+            title="Create your first board"
+            body="Organize tasks into columns that match your workflow."
+            action={
+              <Button onClick={() => setShowCreateModal(true)}>
+                <SquaresFour className="w-4 h-4" />
+                New Board
+              </Button>
+            }
+          />
         ) : (
           <div className="flex items-center justify-center h-full text-[var(--text-muted)]">
             Select a board to get started
@@ -124,7 +127,7 @@ export default function BoardsPage() {
       </div>
 
       {editingCardId && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 grid items-center justify-items-center bg-black/50"><div className="text-sm text-[var(--text-muted)]">Loading...</div></div>}>
+        <Suspense fallback={<div className="fixed inset-0 z-50 grid items-center justify-items-center bg-black/50"><Spinner size={24} /></div>}>
           <CardDetailPanel
             key={editingCardId}
             cardId={editingCardId}

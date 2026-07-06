@@ -6,6 +6,7 @@ import WorkspaceDetailView from '../components/workspace/WorkspaceDetailView'
 import DynamicIcon from '../components/board/DynamicIcon'
 import Button from '../components/ui/Button'
 import Tooltip from '../components/ui/Tooltip'
+import EmptyState from '../components/ui/EmptyState'
 
 /**
  * WorkspacePage — routes between two views:
@@ -31,17 +32,17 @@ export default function WorkspacePage() {
       <div className="flex h-full w-full items-center justify-center">
         <div className="flex flex-col items-center gap-10 w-full" style={{ maxWidth: 530 }}>
           {/* Illustration + heading */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-24 h-24 rounded-xl bg-[var(--surface-raised)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
-              <Users className="w-12 h-12" weight="light" />
-            </div>
-            <h1 className="font-heading text-center text-3xl tracking-tight text-[var(--text-primary)]">Your workspaces</h1>
-            <p className="text-center text-sm text-[var(--text-muted)]">
-              Workspaces group your team's boards, members, and invitations.
-              {' '}You have {Object.keys(workspaces).length} workspace{Object.keys(workspaces).length !== 1 ? 's' : ''}
-              {invitationsCount > 0 ? ` and ${invitationsCount} pending invitation${invitationsCount !== 1 ? 's' : ''}` : ''}.
-            </p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="Your workspaces"
+            body={
+              <>
+                Workspaces group your team's boards, members, and invitations.
+                {' '}You have {Object.keys(workspaces).length} workspace{Object.keys(workspaces).length !== 1 ? 's' : ''}
+                {invitationsCount > 0 ? ` and ${invitationsCount} pending invitation${invitationsCount !== 1 ? 's' : ''}` : ''}.
+              </>
+            }
+          />
 
           {/* Pending invitations */}
           {invitations.length > 0 && (

@@ -3,8 +3,9 @@ import { capture } from '../lib/analytics'
 import { useNoteStore } from '../store/noteStore'
 import { useAutoSave } from '../hooks/useAutoSave'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, FileText, Plus, Trash } from '@phosphor-icons/react'
+import { ArrowLeft, FileText, Note, Plus, Trash } from '@phosphor-icons/react'
 import { useIsMobile } from '../hooks/useMediaQuery'
+import EmptyState from '../components/ui/EmptyState'
 
 export default function NotesPage() {
   const notes = useNoteStore((s) => s.notes)
@@ -105,9 +106,7 @@ export default function NotesPage() {
 
         <div className="flex-1 overflow-y-auto">
           {sortedNotes.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)] p-4 text-center">
-              No notes yet
-            </p>
+            <EmptyState icon={Note} title="No notes yet" />
           ) : (
             sortedNotes.map((note) => (
               <button

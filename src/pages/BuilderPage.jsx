@@ -1,4 +1,5 @@
 import { Blueprint, CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import EmptyState from '../components/ui/EmptyState'
 
 export default function BuilderPage() {
   return (
@@ -34,22 +35,20 @@ export default function BuilderPage() {
         />
       </div>
 
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <Blueprint className="w-24 h-24 text-[var(--text-muted)]" weight="light" />
-        <h3 className="mt-2 text-base font-medium text-[var(--text-secondary)]">
-          Looking to build a board?
-        </h3>
-        <p className="max-w-sm text-xs text-[var(--text-muted)]">
-          Describe what you want to track and we&apos;ll set up columns, labels, and starter cards.
-        </p>
-        <button
-          type="button"
-          className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          New build
-        </button>
-      </div>
+      <EmptyState
+        icon={Blueprint}
+        title="Looking to build a board?"
+        body="Describe what you want to track and we'll set up columns, labels, and starter cards."
+        action={
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-sm text-[var(--text-secondary)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            New build
+          </button>
+        }
+      />
     </div>
   )
 }

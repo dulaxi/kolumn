@@ -14,9 +14,10 @@ import {
   addMonths,
   subMonths,
 } from 'date-fns'
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { CalendarBlank, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { groupCardsByDate, getCardsForDate } from '../utils/dateUtils'
 import { DOT_COLORS, EVENT_ACCENT } from '../constants/colors'
+import EmptyState from '../components/ui/EmptyState'
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -160,8 +161,8 @@ export default function CalendarPage() {
             </div>
 
             {selectedDayCards.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-sm text-[var(--text-muted)]">
-                No tasks scheduled
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState icon={CalendarBlank} title="No tasks scheduled" />
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto divide-y divide-[var(--surface-raised)]">
