@@ -3,7 +3,7 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
 export async function buildContext(
   supabase: SupabaseClient,
   userId: string,
-  opts: { boardId?: string; today?: string } = {},
+  opts: { boardId?: string; today?: string; mode?: "pill" | "chat" } = {},
 ): Promise<{ systemPrompt: string }> {
   const [boardsRes, columnsRes, cardsRes, notesRes, profileRes] = await Promise.all([
     supabase.from("boards").select("id, name, icon"),

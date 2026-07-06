@@ -2,7 +2,7 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { buildContext } from "./context.ts"
 import { TOOLS } from "./tools.ts"
 import { SSEWriter, sseHeaders } from "./stream.ts"
-import { checkTier, filterToolsForTier } from "./tier.ts"
+import { checkTier, filterToolsForMode, isContinuationMessage, Mode } from "./tier.ts"
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 
@@ -89,8 +89,9 @@ Deno.serve(async (req) => {
 
   let body: {
     conversation_id?: string
-    message: string
-    history?: Array<{ role: string; content: string }>
+    message: string | Array<Record<string, unknown>>
+    history?: Array<{ role: string; content: string | Array<Record<string, unknown>> }>
+    mode?: string
     boardId?: string
     today?: string // user's local date as YYYY-MM-DD
   }
@@ -100,12 +101,30 @@ Deno.serve(async (req) => {
     return new Response("Invalid JSON", { status: 400 })
   }
 
-  if (!body.message?.trim()) {
+  const hasMessage = typeof body.message === "string"
+    ? body.message.trim().length > 0
+    : Array.isArray(body.message) && body.message.length > 0
+  if (!hasMessage) {
     return new Response("Message is required", { status: 400 })
   }
 
+  // The client identifies its surface; the server enforces. Never infer
+  // mode from the presence of boardId.
+  if (body.mode !== "pill" && body.mode !== "chat") {
+    return new Response('mode must be "pill" or "chat"', { status: 400 })
+  }
+  const mode = body.mode as Mode
+  if (mode === "pill" && !body.boardId) {
+    return new Response("pill mode requires boardId", { status: 400 })
+  }
+  if (mode === "chat") {
+    body.boardId = undefined
+  }
+
+  const isContinuation = isContinuationMessage(body.message)
+
   // Tier check + rate limit
-  const tierInfo = await checkTier(supabase, user.id, body.message)
+  const tierInfo = await checkTier(supabase, user.id, { isContinuation })
 
   if (!tierInfo.allowed) {
     return new Response(
@@ -121,9 +140,13 @@ Deno.serve(async (req) => {
     )
   }
 
-  const { systemPrompt } = await buildContext(supabase, user.id, { boardId: body.boardId, today: body.today })
+  const { systemPrompt } = await buildContext(supabase, user.id, {
+    boardId: body.boardId,
+    today: body.today,
+    mode,
+  })
 
-  const messages: Array<{ role: string; content: string }> = [
+  const messages: Array<{ role: string; content: unknown }> = [
     ...(body.history || []),
     { role: "user", content: body.message },
   ]
@@ -152,7 +175,7 @@ Deno.serve(async (req) => {
               cache_control: { type: "ephemeral" },
             },
           ],
-          tools: filterToolsForTier(TOOLS, tierInfo.tier, { pillMode: !!body.boardId }),
+          tools: filterToolsForMode(TOOLS, tierInfo.tier, mode),
           messages,
           stream: true,
         }),
@@ -173,7 +196,9 @@ Deno.serve(async (req) => {
       const decoder = new TextDecoder()
       let buffer = ""
       let currentToolName = ""
+      let currentToolId = ""
       let currentToolInput = ""
+      let stopReason: string | null = null
 
       while (true) {
         const { done, value } = await reader.read()
@@ -194,6 +219,7 @@ Deno.serve(async (req) => {
             if (event.type === "content_block_start") {
               if (event.content_block?.type === "tool_use") {
                 currentToolName = event.content_block.name
+                currentToolId = event.content_block.id
                 currentToolInput = ""
               }
             } else if (event.type === "content_block_delta") {
@@ -206,13 +232,16 @@ Deno.serve(async (req) => {
               if (currentToolName) {
                 try {
                   const params = JSON.parse(currentToolInput)
-                  sse.write({ type: "tool_call", action: currentToolName, params })
+                  sse.write({ type: "tool_call", id: currentToolId, action: currentToolName, params })
                 } catch {
-                  sse.write({ type: "tool_call", action: currentToolName, params: {} })
+                  sse.write({ type: "tool_call", id: currentToolId, action: currentToolName, params: {} })
                 }
                 currentToolName = ""
+                currentToolId = ""
                 currentToolInput = ""
               }
+            } else if (event.type === "message_delta") {
+              if (event.delta?.stop_reason) stopReason = event.delta.stop_reason
             }
           } catch {
             // Skip unparseable lines
@@ -220,7 +249,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      sse.close()
+      sse.close(stopReason)
     } catch (err) {
       sse.error(`Stream error: ${(err as Error).message}`)
     }

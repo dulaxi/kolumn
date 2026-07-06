@@ -29,8 +29,8 @@ export class SSEWriter {
     this.controller?.enqueue(this.encoder.encode(sseEvent(data)))
   }
 
-  close() {
-    this.write({ type: "done" })
+  close(stopReason: string | null = null) {
+    this.write({ type: "done", stopReason })
     this.controller?.close()
   }
 
