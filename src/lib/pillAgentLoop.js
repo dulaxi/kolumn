@@ -32,8 +32,13 @@ function describeResult(action, params, result) {
 
 // Client-driven continuation loop for the pill (the write surface).
 // Rounds: model → tool_use blocks → browser executes → tool_results →
-// model reacts. The model's FINAL round text is the only narration the
-// caller should show as confirmation — earlier rounds are acknowledgments.
+// model reacts. Only a round that ends WITHOUT another tool_use (i.e. the
+// model is actually done) sets finalText — that text is a real confirmation.
+// Text from a round that goes on to call more tools is a pre-execution
+// acknowledgment ("On it…") and must never be shown as the final result. If
+// the round cap is hit while the model still wants to keep calling tools,
+// finalText stays '' and the caller falls back to the progress rows (all-ok
+// rows tell the story; failed rows drive "Some steps failed" feedback).
 export async function runPillLoop({ text, boardId, boardName, today }, { onProgress } = {}) {
   const transcript = [] // { role, content } — content is string or blocks
   const rows = []
@@ -110,7 +115,6 @@ export async function runPillLoop({ text, boardId, boardName, today }, { onProgr
     }
 
     message = results
-    if (roundText) finalText = roundText // keep best-effort text if the cap cuts us off
   }
 
   return { finalText, rows, error }
