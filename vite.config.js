@@ -48,6 +48,9 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    // Deno tests (supabase/functions/**/*.test.ts) run via `deno test`,
+    // not Vitest — scope Vitest to the frontend suite.
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.js'],
     css: false,
