@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
     body.boardId = undefined
   }
 
-  const isContinuation = isContinuationMessage(body.message)
+  const isContinuation = mode === "pill" && isContinuationMessage(body.message)
 
   // Tier check + rate limit
   const tierInfo = await checkTier(supabase, user.id, { isContinuation })
@@ -138,6 +138,20 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       },
     )
+  }
+
+  // Pill mode is board-pinned by contract. A boardId that doesn't resolve
+  // (deleted board, revoked membership, stale client) must fail loudly —
+  // never fall back to full multi-board context.
+  if (mode === "pill") {
+    const { data: pillBoard } = await supabase
+      .from("boards")
+      .select("id")
+      .eq("id", body.boardId!)
+      .maybeSingle()
+    if (!pillBoard) {
+      return new Response("board not found", { status: 404 })
+    }
   }
 
   const { systemPrompt } = await buildContext(supabase, user.id, {
