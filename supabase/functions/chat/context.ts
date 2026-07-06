@@ -35,7 +35,7 @@ export async function buildContext(
   // When boardId is provided (pill mode), scope every downstream snapshot to
   // just that board. The model should not see other boards' cards or columns;
   // the pill is a single-board action surface.
-  const scopedBoard = opts.boardId
+  const scopedBoard = opts.mode === "pill" && opts.boardId
     ? allBoards.find((b: any) => b.id === opts.boardId)
     : null
   const boards = scopedBoard ? [scopedBoard] : allBoards
@@ -43,6 +43,7 @@ export async function buildContext(
   const columns = allColumns.filter((c: any) => boardIdSet.has(c.board_id))
   const cards = allCards.filter((c: any) => boardIdSet.has(c.board_id))
   const pillMode = !!scopedBoard
+  const chatMode = opts.mode === "chat"
 
   const boardIds = boards.map((b: any) => b.id)
   let members: Array<{ display_name: string }> = []
@@ -153,6 +154,14 @@ You are operating **exclusively on the board "${scopedBoard!.name}"**. You canno
     ? ""
     : `\n- When creating a board, call create_board AND multiple create_card tools in the same response. Create at least 5 cards. Every card goes in the first column unless the user explicitly says otherwise.`
 
+  // Honest-narration rules. Pill: tools exist, but outcomes must only be
+  // reported after tool results arrive (the loop feeds them back). Chat:
+  // no tools at all — never pretend an action happened.
+  const toolConductRules = chatMode
+    ? `\n- You have NO tools in this chat — you cannot create, move, update, or delete anything. When the user asks for an action, say plainly that actions are done from the board itself (the quick-add pill on a board page), then help by answering from the context above. Never pretend an action happened.`
+    : `\n- When you call tools, do not describe their outcomes yet — say at most a brief acknowledgment like "On it…". After tool results arrive, report what actually happened, including anything that failed.
+- If the user asks for something your tools here cannot do (for example, creating a new board from the quick-add pill), say so plainly and tell them where they can do it. Never pretend an action happened.`
+
   const workspacesLine = pillMode
     ? ""
     : `\nWorkspaces: ${workspaceList.length > 0 ? workspaceList.join(", ") : "None"}`
@@ -182,7 +191,7 @@ house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildi
 ## Always
 - Act on clear intent. "Move all to Done" = move them.${boardActiveTrackingRule}
 - Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
-- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing.
+${chatMode ? "" : "- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing."}${toolConductRules}
 - For card creation: always include title, priority, and icon (from the list above). The card's board is set automatically by the surface you're called from — do not include a "board" field. Add description, labels, checklist, assignee, due_date only when they add value. Do not include an assignee unless the user explicitly names a person — leave cards unassigned by default. Capitalize the first letter of titles.
 ${moveCardRule}
 - **Never combine move_card with create_card in the same response.** When the user says "move X to Y", call **only** move_card. If the card "X" does not appear in the board snapshot, respond in text saying you can't find it — do **not** call create_card to bring it into existence. Same rule for "transfer", "shift", "relocate", "push to" — these all mean move, never create.
