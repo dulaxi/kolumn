@@ -396,7 +396,7 @@ without a deliberate reason discussed with the user.
 - **Modals: no backdrop blur.** Just dimmed ink overlay (`rgba(27,27,24,0.45)`). Perf + visual win.
 - **Toasts: always `showToast.*` from `src/utils/toast.js`.** Never roll inline. Pick the most specific intent (`delete` not `error`, `restore` not `success`).
 - **Buttons: ink primary, lime accent for create/save/positive, copper for destructive.**
-- **Border radius: 8px small (buttons, inputs), 10-12px raised (modals, panels, tiles).** Deliberate exception: kanban card surfaces (`Card`, `AICardSkeleton`, `InlineCardEditor`) use 16px (`rounded-2xl`) — a product choice; don't "fix" them back to 12px.
+- **Border radius: 8px small (buttons, inputs), 10-12px raised (modals, panels, tiles).** Deliberate exception: kanban card surfaces (`Card`, `AICardSkeleton`, `InlineCardEditor`, `CardDetailPanel`) use 16px (`rounded-2xl`) — a product choice; don't "fix" them back to 12px.
 - **Shadows: minimal.** Default raised shadow is `0 4px 24px rgba(27,27,24,0.10)` (matches toasts).
 - **Card field names are snake_case** (DB columns). See Key Data Shapes.
 - **Workspace icon vocabulary.** The workspace dropdown uses a tight three-icon typology — re-use it for any future workspace-adjacent surface so the visual language stays consistent:

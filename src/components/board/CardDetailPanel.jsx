@@ -184,8 +184,10 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
       // inside; we just don't pre-select anything.
       disableInitialFocus
     >
+      {/* Card-family frame: matches Card.jsx (rounded-2xl + 1px mist border)
+          so the detail view reads as the zoomed-in card, not a generic modal. */}
       <div
-        className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-3xl min-h-[50vh] max-h-[90vh] overflow-hidden"
+        className="flex flex-col text-left shadow-[var(--shadow-raised)] border border-[var(--color-mist)] rounded-2xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-3xl min-h-[50vh] max-h-[90vh] overflow-hidden"
       >
         {/* Top bar — back + labels + actions. Labels sit between the
             back button and the right-aligned action buttons so they live
