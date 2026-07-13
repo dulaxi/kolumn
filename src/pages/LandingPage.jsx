@@ -1411,7 +1411,7 @@ function HeroAuthCard() {
                 type="submit"
                 size="lg"
                 loading={checking}
-                loadingText="Checking…"
+                loadingText="Checking"
                 className="w-full !text-base !rounded-[0.6rem]"
               >
                 Continue with email
@@ -1442,7 +1442,7 @@ function HeroAuthCard() {
               <Button
                 type="submit"
                 loading={submitting}
-                loadingText="Signing in…"
+                loadingText="Signing in"
                 size="lg"
                 className="w-full !text-base !rounded-[0.6rem]"
               >

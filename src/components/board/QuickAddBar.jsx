@@ -183,17 +183,24 @@ export default function QuickAddBar({ boardId }) {
       )}
       <div className="flex flex-col bg-[var(--surface-card)] rounded-[20px] border border-transparent shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035),0_0_0_0.5px_rgba(224,219,213,0.6)] focus-within:shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.075),0_0_0_0.5px_rgba(174,170,164,0.6)] transition-shadow duration-200">
         <div className="flex flex-col m-3.5 gap-3">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={processing ? 'Creating...' : 'Type a task or paste notes...'}
-            disabled={processing}
-            rows={1}
-            className="w-full resize-none bg-transparent text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[1.5rem] max-h-96 pl-1.5 pt-1 disabled:opacity-50"
-            onInput={(e) => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-          />
+          <div className="relative">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={processing ? '' : 'Type a task or paste notes...'}
+              disabled={processing}
+              rows={1}
+              className="w-full resize-none bg-transparent text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none min-h-[1.5rem] max-h-96 pl-1.5 pt-1 disabled:opacity-50"
+              onInput={(e) => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+            />
+            {processing && !input && (
+              <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-1 text-[15px] text-[var(--text-muted)] opacity-50">
+                Creating<span className="btn-dots" />
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon-sm" aria-label="Add files">
               <Plus size={20} />

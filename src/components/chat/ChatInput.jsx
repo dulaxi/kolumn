@@ -2,7 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { ArrowUp, Plus, Waveform } from '@phosphor-icons/react'
 import Button from '../ui/Button'
 
-export default function ChatInput({ onSend, autoFocus = false, docked = true }) {
+// `busy`: the current conversation is streaming a reply. Typing stays
+// enabled so the user can draft their next message, but sends are
+// blocked (Enter + button) until the stream finishes.
+export default function ChatInput({ onSend, autoFocus = false, docked = true, busy = false }) {
   const [input, setInput] = useState('')
   const textareaRef = useRef(null)
 
@@ -12,7 +15,7 @@ export default function ChatInput({ onSend, autoFocus = false, docked = true }) 
 
   const handleSubmit = () => {
     const text = input.trim()
-    if (!text) return
+    if (!text || busy) return
     onSend(text)
     setInput('')
     if (textareaRef.current) {
@@ -49,7 +52,7 @@ export default function ChatInput({ onSend, autoFocus = false, docked = true }) 
           </Button>
           <div className="flex-1" />
           {input.trim() ? (
-            <Button size="icon-sm" onClick={handleSubmit} aria-label="Send message">
+            <Button size="icon-sm" onClick={handleSubmit} disabled={busy} aria-label="Send message">
               <ArrowUp className="w-4 h-4" weight="bold" />
             </Button>
           ) : (

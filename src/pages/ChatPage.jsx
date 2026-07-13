@@ -55,7 +55,7 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <ChatInput onSend={handleSend} autoFocus />
+      <ChatInput onSend={handleSend} autoFocus busy={streamingId === id} />
     </div>
   )
 }

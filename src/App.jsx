@@ -25,6 +25,7 @@ const ChatListPage = lazy(() => import('./pages/ChatListPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const LandingBoardSandbox = lazy(() => import('./pages/LandingBoardSandbox'))
 const OnboardingBoardSandbox = lazy(() => import('./pages/OnboardingBoardSandbox'))
+const BoardSkeletonSandbox = lazy(() => import('./pages/BoardSkeletonSandbox'))
 
 function UndoListener() {
   const handleClick = useCallback((e) => {
@@ -63,11 +64,14 @@ export default function App() {
         document.body,
       )}
       <UndoListener />
-      <Suspense fallback={<div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center"><Spinner size={24} /></div>}>
+      <Suspense fallback={<div className="min-h-screen bg-[var(--surface-page)] flex items-center justify-center"><Spinner size={24} /></div>}>
         <Routes>
           <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
           <Route path="/sandbox/landing-board" element={<ErrorBoundary><LandingBoardSandbox /></ErrorBoundary>} />
           <Route path="/sandbox/onboarding-board" element={<ErrorBoundary><OnboardingBoardSandbox /></ErrorBoundary>} />
+          {import.meta.env.DEV && (
+            <Route path="/sandbox/board-skeleton" element={<ErrorBoundary><BoardSkeletonSandbox /></ErrorBoundary>} />
+          )}
           <Route path="/onboarding" element={<ErrorBoundary><OnboardingPage /></ErrorBoundary>} />
           <Route path="/forgot-password" element={<ErrorBoundary><ForgotPasswordPage /></ErrorBoundary>} />
           <Route path="/update-password" element={<ErrorBoundary><UpdatePasswordPage /></ErrorBoundary>} />

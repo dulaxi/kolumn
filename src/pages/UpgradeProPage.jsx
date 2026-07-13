@@ -137,7 +137,7 @@ export default function UpgradeProPage() {
             size="lg"
             onClick={handleSubscribe}
             loading={submitting}
-            loadingText="Activating…"
+            loadingText="Activating"
             className="mt-2 w-full"
           >
             Activate Pro

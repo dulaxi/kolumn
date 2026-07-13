@@ -17,6 +17,7 @@ import Input from '../ui/Input'
 import DynamicIcon from './DynamicIcon'
 import ConfirmModal from './ConfirmModal'
 import Tooltip from '../ui/Tooltip'
+import Skeleton from '../ui/Skeleton'
 import { useBoardStore } from '../../store/boardStore'
 import { useNavigate } from 'react-router-dom'
 import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
@@ -234,10 +235,10 @@ export default function BoardShareModal({ board, onClose }) {
               <>
                 {[0, 1].map((i) => (
                   <div key={`sk-${i}`} className="flex items-center gap-2.5 py-2">
-                    <div className="w-7 h-7 rounded-full bg-[var(--surface-hover)] animate-pulse shrink-0" />
+                    <Skeleton variant="circle" width={28} height={28} className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="h-3 w-24 rounded bg-[var(--surface-hover)] animate-pulse" />
-                      <div className="mt-1.5 h-2.5 w-32 rounded bg-[var(--surface-hover)] animate-pulse opacity-60" />
+                      <Skeleton variant="line" width={96} height={12} />
+                      <Skeleton variant="line" width={128} height={10} className="mt-1.5 opacity-60" />
                     </div>
                   </div>
                 ))}

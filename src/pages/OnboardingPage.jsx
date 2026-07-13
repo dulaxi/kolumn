@@ -503,7 +503,7 @@ function DetailsStep({
                   type="submit"
                   size="lg"
                   loading={loading}
-                  loadingText={slow ? 'Setting up your workspace…' : 'Creating account…'}
+                  loadingText={slow ? 'Setting up your workspace' : 'Creating account'}
                   className="w-full !text-base !rounded-[0.6rem]"
                 >
                   Create account
@@ -941,7 +941,7 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
             type="submit"
             size="lg"
             loading={loading}
-            loadingText="Saving…"
+            loadingText="Saving"
             disabled={!displayName.trim()}
             className="w-full !text-base !rounded-[0.6rem]"
           >

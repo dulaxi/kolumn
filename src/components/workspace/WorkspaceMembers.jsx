@@ -1,5 +1,6 @@
 import { X } from '@phosphor-icons/react'
 import DynamicIcon from '../board/DynamicIcon'
+import Skeleton from '../ui/Skeleton'
 import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
 
 export default function WorkspaceMembers({ members, membersLoaded, currentUserId, isOwner, onRemove }) {
@@ -10,7 +11,17 @@ export default function WorkspaceMembers({ members, membersLoaded, currentUserId
 
       <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] overflow-hidden">
         {!membersLoaded ? (
-          <div className="p-4 text-sm text-[var(--text-muted)]">Loading members…</div>
+          <ul className="divide-y divide-[var(--border-default)]">
+            {[0, 1].map((i) => (
+              <li key={`sk-${i}`} className="flex items-center gap-3 px-4 py-3">
+                <Skeleton variant="circle" width={32} height={32} className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <Skeleton variant="line" width={112} height={12} />
+                  <Skeleton variant="line" width={144} height={10} className="mt-1.5 opacity-60" />
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : members.length === 0 ? (
           <div className="p-4 text-sm text-[var(--text-muted)]">No members yet.</div>
         ) : (

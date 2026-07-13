@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Check, CircleNotch } from '@phosphor-icons/react'
+import { ArrowRight, Check } from '@phosphor-icons/react'
 
 // Visual pricing card. Two modes share the same content (icon, name,
 // tagline, price, inherits-from preamble, feature bullets) and the
@@ -93,12 +93,13 @@ export default function PlanCard({
           onClick={() => onSelect?.(plan.id)}
           disabled={disabled || loading}
           aria-label={plan.cta}
+          aria-busy={loading || undefined}
           className={ctaBaseClasses}
         >
           {loading ? (
             <>
-              <CircleNotch size={16} weight="bold" className="animate-spin" />
-              Setting up…
+              <span>Setting up</span>
+              <span aria-hidden="true" className="btn-dots" />
             </>
           ) : (
             <>

@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { SquaresFour } from '@phosphor-icons/react'
 import { useBoardStore } from '../store/boardStore'
 import BoardSelector from '../components/board/BoardSelector'
+import BoardSkeleton from '../components/board/BoardSkeleton'
 import BoardView from '../components/board/BoardView'
 import CreateBoardModal from '../components/board/CreateBoardModal'
 import LabelManagerModal from '../components/board/LabelManagerModal'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
+import Skeleton from '../components/ui/Skeleton'
 import Spinner from '../components/ui/Spinner'
 
 const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
@@ -21,6 +23,7 @@ export default function BoardsPage() {
   const [labelManagerOpen, setLabelManagerOpen] = useState(false)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const boards = useBoardStore((s) => s.boards)
+  const boardsLoading = useBoardStore((s) => s.loading)
   const activeBoardName = useBoardStore((s) => s.boards[s.activeBoardId]?.name)
 
   const addCard = useBoardStore((s) => s.addCard)
@@ -86,16 +89,22 @@ export default function BoardsPage() {
       className="h-full flex flex-col"
     >
       <div className="mb-4 shrink-0 flex items-start justify-between gap-4">
-        <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
-          {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
-        </h1>
+        {boardsLoading ? (
+          <Skeleton variant="line" width={176} height={28} className="min-w-0 flex-1 max-w-44 self-end mb-1" />
+        ) : (
+          <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
+            {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
+          </h1>
+        )}
         <div className="shrink-0">
           <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
         </div>
       </div>
 
       <div className="flex-1 min-h-0 relative">
-        {activeBoardId && activeBoardId !== '__all__' ? (
+        {boardsLoading ? (
+          <BoardSkeleton />
+        ) : activeBoardId && activeBoardId !== '__all__' ? (
           <BoardView
             boardId={activeBoardId}
             onCardClick={handleCardClick}
@@ -127,7 +136,7 @@ export default function BoardsPage() {
       </div>
 
       {editingCardId && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 grid items-center justify-items-center bg-black/50"><Spinner size={24} /></div>}>
+        <Suspense fallback={<div className="fixed inset-0 z-40 grid items-center justify-items-center bg-[rgba(27,27,24,0.45)]"><Spinner size={24} /></div>}>
           <CardDetailPanel
             key={editingCardId}
             cardId={editingCardId}
