@@ -196,8 +196,8 @@ export default function QuickAddBar({ boardId }) {
               onInput={(e) => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
             />
             {processing && !input && (
-              <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-1 text-[15px] text-[var(--text-muted)] opacity-50">
-                Creating<span className="btn-dots" />
+              <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-1 text-[15px] text-[var(--text-muted)]">
+                <LetterWave text="Creating" />
               </span>
             )}
           </div>

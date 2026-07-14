@@ -1,4 +1,5 @@
 import { forwardRef, cloneElement, isValidElement } from 'react'
+import LetterWave from './LetterWave'
 
 function mergeClassNames(...parts) {
   return parts.filter(Boolean).join(' ')
@@ -54,6 +55,7 @@ const Button = forwardRef(function Button(
     asChild = false,
     type,
     className = '',
+    style: styleProp,
     children,
     ...rest
   },
@@ -67,20 +69,31 @@ const Button = forwardRef(function Button(
     className,
   )
 
+  // While loading, the button stays at full strength (the inline
+  // opacity beats BASE's disabled:opacity-50) and only the label's
+  // resting letters dim — the LetterWave brightens them as it passes.
+  // Screen readers get the plain label; the wave spans are aria-hidden.
+  const loadingLabel = loadingText ?? children
   const content = loading ? (
-    <>
-      <span>{loadingText ?? children}</span>
-      <span aria-hidden="true" className="btn-dots" />
-    </>
+    typeof loadingLabel === 'string' ? (
+      <>
+        <span className="sr-only">{loadingLabel}</span>
+        <LetterWave text={loadingLabel} />
+      </>
+    ) : (
+      <span>{loadingLabel}</span>
+    )
   ) : (
     children
   )
+  const style = loading ? { opacity: 1, ...styleProp } : styleProp
 
   if (asChild) {
     return (
       <Slot
         ref={ref}
         className={classes}
+        style={style}
         aria-disabled={disabled || loading || undefined}
         aria-busy={loading || undefined}
         {...rest}
@@ -97,6 +110,7 @@ const Button = forwardRef(function Button(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={classes}
+      style={style}
       {...rest}
     >
       {content}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Check } from '@phosphor-icons/react'
+import LetterWave from './ui/LetterWave'
 
 // Visual pricing card. Two modes share the same content (icon, name,
 // tagline, price, inherits-from preamble, feature bullets) and the
@@ -95,11 +96,12 @@ export default function PlanCard({
           aria-label={plan.cta}
           aria-busy={loading || undefined}
           className={ctaBaseClasses}
+          style={loading ? { opacity: 1 } : undefined}
         >
           {loading ? (
             <>
-              <span>Setting up</span>
-              <span aria-hidden="true" className="btn-dots" />
+              <span className="sr-only">Setting up</span>
+              <LetterWave text="Setting up" />
             </>
           ) : (
             <>

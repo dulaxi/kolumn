@@ -369,21 +369,21 @@
   100% { background-position: 200% 0; }
 }
 
-/* Button loading dots — cycles ., .., ... after the verb (e.g. "Saving...") */
-@keyframes button-dots-cycle {
-  0%, 100% { content: ''; }
-  25%  { content: '.'; }
-  50%  { content: '..'; }
-  75%  { content: '...'; }
+/* Button loading letter-wave (Claude Code terminal style) — the label's
+   letters rest at 45% opacity while a ~2-letter bright window travels
+   left→right through the word and wraps. Rendered by <LetterWave>: each
+   letter is a span carrying --i; the shared keyframe + a 90ms/letter
+   delay produce the traveling window. --wave-dur is set per label so
+   long labels don't pause forever between passes. Letters never move —
+   only opacity animates — so there is zero layout shift. */
+@keyframes btn-letter-wave {
+  0%, 14%, 100% { opacity: 0.45; }
+  5%, 9% { opacity: 1; }
 }
-.btn-dots {
-  display: inline-block;
-  min-width: 1ch;
-  text-align: left;
-}
-.btn-dots::after {
-  content: '';
-  animation: button-dots-cycle 1.4s steps(4, end) infinite;
+.btn-wave > span {
+  opacity: 0.45;
+  animation: btn-letter-wave var(--wave-dur, 1.6s) linear infinite;
+  animation-delay: calc(var(--i) * 90ms);
 }
 
 .ai-skeleton-block {

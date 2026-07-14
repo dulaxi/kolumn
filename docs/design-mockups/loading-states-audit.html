@@ -136,6 +136,10 @@
       .btn-dots { display: inline-block; min-width: 1ch; text-align: left; }
       .btn-dots::after { content: ''; animation: button-dots-cycle 1.4s steps(4, end) infinite; }
 
+      /* Letter wave — the current Button loading treatment (see 1.3) */
+      @keyframes btn-letter-wave { 0%, 14%, 100% { opacity: 0.45; } 5%, 9% { opacity: 1; } }
+      .wave > span { opacity: 0.45; animation: btn-letter-wave var(--wave-dur, 1.6s) linear infinite; animation-delay: calc(var(--i) * 90ms); }
+
       /* Button primitive reproduction (variants used by loading states) */
       .btn {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -319,17 +323,17 @@
       <div class="spec">
         <div class="spec-head">
           <span class="spec-num">1.3</span>
-          <h3 class="spec-title">Button loading — the dots cycle</h3>
-          <span class="spec-ref">src/components/ui/Button.jsx:70-77 · src/index.css:372-387</span>
+          <h3 class="spec-title">Button loading — the letter wave <span class="flag good">reworked 2026-07-13</span></h3>
+          <span class="spec-ref">src/components/ui/Button.jsx · src/components/ui/LetterWave.jsx · src/index.css (.btn-wave)</span>
         </div>
-        <p class="spec-desc">No spinner icon. The button keeps its label (or swaps to <code>loadingText</code>) and a CSS-only <code>.btn-dots::after</code> cycles <code>.</code> → <code>..</code> → <code>...</code> at 1.4s steps(4). The button also gets <code>disabled</code> + <code>aria-busy</code> + the 50% disabled opacity. <code>min-width: 1ch</code> reserves space so the label doesn't jitter.</p>
+        <p class="spec-desc">The Claude Code terminal treatment, in the product font: <code>loadingText</code> splits into per-letter spans resting at 45% opacity while a ~2-letter bright window travels through and wraps (90ms/letter stagger; cycle scales to label length). The button stays at <em>full strength</em> — only the resting letters dim. Screen readers get a plain hidden label + <code>aria-busy</code>. Replaced the original cycling-dots treatment (decision trail: <code>button-loading-concepts.html</code> → <code>-letterwave</code> → <code>-wave-fonts</code>).</p>
         <div class="stage">
-          <button class="btn btn-primary loading" disabled>Saving<span class="btn-dots"></span></button>
-          <button class="btn btn-accent loading" disabled>Activating<span class="btn-dots"></span></button>
-          <button class="btn btn-secondary btn-sm loading" disabled>Importing<span class="btn-dots"></span></button>
-          <button class="btn btn-primary btn-lg loading" disabled>Creating account<span class="btn-dots"></span></button>
+          <button class="btn btn-primary" disabled><span class="wave" data-wave>Saving</span></button>
+          <button class="btn btn-accent" disabled><span class="wave" data-wave>Activating</span></button>
+          <button class="btn btn-secondary btn-sm" disabled><span class="wave" data-wave>Importing</span></button>
+          <button class="btn btn-primary btn-lg" disabled><span class="wave" data-wave>Creating account</span></button>
         </div>
-        <p class="token-note">button-dots-cycle 1.4s steps(4, end) · disabled:opacity-50 · pointer-events-none · aria-busy="true"</p>
+        <p class="token-note">btn-letter-wave: rest 0.45 → 1.0 window · 90ms/letter · --wave-dur = max(1.4s, n×0.09+0.6) · button opacity stays 1 · aria-busy="true"</p>
       </div>
 
       <!-- ═══════════════ 2. ROUTE-LEVEL ═══════════════ -->
@@ -489,7 +493,7 @@
 
       <!-- ═══════════════ 5. BUTTON INVENTORY ═══════════════ -->
       <h2>5 · Button-loading inventory</h2>
-      <p class="section-desc">Every in-flight action button in the app. The btn-dots design intends a <strong>bare verb</strong> ("Saving" + animated dots). Five call sites follow it; four pass a trailing ellipsis, which renders as double punctuation ("Saving…" + "…") — see finding F2. One bypasses the primitive entirely.</p>
+      <p class="section-desc"><strong>Historical note (2026-07-13):</strong> the dots treatment shown in this inventory was retired the same day — every site below now renders the letter wave from 1.3 with the same loadingText strings. The inventory is kept as the F2 record: five call sites used bare verbs; four passed a trailing ellipsis that doubled with the animated dots; one bypassed the primitive.</p>
 
       <div class="spec">
         <div class="spec-head">
@@ -667,6 +671,21 @@
       const slowEl = document.getElementById('slow-demo');
       const A = 'Creating account', B = 'Setting up your workspace';
       setInterval(() => { slowEl.textContent = slowEl.textContent === A ? B : A; }, 3000);
+
+      // 1.3 letter-wave specimens: split into per-letter spans (mirrors LetterWave.jsx)
+      document.querySelectorAll('[data-wave]').forEach((el) => {
+        const text = el.textContent;
+        el.textContent = '';
+        let i = 0;
+        for (const ch of text) {
+          if (ch === ' ') { el.appendChild(document.createTextNode(' ')); i++; continue; }
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.style.setProperty('--i', i++);
+          el.appendChild(s);
+        }
+        el.style.setProperty('--wave-dur', Math.max(1.4, i * 0.09 + 0.6) + 's');
+      });
     </script>
   </body>
 </html>

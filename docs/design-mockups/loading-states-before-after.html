@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loading states — before / after · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --surface-hover: #E8E2DB;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-cream: #F2EDE8;
+        --color-sand: #E0DBD5;
+        --color-ink: #1B1B18;
+        --color-mist: #C4BFB8;
+        --color-lime: #C2D64A;
+        --color-lime-dark: #A8BA32;
+        --color-lime-wash: #EEF2D6;
+        --color-logo: #8BA32E;
+        --color-copper: #C27A4A;
+        --color-mauve-cream: #F0E8EB;
+        --btn-primary-bg: #1B1B18;
+        --btn-primary-text: #FFFFFF;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --surface-hover: #3A3937;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-cream: #2E2E2B;
+        --color-sand: #3A3937;
+        --color-mist: #4A4845;
+        --color-lime-wash: #2A3520;
+        --color-logo: #A8BA32;
+        --color-mauve-cream: #2E2832;
+        --btn-primary-bg: #E8E5E0;
+        --btn-primary-text: #1C1C1A;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 720px; }
+      .meta-line { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+      .spec { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 24px; margin-bottom: 18px; }
+      .spec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 2px; flex-wrap: wrap; }
+      .spec-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); padding: 2px 8px; background: var(--surface-raised); border-radius: 4px; }
+      .spec-title { font-size: 16px; font-weight: 600; margin: 0; }
+      .spec-ref { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .spec-desc { color: var(--text-secondary); margin: 6px 0 18px; max-width: 780px; }
+
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 720px) { .row { grid-template-columns: 1fr; } }
+      .opt { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 18px; }
+      .opt-label { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .opt-label::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+      .opt.before .opt-label::before { background: var(--color-copper); }
+      .opt.after .opt-label::before { background: var(--color-lime-dark); }
+      .opt-note { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint); margin-top: 14px; }
+      .stage { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; min-height: 48px; }
+      .stage.col { flex-direction: column; align-items: stretch; }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .spinner { display: inline-block; color: var(--text-muted); animation: spin 1s linear infinite; line-height: 1; }
+      @keyframes tw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+      .animate-pulse { animation: tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .skeleton { display: block; background: var(--surface-raised); border-radius: 6px; animation: tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .sk-line { border-radius: 4px; }
+      .sk-circle { border-radius: 50%; }
+
+      /* Old-style ghost (pre-F3): surface-hover fill, 4px radius */
+      .old-ghost { display: block; background: var(--surface-hover); border-radius: 4px; animation: tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .old-ghost.circle { border-radius: 50%; }
+
+      @keyframes button-dots-cycle { 0%, 100% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+      .btn-dots { display: inline-block; min-width: 1ch; text-align: left; }
+      .btn-dots::after { content: ''; animation: button-dots-cycle 1.4s steps(4, end) infinite; }
+
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 500; background: var(--btn-primary-bg); color: var(--btn-primary-text); border: 1px solid transparent; border-radius: 8px; padding: 0 14px; height: 36px; cursor: default; user-select: none; }
+      .btn.loading { pointer-events: none; opacity: 0.5; }
+      .btn-lg { height: 44px; padding: 0 20px; font-size: 14px; }
+
+      /* member card + ghost rows */
+      .member-card { border: 1px solid var(--border-default); background: var(--surface-card); border-radius: 12px; overflow: hidden; max-width: 380px; width: 100%; }
+      .member-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+      .member-row + .member-row { border-top: 1px solid var(--border-default); }
+
+      /* viewport frames */
+      .viewport { width: 100%; max-width: 340px; height: 190px; border: 1px solid var(--border-default); border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+      .fake-board { position: absolute; inset: 0; background: var(--surface-page); padding: 12px; display: flex; gap: 8px; }
+      .fake-col { flex: 1; background: var(--surface-raised); border-radius: 8px; padding: 7px; display: flex; flex-direction: column; gap: 5px; }
+      .fake-card { height: 30px; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 8px; }
+      .caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 6px; }
+
+      /* composer */
+      .composer { display: flex; flex-direction: column; background: var(--surface-card); border-radius: 20px; box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.035), 0 0 0 0.5px rgba(224,219,213,0.6); width: 100%; max-width: 380px; }
+      [data-theme="dark"] .composer { box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.25), 0 0 0 0.5px rgba(74,72,69,0.9); }
+      .composer-inner { display: flex; flex-direction: column; margin: 13px; gap: 10px; }
+      .composer-text { font-size: 15px; color: var(--text-muted); padding: 3px 0 0 6px; min-height: 22px; }
+      .composer-row { display: flex; align-items: center; gap: 8px; }
+      .icon-btn { width: 30px; height: 30px; border-radius: 8px; border: 0; display: grid; place-items: center; background: transparent; color: var(--text-primary); font-size: 17px; }
+      .icon-btn.send { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
+      .icon-btn.dim { opacity: 0.5; }
+
+      @keyframes glitch-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 20% { opacity: 0.3; transform: scale(0.95); } 40% { opacity: 1; transform: scale(1.05); } 60% { opacity: 0.5; transform: scale(0.98); } 80% { opacity: 0.9; transform: scale(1); } }
+      .typing i { color: var(--color-logo); font-size: 15px; animation: glitch-pulse 1.2s steps(5, end) infinite; }
+
+      /* F1 ghost board (user-tuned GHOST_COLUMNS, scaled ~0.55) */
+      .ghost-board { display: flex; gap: 10px; overflow: hidden; }
+      .ghost-col { display: flex; flex-direction: column; gap: 7px; width: 150px; flex-shrink: 0; }
+
+      /* empty state mock */
+      .empty-mock { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 28px 12px; text-align: center; }
+      .empty-mock i { font-size: 30px; color: var(--text-faint); }
+      .empty-mock .t { font-weight: 600; font-size: 14px; }
+      .empty-mock .b { font-size: 12px; color: var(--text-secondary); max-width: 220px; }
+
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--surface-raised); border-radius: 4px; padding: 1px 5px; }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>Loading states — before / after</h1>
+        <p>Every finding from the loading-states audit, old state next to new state, both live. Copper dot = before, lime dot = after. Companion to <code>loading-states-audit.html</code>.</p>
+        <p class="meta-line">2026-07-13 · commit 742d903 · development branch</p>
+      </header>
+
+      <!-- F1 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F1</span><h3 class="spec-title">Boards first load</h3><span class="spec-ref">BoardsPage.jsx · board/BoardSkeleton.jsx</span></div>
+        <p class="spec-desc">While boards fetched, <code>boards</code> was empty — so users <em>with</em> boards saw the "Create your first board" empty state flash before their data landed. Now the page gates on <code>boardStore.loading</code> and shows a ghost board mirroring the Welcome-to-Kolumn silhouette (3 columns, 4/2/3 cards, tuned heights).</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — false empty state</div>
+            <div class="empty-mock">
+              <i class="ph ph-squares-four"></i>
+              <span class="t">Create your first board</span>
+              <span class="b">Organize tasks into columns that match your workflow.</span>
+              <span class="btn" style="height:32px;font-size:12px;padding:0 12px"><i class="ph ph-squares-four" style="font-size:14px"></i>New Board</span>
+            </div>
+            <p class="opt-note">flashes even when the user has 12 boards</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — ghost board (scaled)</div>
+            <span class="skeleton sk-line" style="width:96px;height:16px;margin-bottom:10px"></span>
+            <div class="ghost-board">
+              <div class="ghost-col">
+                <span class="skeleton sk-line" style="width:26px;height:8px;margin-bottom:2px"></span>
+                <span class="skeleton" style="height:81px;border-radius:12px"></span>
+                <span class="skeleton" style="height:81px;border-radius:12px"></span>
+                <span class="skeleton" style="height:81px;border-radius:12px"></span>
+              </div>
+              <div class="ghost-col">
+                <span class="skeleton sk-line" style="width:46px;height:8px;margin-bottom:2px"></span>
+                <span class="skeleton" style="height:75px;border-radius:12px"></span>
+                <span class="skeleton" style="height:75px;border-radius:12px"></span>
+              </div>
+              <div class="ghost-col">
+                <span class="skeleton sk-line" style="width:26px;height:8px;margin-bottom:2px"></span>
+                <span class="skeleton" style="height:67px;border-radius:12px"></span>
+                <span class="skeleton" style="height:87px;border-radius:12px"></span>
+                <span class="skeleton" style="height:67px;border-radius:12px"></span>
+              </div>
+            </div>
+            <p class="opt-note">full-size in the app · tester: /sandbox/board-skeleton (dev)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F2 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F2</span><h3 class="spec-title">loadingText ellipsis + animated dots</h3><span class="spec-ref">OnboardingPage · UpgradeProPage · LandingPage (6 call sites)</span></div>
+        <p class="spec-desc"><code>.btn-dots</code> appends a cycling ".", "..", "..." after the label. Six call sites passed a label that already ended in "…" — watch the before button hit four-plus dots.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — "Saving…" + dots</div>
+            <div class="stage">
+              <span class="btn btn-lg loading">Saving…<span class="btn-dots"></span></span>
+              <span class="btn btn-lg loading">Activating…<span class="btn-dots"></span></span>
+            </div>
+            <p class="opt-note">peaks at "Saving…..." — double punctuation</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — bare verb + dots</div>
+            <div class="stage">
+              <span class="btn btn-lg loading">Saving<span class="btn-dots"></span></span>
+              <span class="btn btn-lg loading">Activating<span class="btn-dots"></span></span>
+            </div>
+            <p class="opt-note">the dots ARE the ellipsis, as .btn-dots intends</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F3 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F3</span><h3 class="spec-title">BoardShareModal ghost rows → Skeleton primitive</h3><span class="spec-ref">BoardShareModal.jsx:233-245</span></div>
+        <p class="spec-desc">Hand-rolled pulse divs on <code>--surface-hover</code> with 4px radius, replaced with the Skeleton primitive: <code>--surface-raised</code> fill, 6px block radius — and the primitive finally gained a production consumer.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — hand-rolled, surface-hover</div>
+            <div class="stage col" style="max-width:280px">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+                <span class="old-ghost circle" style="width:28px;height:28px;flex-shrink:0"></span>
+                <span style="flex:1"><span class="old-ghost" style="height:12px;width:96px"></span><span class="old-ghost" style="height:10px;width:128px;opacity:.6;margin-top:6px"></span></span>
+              </div>
+            </div>
+            <p class="opt-note">bg var(--surface-hover) · radius 4px · raw divs</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — Skeleton primitive</div>
+            <div class="stage col" style="max-width:280px">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+                <span class="skeleton sk-circle" style="width:28px;height:28px;flex-shrink:0"></span>
+                <span style="flex:1"><span class="skeleton sk-line" style="height:12px;width:96px"></span><span class="skeleton sk-line" style="height:10px;width:128px;opacity:.6;margin-top:6px"></span></span>
+              </div>
+            </div>
+            <p class="opt-note">&lt;Skeleton variant="circle|line"&gt; · bg var(--surface-raised)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F4 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F4</span><h3 class="spec-title">PlanCard picker CTA</h3><span class="spec-ref">PlanCard.jsx:90-110</span></div>
+        <p class="spec-desc">The app's only spinner-inside-a-button, replaced with the system's label + dots treatment (plus <code>aria-busy</code>). The bespoke button element stays — its plan-dependent styling isn't expressible in Button's variants.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — CircleNotch spinner</div>
+            <span class="btn btn-lg" style="width:100%;max-width:260px"><span class="spinner" style="font-size:16px;color:currentColor"><i class="ph-bold ph-circle-notch"></i></span>Setting up…</span>
+            <p class="opt-note">only spinner-in-button in the app + stray ellipsis</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — label + btn-dots</div>
+            <span class="btn btn-lg loading" style="width:100%;max-width:260px">Setting up<span class="btn-dots"></span></span>
+            <p class="opt-note">matches every other loading button · aria-busy added</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F5 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F5</span><h3 class="spec-title">Lazy-modal Suspense backdrop</h3><span class="spec-ref">BoardsPage.jsx:130</span></div>
+        <p class="spec-desc">The chunk-loading fallback used <code>bg-black/50</code> at z-50; the modal it resolves into uses dimmed ink <code>rgba(27,27,24,0.45)</code> at z-40. The backdrop visibly shifted tone when the chunk landed. Toggle dark mode — the difference is bigger there.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — bg-black/50, z-50</div>
+            <div class="viewport">
+              <div class="fake-board"><div class="fake-col"><div class="fake-card"></div><div class="fake-card"></div><div class="fake-card"></div></div><div class="fake-col"><div class="fake-card"></div><div class="fake-card"></div></div><div class="fake-col"><div class="fake-card"></div></div></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:grid;place-items:center"><span class="spinner" style="font-size:22px;color:#E8E5E0"><i class="ph-bold ph-circle-notch"></i></span></div>
+            </div>
+            <p class="opt-note">pure black — colder than any surface in the system</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — dimmed ink, z-40</div>
+            <div class="viewport">
+              <div class="fake-board"><div class="fake-col"><div class="fake-card"></div><div class="fake-card"></div><div class="fake-card"></div></div><div class="fake-col"><div class="fake-card"></div><div class="fake-card"></div></div><div class="fake-col"><div class="fake-card"></div></div></div>
+              <div style="position:absolute;inset:0;background:rgba(27,27,24,0.45);display:grid;place-items:center"><span class="spinner" style="font-size:22px;color:#E8E5E0"><i class="ph-bold ph-circle-notch"></i></span></div>
+            </div>
+            <p class="opt-note">identical to Modal's overlay — zero shift on resolve</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F6 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F6</span><h3 class="spec-title">WorkspaceMembers loading</h3><span class="spec-ref">WorkspaceMembers.jsx</span></div>
+        <p class="spec-desc">Static muted text with no shape preservation — the card grew when members landed. Now: two Skeleton ghost rows matched to the real row geometry (32px avatar, px-4 py-3, divided list), same treatment as BoardShareModal.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — text only</div>
+            <div class="member-card"><div style="padding:16px;font-size:13px;color:var(--text-muted)">Loading members…</div></div>
+            <p class="opt-note">no animation · card height jumps when data lands</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — ghost rows</div>
+            <div class="member-card">
+              <div class="member-row"><span class="skeleton sk-circle" style="width:32px;height:32px;flex-shrink:0"></span><span style="flex:1"><span class="skeleton sk-line" style="height:12px;width:112px"></span><span class="skeleton sk-line" style="height:10px;width:144px;opacity:.6;margin-top:6px"></span></span></div>
+              <div class="member-row"><span class="skeleton sk-circle" style="width:32px;height:32px;flex-shrink:0"></span><span style="flex:1"><span class="skeleton sk-line" style="height:12px;width:112px"></span><span class="skeleton sk-line" style="height:10px;width:144px;opacity:.6;margin-top:6px"></span></span></div>
+            </div>
+            <p class="opt-note">geometry matches real rows — layout stable on load</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F7 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F7</span><h3 class="spec-title">Chat composer while streaming</h3><span class="spec-ref">ChatInput.jsx · ChatPage.jsx:58</span></div>
+        <p class="spec-desc">While a reply streamed (glitching logo mark), the send button stayed fully live — a second send could fire mid-stream and desync the thread. Now a <code>busy</code> prop blocks sends at Enter + button. Typing stays enabled on purpose: drafting the next message mid-reply is normal in chat.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — send live mid-stream</div>
+            <div class="typing" style="margin-bottom:8px;padding-left:2px"><i class="ph-fill ph-kanban"></i></div>
+            <div class="composer"><div class="composer-inner">
+              <div class="composer-text" style="color:var(--text-primary)">also add a QA column</div>
+              <div class="composer-row"><span class="icon-btn"><i class="ph ph-plus"></i></span><span style="flex:1"></span><span class="icon-btn send"><i class="ph-bold ph-arrow-up" style="font-size:13px"></i></span></div>
+            </div></div>
+            <p class="opt-note">clickable — fires a second send into the active stream</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — send blocked, typing free</div>
+            <div class="typing" style="margin-bottom:8px;padding-left:2px"><i class="ph-fill ph-kanban"></i></div>
+            <div class="composer"><div class="composer-inner">
+              <div class="composer-text" style="color:var(--text-primary)">also add a QA column</div>
+              <div class="composer-row"><span class="icon-btn"><i class="ph ph-plus"></i></span><span style="flex:1"></span><span class="icon-btn send dim"><i class="ph-bold ph-arrow-up" style="font-size:13px"></i></span></div>
+            </div></div>
+            <p class="opt-note">busy prop: Enter + button no-op until stream ends</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- F8 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F8</span><h3 class="spec-title">Full-screen loader background</h3><span class="spec-ref">App.jsx:66 · ProtectedRoute.jsx:11</span></div>
+        <p class="spec-desc">Loaders sat on <code>--surface-raised</code>, one shade darker than the <code>--surface-page</code> the app resolves onto — every route load ended with a background jump. Each frame below shows the loader with a strip of the destination background underneath it.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — raised → page jump</div>
+            <div class="viewport" style="flex-direction:column;align-items:stretch;display:flex">
+              <div style="flex:1;background:var(--surface-raised);display:grid;place-items:center"><span class="spinner" style="font-size:22px"><i class="ph-bold ph-circle-notch"></i></span></div>
+              <div style="height:46px;background:var(--surface-page);border-top:1px dashed var(--border-default);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint)">…resolves onto --surface-page (visible seam)</div>
+            </div>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — page → page, seamless</div>
+            <div class="viewport" style="flex-direction:column;align-items:stretch;display:flex">
+              <div style="flex:1;background:var(--surface-page);display:grid;place-items:center"><span class="spinner" style="font-size:22px"><i class="ph-bold ph-circle-notch"></i></span></div>
+              <div style="height:46px;background:var(--surface-page);border-top:1px dashed var(--border-default);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint)">…resolves onto --surface-page (no seam)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F9 -->
+      <div class="spec">
+        <div class="spec-head"><span class="spec-num">F9</span><h3 class="spec-title">AI pill processing placeholder</h3><span class="spec-ref">QuickAddBar.jsx:186-201</span></div>
+        <p class="spec-desc">The placeholder swapped to a hardcoded "Creating..." — three frozen dots inside a design system whose signature wait is animated dots. Now an overlay span reuses the global <code>.btn-dots</code> cycle at the placeholder's exact position and disabled opacity.</p>
+        <div class="row">
+          <div class="opt before">
+            <div class="opt-label">BEFORE — static placeholder</div>
+            <div class="composer"><div class="composer-inner">
+              <div class="composer-text" style="opacity:.5">Creating...</div>
+              <div class="composer-row"><span class="icon-btn dim"><i class="ph ph-plus"></i></span><span style="flex:1"></span><span class="icon-btn send dim"><i class="ph-bold ph-arrow-up" style="font-size:13px"></i></span></div>
+            </div></div>
+            <p class="opt-note">reads frozen — is it working or hung?</p>
+          </div>
+          <div class="opt after">
+            <div class="opt-label">AFTER — animated dots overlay</div>
+            <div class="composer"><div class="composer-inner">
+              <div class="composer-text" style="opacity:.5">Creating<span class="btn-dots"></span></div>
+              <div class="composer-row"><span class="icon-btn dim"><i class="ph ph-plus"></i></span><span style="flex:1"></span><span class="icon-btn send dim"><i class="ph-bold ph-arrow-up" style="font-size:13px"></i></span></div>
+            </div></div>
+            <p class="opt-note">same cadence as every loading button in the app</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="meta-line" style="margin-top:32px">All "after" states are live in the app as of commit 742d903. Toggle the theme (top right) — F5's backdrop difference and the ghost tones are worth checking in dark.</p>
+    </div>
+  </body>
+</html>

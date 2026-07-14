@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Terminal loading — all call sites · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --surface-hover: #E8E2DB;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-cream: #F2EDE8;
+        --color-sand: #E0DBD5;
+        --color-ink: #1B1B18;
+        --color-mist: #C4BFB8;
+        --color-lime: #C2D64A;
+        --color-lime-dark: #A8BA32;
+        --color-copper: #C27A4A;
+        --color-mauve-cream: #F0E8EB;
+        --btn-primary-bg: #1B1B18;
+        --btn-primary-text: #FFFFFF;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --surface-hover: #3A3937;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-cream: #2E2E2B;
+        --color-sand: #3A3937;
+        --color-mist: #4A4845;
+        --color-mauve-cream: #2E2832;
+        --btn-primary-bg: #E8E5E0;
+        --btn-primary-text: #1C1C1A;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 760px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 24px; margin: 44px 0 6px; }
+
+      .spec { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+      .spec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+      .spec-title { font-size: 15px; font-weight: 600; margin: 0; }
+      .spec-ref { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+      .caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 8px; }
+
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 500; background: var(--btn-primary-bg); color: var(--btn-primary-text); border: 1px solid transparent; border-radius: 8px; padding: 0 14px; height: 36px; cursor: default; user-select: none; white-space: nowrap; }
+      .btn-accent { background: var(--color-lime); color: var(--color-ink); }
+      .btn-secondary { background: var(--color-cream); color: var(--text-primary); border-color: var(--color-sand); }
+      .btn-lg { height: 44px; padding: 0 20px; font-size: 14px; }
+      .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+      .w-full { width: 100%; }
+
+      /* ── Terminal loading treatment ──
+         loadingText renders in IBM Plex Mono, one size down, dimmed;
+         a ~2-letter bright wave travels through and wraps. */
+      .termload {
+        font-family: 'IBM Plex Mono', 'SF Mono', SFMono-Regular, Menlo, monospace;
+        font-size: 0.92em;
+        font-weight: 500;
+        letter-spacing: 0;
+      }
+      .termload span {
+        opacity: 0.45;
+        animation: term-wave var(--wave-dur, 1.6s) linear infinite;
+        animation-delay: calc(var(--i) * 90ms);
+      }
+      @keyframes term-wave {
+        0%, 14%, 100% { opacity: 0.45; }
+        5%, 9% { opacity: 1; }
+      }
+
+      /* form frame mocks */
+      .form-card { border: 1px solid var(--color-sand); background: var(--surface-card); border-radius: 16px; padding: 20px; max-width: 360px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+      .input-mock { height: 38px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--surface-card); display: flex; align-items: center; padding: 0 12px; gap: 8px; color: var(--text-muted); font-size: 13px; }
+      .banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1px solid var(--border-default); background: var(--surface-card); border-radius: 12px; padding: 12px 16px; max-width: 560px; width: 100%; }
+      .plan-card { border: 2px solid var(--color-ink); background: var(--color-mauve-cream); border-radius: 12px; padding: 20px; max-width: 280px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
+      .plan-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 9.6px; font-size: 15px; font-weight: 500; background: var(--text-primary); color: var(--surface-card); }
+      .composer { display: flex; flex-direction: column; background: var(--surface-card); border-radius: 20px; box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.035), 0 0 0 0.5px rgba(224,219,213,0.6); width: 100%; max-width: 380px; }
+      [data-theme="dark"] .composer { box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.25), 0 0 0 0.5px rgba(74,72,69,0.9); }
+      .composer-inner { display: flex; flex-direction: column; margin: 13px; gap: 10px; }
+      .composer-row { display: flex; align-items: center; gap: 8px; }
+      .icon-btn { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: transparent; color: var(--text-primary); font-size: 17px; opacity: 0.5; }
+      .icon-btn.send { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
+
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--surface-raised); border-radius: 4px; padding: 1px 5px; }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>Terminal loading, everywhere</h1>
+        <p>The REF treatment applied verbatim: on loading, the label swaps to <strong>IBM Plex Mono</strong> (one size down), dims to 45%, and a ~2-letter bright wave travels through it. Below is every real loading call site in the app, mocked in context. Toasts already speak IBM Plex Mono — this extends that "system voice" to in-flight buttons.</p>
+        <p class="meta-line">2026-07-13 · terminal-faithful pick · width note: mono is wider than Mona Sans, so Button.jsx locks its pre-loading width before swapping</p>
+      </header>
+
+      <h2>Forms & auth</h2>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Onboarding — create account (with slow swap)</h3><span class="spec-ref">OnboardingPage.jsx:506 · primary lg, full width</span></div>
+        <div class="stage">
+          <div class="form-card">
+            <div class="input-mock"><i class="ph ph-envelope-simple"></i>you@example.com</div>
+            <div class="input-mock"><i class="ph ph-lock"></i>••••••••</div>
+            <span class="btn btn-lg w-full"><span class="termload" id="slow-swap" data-wave>Creating account</span></span>
+          </div>
+        </div>
+        <p class="caption">swaps to "Setting up your workspace" after 3s (live above, on the real timing)</p>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Onboarding — name step</h3><span class="spec-ref">OnboardingPage.jsx:944 · primary lg, full width</span></div>
+        <div class="stage">
+          <div class="form-card">
+            <div class="input-mock" style="justify-content:center">Dula</div>
+            <span class="btn btn-lg w-full"><span class="termload" data-wave>Saving</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Landing — email check & sign in</h3><span class="spec-ref">LandingPage.jsx:1414, 1445 · primary lg</span></div>
+        <div class="stage">
+          <div class="form-card" style="max-width:300px">
+            <div class="input-mock"><i class="ph ph-envelope-simple"></i>you@example.com</div>
+            <span class="btn btn-lg w-full"><span class="termload" data-wave>Checking</span></span>
+          </div>
+          <div class="form-card" style="max-width:300px">
+            <div class="input-mock"><i class="ph ph-lock"></i>••••••••</div>
+            <span class="btn btn-lg w-full"><span class="termload" data-wave>Signing in</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Password reset & update</h3><span class="spec-ref">ForgotPasswordPage.jsx:80 · UpdatePasswordPage.jsx:83 · primary lg</span></div>
+        <div class="stage">
+          <span class="btn btn-lg" style="min-width:190px"><span class="termload" data-wave>Sending</span></span>
+          <span class="btn btn-lg" style="min-width:190px"><span class="termload" data-wave>Updating</span></span>
+        </div>
+      </div>
+
+      <h2>Sharing & workspace</h2>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Board share — invite</h3><span class="spec-ref">BoardShareModal.jsx:211 · primary md</span></div>
+        <div class="stage">
+          <div style="display:flex;gap:8px;width:100%;max-width:420px">
+            <div class="input-mock" style="flex:1"><i class="ph ph-envelope-simple"></i>teammate@example.com</div>
+            <span class="btn"><span class="termload" data-wave>Inviting</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Workspace — send invite</h3><span class="spec-ref">WorkspaceInvitations.jsx:38 · primary md</span></div>
+        <div class="stage">
+          <div style="display:flex;gap:8px;width:100%;max-width:420px">
+            <div class="input-mock" style="flex:1"><i class="ph ph-envelope-simple"></i>teammate@example.com</div>
+            <span class="btn"><span class="termload" data-wave>Sending</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Migration banner — import</h3><span class="spec-ref">AppLayout.jsx:157 · secondary sm</span></div>
+        <div class="stage">
+          <div class="banner">
+            <div>
+              <div style="font-size:13px;font-weight:500">Local data detected</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">Import your existing boards into your account?</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;color:var(--text-secondary);padding:0 8px">Skip</span>
+              <span class="btn btn-secondary btn-sm"><span class="termload" data-wave>Importing</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Billing & plans</h2>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Upgrade — activate Pro</h3><span class="spec-ref">UpgradeProPage.jsx:140 · accent lg, full width</span></div>
+        <div class="stage">
+          <span class="btn btn-accent btn-lg" style="width:100%;max-width:420px"><span class="termload" data-wave>Activating</span></span>
+        </div>
+        <p class="caption">on the lime accent the dim base is ink at 45% — wave lifts to full ink</p>
+      </div>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">Plan picker CTA</h3><span class="spec-ref">PlanCard.jsx:98-103 · bespoke button</span></div>
+        <div class="stage">
+          <div class="plan-card">
+            <div style="font-size:22px;font-weight:400">Pro</div>
+            <div style="font-size:12px;color:var(--text-secondary)">For power users</div>
+            <span class="plan-cta"><span class="termload" data-wave>Setting up</span></span>
+          </div>
+        </div>
+      </div>
+
+      <h2>AI pill (for coherence)</h2>
+
+      <div class="spec">
+        <div class="spec-head"><h3 class="spec-title">QuickAddBar processing overlay</h3><span class="spec-ref">QuickAddBar.jsx:186-201 · placeholder overlay</span></div>
+        <div class="stage">
+          <div class="composer">
+            <div class="composer-inner">
+              <div style="padding:3px 0 0 6px;font-size:14px"><span class="termload" data-wave style="color:var(--text-primary)">Creating</span></div>
+              <div class="composer-row"><span class="icon-btn"><i class="ph ph-plus"></i></span><span style="flex:1"></span><span class="icon-btn send" style="opacity:.5"><i class="ph-bold ph-arrow-up" style="font-size:13px"></i></span></div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">the pill's "Creating" overlay adopts the same mono wave — one working-voice across the app (replaces the F9 dots overlay)</p>
+      </div>
+
+      <p class="meta-line" style="margin-top:32px">Implementation: Button.jsx's loading branch renders loadingText as per-letter spans in --font-mono at 0.92em, base opacity 0.45, staggered term-wave animation; button min-width locked from its pre-loading render so the mono swap can't shift layout. Screen readers get the plain label + aria-busy. The .btn-dots CSS retires.</p>
+    </div>
+
+    <script>
+      document.querySelectorAll('[data-wave]').forEach((el) => {
+        const setup = (text) => {
+          el.textContent = '';
+          let i = 0;
+          for (const ch of text) {
+            if (ch === ' ') { el.appendChild(document.createTextNode(' ')); i++; continue; }
+            const s = document.createElement('span');
+            s.textContent = ch;
+            s.style.setProperty('--i', i++);
+            el.appendChild(s);
+          }
+          const dur = Math.max(1.4, i * 0.09 + 0.6);
+          el.querySelectorAll('span').forEach((s) => { s.style.animationDuration = dur + 's'; });
+        };
+        setup(el.textContent);
+        el._setup = setup;
+      });
+      // slow-swap demo on the real 3s timing
+      const slow = document.getElementById('slow-swap');
+      if (slow) {
+        const A = 'Creating account', B = 'Setting up your workspace';
+        let cur = A;
+        setInterval(() => { cur = cur === A ? B : A; slow._setup(cur); }, 3000);
+      }
+    </script>
+  </body>
+</html>

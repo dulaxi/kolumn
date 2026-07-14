@@ -37,6 +37,14 @@ export default function BoardSkeletonSandbox() {
         </Button>
       </div>
 
+      {/* Button letter-wave specimens (real Button component) */}
+      <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <Button loading loadingText="Saving">Continue</Button>
+        <Button variant="accent" size="lg" loading loadingText="Activating">Activate Pro</Button>
+        <Button variant="secondary" size="sm" loading loadingText="Importing">Import data</Button>
+        <Button size="lg" loading loadingText="Setting up your workspace">Create account</Button>
+      </div>
+
       {/* Mirrors BoardsPage's loading chrome exactly */}
       <div className="h-[80vh] flex flex-col">
         <div className="mb-4 shrink-0 flex items-start justify-between gap-4">

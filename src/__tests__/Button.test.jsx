@@ -30,13 +30,17 @@ describe('Button', () => {
     expect(onClick).not.toHaveBeenCalled()
   })
 
-  test('loading prop shows the dots indicator and blocks clicks', async () => {
+  test('loading prop shows the letter wave and blocks clicks', async () => {
     const onClick = vi.fn()
     const { container } = render(<Button loading onClick={onClick}>Saving</Button>)
     const btn = screen.getByRole('button')
     expect(btn.getAttribute('aria-busy')).toBe('true')
     expect(btn.disabled).toBe(true)
-    expect(container.querySelector('.btn-dots')).toBeTruthy()
+    const wave = container.querySelector('.btn-wave')
+    expect(wave).toBeTruthy()
+    expect(wave.getAttribute('aria-hidden')).toBe('true')
+    // one span per non-space character of the label
+    expect(wave.querySelectorAll('span').length).toBe('Saving'.length)
     await userEvent.click(btn)
     expect(onClick).not.toHaveBeenCalled()
   })
