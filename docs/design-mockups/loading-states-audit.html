@@ -140,6 +140,10 @@
       @keyframes btn-letter-wave { 0%, 14%, 100% { opacity: 0.45; } 5%, 9% { opacity: 1; } }
       .wave > span { opacity: 0.45; animation: btn-letter-wave var(--wave-dur, 1.6s) linear infinite; animation-delay: calc(var(--i) * 90ms); }
 
+      /* Typing wave — the current chat indicator treatment (see 3.2) */
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: #A8969E; opacity: 1; } }
+      .twave > span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); }
+
       /* Button primitive reproduction (variants used by loading states) */
       .btn {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -407,14 +411,17 @@
       <div class="spec">
         <div class="spec-head">
           <span class="spec-num">3.2</span>
-          <h3 class="spec-title">TypingIndicator — AI is thinking (chat)</h3>
-          <span class="spec-ref">src/components/chat/TypingIndicator.jsx · src/pages/ChatPage.jsx:54</span>
+          <h3 class="spec-title">TypingIndicator — AI is thinking (chat) <span class="flag good">reworked 2026-07-13</span></h3>
+          <span class="spec-ref">src/components/chat/TypingIndicator.jsx · ui/LetterWave.jsx (tone="typing")</span>
         </div>
-        <p class="spec-desc">The Kolumn kanban mark (Phosphor <code>Kanban</code>, fill, <code>--color-logo</code>) with a stepped "glitch-pulse" — opacity and scale stutter at 1.2s steps(5), reading as a heartbeat rather than a smooth pulse. Shown below the message list while the response streams.</p>
+        <p class="spec-desc">Now verbal: a random kanban-brain word per response ("Triaging…", "Grooming…", "Kanbanning…" — 18-word pool, no immediate repeats) rendered as a letter wave whose lit window flashes <code>--color-logo</code> then eases through <code>--color-mauve</code>. The kanban mark stays as a static logo-colored anchor (the old glitch-pulse retired). Word menu: <code>typing-indicator-words.html</code>.</p>
         <div class="stage">
-          <div class="typing-indicator"><i class="ph-fill ph-kanban"></i></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500">
+            <i class="ph-fill ph-kanban" style="color:var(--color-logo);font-size:16px"></i>
+            <span class="twave" data-wave>Triaging…</span>
+          </div>
         </div>
-        <p class="token-note">glitch-pulse 1.2s steps(5, end) infinite · color var(--color-logo) · 16px · keyframes inlined in the component via &lt;style&gt;</p>
+        <p class="token-note">typing-letter-wave: rest text-muted/50% → logo (lead) → mauve (trail) · 90ms/letter · role="status" aria-label="Kolumn is thinking"</p>
       </div>
 
       <div class="spec">
