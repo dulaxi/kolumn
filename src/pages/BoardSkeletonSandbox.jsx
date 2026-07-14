@@ -3,6 +3,7 @@ import { Moon, Sun } from '@phosphor-icons/react'
 import BoardSkeleton from '../components/board/BoardSkeleton'
 import Skeleton from '../components/ui/Skeleton'
 import Button from '../components/ui/Button'
+import TypingIndicator from '../components/chat/TypingIndicator'
 
 // Dev-only sandbox for iterating on BoardSkeleton (the F1 first-load
 // ghost board). Renders the exact loading chrome BoardsPage shows while
@@ -43,6 +44,7 @@ export default function BoardSkeletonSandbox() {
         <Button variant="accent" size="lg" loading loadingText="Activating">Activate Pro</Button>
         <Button variant="secondary" size="sm" loading loadingText="Importing">Import data</Button>
         <Button size="lg" loading loadingText="Setting up your workspace">Create account</Button>
+        <TypingIndicator />
       </div>
 
       {/* Mirrors BoardsPage's loading chrome exactly */}

@@ -386,6 +386,22 @@
   animation-delay: calc(var(--i) * 90ms);
 }
 
+/* Chat typing wave — same mechanics as .btn-wave, but the lit window
+   carries color: logo olive flashes on the leading edge and eases
+   through mauve on the trailing edge before settling back to muted.
+   Used by TypingIndicator via <LetterWave tone="typing">. */
+@keyframes typing-letter-wave {
+  0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; }
+  5% { color: var(--color-logo); opacity: 1; }
+  10% { color: var(--color-mauve); opacity: 1; }
+}
+.typing-wave > span {
+  color: var(--text-muted);
+  opacity: 0.5;
+  animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite;
+  animation-delay: calc(var(--i) * 90ms);
+}
+
 .ai-skeleton-block {
   background: var(--surface-raised);
   border-radius: 6px;

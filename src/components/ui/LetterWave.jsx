@@ -11,16 +11,26 @@
  * Visual-only: always aria-hidden. Pair it with a visually-hidden
  * plain-text label (and aria-busy on the control) for screen readers —
  * Button.jsx does this automatically.
+ *
+ * Tones: 'button' (opacity-only wave, inherits the button's text color)
+ * and 'typing' (chat indicator — the lit window flashes logo olive and
+ * eases through mauve).
  */
-export default function LetterWave({ text, className = '' }) {
+const TONES = {
+  button: 'btn-wave',
+  typing: 'typing-wave',
+}
+
+export default function LetterWave({ text, tone = 'button', className = '' }) {
   const chars = [...String(text)]
   // Scale the cycle to the label so short verbs loop briskly and long
   // labels ("Setting up your workspace") don't stall between passes.
   const duration = Math.max(1.4, chars.length * 0.09 + 0.6)
+  const toneClass = TONES[tone] || TONES.button
   return (
     <span
       aria-hidden="true"
-      className={className ? `btn-wave ${className}` : 'btn-wave'}
+      className={className ? `${toneClass} ${className}` : toneClass}
       style={{ '--wave-dur': `${duration}s` }}
     >
       {chars.map((ch, i) =>

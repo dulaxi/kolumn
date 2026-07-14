@@ -1,22 +1,55 @@
+import { useState } from 'react'
 import { Kanban } from '@phosphor-icons/react'
+import LetterWave from '../ui/LetterWave'
+
+// Kanban-brain thinking words — the board thinking about itself.
+// One is picked per response (no immediate repeats) and rendered as a
+// letter wave whose lit window flashes logo olive → mauve.
+// Decision trail: docs/design-mockups/typing-indicator-words.html.
+const THINKING_WORDS = [
+  'Organizing',
+  'Prioritizing',
+  'Triaging',
+  'Sorting',
+  'Shuffling',
+  'Scoping',
+  'Sprinting',
+  'Grooming',
+  'Backlogging',
+  'Roadmapping',
+  'Milestoning',
+  'Timeboxing',
+  'Batching',
+  'Unblocking',
+  'Delegating',
+  'Shipping',
+  'Estimating',
+  'Kanbanning',
+]
+
+// Module-level so remounts (new responses) never repeat the last word.
+let lastWord = null
+function pickWord() {
+  let word
+  do {
+    word = THINKING_WORDS[Math.floor(Math.random() * THINKING_WORDS.length)]
+  } while (word === lastWord)
+  lastWord = word
+  return word
+}
 
 export default function TypingIndicator() {
+  // One word per mount — each response gets a fresh pick, but the word
+  // stays stable while its response streams.
+  const [word] = useState(pickWord)
   return (
-    <div className="flex items-center py-3 pl-1">
-      <Kanban
-        size={16}
-        weight="fill"
-        className="text-[var(--color-logo)] animate-[glitch-pulse_1.2s_steps(5,end)_infinite]"
-      />
-      <style>{`
-        @keyframes glitch-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          20% { opacity: 0.3; transform: scale(0.95); }
-          40% { opacity: 1; transform: scale(1.05); }
-          60% { opacity: 0.5; transform: scale(0.98); }
-          80% { opacity: 0.9; transform: scale(1); }
-        }
-      `}</style>
+    <div
+      role="status"
+      aria-label="Kolumn is thinking"
+      className="flex items-center gap-2 py-3 pl-1 text-sm font-medium"
+    >
+      <Kanban size={16} weight="fill" className="text-[var(--color-logo)] shrink-0" />
+      <LetterWave text={`${word}…`} tone="typing" />
     </div>
   )
 }
