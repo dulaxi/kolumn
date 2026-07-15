@@ -29,7 +29,7 @@ export default function WorkspaceDangerZone({ isOwner, onDelete, onLeave }) {
             </Button>
           </div>
         ) : isOwner ? (
-          <Button variant="secondary" onClick={() => setConfirm(true)} className="text-[var(--color-copper)]">
+          <Button variant="secondary" onClick={() => setConfirm(true)} className="text-[var(--label-red-text)]">
             {triggerIcon} {title}
           </Button>
         ) : (

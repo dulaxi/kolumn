@@ -68,7 +68,7 @@ export default function CardFiles({ cardId, attachmentItems, getAttachmentUrl, d
               <button
                 type="button"
                 onClick={(e) => handleDelete(e, file.id, file.storage_path)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/file:opacity-100 transition-all"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--label-red-text)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/file:opacity-100 transition-all"
               >
                 <X className="w-3 h-3" />
               </button>

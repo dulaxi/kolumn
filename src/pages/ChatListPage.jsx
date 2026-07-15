@@ -70,7 +70,7 @@ export default function ChatListPage() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id) }}
-                className="shrink-0 opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-raised)]"
+                className="shrink-0 opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[var(--label-red-text)] hover:bg-[var(--surface-raised)]"
                 aria-label="Delete conversation"
               >
                 <X className="w-3.5 h-3.5" />

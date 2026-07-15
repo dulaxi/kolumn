@@ -368,7 +368,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               </button>
             </Menu>
             {/* Delete — promoted out of the 3-dot menu so it's a direct
-                one-click action. Copper tint flags it as destructive. */}
+                one-click action. Red tint flags it as destructive. */}
             <Tooltip content="Delete card" placement="bottom">
               <button
                 type="button"
@@ -380,7 +380,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   onClose()
                 }}
                 aria-label="Delete card"
-                className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--label-red-text)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
               >
                 <Trash className="w-4 h-4" />
               </button>

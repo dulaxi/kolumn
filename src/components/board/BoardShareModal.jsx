@@ -276,7 +276,7 @@ export default function BoardShareModal({ board, onClose }) {
                     <button
                       type="button"
                       onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash className="w-3.5 h-3.5" />
                     </button>
@@ -288,7 +288,7 @@ export default function BoardShareModal({ board, onClose }) {
                       <button
                         type="button"
                         onClick={() => setConfirmLeaveOpen(true)}
-                        className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--color-copper)] hover:bg-[var(--surface-hover)] transition-colors"
+                        className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--label-red-text)] hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <SignOut className="w-3 h-3" weight="bold" />
                         Leave
@@ -325,7 +325,7 @@ export default function BoardShareModal({ board, onClose }) {
                       <button
                         type="button"
                         onClick={() => handleCancelInvitation(inv.id)}
-                        className="p-1 text-[var(--text-muted)] hover:text-[var(--color-copper)] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>

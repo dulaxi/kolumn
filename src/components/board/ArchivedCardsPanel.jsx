@@ -35,7 +35,7 @@ export default function ArchivedCardsPanel({ archivedCards, columns, onClose, on
                   type="button"
                   onClick={() => onDelete(card.id)}
                   aria-label="Delete permanently"
-                  className="p-1 text-[var(--text-faint)] hover:text-[var(--color-copper)] transition-colors"
+                  className="p-1 text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-colors"
                 >
                   <Trash className="w-3.5 h-3.5" />
                 </button>

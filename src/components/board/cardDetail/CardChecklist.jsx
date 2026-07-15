@@ -32,7 +32,7 @@ function ChecklistItem({ item, onToggle, onEdit, onDelete }) {
       <button
         type="button"
         onClick={onDelete}
-        className="shrink-0 opacity-0 group-hover/check:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] transition-all"
+        className="shrink-0 opacity-0 group-hover/check:opacity-100 text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-all"
       >
         <X className="w-3 h-3" />
       </button>

@@ -220,7 +220,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                     if (isExistingCard) removeLabelFromCard(resolvedId, d.persistedId)
                     else setPendingLabels(pendingLabels.filter((_, i) => i !== d.pendingIdx))
                   }}
-                  className="ml-0.5 opacity-0 group-hover/label:opacity-100 text-[var(--text-faint)] hover:text-[var(--color-copper)] transition-opacity"
+                  className="ml-0.5 opacity-0 group-hover/label:opacity-100 text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-opacity"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>

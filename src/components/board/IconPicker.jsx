@@ -173,7 +173,7 @@ export default function IconPicker({ value, onChange, onClose }) {
             <button
               type="button"
               onClick={() => { onChange(null); onClose() }}
-              className="mb-2 text-[11px] text-[var(--text-muted)] hover:text-[var(--color-copper)] transition-colors cursor-pointer"
+              className="mb-2 text-[11px] text-[var(--text-muted)] hover:text-[var(--label-red-text)] transition-colors cursor-pointer"
             >
               Remove icon
             </button>

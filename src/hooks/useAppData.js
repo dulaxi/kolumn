@@ -137,11 +137,14 @@ export function useAppData() {
 
   const handleMigrate = async () => {
     setMigrating(true)
-    await migrateLocalData()
+    const fullyMigrated = await migrateLocalData()
     await fetchBoards()
     await fetchNotes()
     setMigrating(false)
     setShowMigration(false)
+    if (!fullyMigrated) {
+      showToast.warn('Some items could not be imported — your local data was kept so you can retry')
+    }
   }
 
   const handleSkipMigration = () => setShowMigration(false)
