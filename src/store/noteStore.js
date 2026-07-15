@@ -39,17 +39,19 @@ export const useNoteStore = create((set, get) => ({
       return null
     }
 
-    const { data: note } = await supabase
+    const { data: note, error } = await supabase
       .from('notes')
       .insert(validated.data)
       .select()
       .single()
 
-    if (note) {
-      set((state) => ({ notes: { ...state.notes, [note.id]: note } }))
-      return note.id
+    if (error) {
+      logError('Failed to create note:', error)
+      set({ error: { message: error.message, action: 'addNote' } })
+      return null
     }
-    return null
+    set((state) => ({ notes: { ...state.notes, [note.id]: note } }))
+    return note.id
   },
 
   updateNote: async (noteId, updates) => {

@@ -31,20 +31,21 @@ export const useNotificationStore = create((set, get) => ({
   },
 
   markAsRead: async (notificationId) => {
-    await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', notificationId)
-
+    const prev = get().notifications
     set((state) => {
       const updated = state.notifications.map((n) =>
         n.id === notificationId ? { ...n, read: true } : n
       )
-      return {
-        notifications: updated,
-        unreadCount: updated.filter((n) => !n.read).length,
-      }
+      return { notifications: updated, unreadCount: updated.filter((n) => !n.read).length }
     })
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+    if (error) {
+      logError('Failed to mark notification read:', error)
+      set({ notifications: prev, unreadCount: prev.filter((n) => !n.read).length })
+    }
   },
 
   markAllAsRead: async () => {
@@ -54,16 +55,20 @@ export const useNotificationStore = create((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', user.id)
-      .eq('read', false)
-
+    const prev = get().notifications
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true })),
       unreadCount: 0,
     }))
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('read', false)
+    if (error) {
+      logError('Failed to mark all notifications read:', error)
+      set({ notifications: prev, unreadCount: prev.filter((n) => !n.read).length })
+    }
   },
 
   // Create a notification for another user
@@ -72,7 +77,7 @@ export const useNotificationStore = create((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (user?.id === userId) return
 
-    await supabase.from('notifications').insert({
+    const { error } = await supabase.from('notifications').insert({
       user_id: userId,
       type,
       title,
@@ -81,6 +86,7 @@ export const useNotificationStore = create((set, get) => ({
       board_id: boardId || null,
       actor_name: actorName || '',
     })
+    if (error) logError('Failed to create notification:', error)
   },
 
   subscribeToNotifications: (userId) => {
