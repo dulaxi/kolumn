@@ -53,13 +53,13 @@ function render(message, iconName, colors, t) {
   )
 }
 
-function make(iconName, bg, color, duration) {
+function make(iconName, bg, color, duration, styleOverride) {
   const colors = { color }
   return (message, opts) =>
     toast((t) => render(message, iconName, colors, t), {
       duration,
       ...opts,
-      style: { ...BASE, background: bg, color },
+      style: { ...BASE, background: bg, color, ...styleOverride },
     })
 }
 
@@ -108,15 +108,24 @@ function offlineToast(message) {
   )
 }
 
+// Hue = meaning (decision: error-style-decisions-3.html, 1B):
+// lime = positive, copper = failure, red = destructive receipt,
+// honey = warning/time. Saturated fills are theme-stable with the ink
+// border in both themes (the fill separates itself); the two pale fills
+// (info, archive) theme via --toast-* tokens, incl. the brighter border
+// they need to separate from a dark page. CSS vars resolve fine inside
+// react-hot-toast's inline styles.
+const PALE = { border: '1px solid var(--toast-pale-border)' }
+
 export const showToast = {
   success: make('check-circle', '#C2D64A', '#1B1B18', 3000),
   error:   make('warning-circle', '#C27A4A', '#FAF8F6', 4000),
-  delete:  make('trash',          '#C27A4A', '#FAF8F6', 5000),
-  archive: make('archive',        '#A8969E', '#E8DDE2', 3000),
+  delete:  make('trash',          '#B53333', '#FAF8F6', 5000),
+  archive: make('archive', 'var(--toast-archive-bg)', 'var(--toast-archive-text)', 3000, PALE),
   restore: make('arrow-counter-clockwise', '#C2D64A', '#1B1B18', 3000),
-  info:    make('info',            '#FAF8F6', '#5C5C57', 3000),
+  info:    make('info', 'var(--toast-info-bg)', 'var(--toast-info-text)', 3000, PALE),
   warn:    make('warning',         '#D4A843', '#1B1B18', 4000),
-  overdue: make('alarm',           '#C27A4A', '#FAF8F6', 5000),
+  overdue: make('alarm',           '#D4A843', '#1B1B18', 5000),
   offline: offlineToast,
   dismiss: (id) => toast.dismiss(id),
 }

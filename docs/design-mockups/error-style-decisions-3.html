@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Error style decisions 3 · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-hover: #E8E2DB;
+        --surface-raised: #F2EDE8;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #A8A8A4;
+        --color-sand: #E0DBD5;
+        --color-mist: #C4BFB8;
+        --color-lime: #C2D64A;
+        --color-lime-dark: #A8BA32;
+        --color-copper: #C27A4A;
+        --color-honey: #D4A843;
+        --border-default: #E0DBD5;
+        --border-subtle: #EAE5DF;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-hover: #3A3937;
+        --surface-raised: #2E2E2B;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-sand: #3A3937;
+        --color-mist: #4A4845;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--surface-page);
+        color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 96px; }
+      header { margin-bottom: 40px; position: relative; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header p { color: var(--text-secondary); margin: 0; max-width: 700px; }
+      .theme-toggle {
+        position: absolute; top: 4px; right: 0;
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-radius: 8px; padding: 6px 12px; cursor: pointer;
+        font: 500 12px 'IBM Plex Mono', monospace; color: var(--text-secondary);
+        display: flex; align-items: center; gap: 6px;
+      }
+      .theme-toggle:hover { background: var(--surface-hover); }
+      .locked { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 12px; }
+
+      .decision { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+      .decision-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+      .decision-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); padding: 2px 8px; background: var(--surface-raised); border-radius: 4px; white-space: nowrap; }
+      .decision-title { font-size: 16px; font-weight: 600; margin: 0; }
+      .decision-desc { color: var(--text-secondary); margin: 0 0 20px; max-width: 780px; }
+      .opt { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+      .opt-label { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .opt-label::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--color-mist); display: inline-block; flex-shrink: 0; }
+      .opt-current .opt-label::before { background: var(--color-copper); }
+      .opt-pick .opt-label::before { background: var(--color-lime-dark); }
+      .opt-note { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint); margin-top: 12px; line-height: 1.6; }
+
+      /* Fixed-theme stages: specimens are pinned to a background on purpose —
+         the page toggle changes the chrome, never the evidence. */
+      .stages { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 820px) { .stages { grid-template-columns: 1fr; } }
+      .stage {
+        border-radius: 10px; padding: 18px 16px;
+        display: flex; flex-direction: column; gap: 10px; align-items: center;
+      }
+      .stage-light { background: #FAF8F6; border: 1px solid #E0DBD5; }
+      .stage-dark  { background: #1C1C1A; border: 1px solid #454340; }
+      .stage-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; align-self: flex-start; }
+      .stage-light .stage-tag { color: #8E8E89; }
+      .stage-dark .stage-tag { color: #8A8782; }
+
+      /* Toast anatomy */
+      .toast {
+        font-family: 'SF Mono', SFMono-Regular, 'IBM Plex Mono', Menlo, monospace;
+        font-size: 12px; border-radius: 10px; padding: 10px 14px;
+        box-shadow: 0 4px 24px rgba(27,27,24,0.10);
+        width: 100%; max-width: 400px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .toast .ph { font-size: 18px; flex-shrink: 0; }
+      .toast .msg { flex: 1; text-align: left; }
+      .toast .x, .toast .undo { margin-left: auto; opacity: 0.75; flex-shrink: 0; display: flex; }
+      .toast .undo .ph, .toast .x .ph { font-size: 16px; }
+
+      .verdict {
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-left: 3px solid var(--color-lime-dark);
+        border-radius: 14px; padding: 24px; margin: 40px 0 20px;
+      }
+      .verdict h2 { font-family: 'Sentient', Georgia, serif; font-weight: 500; font-size: 24px; margin: 0 0 10px; }
+      .verdict p, .verdict ul { color: var(--text-secondary); max-width: 780px; }
+      .verdict li { margin: 6px 0; }
+      .verdict b { color: var(--text-primary); }
+
+      footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border-default); color: var(--text-muted); font-size: 12px; }
+      footer code { background: var(--surface-raised); padding: 1px 6px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+      code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+          <i class="ph ph-moon"></i> theme
+        </button>
+        <h1>Error style — round 3</h1>
+        <p>The last two audit findings, both toast-visual. Every specimen below sits on a <b>pinned</b> light or dark stage — the page toggle changes the chrome around them, never the evidence. That asymmetry is the point of Decision 2.</p>
+        <p class="locked">locked so far: wash/micro grammar everywhere · red = destructive intent · copper = failure · honey = warning · offline pulse toast</p>
+      </header>
+
+      <!-- ============ DECISION 1: hue collision ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">DECISION 1</span>
+          <h2 class="decision-title">error / delete / overdue — three meanings, one copper</h2>
+        </div>
+        <p class="decision-desc">Today all three render identical copper solids — a failure, a successful destructive action, and a time alert are pixel-twins at a glance. The app now has a three-hue meaning system (copper=failure, red=destructive, honey=warning); the toasts predate it. Note the delete toast carries the 5-second <b>Undo</b> affordance.</p>
+
+        <div class="opt opt-current">
+          <div class="opt-label">A · current — all copper (reference)</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">only the 18px icon differs · #FAF8F6 on copper ≈ 3.3:1 (under AA at 12px) · a delete receipt looks exactly like a failure</div>
+        </div>
+
+        <div class="opt opt-pick">
+          <div class="opt-label">B · one hue per meaning (recommended)</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#B53333;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#D4A843;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#B53333;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#D4A843;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">error stays copper (=failure) · delete goes red (=destructive receipt, undo inside) — #FAF8F6 on #B53333 ≈ 5.8:1, better than today · overdue goes honey (=time warning, alarm icon vs warn's triangle) · dark: saturated fills keep the ink border (a quiet dark rim — the fill separates itself)</div>
+        </div>
+
+        <div class="opt">
+          <div class="opt-label">C · minimal split — only fix the failure/destructive collision</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#B53333;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK</span>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#B53333;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-trash"></i><span class="msg">Task deleted — undo?</span><span class="undo"><i class="ph ph-arrow-counter-clockwise"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-alarm"></i><span class="msg">"Ship onboarding" is overdue</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">overdue stays copper ("urgent" reading) · leaves a failure/time-alert twin pair, but changes less</div>
+        </div>
+      </section>
+
+      <!-- ============ DECISION 2: theming ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">DECISION 2</span>
+          <h2 class="decision-title">Dark mode — toasts are the app's only frozen surface</h2>
+        </div>
+        <p class="decision-desc">toast.js hardcodes every color; in dark mode the app re-themes around toasts that stay light. Two fills genuinely break: <b>info</b> (near-white slab, blinding on dark) and the <b>1px ink border</b> (invisible against a dark page). The saturated fills (lime/copper/honey/red) read fine on both — the same "saturated tones aren't overridden" rule the palette already uses. Implementation is cheap either way: CSS variables work inside react-hot-toast's inline styles, so toast.js just swaps hexes for <code>var(--toast-*)</code> tokens.</p>
+
+        <div class="opt opt-current">
+          <div class="opt-label">A · current — frozen light toasts (reference)</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT</span>
+            <div class="toast" style="background:#C2D64A;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#FAF8F6;color:#5C5C57;border:1px solid #1B1B18;"><i class="ph ph-info"></i><span class="msg">Syncing latest changes…</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#A8969E;color:#E8DDE2;border:1px solid #1B1B18;"><i class="ph ph-archive"></i><span class="msg">Task archived</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK — border vanishes, info glares</span>
+            <div class="toast" style="background:#C2D64A;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#FAF8F6;color:#5C5C57;border:1px solid #1B1B18;"><i class="ph ph-info"></i><span class="msg">Syncing latest changes…</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#A8969E;color:#E8DDE2;border:1px solid #1B1B18;"><i class="ph ph-archive"></i><span class="msg">Task archived</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">zero code, zero tokens · dark mode keeps a white info slab and borderless pills</div>
+        </div>
+
+        <div class="opt opt-pick">
+          <div class="opt-label">B · tokened solids (recommended) — keep the identity, theme the breakage</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT — unchanged</span>
+            <div class="toast" style="background:#C2D64A;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#FAF8F6;color:#5C5C57;border:1px solid #1B1B18;"><i class="ph ph-info"></i><span class="msg">Syncing latest changes…</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#A8969E;color:#E8DDE2;border:1px solid #1B1B18;"><i class="ph ph-archive"></i><span class="msg">Task archived</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK — light border, dark info/archive, solids stay</span>
+            <div class="toast" style="background:#C2D64A;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#2E2E2B;color:#B0ADA7;border:1px solid #E8E5E0;"><i class="ph ph-info"></i><span class="msg">Syncing latest changes…</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#3A3040;color:#C4A0B8;border:1px solid #E8E5E0;"><i class="ph ph-archive"></i><span class="msg">Task archived</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">hybrid border rule: saturated fills keep the ink border everywhere (zero changes); ONLY the pale fills theme — --toast-info-* (raised surface), --toast-archive-* (mauve-wash dark + mauve dark text), each with the light #E8E5E0 rim they need to separate from the page</div>
+        </div>
+
+        <div class="opt">
+          <div class="opt-label">C · full wash — dark mode gets quiet toasts</div>
+          <div class="stages"><div class="stage stage-light">
+            <span class="stage-tag">LIGHT — unchanged</span>
+            <div class="toast" style="background:#C2D64A;color:#1B1B18;border:1px solid #1B1B18;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#C27A4A;color:#FAF8F6;border:1px solid #1B1B18;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div><div class="stage stage-dark">
+            <span class="stage-tag">DARK — washes + colored text</span>
+            <div class="toast" style="background:#3A4920;color:#C2D64A;border:1px solid #A8BA32;"><i class="ph ph-check-circle"></i><span class="msg">Board "Q3 Roadmap" created</span><span class="x"><i class="ph ph-x"></i></span></div>
+            <div class="toast" style="background:#3A2A20;color:#D89A6E;border:1px solid #C27A4A;"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><span class="x"><i class="ph ph-x"></i></span></div>
+          </div></div>
+          <div class="opt-note">calmer, matches InlineNotice's dark washes · but transient toasts lose the punch that makes them noticeable, and light/dark toasts stop being the same object</div>
+        </div>
+      </section>
+
+      <!-- ============ VERDICT ============ -->
+      <section class="verdict">
+        <h2>Recommendation</h2>
+        <ul>
+          <li><b>1B.</b> The hue split finishes the semantic system the last two branches built: after training users that red means destructive and honey means warning, keeping the delete receipt and the overdue alert dressed as failures is the last contradiction. Bonus: the red delete toast nearly doubles the text contrast of today's copper.</li>
+          <li><b>2B.</b> Solid fills are the toast identity — dark mode shouldn't demote them to washes (that's the InlineNotice tier's job). Theme exactly what's broken: the border and the two pale fills. It's ~6 tokens and a mechanical toast.js swap to <code>var()</code> references, which CSS happily resolves inside react-hot-toast's inline styles.</li>
+          <li><b>Border rule (user-refined):</b> the border's job is separation — saturated fills separate themselves, so they keep the ink border in both themes (a subtle dark rim in dark mode, zero code change); only the two pale fills (info, archive) get the light border, because without it they melt into a dark page.</li>
+        </ul>
+      </section>
+
+      <footer>
+        Reply like <code>1:B 2:B</code> — or redirect and I'll iterate. Implementation after your pick: tokens in <code>index.css</code>, hex→<code>var()</code> swap in <code>toast.js</code>, undoableDelete's injected button inherits the red automatically (it styles text, not background).
+      </footer>
+    </div>
+  </body>
+</html>

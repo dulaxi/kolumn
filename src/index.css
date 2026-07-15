@@ -94,6 +94,16 @@
   --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
   --notice-error-text: #A86434;  /* copper-dark: AA-safe on copper-wash + card */
   --notice-warn-text: #8A6B1F;   /* dark honey: readable on honey-wash */
+
+  /* Toast pale-fill theming (decision: error-style-decisions-3.html, 2B).
+     Saturated toast fills (lime/copper/red/honey) are theme-stable and keep
+     the ink border everywhere; only these two pale fills theme, with the
+     border brightness they need to separate from the page. */
+  --toast-pale-border: #1B1B18;
+  --toast-info-bg: #FAF8F6;
+  --toast-info-text: #5C5C57;
+  --toast-archive-bg: #A8969E;
+  --toast-archive-text: #E8DDE2;
   --label-orange-bg: #F8DDC8; --label-orange-text: #AD5A1F;
   --label-yellow-bg: #F9EDD0; --label-yellow-text: #BD910F;
   --label-green-bg: #DEEED4;  --label-green-text: #2F7613;
@@ -160,6 +170,12 @@
   --label-red-bg: #3D1818;    --label-red-text: #E08080;
   --notice-error-text: #D89A6E;
   --notice-warn-text: #D4B86A;
+
+  --toast-pale-border: #E8E5E0;
+  --toast-info-bg: #2E2E2B;
+  --toast-info-text: #B0ADA7;
+  --toast-archive-bg: #3A3040;
+  --toast-archive-text: #C4A0B8;
   --label-orange-bg: #3B291C; --label-orange-text: #D9AC8C;
   --label-yellow-bg: #3D3318; --label-yellow-text: #E0C070;
   --label-green-bg: #1F3318;  --label-green-text: #A0C880;
