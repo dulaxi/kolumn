@@ -284,6 +284,7 @@ export const useBoardStore = create((set, get) => ({
     if (error) {
       logError('Failed to update board icon:', error)
       if (prevBoard) set((state) => ({ boards: { ...state.boards, [boardId]: prevBoard } }))
+      showToast.error('Failed to update board icon')
     }
   },
 
@@ -429,6 +430,7 @@ export const useBoardStore = create((set, get) => ({
     if (error) {
       logError('Failed to update WIP limit:', error)
       if (prevColumn) set((state) => ({ columns: { ...state.columns, [columnId]: prevColumn } }))
+      showToast.error('Failed to update WIP limit')
     }
   },
 
@@ -703,6 +705,7 @@ export const useBoardStore = create((set, get) => ({
           cards: { ...state.cards, [cardId]: prevCard },
         }))
       }
+      showToast.error('Failed to save changes')
     } else if (prevCard) {
       // Log meaningful field changes (skip position-only updates)
       if ('priority' in dbUpdates && dbUpdates.priority !== prevCard.priority) {
@@ -778,6 +781,7 @@ export const useBoardStore = create((set, get) => ({
         set((state) => ({
           cards: { ...state.cards, [cardId]: card },
         }))
+        showToast.error('Failed to update task')
         return
       }
       logActivity(cardId, newCompleted ? 'completed' : 'reopened', null)
@@ -845,6 +849,7 @@ export const useBoardStore = create((set, get) => ({
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
       }))
+      showToast.error('Failed to archive task')
     } else {
       logActivity(cardId, 'archived', null)
       showToast.archive('Task archived')
@@ -865,6 +870,7 @@ export const useBoardStore = create((set, get) => ({
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
       }))
+      showToast.error('Failed to restore task')
     } else {
       logActivity(cardId, 'unarchived', null)
       showToast.restore('Task restored from archive')
@@ -1063,6 +1069,7 @@ export const useBoardStore = create((set, get) => ({
       set((s) => ({
         comments: { ...s.comments, [cardId]: (s.comments[cardId] || []).filter((c) => c.id !== tempId) },
       }))
+      showToast.error('Failed to add comment')
       return
     }
 
@@ -1109,6 +1116,7 @@ export const useBoardStore = create((set, get) => ({
       logError('Failed to delete comment:', error)
       // Rollback
       set((s) => ({ comments: { ...s.comments, [cardId]: prevComments } }))
+      showToast.error('Failed to delete comment')
     }
   },
 
@@ -1215,6 +1223,7 @@ export const useBoardStore = create((set, get) => ({
       logError('Failed to delete attachment:', error)
       // Rollback
       set((s) => ({ attachments: { ...s.attachments, [cardId]: prevAttachments } }))
+      showToast.error('Failed to remove file')
       return
     }
 
@@ -1485,7 +1494,8 @@ export const useBoardStore = create((set, get) => ({
       p_card_id: cardId, p_text: text, p_color: color,
     })
     if (error) {
-      showToast.error(`Couldn't add label: ${error.message}`)
+      logError('Failed to add label:', error)
+      showToast.error('Couldn\'t add label — try again')
       return
     }
     // attach_label_by_text returns only the label id. For a brand-new label the
@@ -1514,7 +1524,8 @@ export const useBoardStore = create((set, get) => ({
       p_board_id: boardId, p_text: text, p_color: color,
     })
     if (error) {
-      showToast.error(`Couldn't create label: ${error.message}`)
+      logError('Failed to create label:', error)
+      showToast.error('Couldn\'t create label — try again')
       return null
     }
     let label = get().labels[labelId]
@@ -1541,7 +1552,10 @@ export const useBoardStore = create((set, get) => ({
       .delete()
       .eq('card_id', cardId)
       .eq('label_id', labelId)
-    if (error) showToast.error(`Couldn't remove label: ${error.message}`)
+    if (error) {
+      logError('Failed to remove label:', error)
+      showToast.error('Couldn\'t remove label — try again')
+    }
   },
 
   renameLabel: async (labelId, newText) => {
@@ -1552,7 +1566,8 @@ export const useBoardStore = create((set, get) => ({
       if (error.code === '23505') {
         showToast.warn('A label with that name already exists — use Merge instead.')
       } else {
-        showToast.error(`Couldn't rename label: ${error.message}`)
+        logError('Failed to rename label:', error)
+        showToast.error('Couldn\'t rename label — try again')
       }
       return
     }
@@ -1563,7 +1578,7 @@ export const useBoardStore = create((set, get) => ({
 
   updateLabelColor: async (labelId, color) => {
     const { error } = await supabase.from('labels').update({ color }).eq('id', labelId)
-    if (error) { showToast.error(`Couldn't update color: ${error.message}`); return }
+    if (error) { logError('Failed to update label color:', error); showToast.error('Couldn\'t update the label color — try again'); return }
     set((s) => ({
       labels: { ...s.labels, [labelId]: { ...s.labels[labelId], color } },
     }))
@@ -1571,7 +1586,7 @@ export const useBoardStore = create((set, get) => ({
 
   mergeLabels: async (fromId, intoId) => {
     const { error } = await supabase.rpc('merge_labels', { p_from_id: fromId, p_into_id: intoId })
-    if (error) { showToast.error(`Couldn't merge: ${error.message}`); return }
+    if (error) { logError('Failed to merge labels:', error); showToast.error('Couldn\'t merge labels — try again'); return }
     set((s) => {
       const nextLabels = { ...s.labels }
       delete nextLabels[fromId]
@@ -1589,7 +1604,7 @@ export const useBoardStore = create((set, get) => ({
     const ts = new Date().toISOString()
     const { error } = await supabase
       .from('labels').update({ archived_at: ts }).eq('id', labelId)
-    if (error) { showToast.error(`Couldn't archive: ${error.message}`); return }
+    if (error) { logError('Failed to archive label:', error); showToast.error('Couldn\'t archive the label — try again'); return }
     set((s) => ({
       labels: { ...s.labels, [labelId]: { ...s.labels[labelId], archived_at: ts } },
     }))
@@ -1602,7 +1617,8 @@ export const useBoardStore = create((set, get) => ({
       if (error.code === '23505') {
         showToast.warn('Cannot unarchive — a label with this name already exists.')
       } else {
-        showToast.error(`Couldn't unarchive: ${error.message}`)
+        logError('Failed to restore label:', error)
+        showToast.error('Couldn\'t restore the label — try again')
       }
       return
     }

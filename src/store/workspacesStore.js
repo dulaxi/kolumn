@@ -249,6 +249,7 @@ export const useWorkspacesStore = create(
 
           if (error) {
             logError('Failed to rename workspace:', error)
+            showToast.error('Failed to rename workspace')
             return
           }
           set((s) => ({
@@ -377,6 +378,7 @@ export const useWorkspacesStore = create(
           const { error } = await supabase.rpc('decline_workspace_invitation', { invitation_id: invitationId })
           if (error) {
             logError('Failed to decline invitation:', error)
+            showToast.error('Failed to decline invitation')
             return
           }
           await get().fetchInvitations()
@@ -390,6 +392,7 @@ export const useWorkspacesStore = create(
           const { error } = await supabase.from('workspace_invitations').delete().eq('id', invitationId)
           if (error) {
             logError('Failed to cancel invitation:', error)
+            showToast.error('Failed to cancel invitation')
             return
           }
           get().fetchSentInvitations(workspaceId)
@@ -403,7 +406,7 @@ export const useWorkspacesStore = create(
           const { error } = await supabase.rpc('leave_workspace', { target_workspace_id: workspaceId })
           if (error) {
             logError('Failed to leave workspace:', error)
-            showToast.error(error.message || 'Failed to leave workspace')
+            showToast.error('Failed to leave workspace')
             return
           }
           set((s) => {
