@@ -378,11 +378,13 @@ mockups live in `docs/design-mockups/{button,input,menu,ghost-buttons}-decisions
 | `Menu`     | Wraps `Popover`. Sub-components: `Menu.Item` (with `icon`, `shortcut`, `destructive`, `selected`, `checkbox`), `Menu.Divider`, `Menu.Label`. |
 | `Tooltip`  | `content`, `placement`, `delay` (default 300ms), `disabled`. Wraps a single child. |
 | `Skeleton` | `variant` (block/line/circle/pill), `tone` (default/ai), `width`, `height`. |
+| `InlineNotice` | The persistent ("wash") tier of the error grammar: mono 12px, 18px default Phosphor icon, 1px border, 10px radius. `variant` (info/error/warn/danger/success), `icon` (node or `false`), `action` (node, e.g. Retry), `onDismiss`. Errors/danger get `role="alert"`. |
+| `FieldError`   | Micro tier: single-input validation line. Mono 11px + 13px icon, no box. Self-guards on falsy children. |
 
 ### Other shared helpers
 
 - `src/utils/formatting.js` — `LABEL_BG`, `LABEL_BG_QUIET`, `PRIORITY_DOT`, `AVATAR_COLORS` exported as Tailwind class strings (not components). Use these instead of hand-coding label/priority colors.
-- `src/utils/toast.js` — `showToast.{success|error|delete|archive|restore|info|warn|overdue}`. Powered by `react-hot-toast`. Configured globally as `<Toaster position="top-center">` in `App.jsx`. Style: 420px fixed width, 1px solid `#1B1B18` border, 10px radius, IBM Plex Mono / SF Mono 12px, Phosphor icon + message + dismiss button. Eight intents each with their own background color and duration (3-5s). **Never roll your own toast — always import this helper.**
+- `src/utils/toast.js` — `showToast.{success|error|delete|archive|restore|info|warn|overdue}`. Powered by `react-hot-toast`. Configured globally as `<Toaster position="top-center">` in `App.jsx`. Style: 420px fixed width, 1px solid `#1B1B18` border, 10px radius, IBM Plex Mono / SF Mono 12px, Phosphor icon + message + dismiss button. Eight intents each with their own background color and duration (3-5s). **Never roll your own toast — always import this helper.** `showToast.offline(msg)` returns a persistent (duration ∞) honey toast with a pulse dot for connectivity state; pair with `showToast.dismiss(id)`. Solid toast fills are reserved for transient/floating messages — persistent inline errors use `InlineNotice` (wash) or `FieldError` (micro). Decision records: docs/design-mockups/error-style-decisions{,-2}.html.
 - `src/hooks/useClickOutside.js`, `src/hooks/useKeyboardShortcuts.js`, `src/hooks/useAppData.js`, `src/hooks/useBoardDnd.js` — extracted hooks. Prefer these over reinventing.
 
 ## Coherency Rules
