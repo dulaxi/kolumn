@@ -166,7 +166,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
               {column.title}
             </h3>
           )}
-          <span className={`text-xs ${overWip ? 'text-[var(--color-copper)] font-medium' : 'text-[var(--text-muted)]'}`}>
+          <span className={`text-xs ${overWip ? 'text-[var(--notice-warn-text)] font-medium' : 'text-[var(--text-muted)]'}`}>
             {columnCards.length}{wipLimit ? `/${wipLimit}` : ''}
           </span>
         </div>
