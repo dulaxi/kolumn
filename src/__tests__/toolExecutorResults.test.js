@@ -46,6 +46,27 @@ describe('executeTool result contract', () => {
     const r = await resultPromise
     expect(r.ok).toBe(true)
     expect(r.note).toMatch(/undo/i)
+    expect(r.note).toMatch(/failures will surface to the user directly/i)
     expect(slowDelete).toHaveBeenCalledWith('c1')
+  })
+
+  test('create_board returns { ok: false, error } when addBoard fails to save', async () => {
+    useBoardStore.setState({ addBoard: vi.fn().mockResolvedValue(null) })
+    const r = await executeTool('create_board', { name: 'New Board' })
+    expect(r.ok).toBe(false)
+    expect(r.error).toMatch(/board creation failed/i)
+    // A failed create must not report a boardId or navigate the app.
+    expect(r.boardId).toBeUndefined()
+  })
+
+  test('create_board returns { ok: true, boardId } and navigates when addBoard succeeds', async () => {
+    useBoardStore.setState({
+      addBoard: vi.fn().mockResolvedValue('new-board-id'),
+      setActiveBoard: vi.fn(),
+    })
+    const r = await executeTool('create_board', { name: 'New Board' })
+    expect(r.ok).toBe(true)
+    expect(r.boardId).toBe('new-board-id')
+    expect(useBoardStore.getState().setActiveBoard).toHaveBeenCalledWith('new-board-id')
   })
 })

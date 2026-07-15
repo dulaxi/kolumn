@@ -208,14 +208,19 @@ export async function executeTool(action, params) {
     setTimeout(() => { aiBuildingCards.delete(tempId); aiBuildingCards.delete(cardId) }, 3000)
 
     // Sync labels — only possible once we have the real (non-temp) card ID.
-    // If temp-ID resolution timed out, skip labels silently; the card still
-    // exists, the label sync just won't fire on this call.
+    // If temp-ID resolution timed out, the card still exists but label sync
+    // won't fire on this call — surface that to the model as a warning
+    // rather than staying silent about it.
+    let labelWarning
     if (cardId !== tempId && params.labels !== undefined) {
       try {
         await resolveAndSyncLabels(cardId, board.id, params.labels)
       } catch (err) {
         logWarn('[toolExecutor] create_card label sync failed:', err)
+        labelWarning = 'labels could not be applied'
       }
+    } else if (params.labels !== undefined && cardId === tempId) {
+      labelWarning = 'card still syncing — labels were skipped'
     }
 
     return {
@@ -228,6 +233,7 @@ export async function executeTool(action, params) {
       },
       applied_defaults: appliedDefaults,
       ...(truncated ? { truncated: true } : {}),
+      ...(labelWarning ? { warning: labelWarning } : {}),
     }
   }
 
@@ -537,11 +543,13 @@ export async function executeTool(action, params) {
 
     // Sync labels separately via card_labels table when the labels field was
     // explicitly included in updates (even if set to null/[]).
+    let labelWarning
     if ('labels' in updates) {
       try {
         await resolveAndSyncLabels(card.id, sourceBoard.id, updates.labels)
       } catch (err) {
         logWarn('[toolExecutor] update_card label sync failed:', err)
+        labelWarning = 'labels could not be applied'
       }
     }
 
@@ -562,6 +570,7 @@ export async function executeTool(action, params) {
       changed,
       cleared,
       ...(truncated ? { truncated: true } : {}),
+      ...(labelWarning ? { warning: labelWarning } : {}),
     }
   }
 
@@ -650,17 +659,18 @@ export async function executeTool(action, params) {
         board: { id: sourceBoard.id, name: sourceBoard.name },
         column: sourceColumn ? { id: sourceColumn.id, title: sourceColumn.title } : null,
       },
-      note: 'deleted — user has a 5-second undo',
+      note: 'queued for deletion — the user has a 5-second undo; failures will surface to the user directly',
     }
   }
 
   if (action === 'create_board') {
     const columns = params.columns || ['To Do', 'In Progress', 'Done']
     const boardId = await store.addBoard(params.name, params.icon || null, columns)
-    if (boardId) {
-      store.setActiveBoard(boardId)
-      window.dispatchEvent(new CustomEvent('kolumn:ai-navigate-board'))
+    if (!boardId) {
+      return { ok: false, error: 'Board creation failed — nothing was saved' }
     }
+    store.setActiveBoard(boardId)
+    window.dispatchEvent(new CustomEvent('kolumn:ai-navigate-board'))
     return { ok: true, boardId }
   }
 
@@ -775,12 +785,14 @@ export async function executeTool(action, params) {
       await store.updateCard(card.id, payloadResult.payload)
     }
     // Sync labels for every matched card when labels was explicitly in updates.
+    let labelFailures = 0
     if ('labels' in updates) {
       for (const card of cards) {
         try {
           await resolveAndSyncLabels(card.id, board.id, updates.labels)
         } catch (err) {
           logWarn('[toolExecutor] update_cards label sync failed for card', card.id, err)
+          labelFailures++
         }
       }
     }
@@ -789,6 +801,7 @@ export async function executeTool(action, params) {
       updated: cards.length,
       resolved: { board: { id: board.id, name: board.name } },
       ...(payloadResult.truncated ? { truncated: true } : {}),
+      ...(labelFailures > 0 ? { warning: `labels failed for ${labelFailures} card(s)` } : {}),
     }
   }
 
@@ -932,6 +945,7 @@ export async function executeTool(action, params) {
 
     // Labels: if params.labels was explicitly passed, resolve those; otherwise
     // copy the source card's existing label IDs directly.
+    let labelWarning
     if (newId !== newTempId) {
       try {
         if (params.labels !== undefined) {
@@ -945,7 +959,10 @@ export async function executeTool(action, params) {
         }
       } catch (err) {
         logWarn('[toolExecutor] duplicate_card label sync failed:', err)
+        labelWarning = 'labels could not be applied'
       }
+    } else if (params.labels !== undefined || sourceLabelIds.length > 0) {
+      labelWarning = 'card still syncing — labels were skipped'
     }
 
     const newCard = useBoardStore.getState().cards[newId] || null
@@ -963,6 +980,7 @@ export async function executeTool(action, params) {
         board: { id: sourceBoard.id, name: sourceBoard.name },
         column: targetColumn ? { id: targetColumn.id, title: targetColumn.title } : null,
       },
+      ...(labelWarning ? { warning: labelWarning } : {}),
     }
   }
 
@@ -1056,7 +1074,7 @@ export async function executeTool(action, params) {
     // mechanism (per design decision 4). See delete_card above for the
     // full rationale.
     store.deleteBoard(board.id).catch((err) => logWarn('[toolExecutor] delete_board failed post-report:', err))
-    return { ok: true, board: snapshot, note: 'deleted — user has a 5-second undo' }
+    return { ok: true, board: snapshot, note: 'queued for deletion — the user has a 5-second undo; failures will surface to the user directly' }
   }
 
   if (action === 'add_column') {
@@ -1110,7 +1128,7 @@ export async function executeTool(action, params) {
       ok: true,
       column: snapshot,
       resolved: { board: { id: board.id, name: board.name } },
-      note: 'deleted — user has a 5-second undo',
+      note: 'queued for deletion — the user has a 5-second undo; failures will surface to the user directly',
     }
   }
 
