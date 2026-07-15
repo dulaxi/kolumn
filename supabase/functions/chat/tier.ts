@@ -2,6 +2,10 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 export type Mode = "pill" | "chat"
 
+export class UsageCheckError extends Error {
+  constructor() { super("usage check failed") }
+}
+
 const FREE_DAILY_LIMIT = 20
 
 const PRO_ONLY_TOOLS = [
@@ -39,11 +43,12 @@ export async function checkTier(
   userId: string,
   opts: { isContinuation?: boolean } = {},
 ): Promise<TierInfo> {
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("tier")
     .eq("id", userId)
     .single()
+  if (profileError) console.error("[tier] profile fetch failed, degrading to free:", profileError)
 
   const tier = (profile?.tier || "free") as "free" | "pro"
   const model = "claude-haiku-4-5-20251001"
@@ -55,15 +60,22 @@ export async function checkTier(
   }
 
   if (tier === "free") {
-    const { data: usage } = await supabase.rpc("increment_chat_usage", {
+    const { data: usage, error: usageError } = await supabase.rpc("increment_chat_usage", {
       target_user_id: userId,
       daily_limit: FREE_DAILY_LIMIT,
     })
 
-    if (usage && !usage.allowed) {
+    // Fail CLOSED: if the usage counter is unreachable we cannot verify the
+    // limit, so we refuse rather than grant unlimited free usage.
+    if (usageError || !usage) {
+      console.error("[tier] increment_chat_usage failed:", usageError)
+      throw new UsageCheckError()
+    }
+
+    if (!usage.allowed) {
       return { tier, allowed: false, remaining: 0, model }
     }
-    return { tier, allowed: true, remaining: Math.max(0, FREE_DAILY_LIMIT - (usage?.count || 0)), model }
+    return { tier, allowed: true, remaining: Math.max(0, FREE_DAILY_LIMIT - (usage.count || 0)), model }
   }
 
   return { tier, allowed: true, remaining: -1, model: classifyModel("") }

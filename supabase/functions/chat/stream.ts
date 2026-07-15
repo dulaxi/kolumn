@@ -15,6 +15,7 @@ export function sseEvent(data: Record<string, unknown>): string {
 export class SSEWriter {
   private encoder = new TextEncoder()
   private controller: ReadableStreamDefaultController<Uint8Array> | null = null
+  private closed = false
   public stream: ReadableStream<Uint8Array>
 
   constructor() {
@@ -26,16 +27,21 @@ export class SSEWriter {
   }
 
   write(data: Record<string, unknown>) {
+    if (this.closed) return
     this.controller?.enqueue(this.encoder.encode(sseEvent(data)))
   }
 
   close(stopReason: string | null = null) {
+    if (this.closed) return
     this.write({ type: "done", stopReason })
+    this.closed = true
     this.controller?.close()
   }
 
   error(message: string) {
+    if (this.closed) return
     this.write({ type: "error", content: message })
+    this.closed = true
     this.controller?.close()
   }
 }

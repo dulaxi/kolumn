@@ -2,9 +2,22 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { buildContext } from "./context.ts"
 import { TOOLS } from "./tools.ts"
 import { SSEWriter, sseHeaders } from "./stream.ts"
-import { checkTier, filterToolsForMode, isContinuationMessage, Mode } from "./tier.ts"
+import { checkTier, filterToolsForMode, isContinuationMessage, Mode, UsageCheckError } from "./tier.ts"
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+}
+
+function json(status: number, body: Record<string, unknown>) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+  })
+}
 
 // Resolves an array of label text strings into label IDs (via the upsert_label
 // RPC, which creates labels that don't yet exist) and syncs the card_labels
@@ -53,27 +66,21 @@ async function resolveAndSyncLabels(
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
-    })
+    return new Response(null, { headers: CORS_HEADERS })
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 })
+    return json(405, { error: "method_not_allowed", message: "Method not allowed" })
   }
 
   const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")
   if (!anthropicKey) {
-    return new Response("ANTHROPIC_API_KEY not configured", { status: 500 })
+    return json(500, { error: "misconfigured", message: "Chat is not configured on the server." })
   }
 
   const authHeader = req.headers.get("Authorization")
   if (!authHeader) {
-    return new Response("Missing authorization header", { status: 401 })
+    return json(401, { error: "missing_auth", message: "Sign in to use chat." })
   }
 
   const supabase = createClient(
@@ -84,7 +91,7 @@ Deno.serve(async (req) => {
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
-    return new Response("Unauthorized", { status: 401 })
+    return json(401, { error: "unauthorized", message: "Sign in to use chat." })
   }
 
   let body: {
@@ -98,24 +105,24 @@ Deno.serve(async (req) => {
   try {
     body = await req.json()
   } catch {
-    return new Response("Invalid JSON", { status: 400 })
+    return json(400, { error: "invalid_json", message: "Invalid request." })
   }
 
   const hasMessage = typeof body.message === "string"
     ? body.message.trim().length > 0
     : Array.isArray(body.message) && body.message.length > 0
   if (!hasMessage) {
-    return new Response("Message is required", { status: 400 })
+    return json(400, { error: "message_required", message: "Type a message first." })
   }
 
   // The client identifies its surface; the server enforces. Never infer
   // mode from the presence of boardId.
   if (body.mode !== "pill" && body.mode !== "chat") {
-    return new Response('mode must be "pill" or "chat"', { status: 400 })
+    return json(400, { error: "invalid_mode", message: "Invalid request." })
   }
   const mode = body.mode as Mode
   if (mode === "pill" && !body.boardId) {
-    return new Response("pill mode requires boardId", { status: 400 })
+    return json(400, { error: "board_required", message: "Invalid request." })
   }
   if (mode === "chat") {
     body.boardId = undefined
@@ -124,20 +131,23 @@ Deno.serve(async (req) => {
   const isContinuation = mode === "pill" && isContinuationMessage(body.message)
 
   // Tier check + rate limit
-  const tierInfo = await checkTier(supabase, user.id, { isContinuation })
+  let tierInfo
+  try {
+    tierInfo = await checkTier(supabase, user.id, { isContinuation })
+  } catch (err) {
+    if (err instanceof UsageCheckError) {
+      return json(503, { error: "usage_check_failed", message: "Could not verify your usage — try again in a moment." })
+    }
+    console.error("[chat] tier check threw:", err)
+    return json(500, { error: "tier_check_failed", message: "Something went wrong — try again." })
+  }
 
   if (!tierInfo.allowed) {
-    return new Response(
-      JSON.stringify({
-        error: "rate_limit",
-        message: "You've reached your daily limit of 20 messages. Upgrade to Pro for unlimited access.",
-        remaining: 0,
-      }),
-      {
-        status: 429,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      },
-    )
+    return json(429, {
+      error: "rate_limit",
+      message: "You've reached your daily limit of 20 messages. Upgrade to Pro for unlimited access.",
+      remaining: 0,
+    })
   }
 
   // Pill mode is board-pinned by contract. A boardId that doesn't resolve
@@ -150,7 +160,7 @@ Deno.serve(async (req) => {
       .eq("id", body.boardId!)
       .maybeSingle()
     if (!pillBoard) {
-      return new Response("board not found", { status: 404 })
+      return json(404, { error: "board_not_found", message: "Board not found — it may have been deleted." })
     }
   }
 
@@ -197,7 +207,8 @@ Deno.serve(async (req) => {
 
       if (!response.ok) {
         const errorText = await response.text()
-        sse.error(`Claude API error: ${response.status} ${errorText}`)
+        console.error("[chat] anthropic error:", response.status, errorText)
+        sse.error(`Claude API error: ${response.status}`)
         return
       }
 
@@ -265,7 +276,8 @@ Deno.serve(async (req) => {
 
       sse.close(stopReason)
     } catch (err) {
-      sse.error(`Stream error: ${(err as Error).message}`)
+      console.error("[chat] stream error:", err)
+      sse.error("Stream error")
     }
   }
 
