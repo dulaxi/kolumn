@@ -10,6 +10,9 @@ import { fetchProfilesByIds } from '../utils/supabaseHelpers'
 let reconnectTimer = null
 let lastEmail = null
 let lastUserId = null
+// Single-lineage bookkeeping: assumes ONE concurrent subscriber (wired once
+// in useAppData). A second caller's teardown would kill the first's channel —
+// if that ever becomes a need, lift this into per-subscription state.
 let activeChannel = null
 function scheduleReconnect() {
   if (reconnectTimer) return

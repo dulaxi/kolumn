@@ -5,6 +5,9 @@ import { logError } from '../utils/logger'
 // Debounce guard for realtime reconnect — prevents concurrent reconnect races
 let reconnectTimer = null
 let lastUserId = null
+// Single-lineage bookkeeping: assumes ONE concurrent subscriber (wired once
+// in useAppData). A second caller's teardown would kill the first's channel —
+// if that ever becomes a need, lift this into per-subscription state.
 let activeChannel = null
 function scheduleReconnect() {
   if (reconnectTimer) return
