@@ -161,11 +161,21 @@ export const useAuthStore = create((set, get) => ({
       body: { email: email.trim().toLowerCase() },
     })
     if (error) {
-      // functions.invoke wraps non-2xx responses in FunctionsHttpError;
-      // the body is on `error.context.response` as a stream. We don't
-      // need the detail here — the caller only cares that the check
-      // didn't succeed. Surface the message for telemetry.
-      throw new Error(error.message || 'check-email failed')
+      // functions.invoke wraps non-2xx in FunctionsHttpError with the raw
+      // Response on error.context — read the body so the server's error
+      // codes (invalid_email / rate_limited / …) aren't thrown away.
+      let code = null
+      try {
+        const body = await error.context?.json?.()
+        code = body?.error ?? null
+      } catch { /* non-JSON body — fall through to generic */ }
+      const MESSAGES = {
+        invalid_email: "That email address doesn't look right.",
+        rate_limited: 'Too many attempts — wait a moment and try again.',
+      }
+      const err = new Error(MESSAGES[code] || error.message || 'check-email failed')
+      err.code = code
+      throw err
     }
     if (data && typeof data.exists === 'boolean') return data.exists
     throw new Error('check-email returned unexpected shape')
