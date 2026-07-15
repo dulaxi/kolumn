@@ -1,7 +1,8 @@
 import { Component } from 'react'
 import { logError } from '../utils/logger'
-import { ArrowsClockwise } from '@phosphor-icons/react'
+import { ArrowsClockwise, WarningCircle } from '@phosphor-icons/react'
 import * as Sentry from '@sentry/react'
+import InlineNotice from './ui/InlineNotice'
 
 /**
  * Compact error boundary for sub-components (sidebar, header, columns).
@@ -33,17 +34,22 @@ export default class InlineErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--text-muted)] bg-[var(--surface-raised)] rounded-lg">
-          <span>Couldn&apos;t load {this.props.name}</span>
-          <button
-            onClick={this.handleRetry}
-            aria-label="Retry"
-            className="flex items-center gap-1 px-2 py-0.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-card)] rounded border border-[var(--border-default)] transition-colors"
-          >
-            <ArrowsClockwise className="w-3 h-3" />
-            Retry
-          </button>
-        </div>
+        <InlineNotice
+          variant="error"
+          className="items-center py-2"
+          icon={<WarningCircle size={16} className="shrink-0" />}
+          action={
+            <button
+              onClick={this.handleRetry}
+              className="flex items-center gap-1 px-2 py-0.5 text-[11px] bg-[var(--surface-card)] rounded-md border border-[var(--color-copper)] hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <ArrowsClockwise className="w-3 h-3" />
+              Retry
+            </button>
+          }
+        >
+          Couldn&apos;t load {this.props.name}
+        </InlineNotice>
       )
     }
 

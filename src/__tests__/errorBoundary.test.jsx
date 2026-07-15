@@ -70,4 +70,16 @@ describe('InlineErrorBoundary', () => {
 
     expect(screen.getByText('Recovered')).toBeInTheDocument()
   })
+
+  test('inline fallback uses the error wash grammar', () => {
+    const Boom = () => { throw new Error('boom') }
+    render(
+      <InlineErrorBoundary name="comments">
+        <Boom />
+      </InlineErrorBoundary>
+    )
+    const alert = screen.getByRole('alert')
+    expect(alert.className).toContain('bg-[var(--color-copper-wash)]')
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
+  })
 })
