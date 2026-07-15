@@ -21,6 +21,7 @@ import Skeleton from '../ui/Skeleton'
 import { useBoardStore } from '../../store/boardStore'
 import { useNavigate } from 'react-router-dom'
 import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/formatting'
+import FieldError from '../ui/FieldError'
 
 export default function BoardShareModal({ board, onClose }) {
   const isMobile = useIsMobile()
@@ -215,9 +216,7 @@ export default function BoardShareModal({ board, onClose }) {
                 Invite
               </Button>
             </div>
-            {error && (
-              <p className="text-xs text-[var(--color-copper)] mt-1.5">{error}</p>
-            )}
+            <FieldError>{error}</FieldError>
           </form>
         )}
 

@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Tooltip from '../components/ui/Tooltip'
 import InlineNotice from '../components/ui/InlineNotice'
+import FieldError from '../components/ui/FieldError'
 import PlanCard from '../components/PlanCard'
 import { PLANS } from '../data/plans'
 import { addDays, format } from 'date-fns'
@@ -492,7 +493,7 @@ function DetailsStep({
                     className="!h-11 !rounded-[0.6rem] !text-base"
                   />
                   {confirmPassword.length > 0 && confirmPassword !== password && (
-                    <p className="text-xs text-[var(--color-copper)] mt-1.5">Passwords don&rsquo;t match yet.</p>
+                    <FieldError>Passwords don&rsquo;t match yet.</FieldError>
                   )}
                 </div>
 
