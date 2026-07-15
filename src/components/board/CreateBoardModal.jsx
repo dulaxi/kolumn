@@ -172,7 +172,7 @@ export default function CreateBoardModal({ onClose, workspaceId = null }) {
                   // (gap-2) it sits next to, so the error text lines up
                   // under the name input, not the icon. Derived, not
                   // arbitrary — keep in sync if either value changes.
-                  <FieldError className="ml-[52px]">
+                  <FieldError id="cb-name-error" className="ml-[52px]">
                     Board name is required.
                   </FieldError>
                 )}
