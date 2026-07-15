@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../../store/boardStore'
 import Card from '../board/Card'
 import MarkdownRenderer from './MarkdownRenderer'
+import InlineNotice from '../ui/InlineNotice'
 
 export default function ChatMessage({ message }) {
   const navigate = useNavigate()
@@ -40,6 +41,20 @@ export default function ChatMessage({ message }) {
       >
         <MarkdownRenderer content={message.text} />
       </div>
+
+      {message.error && (
+        <InlineNotice variant="error" className="mt-3 max-w-md">
+          {message.error.message}
+          {message.error.isLimit && (
+            <>
+              {' '}
+              <Link to="/upgrade/pro" className="underline underline-offset-2">
+                Upgrade to Pro
+              </Link>
+            </>
+          )}
+        </InlineNotice>
+      )}
 
       {embeddedCards.length > 0 && (
         <div className="flex flex-col gap-2 mt-3 max-w-[290px]">

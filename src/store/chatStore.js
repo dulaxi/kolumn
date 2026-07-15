@@ -1,6 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { streamChat } from '../lib/aiClient'
+import { logError } from '../utils/logger'
+
+/**
+ * Maps a raw stream/HTTP error string to user-facing copy.
+ * Raw detail must never reach the UI — it goes to logError instead.
+ */
+export function friendlyChatError(raw) {
+  const s = String(raw)
+  if (/daily limit/i.test(s)) return { message: s, isLimit: true }
+  // TODO(human): bucket the remaining raw errors (auth, overloaded/5xx,
+  // network) into friendly copy; fall through to a generic line.
+  return { message: 'Claude hit a snag — try sending that again.', isLimit: false }
+}
 
 export const useChatStore = create(persist((set, get) => ({
   conversations: {},
@@ -115,19 +128,14 @@ export const useChatStore = create(persist((set, get) => ({
           set({ tierInfo: info })
         },
         onError: (error) => {
-          // Rate-limit gets a friendlier inline notice with an upgrade path;
-          // other errors keep the existing italic rendering.
-          const isLimit = /daily limit/i.test(String(error))
-          const text = isLimit
-            ? `\n\n*${error}* [Upgrade to Pro](/upgrade/pro)`
-            : `\n\n*Error: ${error}*`
-          fullText += text
+          logError('[chatStore] stream error:', error)
+          const friendly = friendlyChatError(error)
           set((s) => ({
             streamingConversationId: null,
             messages: {
               ...s.messages,
               [conversationId]: s.messages[conversationId].map((m) =>
-                m.id === msgId ? { ...m, text: fullText } : m
+                m.id === msgId ? { ...m, error: friendly } : m
               ),
             },
           }))

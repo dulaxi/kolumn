@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest'
-import { useChatStore } from '../store/chatStore'
+import { useChatStore, friendlyChatError } from '../store/chatStore'
 
 beforeEach(() => {
   useChatStore.setState({
@@ -91,5 +91,20 @@ describe('chatStore', () => {
     useChatStore.getState().addMessage(convId, { role: 'user', text: 'Third' })
     const msgs = useChatStore.getState().messages[convId]
     expect(msgs.map((m) => m.text)).toEqual(['First', 'Second', 'Third'])
+  })
+})
+
+describe('friendlyChatError', () => {
+  test('flags daily-limit errors and keeps the server copy', () => {
+    const res = friendlyChatError("You've reached your daily limit of 20 messages. Upgrade to Pro for unlimited access.")
+    expect(res.isLimit).toBe(true)
+    expect(res.message).toMatch(/daily limit/i)
+  })
+
+  test('never passes raw wire errors through', () => {
+    const res = friendlyChatError('Claude API error: 529 {"type":"error","error":{"type":"overloaded_error"}}')
+    expect(res.isLimit).toBe(false)
+    expect(res.message).not.toContain('529')
+    expect(res.message).not.toContain('{')
   })
 })
