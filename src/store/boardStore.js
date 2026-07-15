@@ -331,8 +331,18 @@ export const useBoardStore = create((set, get) => ({
           const cards = { ...s.cards }
           prevColumns.forEach((c) => { columns[c.id] = c })
           prevCards.forEach((c) => { cards[c.id] = c })
-          return { boards: { ...s.boards, [boardId]: prevBoard }, columns, cards }
+          // Same rule as the undo branch: only pull the user back to the
+          // restored board if they aren't already on another valid one.
+          const currentActiveId = s.activeBoardId
+          const shouldRestoreActive = currentActiveId === null || !s.boards[currentActiveId]
+          return {
+            boards: { ...s.boards, [boardId]: prevBoard },
+            columns,
+            cards,
+            activeBoardId: shouldRestoreActive ? prevActiveId : currentActiveId,
+          }
         })
+        localStorage.setItem(ACTIVE_BOARD_KEY, get().activeBoardId || '')
         showToast.error('Failed to delete board — it was restored')
       }
     } else {
