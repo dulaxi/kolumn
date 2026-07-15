@@ -63,6 +63,30 @@ function make(iconName, bg, color, duration) {
     })
 }
 
+// Inline SVG instead of the ph webfont: this toast renders while the
+// network is down, so the CDN icon font may never have loaded (first
+// glyph use triggers the font fetch — guaranteed to fail offline).
+function wifiSlashIcon(color) {
+  return createElement(
+    'svg',
+    {
+      width: 18,
+      height: 18,
+      viewBox: '0 0 18 18',
+      fill: 'none',
+      stroke: color,
+      strokeWidth: 1.4,
+      strokeLinecap: 'round',
+      style: { flexShrink: 0 },
+      'aria-hidden': true,
+    },
+    createElement('path', { d: 'M2.5 7.5a10 10 0 0 1 13 0' }),
+    createElement('path', { d: 'M5 10.2a6.5 6.5 0 0 1 8 0' }),
+    createElement('circle', { cx: 9, cy: 13.4, r: 1, fill: color, stroke: 'none' }),
+    createElement('line', { x1: 3, y1: 2.5, x2: 15, y2: 15.5 }),
+  )
+}
+
 // Offline is a *state*, not an event: a warn-styled toast that stays
 // until connectivity returns (duration: Infinity, no dismiss button —
 // the user can't dismiss being offline). The pulse dot encodes
@@ -74,7 +98,7 @@ function offlineToast(message) {
         'div',
         { style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%' } },
         createElement('span', { className: 'toast-pulse-dot' }),
-        phIcon('wifi-slash', '#1B1B18'),
+        wifiSlashIcon('#1B1B18'),
         createElement('span', { style: { flex: 1, textAlign: 'left' } }, message),
       ),
     {
