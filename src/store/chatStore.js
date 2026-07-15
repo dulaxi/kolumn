@@ -10,8 +10,15 @@ import { logError } from '../utils/logger'
 export function friendlyChatError(raw) {
   const s = String(raw)
   if (/daily limit/i.test(s)) return { message: s, isLimit: true }
-  // TODO(human): bucket the remaining raw errors (auth, overloaded/5xx,
-  // network) into friendly copy; fall through to a generic line.
+  if (/not authenticated|error 401|unauthorized/i.test(s)) {
+    return { message: "You're signed out — sign in again to keep chatting.", isLimit: false }
+  }
+  if (/overloaded|529|error 5\d\d|claude api error: 5/i.test(s)) {
+    return { message: 'Claude is busy right now — give it a moment and try again.', isLimit: false }
+  }
+  if (/failed to fetch|networkerror|load failed|no response stream/i.test(s)) {
+    return { message: "Couldn't reach the server — check your connection and try again.", isLimit: false }
+  }
   return { message: 'Claude hit a snag — try sending that again.', isLimit: false }
 }
 

@@ -107,4 +107,19 @@ describe('friendlyChatError', () => {
     expect(res.message).not.toContain('529')
     expect(res.message).not.toContain('{')
   })
+
+  test('maps auth failures to a sign-in prompt', () => {
+    expect(friendlyChatError('Error 401: Unauthorized').message).toMatch(/sign in/i)
+    expect(friendlyChatError('Not authenticated').message).toMatch(/sign in/i)
+  })
+
+  test('maps overload and 5xx to a temporary-busy line', () => {
+    expect(friendlyChatError('Claude API error: 529 overloaded').message).toMatch(/busy|moment/i)
+    expect(friendlyChatError('Error 500: Internal Server Error').message).toMatch(/busy|moment/i)
+  })
+
+  test('maps network failures to a connection line', () => {
+    expect(friendlyChatError('Failed to fetch').message).toMatch(/connection/i)
+    expect(friendlyChatError('No response stream').message).toMatch(/connection/i)
+  })
 })
