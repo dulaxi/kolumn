@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Download, Palette, TextT, Trash, Upload, User, Warning } from '@phosphor-icons/react'
+import { Download, Palette, TextT, Trash, Upload, User } from '@phosphor-icons/react'
 import { showToast } from '../utils/toast'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
@@ -9,6 +9,7 @@ import DynamicIcon from '../components/board/DynamicIcon'
 import IconPicker from '../components/board/IconPicker'
 import ActionCard from '../components/ActionCard'
 import Button from '../components/ui/Button'
+import InlineNotice from '../components/ui/InlineNotice'
 import { PROFILE_COLORS } from '../constants/colors'
 
 const themes = [
@@ -307,14 +308,13 @@ export default function SettingsPage() {
 
       {/* Inline clear-data confirmation */}
       {confirmingClear && (
-        <div className="bg-[var(--color-copper-wash)]/40 border border-[var(--color-copper)]/40 rounded-xl p-5 mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Warning className="w-4 h-4 text-[var(--color-copper)]" />
-            <h2 className="text-sm font-semibold text-[var(--color-copper)]">Confirm — this cannot be undone</h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)] mb-4">
-            Permanently delete all your boards, notes, and settings.
-          </p>
+        <div className="mb-4 flex flex-col gap-3">
+          <InlineNotice variant="danger">
+            <strong className="block font-semibold">Confirm — this cannot be undone</strong>
+            <span className="text-[var(--text-secondary)]">
+              Permanently delete all your boards, notes, and settings.
+            </span>
+          </InlineNotice>
           <div className="flex items-center gap-2">
             <Button variant="destructive" onClick={handleClearData}>
               Yes, delete everything
