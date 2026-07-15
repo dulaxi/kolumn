@@ -173,7 +173,7 @@ export const useAuthStore = create((set, get) => ({
         invalid_email: "That email address doesn't look right.",
         rate_limited: 'Too many attempts — wait a moment and try again.',
       }
-      const err = new Error(MESSAGES[code] || error.message || 'check-email failed')
+      const err = new Error(MESSAGES[code] || "Couldn't verify that email — try signing in.")
       err.code = code
       throw err
     }

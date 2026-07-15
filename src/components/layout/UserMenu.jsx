@@ -112,7 +112,8 @@ export default function UserMenu({ variant = 'header', collapsed = false }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="User menu"
-        className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${avatarColorClass}`}
+        className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${profile?.icon ? fallbackClass : 'bg-[var(--surface-hover)]'}`}
+        style={profile?.icon ? profileStyle : undefined}
       >
         {profile?.icon ? (
           <DynamicIcon name={profile.icon} className="w-5 h-5" />

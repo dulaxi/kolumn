@@ -23,6 +23,10 @@ export default [
       'unused-imports': unusedImports,
     },
     rules: {
+      // Catches undefined identifiers incl. unimported JSX components —
+      // a missing-import crash (QuickAddBar/LetterWave) shipped without this.
+      'no-undef': 'error',
+      'react/jsx-no-undef': 'error',
       'react/jsx-uses-vars': 'warn',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
