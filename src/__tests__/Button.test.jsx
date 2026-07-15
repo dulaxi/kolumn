@@ -102,4 +102,11 @@ describe('Button', () => {
     rerender(<Button disabled>X</Button>)
     expect(container.querySelector('button').className).toMatch(/cursor-not-allowed/)
   })
+
+  test('destructive variant uses red, not copper', () => {
+    render(<Button variant="destructive">Delete</Button>)
+    const btn = screen.getByRole('button', { name: 'Delete' })
+    expect(btn.className).toContain('bg-[var(--color-red)]')
+    expect(btn.className).not.toContain('copper')
+  })
 })

@@ -26,7 +26,7 @@ const VARIANTS = {
   ghost:
     'bg-transparent text-[var(--text-primary)] hover:bg-[var(--color-cream)]',
   destructive:
-    'bg-[var(--color-copper)] text-white hover:bg-[var(--color-copper-dark)]',
+    'bg-[var(--color-red)] text-white hover:bg-[var(--color-red-dark)]',
 }
 
 const SIZES = {

@@ -395,7 +395,7 @@ without a deliberate reason discussed with the user.
 - **Inputs: 1px ink (`#1B1B18`) border on focus.** No lime focus ring, no glow. Hover bumps border from sand to mist.
 - **Modals: no backdrop blur.** Just dimmed ink overlay (`rgba(27,27,24,0.45)`). Perf + visual win.
 - **Toasts: always `showToast.*` from `src/utils/toast.js`.** Never roll inline. Pick the most specific intent (`delete` not `error`, `restore` not `success`).
-- **Buttons: ink primary, lime accent for create/save/positive, copper for destructive.**
+- **Buttons: ink primary, lime accent for create/save/positive, red (`--color-red`) for destructive.** Copper now exclusively means *failure* (errors); red means *destructive intent* (deletes, irreversible actions). Decision: docs/design-mockups/error-style-decisions-2.html (R2).
 - **Border radius: 8px small (buttons, inputs), 10-12px raised (modals, panels, tiles).** Deliberate exception: kanban card surfaces (`Card`, `AICardSkeleton`, `InlineCardEditor`, `CardDetailPanel`) use 16px (`rounded-2xl`) — a product choice; don't "fix" them back to 12px.
 - **Shadows: minimal.** Default raised shadow is `0 4px 24px rgba(27,27,24,0.10)` (matches toasts).
 - **Card field names are snake_case** (DB columns). See Key Data Shapes.
