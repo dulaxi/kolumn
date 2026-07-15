@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>S6 animation library · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-logo: #8BA32E;
+        --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-logo: #A8BA32;
+        --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 740px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+
+      svg { shape-rendering: crispEdges; display: block; }
+
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 18px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 14px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 150px; display: grid; place-items: center; }
+      .card .nm { font-size: 13px; font-weight: 600; margin-top: 10px; }
+      .card .why { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.45; }
+
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 24px; margin: 44px 0 6px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>S6, animated</h1>
+        <p>The walking sprout pot's full expression library — every animation is real frame-by-frame sprite data (10×9 grid, 2–5 frames), not CSS smoothing, so what you see is exactly what ships. Click a card to put it on the big stage. Each card names the moment it's for.</p>
+        <p class="meta-line">2026-07-14 · character: S6 walking sprout pot (pixel-frog-bunny.html) · all frames share one canvas so nothing jitters</p>
+      </header>
+
+      <div class="hero">
+        <div class="hero-stage">
+          <div id="hero-anim"></div>
+          <span class="twave" id="hero-word">Kanbanning…</span>
+        </div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+
+      <h2>The library</h2>
+      <div class="grid" id="grid"></div>
+
+      <p class="meta-line" style="margin-top:28px">Frames are ~150–600ms — pixel mascots read best at low frame rates. Any of these ports to a tiny React component (frame array + setInterval) or an animated favicon.</p>
+    </div>
+
+    <script>
+      const P = { o: '#8BA32E', l: '#C2D64A', m: '#A8969E', k: '#1B1B18', w: '#FDFBF7' };
+
+      // Base pose — 10 cols × 9 rows, pot at cols 2-7
+      const B = [
+        '..........',
+        '.....l....',
+        '....lll...',
+        '.....o....',
+        '..mmmmmm..',
+        '..mkmmkm..',
+        '..mmmmmm..',
+        '...m..m...',
+        '..........',
+      ];
+      const DOWN = [
+        '..........',
+        '..........',
+        '.....l....',
+        '....lll...',
+        '.....o....',
+        '..mmmmmm..',
+        '..mkmmkm..',
+        '..mmmmmm..',
+        '...m..m...',
+      ];
+
+      const ANIMS = [
+        { name: 'Idle bob', why: 'The default heartbeat — everywhere it appears, all the time.', frames: [
+          { map: B, ms: 550 },
+          { map: DOWN, ms: 550 },
+        ]},
+        { name: 'Blink', why: 'Layered onto idle every few seconds. Alive without being busy.', frames: [
+          { map: B, ms: 2400 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 140 },
+        ]},
+        { name: 'Look around', why: 'Curious idle variant — pupils wander. For longer idles on empty states.', frames: [
+          { map: B, ms: 900 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..kmmkmm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 700 },
+          { map: B, ms: 500 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mmkmmk..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 700 },
+        ]},
+        { name: 'Foot tap', why: 'THE waiting animation — impatient but friendly. For loaders and pending states.', frames: [
+          { map: B, ms: 260 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m......',
+            '......m...',
+          ], ms: 200 },
+          { map: B, ms: 200 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m......',
+            '......m...',
+          ], ms: 200 },
+        ]},
+        { name: 'Walk', why: 'Waddles in place — or across the screen if we let it. Entrances and exits.', frames: [
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m...m..',
+            '..........',
+          ], ms: 190 },
+          { map: DOWN, ms: 190 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '..m...m...',
+            '..........',
+          ], ms: 190 },
+          { map: DOWN, ms: 190 },
+        ]},
+        { name: 'Hop', why: 'Success! Card created, task done — one happy bounce, sprout squishes on the crouch.', frames: [
+          { map: [
+            '..........',
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '....mm....',
+          ], ms: 180 },
+          { map: [
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '....mm....',
+            '..........',
+            '..........',
+          ], ms: 240 },
+          { map: B, ms: 700 },
+        ]},
+        { name: 'Grow', why: 'The loading arc — seed → shoot → leaves → bloom as the wait lengthens. The mascot performs the product.', frames: [
+          { map: [
+            '..........',
+            '..........',
+            '..........',
+            '..........',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 800 },
+          { map: [
+            '..........',
+            '..........',
+            '.....l....',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 800 },
+          { map: B, ms: 800 },
+          { map: [
+            '....lml...',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 1400 },
+        ]},
+        { name: 'Wilt', why: 'Error state — the sprout droops and drops a leaf. Sad but recoverable (it regrows).', frames: [
+          { map: [
+            '..........',
+            '......l...',
+            '.....ll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 700 },
+          { map: [
+            '..........',
+            '..........',
+            '.....ll...',
+            '.....o....',
+            '..mmmmmm.l',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 500 },
+          { map: [
+            '..........',
+            '..........',
+            '......l...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '.........l',
+          ], ms: 1200 },
+        ]},
+        { name: 'Sleep', why: 'Long-idle — eyes closed, lime z\'s. For "nothing has happened in a while" corners.', frames: [
+          { map: [
+            '..........',
+            '.....l..l.',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 800 },
+          { map: [
+            '.........l',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '..mmmmmm..',
+            '...m..m...',
+            '..........',
+          ], ms: 800 },
+        ]},
+        { name: 'Delight', why: 'Blush pulse — thanks, upgrades, little celebrations that don\'t warrant a hop.', frames: [
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mommom..',
+            '...m..m...',
+            '..........',
+          ], ms: 500 },
+          { map: B, ms: 400 },
+        ]},
+        { name: 'Sit down', why: 'The pose system live: S6 tucks its feet and becomes S2. For settling into small/static spots.', frames: [
+          { map: B, ms: 700 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '....mm....',
+            '..........',
+          ], ms: 300 },
+          { map: [
+            '..........',
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '..........',
+          ], ms: 1600 },
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmm..',
+            '..mkmmkm..',
+            '..mmmmmm..',
+            '....mm....',
+            '..........',
+          ], ms: 300 },
+        ]},
+        { name: 'Deliver', why: 'Waddling with a cream card — AI is moving/creating cards on your board.', frames: [
+          { map: [
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmmww',
+            '..mkmmkmww',
+            '..mmmmmm..',
+            '...m...m..',
+            '..........',
+          ], ms: 200 },
+          { map: [
+            '..........',
+            '..........',
+            '.....l....',
+            '....lll...',
+            '.....o....',
+            '..mmmmmmww',
+            '..mkmmkmww',
+            '..mmmmmm..',
+            '..m...m...',
+          ], ms: 200 },
+        ]},
+      ];
+
+      function render(map, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 10 * scale);
+        svg.setAttribute('height', 9 * scale);
+        map.forEach((row, y) => {
+          [...row].forEach((ch, x) => {
+            const color = P[ch];
+            if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale);
+            r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale);
+            r.setAttribute('height', scale);
+            r.setAttribute('fill', color);
+            svg.appendChild(r);
+          });
+        });
+        return svg;
+      }
+
+      // frame player: swaps SVGs on per-frame durations
+      function play(mount, anim, scale) {
+        let idx = 0, timer;
+        function tick() {
+          mount.textContent = '';
+          mount.appendChild(render(anim.frames[idx].map, scale));
+          timer = setTimeout(() => { idx = (idx + 1) % anim.frames.length; tick(); }, anim.frames[idx].ms);
+        }
+        tick();
+        return () => clearTimeout(timer);
+      }
+
+      function waveify(el, word) {
+        el.textContent = '';
+        let i = 0;
+        for (const ch of word) {
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.style.setProperty('--i', i++);
+          el.appendChild(s);
+        }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const heroMount = document.getElementById('hero-anim');
+      const heroName = document.getElementById('hero-name');
+      let stopHero = null, activeCard = null;
+
+      function setHero(anim) {
+        if (stopHero) stopHero();
+        heroMount.textContent = '';
+        stopHero = play(heroMount, anim, 18);
+        heroName.textContent = anim.name + ' — ' + anim.why;
+      }
+
+      const grid = document.getElementById('grid');
+      ANIMS.forEach((anim, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const stage = document.createElement('div');
+        stage.className = 'stage';
+        const holder = document.createElement('div');
+        play(holder, anim, 11);
+        stage.appendChild(holder);
+        card.appendChild(stage);
+        const nm = document.createElement('div');
+        nm.className = 'nm';
+        nm.textContent = anim.name;
+        const why = document.createElement('div');
+        why.className = 'why';
+        why.textContent = anim.why;
+        card.appendChild(nm);
+        card.appendChild(why);
+        card.addEventListener('click', () => {
+          if (activeCard) activeCard.classList.remove('active');
+          card.classList.add('active');
+          activeCard = card;
+          setHero(anim);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        grid.appendChild(card);
+        if (idx === 0) { setHero(anim); card.classList.add('active'); activeCard = card; }
+      });
+    </script>
+  </body>
+</html>

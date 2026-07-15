@@ -4,6 +4,7 @@ import BoardSkeleton from '../components/board/BoardSkeleton'
 import Skeleton from '../components/ui/Skeleton'
 import Button from '../components/ui/Button'
 import TypingIndicator from '../components/chat/TypingIndicator'
+import PixelKlay from '../components/klay/PixelKlay'
 
 // Dev-only sandbox for iterating on BoardSkeleton (the F1 first-load
 // ghost board). Renders the exact loading chrome BoardsPage shows while
@@ -45,6 +46,16 @@ export default function BoardSkeletonSandbox() {
         <Button variant="secondary" size="sm" loading loadingText="Importing">Import data</Button>
         <Button size="lg" loading loadingText="Setting up your workspace">Create account</Button>
         <TypingIndicator />
+      </div>
+
+      {/* Klay specimens (real PixelKlay component) */}
+      <div className="flex flex-wrap items-end gap-6 shrink-0">
+        {['idle', 'tap', 'walk', 'hop', 'grow', 'wilt', 'sleep', 'deliver'].map((name) => (
+          <div key={name} className="flex flex-col items-center gap-1">
+            <PixelKlay animation={name} scale={7} label={`Klay ${name}`} />
+            <span className="font-mono text-[10px] text-[var(--text-faint)]">{name}</span>
+          </div>
+        ))}
       </div>
 
       {/* Mirrors BoardsPage's loading chrome exactly */}

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pixel mascot safari · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-logo: #8BA32E;
+        --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-logo: #A8BA32;
+        --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 740px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(var(--bob, 4px)); } }
+      .critter { animation: bob 1.2s steps(1, end) infinite; }
+      svg { shape-rendering: crispEdges; display: block; }
+
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 18px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 14px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 140px; display: grid; place-items: center; }
+      .card .nm { font-size: 13px; font-weight: 600; margin-top: 10px; }
+      .card .why { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.45; }
+
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 24px; margin: 44px 0 6px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>Mascot safari</h1>
+        <p>Twelve non-owl candidates, same reduced language: flat logo olive, knockout eyes, 5–10 px grids, at most one accent. Each carries its kanban rationale — a mascot without a reason is just clip art. Click to audition in the loader mock.</p>
+        <p class="meta-line">2026-07-14 · owls remain at pixel-owl-minimal.html · all sprites share one renderer, so any pick is portable</p>
+      </header>
+
+      <div class="hero">
+        <div class="hero-stage">
+          <div class="critter" id="hero-critter"></div>
+          <span class="twave" id="hero-word">Kanbanning…</span>
+        </div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+
+      <h2>The candidates</h2>
+      <div class="grid" id="grid"></div>
+
+      <p class="meta-line" style="margin-top:28px">Conceptually strongest on paper: Duck (ducks in a row), Ghost (the loading system already speaks "ghost rows"), Card critter and Column critter (only-Kolumn-could ideas). The rest are here so you can disagree.</p>
+    </div>
+
+    <script>
+      const P = { o: '#8BA32E', l: '#C2D64A', h: '#D4A843', w: '#FDFBF7', m: '#A8969E', k: '#1B1B18' };
+
+      const CRITTERS = [
+        { name: 'Duck', why: '"Get your ducks in a row" — literally the product promise. Plus rubber-duck debugging lore. Honey bill is the one accent.', map: [
+          '..oooo.',
+          '.oo.oo.',
+          'hhooooo',
+          '.oooooo',
+          'ooooooo',
+          '.ooooo.',
+          '..h..h.',
+        ]},
+        { name: 'Ghost', why: 'The loading system already says "ghost rows / ghost board" — a ghost mascot makes that canon. Most pixel-native shape there is.', map: [
+          '.oooo.',
+          'oooooo',
+          'o.oo.o',
+          'oooooo',
+          'oooooo',
+          'oooooo',
+          'o.oo.o',
+        ]},
+        { name: 'Card critter', why: 'The mascot IS a kanban card with legs. Lime corner = its label. Nobody else can have this one.', map: [
+          'lloooooo',
+          'oooooooo',
+          'o..oo..o',
+          'oooooooo',
+          'oooooooo',
+          'oooooooo',
+          '..o..o..',
+        ]},
+        { name: 'Column critter', why: 'The name is Kolumn. A tiny Doric column with eyes — absurd in exactly the right way. Capital, shaft, base.', map: [
+          'oooooo',
+          'oooooo',
+          '.oooo.',
+          '.o..o.',
+          '.oooo.',
+          '.oooo.',
+          'oooooo',
+          'oooooo',
+        ]},
+        { name: 'Octopus', why: 'Eight arms, eight cards in flight — the multitasker. Also the Clawd-adjacent pick you started from.', map: [
+          '.ooooo.',
+          'ooooooo',
+          'o.ooo.o',
+          'ooooooo',
+          'ooooooo',
+          'o.o.o.o',
+          'o.o.o.o',
+        ]},
+        { name: 'Bee', why: 'Hives are columns of cells; bees run the original swarm workflow. Honey stripes borrow an existing token.', map: [
+          'o.....o',
+          '.o...o.',
+          '.ooooo.',
+          'o.ooo.o',
+          'hhhhhhh',
+          'ooooooo',
+          'hhhhhhh',
+          '.ooooo.',
+        ]},
+        { name: 'Beaver', why: 'The shipping builder — plans, stacks, delivers. Cream buck teeth are the identity pixel.', map: [
+          '.o...o.',
+          'ooooooo',
+          'o.ooo.o',
+          'ooooooo',
+          'ooowwoo',
+          '.ooooo.',
+          'hh.o.o.',
+        ]},
+        { name: 'Crane', why: 'Bird + construction crane in one pun: lifts things into place. Side profile, one leg up if we animate it.', map: [
+          '.oo.....',
+          '.o.o....',
+          '.oo.....',
+          '.o......',
+          '.ooooooo',
+          '.oooooo.',
+          '..o..o..',
+          '..o..o..',
+        ]},
+        { name: 'Penguin', why: 'Colonies are the most organized society in nature. Belly is a knockout, not paint.', map: [
+          '.oooo.',
+          'o.oo.o',
+          'oooooo',
+          'oo..oo',
+          'oo..oo',
+          'oooooo',
+          'h....h',
+        ]},
+        { name: 'Cat', why: 'Sits on your board, knocks cards off columns. Zero kanban rationale, maximum internet rationale.', map: [
+          'o....o',
+          'oo..oo',
+          'oooooo',
+          'o.oo.o',
+          'oooooo',
+          'oooooo',
+          '.o..o.',
+        ]},
+        { name: 'Squirrel', why: 'Sorts acorns into stashes all autumn — batch-organizing under a deadline. Tail is the silhouette.', map: [
+          '......oo',
+          '.oo...oo',
+          '.o.o..oo',
+          '.oooo.oo',
+          '.oooo.oo',
+          '.ooooooo',
+          '.oooo...',
+          '..o.o...',
+        ]},
+        { name: 'Robot', why: 'The honest "AI does the work" option. Risk: every AI product ships a robot.', map: [
+          '..o..',
+          '.ooo.',
+          'ooooo',
+          'o.o.o',
+          'ooooo',
+          'ooooo',
+          '.o.o.',
+        ]},
+      ];
+
+      function render(map, scale) {
+        const rows = map.length;
+        const cols = Math.max(...map.map((r) => r.length));
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', cols * scale);
+        svg.setAttribute('height', rows * scale);
+        map.forEach((row, y) => {
+          [...row].forEach((ch, x) => {
+            const color = P[ch];
+            if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale);
+            r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale);
+            r.setAttribute('height', scale);
+            r.setAttribute('fill', color);
+            svg.appendChild(r);
+          });
+        });
+        return svg;
+      }
+
+      function waveify(el, word) {
+        el.textContent = '';
+        let i = 0;
+        for (const ch of word) {
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.style.setProperty('--i', i++);
+          el.appendChild(s);
+        }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const grid = document.getElementById('grid');
+      const heroC = document.getElementById('hero-critter');
+      const heroName = document.getElementById('hero-name');
+      let activeCard = null;
+
+      function setHero(c) {
+        heroC.textContent = '';
+        const scale = Math.max(10, Math.floor(120 / c.map.length));
+        heroC.style.setProperty('--bob', scale + 'px');
+        heroC.appendChild(render(c.map, scale));
+        heroName.textContent = c.name + ' — ' + c.why;
+      }
+
+      CRITTERS.forEach((c, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const stage = document.createElement('div');
+        stage.className = 'stage';
+        const holder = document.createElement('div');
+        holder.className = 'critter';
+        const scale = Math.max(8, Math.floor(95 / c.map.length));
+        holder.style.setProperty('--bob', scale + 'px');
+        holder.appendChild(render(c.map, scale));
+        stage.appendChild(holder);
+        card.appendChild(stage);
+        const nm = document.createElement('div');
+        nm.className = 'nm';
+        nm.textContent = c.name;
+        const why = document.createElement('div');
+        why.className = 'why';
+        why.textContent = c.why;
+        card.appendChild(nm);
+        card.appendChild(why);
+        card.addEventListener('click', () => {
+          if (activeCard) activeCard.classList.remove('active');
+          card.classList.add('active');
+          activeCard = card;
+          setHero(c);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        grid.appendChild(card);
+        if (idx === 0) { setHero(c); card.classList.add('active'); activeCard = card; }
+      });
+    </script>
+  </body>
+</html>

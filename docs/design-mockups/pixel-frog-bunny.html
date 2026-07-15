@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frog & bunny variations · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-logo: #8BA32E;
+        --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-logo: #A8BA32;
+        --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 740px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(var(--bob, 4px)); } }
+      .critter { animation: bob 1.05s steps(1, end) infinite; }
+      svg { shape-rendering: crispEdges; display: block; }
+
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 18px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 13px; cursor: pointer; transition: border-color 120ms; position: relative; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 135px; display: grid; place-items: center; }
+      .card .nm { font-size: 12.5px; font-weight: 600; margin-top: 9px; }
+      .card .sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); }
+      .orig-badge { position: absolute; top: 20px; left: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: .06em; background: var(--color-logo); color: #FDFBF7; border-radius: 999px; padding: 2px 8px; }
+
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 24px; margin: 44px 0 6px; }
+      .section-desc { color: var(--text-secondary); margin: 0 0 8px; max-width: 740px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>Frog, bunny &amp; sprout pot</h1>
+        <p>Your three picks from the cute round, each with its original (badged) and a family of variations — ears, eyes, bellies, poses, sprout shapes. Click anything to audition it in the loader.</p>
+        <p class="meta-line">2026-07-14 · parent round: pixel-cute-round.html</p>
+      </header>
+
+      <div class="hero">
+        <div class="hero-stage">
+          <div class="critter" id="hero-critter"></div>
+          <span class="twave" id="hero-word">Kanbanning…</span>
+        </div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+
+      <h2>Frog family</h2>
+      <p class="section-desc">The levers: eye bumps (fused vs separated vs stalked), belly treatment, expression, and a lily pad to sit on.</p>
+      <div class="grid" id="frogs"></div>
+
+      <h2>Bunny family</h2>
+      <p class="section-desc">The levers: ear length and attitude — tall, lop, nub, flopped — plus belly patch and a side-profile hop.</p>
+      <div class="grid" id="bunnies"></div>
+
+      <h2>Sprout pot family</h2>
+      <p class="section-desc">The levers: what grows (sprout, curl, bloom, twins) and who the pot is — mauve or olive, blushing, walking. The loader metaphor writes itself: something is growing.</p>
+      <div class="grid" id="sprouts"></div>
+
+      <p class="meta-line" style="margin-top:28px">o olive · l lime · m mauve · k ink · originals badged. Ears are 90% of a bunny's personality; eye bumps are 90% of a frog's.</p>
+    </div>
+
+    <script>
+      const P = { o: '#8BA32E', l: '#C2D64A', m: '#A8969E', k: '#1B1B18', w: '#FDFBF7' };
+
+      const FROGS = [
+        { orig: true, name: 'Frog · original', sub: 'from the cute round', map: [
+          '.oo.oo.',
+          'okookoo',
+          'ooooooo',
+          'omooomo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'F1 · Separated bumps', sub: 'eyes sit inside the bumps', map: [
+          '.oo.oo.',
+          '.ok.ko.',
+          'ooooooo',
+          'omooomo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'F2 · Squat', sub: 'wide + low, more toad', map: [
+          '.oo...oo.',
+          'okoooooko',
+          'ooooooooo',
+          'omooooomo',
+          '.oo...oo.',
+        ]},
+        { name: 'F3 · Lime belly', sub: 'two-green two-tone', map: [
+          '.oo.oo.',
+          'okookoo',
+          'ooooooo',
+          'olllllo',
+          '.lllll.',
+          '.oo.oo.',
+        ]},
+        { name: 'F4 · Spotted', sub: 'mauve back spots', map: [
+          '.oo.oo.',
+          'okookoo',
+          'oomoomo',
+          'ooooooo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'F5 · Content', sub: 'closed happy eyes', map: [
+          '.oo.oo.',
+          'okkokko',
+          'ooooooo',
+          'omooomo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'F6 · Lily pad', sub: 'sits on a lime pad', map: [
+          '.oo.oo.',
+          'okookoo',
+          'ooooooo',
+          'omooomo',
+          '.ooooo.',
+          'lllllll',
+          '.lllll.',
+        ]},
+        { name: 'F7 · Smiley', sub: 'one mouth pixel', map: [
+          '.oo.oo.',
+          'okookoo',
+          'ooooooo',
+          'omokomo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'F8 · Tadpole', sub: '5×4 — the smallest frog', map: [
+          '.ooo.',
+          'okoko',
+          'ooooo',
+          '.o.o.',
+        ]},
+      ];
+
+      const BUNNIES = [
+        { orig: true, name: 'Bunny · original', sub: 'from the cute round', map: [
+          'om..mo',
+          'om..mo',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          '.oooo.',
+          '..o.o.',
+        ]},
+        { name: 'B1 · Tall ears', sub: 'three-row ears', map: [
+          'om..mo',
+          'om..mo',
+          'om..mo',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          '.o..o.',
+        ]},
+        { name: 'B2 · Lop ears', sub: 'ears droop beside the head', map: [
+          'oo....oo',
+          'omo..omo',
+          '.oooooo.',
+          '.okooko.',
+          '.omoomo.',
+          '.oooooo.',
+          '..o..o..',
+        ]},
+        { name: 'B3 · Blob bunny', sub: 'nub ears, pure pebble', map: [
+          '.o..o.',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          'oooooo',
+        ]},
+        { name: 'B4 · Belly patch', sub: 'mauve tummy', map: [
+          'om..mo',
+          'om..mo',
+          'oooooo',
+          'okooko',
+          'ommmmo',
+          'ommmmo',
+          '.oooo.',
+          '..o.o.',
+        ]},
+        { name: 'B5 · Hopping side', sub: 'profile + mauve tail', map: [
+          '.oo.....',
+          '.oo.....',
+          '.oooooo.',
+          'okooooom',
+          '.oooooo.',
+          '..o..o..',
+        ]},
+        { name: 'B6 · Flop ear', sub: 'one ear gave up — peak cute', map: [
+          'om....',
+          'om..o.',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          '.o..o.',
+        ]},
+        { name: 'B7 · Tiny bun', sub: '5×6 — favicon grade', map: [
+          'o...o',
+          'o...o',
+          'ooooo',
+          'okoko',
+          'ooooo',
+          '.o.o.',
+        ]},
+        { name: 'B8 · Mauve twin', sub: 'inverted — olive inner ears + cheeks', map: [
+          'mo..om',
+          'mo..om',
+          'mmmmmm',
+          'mkmmkm',
+          'mommom',
+          'mmmmmm',
+          '.mmmm.',
+          '..m.m.',
+        ]},
+      ];
+
+      const SPROUTS = [
+        { orig: true, name: 'Sprout pot · original', sub: 'from the cute round', map: [
+          '..l...',
+          '.lll..',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+        { name: 'S1 · Taller sprout', sub: 'two leaf pairs, more stem', map: [
+          '.l.l..',
+          '.lol..',
+          '..o...',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+        { name: 'S2 · Blushing pot', sub: 'olive cheeks on mauve', map: [
+          '..l...',
+          '.lll..',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mommom',
+          '.mmmm.',
+        ]},
+        { name: 'S3 · Inverted', sub: 'olive pot, mauve bud', map: [
+          '..m...',
+          '.mmm..',
+          '..o...',
+          'oooooo',
+          'okooko',
+          'oooooo',
+          '.oooo.',
+        ]},
+        { name: 'S4 · Side curl', sub: 'asymmetric leaf — more alive', map: [
+          '...ll.',
+          '..lo..',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+        { name: 'S5 · Bloom', sub: 'lime petals, mauve center', map: [
+          '..l...',
+          '.lml..',
+          '..l...',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+        { name: 'S6 · Walking pot', sub: 'it has feet. it goes places.', map: [
+          '..l...',
+          '.lll..',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.m..m.',
+        ]},
+        { name: 'S7 · Twin sprouts', sub: 'two shoots — parallel work', map: [
+          '.l..l.',
+          '.o..o.',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+      ];
+
+      function render(map, scale) {
+        const rows = map.length;
+        const cols = Math.max(...map.map((r) => r.length));
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', cols * scale);
+        svg.setAttribute('height', rows * scale);
+        map.forEach((row, y) => {
+          [...row].forEach((ch, x) => {
+            const color = P[ch];
+            if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale);
+            r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale);
+            r.setAttribute('height', scale);
+            r.setAttribute('fill', color);
+            svg.appendChild(r);
+          });
+        });
+        return svg;
+      }
+
+      function waveify(el, word) {
+        el.textContent = '';
+        let i = 0;
+        for (const ch of word) {
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.style.setProperty('--i', i++);
+          el.appendChild(s);
+        }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const heroC = document.getElementById('hero-critter');
+      const heroName = document.getElementById('hero-name');
+      let activeCard = null;
+
+      function setHero(c) {
+        heroC.textContent = '';
+        const scale = Math.max(10, Math.floor(120 / c.map.length));
+        heroC.style.setProperty('--bob', scale + 'px');
+        heroC.appendChild(render(c.map, scale));
+        heroName.textContent = c.name + ' — ' + c.sub;
+      }
+
+      function buildGrid(list, mountId, heroDefault) {
+        const mount = document.getElementById(mountId);
+        list.forEach((c, idx) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          if (c.orig) {
+            const b = document.createElement('span');
+            b.className = 'orig-badge';
+            b.textContent = 'ORIGINAL';
+            card.appendChild(b);
+          }
+          const stage = document.createElement('div');
+          stage.className = 'stage';
+          const holder = document.createElement('div');
+          holder.className = 'critter';
+          const scale = Math.max(8, Math.floor(92 / c.map.length));
+          holder.style.setProperty('--bob', scale + 'px');
+          holder.appendChild(render(c.map, scale));
+          stage.appendChild(holder);
+          card.appendChild(stage);
+          const nm = document.createElement('div');
+          nm.className = 'nm';
+          nm.textContent = c.name;
+          const sub = document.createElement('div');
+          sub.className = 'sub';
+          sub.textContent = c.sub;
+          card.appendChild(nm);
+          card.appendChild(sub);
+          card.addEventListener('click', () => {
+            if (activeCard) activeCard.classList.remove('active');
+            card.classList.add('active');
+            activeCard = card;
+            setHero(c);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          mount.appendChild(card);
+          if (heroDefault && idx === 0) { setHero(c); card.classList.add('active'); activeCard = card; }
+        });
+      }
+      buildGrid(FROGS, 'frogs', true);
+      buildGrid(BUNNIES, 'bunnies', false);
+      buildGrid(SPROUTS, 'sprouts', false);
+    </script>
+  </body>
+</html>

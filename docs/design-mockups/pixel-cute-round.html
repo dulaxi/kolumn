@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pixel mascots — cute round · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5;
+        --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #C4BFB8;
+        --color-logo: #8BA32E;
+        --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-raised: #2E2E2B;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-logo: #A8BA32;
+        --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 740px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(var(--bob, 4px)); } }
+      .critter { animation: bob 1.05s steps(1, end) infinite; }
+      svg { shape-rendering: crispEdges; display: block; }
+
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin-top: 18px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 14px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 140px; display: grid; place-items: center; }
+      .card .nm { font-size: 13px; font-weight: 600; margin-top: 10px; }
+      .card .why { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.45; }
+
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 24px; margin: 44px 0 6px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+
+    <div class="wrap">
+      <header class="page">
+        <h1>Cute round</h1>
+        <p>Round 3: <strong>mauve + green together</strong>, optimized for cute — round silhouettes, tiny ink eyes, mauve blush pixels, stubby feet. Same tiny grids as the minimal round, but two-tone by design instead of one-accent-max. Click to audition in the loader.</p>
+        <p class="meta-line">2026-07-14 · earlier rounds: pixel-owl-minimal.html (silhouettes) · pixel-mascot-safari.html (other animals)</p>
+      </header>
+
+      <div class="hero">
+        <div class="hero-stage">
+          <div class="critter" id="hero-critter"></div>
+          <span class="twave" id="hero-word">Kanbanning…</span>
+        </div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+
+      <h2>Twelve cuties</h2>
+      <div class="grid" id="grid"></div>
+
+      <p class="meta-line" style="margin-top:28px">o olive · l lime · m mauve · k ink eyes · blush is always mauve. Dark mode flips mauve to its lighter dark token — worth checking, the blush gets pinker.</p>
+    </div>
+
+    <script>
+      const P = { o: '#8BA32E', l: '#C2D64A', m: '#A8969E', k: '#1B1B18', w: '#FDFBF7' };
+
+      const CUTIES = [
+        { name: 'Chick', why: 'Round olive puff, mauve blush, lime feet. The maximum-cute baseline.', map: [
+          '..ooo..',
+          '.ooooo.',
+          'ookokoo',
+          'omooomo',
+          '.ooooo.',
+          '.ooooo.',
+          '..l.l..',
+        ]},
+        { name: 'Blushing ghost', why: 'The ghost from the safari, now with cheeks. Loading system mascot that literally is a ghost row.', map: [
+          '.oooo.',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          'oooooo',
+          'o.oo.o',
+        ]},
+        { name: 'Sprout pot', why: 'Lime sprout growing out of a mauve pot with a face — "your board, growing". Progress metaphor built in.', map: [
+          '..l...',
+          '.lll..',
+          '..o...',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          '.mmmm.',
+        ]},
+        { name: 'Snail', why: 'Mauve spiral shell on an olive body. Slow… but it always ships. Risky metaphor, adorable sprite.', map: [
+          '....mmm..',
+          '...mmmmm.',
+          '...mm.mm.',
+          'ok.mmmmm.',
+          'ooooooooo',
+          '.ooooooo.',
+        ]},
+        { name: 'Mushroom', why: 'Mauve cap, olive stem with a face. Cottagecore energy, zero kanban rationale, dangerous levels of cute.', map: [
+          '.mmmm.',
+          'mmmmmm',
+          'mmmmmm',
+          '.oooo.',
+          '.okko.',
+          '.oooo.',
+          '..o.o.',
+        ]},
+        { name: 'Bunny', why: 'Olive ears with mauve inner, blush pixels. Hops between columns, obviously.', map: [
+          'om..mo',
+          'om..mo',
+          'oooooo',
+          'okooko',
+          'omoomo',
+          'oooooo',
+          '.oooo.',
+          '..o.o.',
+        ]},
+        { name: 'Axolotl', why: 'Mauve body, lime gill fronds. The internet\'s reigning cute champion, in brand colors.', map: [
+          '.l.....l.',
+          'lmmmmmmml',
+          '.mkmmmkm.',
+          '.mmmmmmm.',
+          'lmmmmmmml',
+          '.mmmmmmm.',
+          '..m...m..',
+        ]},
+        { name: 'Jellyfish', why: 'Mauve dome, olive tentacles that could bob on a second beat. Floaty = loading.', map: [
+          '.mmmm.',
+          'mmmmmm',
+          'mkmmkm',
+          'mmmmmm',
+          'o.oo.o',
+          '.o..o.',
+          'o..o.o',
+        ]},
+        { name: 'Owl, but cute', why: 'The owl one more time: rounder, mauve belly, blush. In case the owl was right all along and just needed softening.', map: [
+          '.o...o.',
+          'ooooooo',
+          'ookokoo',
+          'omooomo',
+          'ommmmmo',
+          'ommmmmo',
+          '.ooooo.',
+          '..o.o..',
+        ]},
+        { name: 'Frog', why: 'Eye bumps + mauve blush. Sits patiently on the board like a lily pad.', map: [
+          '.oo.oo.',
+          'okookoo',
+          'ooooooo',
+          'omooomo',
+          '.ooooo.',
+          '.oo.oo.',
+        ]},
+        { name: 'Whale', why: 'Mauve whale, lime spout. Small body of water not included. Calm, roomy, friendly.', map: [
+          '....l....',
+          '...ll....',
+          '.mmmmmmm.',
+          'mmkmmmmmm',
+          'mmmmmmmm.',
+          '.mmmmmm..',
+        ]},
+        { name: 'Caterpillar', why: 'Alternating olive/mauve segments — cards in a row that will someday be a butterfly. The roadmap animal.', map: [
+          '.m.o.m.oo.',
+          'momomoooko',
+          'momomooooo',
+          '.o.o.o.o..',
+        ]},
+      ];
+
+      function render(map, scale) {
+        const rows = map.length;
+        const cols = Math.max(...map.map((r) => r.length));
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', cols * scale);
+        svg.setAttribute('height', rows * scale);
+        map.forEach((row, y) => {
+          [...row].forEach((ch, x) => {
+            const color = P[ch];
+            if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale);
+            r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale);
+            r.setAttribute('height', scale);
+            r.setAttribute('fill', color);
+            svg.appendChild(r);
+          });
+        });
+        return svg;
+      }
+
+      function waveify(el, word) {
+        el.textContent = '';
+        let i = 0;
+        for (const ch of word) {
+          const s = document.createElement('span');
+          s.textContent = ch;
+          s.style.setProperty('--i', i++);
+          el.appendChild(s);
+        }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const grid = document.getElementById('grid');
+      const heroC = document.getElementById('hero-critter');
+      const heroName = document.getElementById('hero-name');
+      let activeCard = null;
+
+      function setHero(c) {
+        heroC.textContent = '';
+        const scale = Math.max(10, Math.floor(120 / c.map.length));
+        heroC.style.setProperty('--bob', scale + 'px');
+        heroC.appendChild(render(c.map, scale));
+        heroName.textContent = c.name + ' — ' + c.why;
+      }
+
+      CUTIES.forEach((c, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const stage = document.createElement('div');
+        stage.className = 'stage';
+        const holder = document.createElement('div');
+        holder.className = 'critter';
+        const scale = Math.max(8, Math.floor(95 / c.map.length));
+        holder.style.setProperty('--bob', scale + 'px');
+        holder.appendChild(render(c.map, scale));
+        stage.appendChild(holder);
+        card.appendChild(stage);
+        const nm = document.createElement('div');
+        nm.className = 'nm';
+        nm.textContent = c.name;
+        const why = document.createElement('div');
+        why.className = 'why';
+        why.textContent = c.why;
+        card.appendChild(nm);
+        card.appendChild(why);
+        card.addEventListener('click', () => {
+          if (activeCard) activeCard.classList.remove('active');
+          card.classList.add('active');
+          activeCard = card;
+          setHero(c);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        grid.appendChild(card);
+        if (idx === 0) { setHero(c); card.classList.add('active'); activeCard = card; }
+      });
+    </script>
+  </body>
+</html>

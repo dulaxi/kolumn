@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay — detailed props · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624; --surface-raised: #2E2E2B;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 760px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; position: sticky; top: 10px; z-index: 5; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+      svg { shape-rendering: crispEdges; display: block; }
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 12px; padding: 10px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 140px; display: grid; place-items: center; }
+      .card .nm { font-size: 12.5px; font-weight: 600; margin-top: 8px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+    <div class="wrap">
+      <header class="page">
+        <h1>Klay, detailed props</h1>
+        <p><strong>Mixed resolution, v2:</strong> Klay keeps his chunky pixels; props render on a 2× finer grid. New rule baked in — <strong>mauve belongs to Klay alone</strong>; props use honey, copper, sand, mist, charcoal, cream and lime, so he always pops against the scene. Forty-two animations and counting.</p>
+        <p class="meta-line">2026-07-14 · coarse 12×11 (Klay) + fine 24×22 (props) · earlier blob versions: klay-100.html</p>
+      </header>
+      <div class="hero">
+        <div class="hero-stage"><div id="hero-anim"></div><span class="twave" id="hero-word">Kanbanning…</span></div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <p class="meta-line" style="margin-top:28px">Fine layer draws after coarse, so props can pass in front of Klay. Klay stays 4-color (olive, lime, mauve, ink).</p>
+    </div>
+
+    <script>
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5', K:'#5C5C57', S:'#C4BFB8' };
+      const E = '............';
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E];
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E];
+      const UP1  = ['......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E,E];
+      const XC='...mkmmkm...', XX='...mmmmmm...', XL='...kmmkmm...', XR='...mmkmmk...', BL='...mommom...';
+      function F(base, mod, hi, ms) { const c = base.slice(); if (mod) for (const y in mod) c[+y] = mod[y]; return { map: c, hi: hi || null, ms: ms || 300 }; }
+      const A = (name, frames) => ({ name, frames });
+
+      const ANIMS = [
+
+      A('Soccer', [
+        F(BASE, {5:XR}, { 15:'..................ww....', 16:'.................wkkw...', 17:'.................wwkw...', 18:'..................ww....' }, 450),
+        F(BASE, {5:XR, 7:'....m...m...'}, { 13:'....................ww..', 14:'...................wkww.', 15:'...................wwkw.', 16:'....................ww..' }, 250),
+        F(BASE, {5:XR}, { 9:'......................ww', 10:'.....................ww.' }, 400),
+      ]),
+
+      A('Basketball', [
+        F(BASE, {5:XR}, {
+          4:'....................KKK.', 5:'....................K.K.', 6:'....................KKK.', 7:'.....................K..', 8:'.....................K..',
+          12:'..................cc....', 13:'.................ckcc...', 14:'.................cckc...', 15:'..................cc....',
+        }, 240),
+        F(BASE, {5:XR}, {
+          4:'....................KKK.', 5:'....................K.K.', 6:'....................KKK.', 7:'.....................K..', 8:'.....................K..',
+          17:'..................cc....', 18:'.................ckcc...', 19:'..................cc....',
+        }, 240),
+      ]),
+
+      A('Tennis', [
+        F(BASE, {5:XR}, {
+          6:'..................hhhh..', 7:'.................hSwSh..', 8:'.................hwSwh..', 9:'..................hhhh..', 10:'...................KK...', 11:'...................KK...',
+          13:'.....................l..',
+        }, 350),
+        F(BASE, {5:XR}, {
+          5:'..................hhhh..', 6:'.................hSwSh..', 7:'.................hwSwh..', 8:'..................hhhh..', 9:'...................KK...', 10:'...................KK...',
+          3:'.................l......',
+        }, 350),
+      ]),
+
+      A('Skiing', [
+        F(BASE, {5:XL}, {
+          10:'..K.................K...', 12:'..K.................K...', 14:'..K.................K...', 15:'..KK...............KK...',
+          16:'.h....................h.', 17:'.hhhhhhhhh...hhhhhhhhh..',
+          2:'w....................w..', 6:'...w..............w.....',
+        }, 300),
+        F(DOWN, {}, {
+          11:'..K.................K...', 13:'..K.................K...', 15:'..K.................K...', 16:'..KK...............KK...',
+          18:'.h....................h.', 19:'.hhhhhhhhh...hhhhhhhhh..',
+          4:'..w................w....', 8:'w....................w..',
+        }, 300),
+      ]),
+
+      A('Weightlift', [
+        F(BASE, {}, {
+          8:'.kk................kk...', 9:'.kkkKKKKKKKKKKKKKKkkk...', 10:'.kk................kk...',
+        }, 550),
+        F(UP1, {}, {
+          0:'.kk................kk...', 1:'.kkkKKKKKKKKKKKKKKkkk...', 2:'.kk................kk...',
+        }, 650),
+      ]),
+
+      A('Golf', [
+        F(BASE, {5:XL}, {
+          8:'..K.....................', 9:'..K.....................', 10:'..K.....................', 11:'..K.....................', 12:'..KK....................',
+          17:'.ww.....................',
+        }, 500),
+        F(BASE, {5:XL}, {
+          8:'.....K..................', 9:'....K...................', 10:'...K....................', 11:'..K.....................',
+          4:'.ww.....................', 3:'...w....................',
+        }, 400),
+      ]),
+
+      A('Coffee', [
+        F(BASE, {5:XC}, {
+          9:'..ww....................', 10:'.wwwwS..................', 11:'.wwwwSS.................', 12:'.wwwwSS.................', 13:'.wwwwS..................', 14:'..wwww..................',
+          6:'...S....................', 4:'..S.....................',
+        }, 500),
+        F(BASE, {5:XX, 6:BL}, {
+          9:'..ww....................', 10:'.wwwwS..................', 11:'.wwwwSS.................', 12:'.wwwwSS.................', 13:'.wwwwS..................', 14:'..wwww..................',
+          5:'..S.....................', 3:'...S....................',
+        }, 500),
+      ]),
+
+      A('Typing', [
+        F(BASE, {5:XR}, {
+          8:'..................KKKKK.', 9:'..................KllwK.', 10:'..................KwllK.', 11:'..................KKKKK.',
+          12:'.................KKKKKK.', 13:'.................KwSwSK.',
+        }, 260),
+        F(BASE, {5:XR}, {
+          8:'..................KKKKK.', 9:'..................KwlwK.', 10:'..................KllwK.', 11:'..................KKKKK.',
+          12:'.................KKKKKK.', 13:'.................KSwSwK.',
+        }, 260),
+      ]),
+
+      A('Phone call', [
+        F(BASE, {5:XC}, {
+          8:'..................KKK...', 9:'..................KwK...', 10:'..................KwK...', 11:'..................KwK...', 12:'..................KKK...',
+        }, 550),
+        F(BASE, {5:XR, 6:BL}, {
+          7:'...................l....',
+          8:'..................KKK...', 9:'..................KwK...', 10:'..................KwK...', 11:'..................KwK...', 12:'..................KKK...',
+        }, 550),
+      ]),
+
+      A('Presenting', [
+        F(BASE, {5:XL}, {
+          6:'.KKKKKKKKK..............', 7:'.KwwwwwwwK..............', 8:'.KwwwwwwwK..............', 9:'.KwlwwwwwK..............', 10:'.KwlwlwwwK..............', 11:'.KwlwlwlwK..............', 12:'.KKKKKKKKK..............',
+          13:'...K...K................', 14:'..K.....K...............',
+        }, 550),
+        F(BASE, {5:XL}, {
+          6:'.KKKKKKKKK..............', 7:'.KwwwlwwwK..............', 8:'.KwwwlwlwK..............', 9:'.KwlwlwlwK..............', 10:'.KwlwlwlwK..............', 11:'.KwlwlwlwK..............', 12:'.KKKKKKKKK..............',
+          13:'...K...K................', 14:'..K.....K...............',
+        }, 550),
+      ]),
+
+      A('Stamping', [
+        F(BASE, {5:XR}, {
+          10:'...................KK...', 11:'...................KK...', 12:'..................SSSS..',
+          16:'.................wwwww..', 17:'.................wwwww..',
+        }, 450),
+        F(BASE, {5:XR}, {
+          13:'...................KK...', 14:'..................SSSS..',
+          16:'.................wwwww..', 17:'.................wwwww..',
+        }, 250),
+        F(BASE, {5:XR, 6:BL}, {
+          16:'.................wwlww..', 17:'.................wwwww..',
+        }, 550),
+      ]),
+
+      A('Idea!', [
+        F(BASE, {5:XC}, {
+          0:'...................ww...', 1:'..................wwww..', 2:'..................wwww..', 3:'...................KK...',
+        }, 550),
+        F(BASE, {5:XC, 6:BL}, {
+          0:'.................h.ww.h.', 1:'..................wwww..', 2:'..................wwww..', 3:'.................h.KK.h.',
+        }, 650),
+      ]),
+
+      A('Reading', [
+        F(BASE, {5:XX}, {
+          12:'......wwwwwwSwwwwww.....', 13:'.....wSSSSSwSwSSSSSw....', 14:'.....wSSSSSwSwSSSSSw....', 15:'.....wwwwwwwSwwwwwww....', 16:'......KKKKKKKKKKKKK.....',
+        }, 700),
+        F(BASE, {5:XC}, {
+          11:'..........w.............',
+          12:'......wwwwwwSwwwwww.....', 13:'.....wSSSSSwSwSSSSSw....', 14:'.....wSSSSSwSwSSSSSw....', 15:'.....wwwwwwwSwwwwwww....', 16:'......KKKKKKKKKKKKK.....',
+        }, 500),
+      ]),
+
+      A('Chef Klay', [
+        F(BASE, {1:E,2:E,3:E}, {
+          0:'.......wwwwwwww.........', 1:'......wwwwwwwwww........', 2:'......wwwwwwwwww........', 3:'.......SwwwwwwS.........', 4:'.......wwwwwwww.........',
+          13:'..............h.........', 14:'..sssssss...............', 15:'..swwwwws......h........', 16:'..sssssss.....h.........',
+        }, 400),
+        F(BASE, {1:E,2:E,3:E}, {
+          0:'.......wwwwwwww.........', 1:'......wwwwwwwwww........', 2:'......wwwwwwwwww........', 3:'.......SwwwwwwS.........', 4:'.......wwwwwwww.........',
+          14:'..sssssss.h.............', 15:'..swwwwws..h............', 16:'..sssssss...............',
+        }, 400),
+      ]),
+
+      A('Pancake flip', [
+        F(BASE, {5:XR}, {
+          11:'...............hhhh.....', 12:'..............SSSSSSKKKK', 13:'..............SSSSSS....',
+        }, 400),
+        F(BASE, {5:XR}, {
+          4:'...............hhhh.....',
+          12:'..............SSSSSSKKKK', 13:'..............SSSSSS....',
+        }, 350),
+        F(BASE, {5:XR, 6:BL}, {
+          11:'...............hhhh.....', 12:'..............SSSSSSKKKK', 13:'..............SSSSSS....',
+        }, 450),
+      ]),
+
+      A('Pizza spin', [
+        F(BASE, {}, {
+          0:'..........hhhh..........', 1:'........hhhhhhhh........', 2:'.......hhchhhhchh.......', 3:'........hhhhchhh........', 4:'..........hhhh..........',
+        }, 300),
+        F(BASE, {}, {
+          0:'..........hhhh..........', 1:'........hhchhhhh........', 2:'.......hhhhhchhhh.......', 3:'........hchhhhhh........', 4:'..........hhhh..........',
+        }, 300),
+      ]),
+
+      A('Tea time', [
+        F(BASE, {5:XC}, {
+          8:'...S....................', 10:'..wwww..................', 11:'..wwwwS.................', 12:'..wwwwS.................', 13:'...wwww.................', 14:'..SSSSSS................',
+        }, 600),
+        F(BASE, {5:XX, 6:BL}, {
+          7:'....S...................', 10:'..wwww..................', 11:'..wwwwS.................', 12:'..wwwwS.................', 13:'...wwww.................', 14:'..SSSSSS................',
+        }, 600),
+      ]),
+
+      A('Chopping', [
+        F(BASE, {5:XR}, {
+          8:'...................KK...', 9:'..................SSSSS.', 10:'..................wwwww.',
+          17:'..................ll.ll.',
+        }, 300),
+        F(BASE, {5:XR}, {
+          13:'...................KK...', 14:'..................SSSSS.', 15:'..................wwwww.',
+          17:'.................l.l.l.l',
+        }, 250),
+      ]),
+
+      A('Grilling', [
+        F(BASE, {5:XL}, {
+          11:'..hhhhh.................', 12:'..c.h.c.................', 13:'.c.h.c.h................',
+          14:'.KKKKKKKK...............', 15:'.K.K.K.K................', 16:'..K....K................',
+        }, 300),
+        F(BASE, {5:XL}, {
+          11:'..hhhhh.................', 12:'..h.c.h.................', 13:'.h.c.h.c................',
+          14:'.KKKKKKKK...............', 15:'.K.K.K.K................', 16:'..K....K................',
+        }, 300),
+      ]),
+
+      A('Ice cream', [
+        F(BASE, {5:XR}, {
+          9:'..................www...', 10:'.................wwwww..', 11:'..................hhh...', 12:'..................ShS...', 13:'...................h....',
+        }, 500),
+        F(BASE, {5:XR, 6:BL}, {
+          9:'..................www...', 10:'.................wwSww..', 11:'..................hhh...', 12:'..................ShS...', 13:'...................h....', 14:'...................w....',
+        }, 500),
+      ]),
+
+      A('Birthday cake', [
+        F(BASE, {5:XC}, {
+          11:'...........c...........', 12:'...........K...........', 13:'..........www..........', 14:'........wwwwwww........', 15:'........hhhhhhh........', 16:'.......hhhhhhhhh.......', 17:'.......ccccccccc.......',
+        }, 400),
+        F(BASE, {5:XC, 6:BL}, {
+          11:'...........h...........', 12:'...........K...........', 13:'..........www..........', 14:'........wwwwwww........', 15:'........hhhhhhh........', 16:'.......hhhhhhhhh.......', 17:'.......ccccccccc.......',
+        }, 400),
+      ]),
+
+      A('Water me', [
+        F(BASE, {5:XC}, {
+          1:'................ssss....', 2:'..............s.ssssss..', 3:'...............ssssss...',
+        }, 500),
+        F(BASE, {5:XC, 6:BL}, {
+          1:'................ssss....', 2:'..............s.ssssss..', 3:'...............ssssss...',
+          4:'..............w.........', 5:'.............w..........', 6:'..............w.........',
+        }, 450),
+        F(BASE, {0:'....lml.....', 5:XX, 6:BL}, {
+          1:'................ssss....', 2:'..............s.ssssss..', 3:'...............ssssss...',
+        }, 700),
+      ]),
+
+      A('Guitar', [
+        F(BASE, {}, {
+          12:'...hhhKKwKKwKKwK........', 13:'..hhhhh.................', 14:'..hhkhh.................', 15:'...hhh..................',
+        }, 350),
+        F(BASE, {}, {
+          12:'...hhhKKwKKwKKwK........', 13:'..hhhhh.................', 14:'..hhkhh.................', 15:'...hhh..................',
+          9:'.................l......', 10:'...................l....',
+        }, 350),
+      ]),
+
+      A('Drums', [
+        F(BASE, {}, {
+          11:'...k....................', 12:'....k...........k.......', 13:'....KKKK......KKKK......', 14:'....SwSS......SSSS......', 15:'....SSSS......SSSS......',
+        }, 220),
+        F(BASE, {}, {
+          11:'....................k...', 12:'....k...........k.......', 13:'....KKKK......KKKK......', 14:'....SSSS......SSwS......', 15:'....SSSS......SSSS......',
+        }, 220),
+      ]),
+
+      A('Trumpet', [
+        F(BASE, {}, {
+          9:'..................k.k...', 10:'.................hhhh.h.', 11:'................hhhhhhh.', 12:'.....................h..',
+        }, 400),
+        F(BASE, {6:BL}, {
+          9:'..................k.k...', 10:'.................hhhh.h.', 11:'................hhhhhhh.', 12:'.....................h..',
+          6:'......................l.', 7:'....................l...',
+        }, 400),
+      ]),
+
+      A('Painting', [
+        F(BASE, {5:XL}, {
+          7:'..ssssss................', 8:'..swwwws................', 9:'..swwwws................', 10:'..swwwws................', 11:'..swwwws................', 12:'..ssssss................',
+          13:'...K..K.................', 14:'..K....K................',
+        }, 500),
+        F(BASE, {5:XL}, {
+          7:'..ssssss................', 8:'..swlwws................', 9:'..swwwws................', 10:'..swwwws................', 11:'..swwwws................', 12:'..ssssss................',
+          13:'...K..K.................', 14:'..K....K................',
+        }, 500),
+        F(BASE, {5:XL, 6:BL}, {
+          7:'..ssssss................', 8:'..swlwws................', 9:'..swwcws................', 10:'..swwwls................', 11:'..swwwws................', 12:'..ssssss................',
+          13:'...K..K.................', 14:'..K....K................',
+        }, 700),
+      ]),
+
+      A('DJ Klay', [
+        F(BASE, {4:'..kmmmmmmk..'}, {
+          6:'.l......................',
+          14:'....KKKKKKKKKKKKKKKK....', 15:'...KKkkwkkKKKKkkwkkKK...', 16:'...KKkwkkkKKKKkkkwkKK...', 17:'....KKKKKKKKKKKKKKKK....',
+        }, 260),
+        F(BASE, {4:'..kmmmmmmk..'}, {
+          6:'......................l.',
+          14:'....KKKKKKKKKKKKKKKK....', 15:'...KKkwkkkKKKKkkkwkKK...', 16:'...KKkkwkkKKKKkkwkkKK...', 17:'....KKKKKKKKKKKKKKKK....',
+        }, 260),
+      ]),
+
+      A('Boombox', [
+        F(BASE, {1:'.....l......',2:'....lll.....'}, {
+          13:'.l.ll.l.................', 14:'KKKKKKKKKK..............', 15:'KSwSKKSwSK..............', 16:'KSSSKKSSSK..............', 17:'KKKKKKKKKK..............',
+        }, 240),
+        F(BASE, {1:'.......l....',2:'......lll...'}, {
+          13:'.ll.l.ll................', 14:'KKKKKKKKKK..............', 15:'KSwSKKSwSK..............', 16:'KSSSKKSSSK..............', 17:'KKKKKKKKKK..............',
+        }, 240),
+      ]),
+
+      A('Umbrella', [
+        F(BASE, {}, {
+          0:'.........cccccc.........', 1:'......cccccccccccc......', 2:'....ccSccSccSccSccSc....', 3:'...........KK...........', 4:'...........K............', 5:'...........K............', 6:'...........KK..........',
+          8:'w.....................w.', 10:'..w.................w...', 12:'w....................w..',
+        }, 400),
+        F(BASE, {}, {
+          0:'.........cccccc.........', 1:'......cccccccccccc......', 2:'....ccSccSccSccSccSc....', 3:'...........KK...........', 4:'...........K............', 5:'...........K............', 6:'...........KK..........',
+          9:'..w.................w...', 11:'w.....................w.', 13:'...w...............w....',
+        }, 400),
+      ]),
+
+      A('Snow scarf', [
+        F(BASE, {}, {
+          8:'......cccccccccccc......', 9:'......cccccccccccc......', 10:'.......cc...............', 11:'.......cc...............',
+          1:'.w....w.......w.....w...', 3:'...w......w.......w.....',
+        }, 400),
+        F(BASE, {}, {
+          8:'......cccccccccccc......', 9:'......cccccccccccc......', 10:'.......cc...............', 11:'.......cc...............',
+          2:'..w......w.......w....w.', 4:'.w....w.......w.....w...',
+        }, 400),
+      ]),
+
+      A('Sunbathing', [
+        F(BASE, {5:XX}, {
+          0:'hh......................', 1:'hhh..h..................', 2:'hhh.....................', 3:'h..h....................',
+          10:'......KKKKKKKKKKKK......', 11:'.......KKKK..KKKK.......',
+        }, 600),
+        F(BASE, {5:XX, 6:BL}, {
+          0:'hh...h..................', 1:'hhh.....................', 2:'hhh..h..................', 3:'h.......................',
+          10:'......KKKKKKKKKKKK......', 11:'.......KKKK..KKKK.......',
+        }, 600),
+      ]),
+
+      A('Rocket', [
+        F(BASE, {5:XL}, {
+          5:'...cc...................', 6:'..cwwc..................', 7:'..wwww..................', 8:'..wSSw..................', 9:'..wwww..................', 10:'..wwww..................', 11:'.cwwwwc.................', 12:'.c.ww.c.................', 13:'...hh...................', 14:'...cc...................',
+        }, 250),
+        F(BASE, {5:XL}, {
+          4:'...cc...................', 5:'..cwwc..................', 6:'..wwww..................', 7:'..wSSw..................', 8:'..wwww..................', 9:'..wwww..................', 10:'.cwwwwc.................', 11:'.c.ww.c.................', 12:'...cc...................', 13:'..h..h..................',
+        }, 250),
+      ]),
+
+      A('Helicopter sprout', [
+        F(UP1, {6:'.....mm.....'}, {
+          0:'.....kkkkkkkkkk.........', 1:'..........kk...........',
+          16:'..w................w....',
+        }, 180),
+        F(UP1, {6:'.....mm.....'}, {
+          0:'........kkkk............', 1:'..........kk...........',
+          17:'....w...........w.......',
+        }, 180),
+      ]),
+
+      A('Parachute', [
+        F(UP1, {6:'.....mm.....'}, {
+          0:'........cccccccc........', 1:'......cccccccccccc......', 2:'.....ccSccSccSccScc.....', 3:'......K....K....K.......', 4:'.......K...K...K........', 5:'........K..K..K.........',
+        }, 450),
+        F(UP1, {6:'.....mm.....'}, {
+          0:'.........cccccccc.......', 1:'.......cccccccccccc.....', 2:'......ccSccSccSccScc....', 3:'.......K....K....K......', 4:'........K...K...K.......', 5:'.........K..K..K........',
+        }, 450),
+      ]),
+
+      A('Hiking', [
+        F(BASE, {7:'...m...m....'}, {
+          9:'...cc...................', 10:'..cccc..................', 11:'..cScc..................', 12:'..cccc..................', 13:'..cccc..................',
+          8:'....................h...', 9:'....................h...'.replace('h...','h..c').slice(0,24), 10:'....................h...', 11:'....................h...', 12:'....................h...', 13:'....................h...', 14:'....................h...', 15:'....................h...',
+        }, 300),
+        F(DOWN, {8:'..m...m.....'}, {
+          11:'...cc...................', 12:'..cccc..................', 13:'..cScc..................', 14:'..cccc..................', 15:'..cccc..................',
+          10:'....................h...', 11:'....................h...', 12:'....................h...', 13:'....................h...', 14:'....................h...', 15:'....................h...', 16:'....................h...',
+        }, 300),
+      ]),
+
+      A('Balloon ride', [
+        F(BASE, {1:E,2:E,3:E}, {
+          0:'..........llll..........', 1:'........llllllll........', 2:'........llllllll........', 3:'.........llllll.........', 4:'..........llll..........', 5:'...........ll...........', 6:'..........K..K..........', 7:'..........K..K..........',
+        }, 500),
+        F(UP1, {0:E,1:E,2:E}, {
+          0:'........llllllll........', 1:'........llllllll........', 2:'.........llllll.........', 3:'..........llll..........', 4:'...........ll...........', 5:'..........K..K..........',
+          18:'..w...............w.....',
+        }, 500),
+      ]),
+
+      A('Map check', [
+        F(BASE, {5:XL}, {
+          12:'......wwwwwwSwwwwww.....', 13:'......wllwwwSwwwwww.....', 14:'......wwwllwSwlwwww.....', 15:'......wwwwwlSllwcww.....', 16:'......wwwwwwSwwwwww.....',
+        }, 550),
+        F(BASE, {5:XR}, {
+          12:'......wwwwwwSwwwwww.....', 13:'......wllwwwSwwwwww.....', 14:'......wwwllwSwlwwww.....', 15:'......wwwwwlSllwcww.....', 16:'......wwwwwwSwwwwww.....',
+        }, 550),
+      ]),
+
+      A('Campfire', [
+        F(BASE, {5:XC}, {
+          13:'....l...................', 14:'...lhl..................', 15:'...chc..................', 16:'..chhhc.................', 17:'..ccccc.................', 18:'.KKKKKKK................', 19:'..KK.KK.................',
+        }, 280),
+        F(BASE, {5:XX, 6:BL}, {
+          12:'....l...................', 13:'...hlh..................', 14:'...hch..................', 15:'..chhhc.................', 16:'..ccccc.................', 18:'.KKKKKKK................', 19:'..KK.KK.................',
+        }, 280),
+      ]),
+
+      A('Driving', [
+        F(BASE, {7:E}, {
+          11:'......ssssssssss........', 12:'.....sswwsssswwss.......', 13:'....ssssssssssssssss....', 14:'....ssssssssssssssss....', 15:'......KKK......KKK......', 16:'......KwK......KwK......',
+          19:'w.......w.......w.......',
+        }, 240),
+        F(BASE, {7:E}, {
+          11:'......ssssssssss........', 12:'.....sswwsssswwss.......', 13:'....ssssssssssssssss....', 14:'....ssssssssssssssss....', 15:'......KKK......KKK......', 16:'......KKw......wKK......',
+          19:'....w.......w.......w...',
+        }, 240),
+      ]),
+
+      A('Sailing', [
+        F(BASE, {7:E}, {
+          2:'.................w......', 3:'..............wwww......', 4:'...........wwwwwww......', 5:'........wwwwwwwwww......', 6:'.................K......', 7:'.................K......',
+          16:'....hhhhhhhhhhhhhhh.....', 17:'.....hhhhhhhhhhhhh......',
+          19:'SS..SS..SS..SS..SS..SS..',
+        }, 450),
+        F(DOWN, {8:E}, {
+          3:'.................w......', 4:'..............wwww......', 5:'...........wwwwwww......', 6:'........wwwwwwwwww......', 7:'.................K......', 8:'.................K......',
+          17:'....hhhhhhhhhhhhhhh.....', 18:'.....hhhhhhhhhhhhh......',
+          19:'..SS..SS..SS..SS..SS..SS',
+        }, 450),
+      ]),
+
+      A('Gaming', [
+        F(BASE, {5:XL}, {
+          13:'.......KKKKKKKKKK.......', 14:'......KKwK....lKKK......', 15:'......KKKK..cl.KKK......', 16:'.......KKKKKKKKKK.......',
+        }, 220),
+        F(BASE, {5:XR}, {
+          13:'.......KKKKKKKKKK.......', 14:'......KKSK....lKKK......', 15:'......KKKK..cl.KKK......', 16:'.......KKKKKKKKKK.......',
+        }, 220),
+        F(BASE, {5:XC}, {
+          8:'....................l...', 9:'.....................l..',
+          13:'.......KKKKKKKKKK.......', 14:'......KKwK....cKKK......', 15:'......KKKK..cl.KKK......', 16:'.......KKKKKKKKKK.......',
+        }, 300),
+      ]),
+
+      A('Magic bunny', [
+        F(BASE, {5:XL}, {
+          13:'.................KKKKKK.', 14:'.................KSSSSK.', 15:'.................KKKKKK.', 16:'................KKKKKKKK',
+        }, 500),
+        F(BASE, {5:XL}, {
+          10:'................l.....l.', 11:'..................w..w..', 12:'..................w..w..',
+          13:'.................KKKKKK.', 14:'.................KSSSSK.', 15:'.................KKKKKK.', 16:'................KKKKKKKK',
+        }, 500),
+      ]),
+
+      A('Wizard', [
+        F(BASE, {1:E,2:E,3:E}, {
+          0:'...........cc...........', 1:'..........cccc..........', 2:'.........ccclcc.........', 3:'........cccccccc........', 4:'........hhhhhhhh........',
+        }, 400),
+        F(BASE, {1:E,2:E,3:E}, {
+          0:'...........cc...........', 1:'..........cccc..........', 2:'.........cccccc.........', 3:'........ccclcccc........', 4:'........hhhhhhhh........',
+          8:'.....................l..', 9:'...................l....', 10:'.....................l..',
+        }, 400),
+      ]),
+
+      A('Party', [
+        F(BASE, {6:BL}, {
+          0:'..K...K...K...K...K...K.', 1:'...l...w...c...h...l....',
+          5:'..w............c........', 7:'.....l..........w.......',
+        }, 350),
+        F(BASE, {6:BL}, {
+          0:'..K...K...K...K...K...K.', 1:'...l...w...c...h...l....',
+          5:'....c..........w........', 7:'.w............l.........', 9:'.....w..........h.......',
+        }, 350),
+      ]),
+
+      ];
+
+      function render(frame, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 12 * scale); svg.setAttribute('height', 11 * scale);
+        frame.map.forEach((row, y) => {
+          [...row].slice(0, 12).forEach((ch, x) => {
+            const color = P[ch]; if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale); r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale); r.setAttribute('height', scale);
+            r.setAttribute('fill', color); svg.appendChild(r);
+          });
+        });
+        if (frame.hi) {
+          const half = scale / 2;
+          for (const yStr in frame.hi) {
+            const y = +yStr;
+            [...frame.hi[yStr]].slice(0, 24).forEach((ch, x) => {
+              const color = P[ch]; if (!color) return;
+              const r = document.createElementNS(ns, 'rect');
+              r.setAttribute('x', x * half); r.setAttribute('y', y * half);
+              r.setAttribute('width', half); r.setAttribute('height', half);
+              r.setAttribute('fill', color); svg.appendChild(r);
+            });
+          }
+        }
+        return svg;
+      }
+      function play(mount, anim, scale) {
+        let idx = 0, timer;
+        function tick() {
+          mount.textContent = '';
+          mount.appendChild(render(anim.frames[idx], scale));
+          timer = setTimeout(() => { idx = (idx + 1) % anim.frames.length; tick(); }, anim.frames[idx].ms);
+        }
+        tick();
+        return () => clearTimeout(timer);
+      }
+      function waveify(el, word) {
+        el.textContent = ''; let i = 0;
+        for (const ch of word) { const s = document.createElement('span'); s.textContent = ch; s.style.setProperty('--i', i++); el.appendChild(s); }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const heroMount = document.getElementById('hero-anim');
+      const heroName = document.getElementById('hero-name');
+      let stopHero = null, activeCard = null;
+      function setHero(anim) {
+        if (stopHero) stopHero();
+        stopHero = play(heroMount, anim, 17);
+        heroName.textContent = anim.name;
+      }
+      const grid = document.getElementById('grid');
+      ANIMS.forEach((anim, idx) => {
+        const card = document.createElement('div'); card.className = 'card';
+        const stage = document.createElement('div'); stage.className = 'stage';
+        const holder = document.createElement('div');
+        play(holder, anim, 10);
+        stage.appendChild(holder); card.appendChild(stage);
+        const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = anim.name; card.appendChild(nm);
+        card.addEventListener('click', () => {
+          if (activeCard) activeCard.classList.remove('active');
+          card.classList.add('active'); activeCard = card;
+          setHero(anim);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        grid.appendChild(card);
+        if (idx === 0) { setHero(anim); card.classList.add('active'); activeCard = card; }
+      });
+    </script>
+  </body>
+</html>

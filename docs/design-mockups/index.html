@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design mockups index · Kolumn</title>
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 40px; letter-spacing: -0.02em; margin: 0 0 6px; display: flex; align-items: center; gap: 14px; }
+      header p { color: var(--text-secondary); margin: 0; }
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 22px; margin: 40px 0 4px; }
+      .hint { font-size: 12.5px; color: var(--text-muted); margin: 0 0 10px; }
+      ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+      a.row { display: flex; align-items: baseline; gap: 10px; text-decoration: none; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 10px; padding: 10px 16px; color: var(--text-primary); transition: border-color 120ms; }
+      a.row:hover { border-color: var(--color-mauve); }
+      a.row .nm { font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+      a.row .d { font-size: 12px; color: var(--text-muted); }
+      .badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: .05em; background: var(--color-logo); color: #FDFBF7; border-radius: 999px; padding: 2px 8px; }
+      svg { shape-rendering: crispEdges; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Toggle theme</button>
+    <div class="wrap">
+      <header>
+        <h1><span id="klay"></span> Kolumn design mockups</h1>
+        <p>Index of the live pages. Klay first, then the loading-states initiative, then the mascot decision trail.</p>
+      </header>
+
+      <h2>Klay</h2>
+      <p class="hint">The mascot: a walking sprout pot. Mauve is his color alone.</p>
+      <ul>
+        <li><a class="row" href="klay-detailed-props.html"><span class="nm">klay-detailed-props</span><span class="badge">CANON</span><span class="d">42 animations, mixed-resolution props — the current style</span></a></li>
+        <li><a class="row" href="klay-100.html"><span class="nm">klay-100</span><span class="d">100 animations, coarse props (expressions still canon; prop ones superseded)</span></a></li>
+        <li><a class="row" href="potto-animations.html"><span class="nm">potto-animations</span><span class="d">the first 12 — idle, tap, walk, hop, grow, wilt, sleep, sit, deliver</span></a></li>
+      </ul>
+
+      <h2>Loading states initiative</h2>
+      <p class="hint">Shipped — all nine findings fixed, letter-wave buttons, kanban typing indicator.</p>
+      <ul>
+        <li><a class="row" href="loading-states-tackled.html"><span class="nm">loading-states-tackled</span><span class="badge">STATUS</span><span class="d">the one-page summary of everything shipped</span></a></li>
+        <li><a class="row" href="loading-states-audit.html"><span class="nm">loading-states-audit</span><span class="d">the living ledger — every loading state, specimens + findings</span></a></li>
+        <li><a class="row" href="loading-states-before-after.html"><span class="nm">loading-states-before-after</span><span class="d">the 9 findings, old vs new, side by side</span></a></li>
+        <li><a class="row" href="button-loading-concepts.html"><span class="nm">button-loading-concepts</span><span class="d">5 industry patterns considered</span></a></li>
+        <li><a class="row" href="button-loading-letterwave.html"><span class="nm">button-loading-letterwave</span><span class="d">wave tunings A/B/C</span></a></li>
+        <li><a class="row" href="button-loading-terminal.html"><span class="nm">button-loading-terminal</span><span class="d">terminal-faithful mono, all call sites</span></a></li>
+        <li><a class="row" href="button-loading-wave-fonts.html"><span class="nm">button-loading-wave-fonts</span><span class="d">sans vs mono face-off (sans won)</span></a></li>
+        <li><a class="row" href="button-loading-compare.html"><span class="nm">button-loading-compare</span><span class="d">old dots vs new wave</span></a></li>
+        <li><a class="row" href="typing-indicator-words.html"><span class="nm">typing-indicator-words</span><span class="d">97 thinking-word candidates (kanban pool shipped)</span></a></li>
+      </ul>
+
+      <h2>Mascot decision trail</h2>
+      <p class="hint">How we got to Klay, in order.</p>
+      <ul>
+        <li><a class="row" href="pixel-owl-takes.html"><span class="nm">pixel-owl-takes</span><span class="d">round 1 — 20 detailed owls (rejected: too much detail)</span></a></li>
+        <li><a class="row" href="pixel-owl-minimal.html"><span class="nm">pixel-owl-minimal</span><span class="d">round 2 — 18 knockout-eye silhouettes</span></a></li>
+        <li><a class="row" href="pixel-mascot-safari.html"><span class="nm">pixel-mascot-safari</span><span class="d">round 3 — 12 other animals + objects</span></a></li>
+        <li><a class="row" href="pixel-cute-round.html"><span class="nm">pixel-cute-round</span><span class="d">round 4 — mauve+green cuties (frog, bunny, sprout pot picked)</span></a></li>
+        <li><a class="row" href="pixel-frog-bunny.html"><span class="nm">pixel-frog-bunny</span><span class="d">round 5 — the three finalists' families (S6 wins → Klay)</span></a></li>
+      </ul>
+    </div>
+    <script>
+      // little idle-bobbing Klay in the title
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18' };
+      const MAPS = [
+        ['..l...','.lll..','..o...','mmmmmm','mkmmkm','mmmmmm','.m..m.'],
+        ['......','..l...','.lll..','..o...','mmmmmm','mkmmkm','mmmmmm'],
+      ];
+      const mount = document.getElementById('klay');
+      let i = 0;
+      function draw() {
+        const map = MAPS[i]; i = 1 - i;
+        const ns = 'http://www.w3.org/2000/svg', sc = 6;
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 6 * sc); svg.setAttribute('height', 7 * sc);
+        map.forEach((row, y) => [...row].forEach((ch, x) => {
+          if (!P[ch]) return;
+          const r = document.createElementNS(ns, 'rect');
+          r.setAttribute('x', x * sc); r.setAttribute('y', y * sc);
+          r.setAttribute('width', sc); r.setAttribute('height', sc);
+          r.setAttribute('fill', P[ch]); svg.appendChild(r);
+        }));
+        mount.textContent = ''; mount.appendChild(svg);
+      }
+      draw(); setInterval(draw, 550);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay — 100 animations · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624; --surface-raised: #2E2E2B;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 760px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; position: sticky; top: 10px; z-index: 5; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+      svg { shape-rendering: crispEdges; display: block; }
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 14px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 12px; padding: 10px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 118px; display: grid; place-items: center; }
+      .card .nm { font-size: 12px; font-weight: 600; margin-top: 8px; }
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 23px; margin: 40px 0 2px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+    <div class="wrap">
+      <header class="page">
+        <h1>Klay × 100</h1>
+        <p>One hundred more Klay animations across ten themes — sports, work, cooking, music, emotions, adventure, weather, daily life, kanban, and pure silliness. Same sprite system as the first twelve (frame data, low fps, 12×11 grid with room for props). Click any card to promote it to the stage.</p>
+        <p class="meta-line">2026-07-14 · Klay = the walking sprout pot, named today · first 12: potto-animations.html</p>
+      </header>
+      <div class="hero">
+        <div class="hero-stage"><div id="hero-anim"></div><span class="twave" id="hero-word">Kanbanning…</span></div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+      <div id="sections"></div>
+      <p class="meta-line" style="margin-top:28px">Palette: olive/lime/mauve = Klay · honey/copper/sand/cream/ink = props. Every animation is 2–4 frames — sprite charm dies above ~6fps.</p>
+    </div>
+
+    <script>
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5' };
+      const E = '............';
+      // Base Klay: pot cols3-8, eyes y5, feet y7, sprout y1-3. Canvas 12x11.
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E];
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E];
+      const UP1  = ['......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E,E];
+      const XC='...mkmmkm...', XX='...mmmmmm...', XL='...kmmkmm...', XR='...mmkmmk...', BL='...mommom...';
+      function F(base, mod, ms) { const c = base.slice(); if (mod) for (const y in mod) c[+y] = mod[y]; return { map: c, ms: ms || 280 }; }
+      const A = (cat, name, frames) => ({ cat, name, frames });
+
+      const ANIMS = [
+      // ═══ SPORTS ═══
+      A('Sports','Soccer kick',[ F(BASE,{8:'.........ww.',9:'.........ww.'},420), F(BASE,{7:'....m...m...',8:'..........ww',9:E},260), F(BASE,{8:'..........ww',5:XR},420) ]),
+      A('Sports','Basketball',[ F(BASE,{5:XR,6:'...mmmmmm.cc',7:'....m..m..cc'},220), F(BASE,{5:XR,8:'..........cc',9:'..........cc'},220) ]),
+      A('Sports','Tennis',[ F(BASE,{4:'...mmmmmmhh.',3:'......o..ll.',5:XR},300), F(BASE,{4:'...mmmmmm...',2:'.....lll..hh',3:'......o...l.',5:XR},300) ]),
+      A('Sports','Skiing',[ F(BASE,{8:'..hhh..hhh..',0:'w.........w.',5:XL},260), F(DOWN,{9:'..hhh..hhh..',0:'.w.......w..',1:'w.....l....w'},260) ]),
+      A('Sports','Skateboard',[ F(BASE,{8:'...hhhhhh...',9:'....k..k....'},300), F(DOWN,{9:'...hhhhhh...',10:'....k..k....'},300) ]),
+      A('Sports','Weightlift',[ F(BASE,{4:'..kmmmmmmk..',3:'..k...o..k..'},500), F(UP1,{0:'kk....l...kk',1:'kkkkklllkkkk'.replace('lll','lll')},600) ]),
+      A('Sports','Yoga',[ F(BASE,{7:'....m.......'},700), F(BASE,{7:'....m.......',5:XX},900) ]),
+      A('Sports','Swimming',[ F(BASE,{7:'mmmmmmmmmmmm',8:'mmmmmmmmmmmm',6:'..wmmmmmmw..'},300), F(BASE,{7:'mmmmmmmmmmmm',8:'mmmmmmmmmmmm',6:'.w.mmmmmm.w.'},300) ]),
+      A('Sports','Jump rope',[ F(BASE,{0:'..kkkkkkkk..',7:'....m..m....'},220), F(UP1,{8:'..kkkkkkkk..',6:'.....mm.....'},220) ]),
+      A('Sports','Golf',[ F(BASE,{5:XL,6:'..kmmmmmm...',8:'.ww.........'},500), F(BASE,{5:XL,4:'..kmmmmmm...',2:'.ww..lll....'},400) ]),
+      // ═══ WORK ═══
+      A('Work','Typing',[ F(BASE,{5:XR,6:'...mmmmmmkk.',7:'....m..m.ww.'},240), F(BASE,{5:XR,6:'...mmmmmmkk.',7:'....m..m.w..'},240) ]),
+      A('Work','Coffee',[ F(BASE,{5:'.wwmkmmkm...',6:'.wwmmmmmm...',3:'.l....o.....'},500), F(BASE,{5:'.wwmkmmkm...',6:'.wwmmmmmm...',2:'.l...lll....'},500) ]),
+      A('Work','Phone call',[ F(BASE,{5:'..kmkmmkm...',4:'..kmmmmmm...'},600), F(BASE,{5:'..kmkmmkm...',4:'..kmmmmmm...',6:BL},600) ]),
+      A('Work','Presenting',[ F(BASE,{4:'ww.mmmmmm...',5:'wl.mkmmkm...'.replace('mkmmkm','kmmkmm'),6:'wl.mmmmmm...'},500), F(BASE,{4:'ww.mmmmmm...',5:'wl.kmmkmm...',6:'ww.mmmmmm...'},500) ]),
+      A('Work','Stamping',[ F(BASE,{8:'.ww.........',4:'.k.mmmmmm...'},400), F(BASE,{8:'.ww.........',6:'.k.mmmmmm...',7:'.k..m..m....'},250) ]),
+      A('Work','Filing',[ F(BASE,{8:'.........sss',7:'....m..m.sss'.slice(0,12),2:'ww...lll....'},400), F(BASE,{8:'.........sss',7:'....m..m.sss'.slice(0,12),5:XR,4:'...mmmmmm.ww'},400) ]),
+      A('Work','Reading',[ F(BASE,{6:'...mwwwwm...',7:'....wwww....',5:XX},700), F(BASE,{6:'...mwwwwm...',7:'....wwww....',5:XC},500) ]),
+      A('Work','Meeting nod',[ F(BASE,{5:XX},700), F(DOWN,{6:XX},500) ]),
+      A('Work','Idea!',[ F(BASE,{5:XC},600), F(BASE,{0:'.........l..',1:'......l..ll.',5:XC,6:BL},700) ]),
+      A('Work','Deadline',[ F(BASE,{4:'..wmmmmmmw..',5:XC},140), F(BASE,{4:'.w.mmmmmm.w.',5:XC,3:'.....o......'},140), F(BASE,{4:'..wmmmmmmw..',3:'.......o....'},140) ]),
+      // ═══ COOKING ═══
+      A('Cooking','Chef stir',[ F(BASE,{0:'....wwww....',1:'....wwww....',7:'....m..m.h..',8:'....ssssss..'},350), F(BASE,{0:'....wwww....',1:'....wwww....',7:'....m..m..h.',8:'....ssssss..'},350) ]),
+      A('Cooking','Pancake flip',[ F(BASE,{6:'...mmmmmmkk.',7:'....m..m..k.',5:'...mkmmkmhh.'},400), F(BASE,{6:'...mmmmmmkk.',7:'....m..m..k.',1:'......l..hh.'},400) ]),
+      A('Cooking','Nom nom',[ F(BASE,{5:'...mkmmkmhh.',6:BL},300), F(BASE,{5:'...mkmmkmh..',6:'...mommom.h.'},300), F(BASE,{5:XX,6:BL},400) ]),
+      A('Cooking','Birthday cake',[ F(BASE,{8:'....wwww....',9:'....mmmm....',7:'..c.m..m....'},400), F(BASE,{8:'....wwww....',9:'....mmmm....',7:'..l.m..m....'},400) ]),
+      A('Cooking','Pizza spin',[ F(BASE,{0:'....hhh.....',1:'...hhchh....'},300), F(BASE,{0:'.....hhh....',1:'....hhch....'},300) ]),
+      A('Cooking','Tea time',[ F(BASE,{5:'.ww.kmmkm...'.replace('kmmkm','mkmmk'),6:'.wwmmmmmm...',5:'.wwmXmmkm...'.replace('XmmkX','kmmk')},1), F(BASE,{5:'.wwmkmmkm...',6:'.wwmmmmmm...',3:'.l....o.....'},700), F(BASE,{5:'.wwmmmmmm...',6:'.wwmommom...',2:'..l..lll....'},700) ].slice(1)),
+      A('Cooking','Chopping',[ F(BASE,{6:'...mmmmmmk..',8:'..ll.ll.....'},250), F(BASE,{7:'....m..m.k..',8:'..l.l.l.l...'},250) ]),
+      A('Cooking','Grilling',[ F(BASE,{8:'...kkkkkk...',9:'..c.c..c.c..',7:'..h.m..m....'},300), F(BASE,{8:'...kkkkkk...',9:'...c.cc.c...',7:'..h.m..m....'},300) ]),
+      A('Cooking','Ice cream',[ F(BASE,{5:'...mkmmkmww.',6:'...mmmmmm.h.',7:'....m..m..h.'},500), F(BASE,{5:'...mkmmkmw..',6:'...mmmmmm.h.',7:'....m..m..h.',8:'..........w.'},500) ]),
+      A('Cooking','Water me',[ F(BASE,{0:'........ss..',1:'......l.sss.',2:'.....lll.s..'},500), F(BASE,{0:'........ss..',1:'....w.l.sss.',2:'.....lllws..',6:BL},500), F(BASE,{0:'....lml.ss..',1:'.....l..sss.',6:BL},700) ]),
+      // ═══ MUSIC ═══
+      A('Music','Guitar',[ F(BASE,{6:'...mhhhhm...',7:'....hkkh....'},300), F(BASE,{6:'...mhhhhm...',7:'....hkkh....',4:'...mmmmmm.l.'},300) ]),
+      A('Music','Drums',[ F(BASE,{8:'..ss....ss..',7:'..k.m..m....'},200), F(BASE,{8:'..ss....ss..',7:'....m..m.k..'},200) ]),
+      A('Music','DJ Klay',[ F(BASE,{4:'..kmmmmmmk..',8:'..kkkkkkkk..',9:'..k..ss..k..',0:'..l.........'},280), F(BASE,{4:'..kmmmmmmk..',8:'..kkkkkkkk..',9:'..k..ss..k..',0:'.........l..'},280) ]),
+      A('Music','Singing',[ F(BASE,{6:'...mmkkmm...',0:'..l.........'},350), F(BASE,{6:'...mmkkmm...',0:'.l........l.',1:'......l...l.'},350) ]),
+      A('Music','Painting',[ F(BASE,{4:'ws.mmmmmm...',5:'ws.mkmmkm.h.',6:'ws.mmmmmm...'},450), F(BASE,{4:'ws.mmmmmm...',5:'wl.kmmkmm.h.'.replace('kmmkmm',XL.slice(3,9)),6:'wm.mmmmmm...'},450) ]),
+      A('Music','Dance',[ F(BASE,{7:'...m....m...'},240), F(DOWN,{8:'.....mm.....'},240), F(BASE,{7:'..m......m..'},240), F(DOWN,{8:'.....mm.....'},240) ]),
+      A('Music','Ballet',[ F(BASE,{7:'.....mm.....',5:XX},400), F(UP1,{6:'.....mm.....',4:XX,0:'l.....l....l'},400) ]),
+      A('Music','Trumpet',[ F(BASE,{5:'...mkmmkmhh.',6:'...mmmmmm.h.'},400), F(BASE,{5:'...mkmmkmhh.',6:'...mmmmmm.h.',3:'......o...l.',2:'.....lll..l.'},400) ]),
+      A('Music','Conductor',[ F(BASE,{4:'...mmmmmmk..',0:'.l.......l..'},350), F(BASE,{4:'...mmmmmm..k',0:'...l....l...'},350) ]),
+      A('Music','Headbang',[ F(BASE,{2:'....lll.....',1:'.....l......',8:'.kss........'},220), F(BASE,{2:'......lll...',1:'.......l....',8:'.kss........'},220) ]),
+      // ═══ EMOTIONS ═══
+      A('Emotions','Laugh',[ F(BASE,{5:XX,6:'...mmkkmm...'},180), F(DOWN,{6:XX,7:'...mmkkmm...'},180) ]),
+      A('Emotions','Cry',[ F(BASE,{5:XC,6:'...mwmmwm...'},400), F(BASE,{5:XC,6:'...mmmmmm...',7:'...wm..mw...'},400) ]),
+      A('Emotions','Angry',[ F(BASE,{4:'...mkmmkm...',5:'...mkmmkm...',0:'..c......c..'},250), F(BASE,{4:'...mkmmkm...',5:'...mkmmkm...',0:'.c........c.'},250) ]),
+      A('Emotions','Shocked',[ F(BASE,{5:'...mwmmwm...',0:'.........l..',1:'......l..l..'},200), F(UP1,{4:'...mwmmwm...'},300) ]),
+      A('Emotions','In love',[ F(BASE,{5:XC,6:BL,0:'..m......m..',1:'..mm..l.mm..'},400), F(BASE,{5:XC,6:BL,0:'.m........m.',1:'.mm...l..mm.'},400) ]),
+      A('Emotions','Confused',[ F(BASE,{5:XL,0:'.........ll.',1:'......l...l.'},500), F(BASE,{5:XR,0:'.........l..',1:'......l.....'},500) ]),
+      A('Emotions','Proud',[ F(UP1,{4:XX,5:'...mommom...'.replace('mommom','mmmmmm'),0:'l.....l....l'},600), F(UP1,{4:XC,0:'.l....l...l.'},600) ]),
+      A('Emotions','Shy',[ F(BASE,{5:XX,6:BL},700), F(BASE,{5:'...mmkmmk...'.replace('mmkmmk',XL.slice(3,9)),6:BL,3:'.....o......'},700) ]),
+      A('Emotions','Mind blown',[ F(BASE,{},500), F(BASE,{0:'...l.l.l....',1:'..l..l..l...',2:E,3:E,5:'...mwmmwm...'},400), F(BASE,{1:E,2:E,3:'......o.....',5:XC},400), F(BASE,{},600) ]),
+      A('Emotions','Giggle',[ F(BASE,{5:XX,6:BL},140), F(DOWN,{6:XX,7:BL},140), F(BASE,{5:XX,6:BL},140), F(BASE,{5:XC,6:BL},600) ]),
+      // ═══ ADVENTURE ═══
+      A('Adventure','Helicopter',[ F(UP1,{0:'...kkkkkk...',6:'.....mm.....',8:'..w......w..'},180), F(UP1,{0:'.....kk.....',6:'.....mm.....',8:'...w....w...'},180) ]),
+      A('Adventure','Rocket',[ F(BASE,{8:'....cc.cc...',9:'....w..w....'},200), F(UP1,{7:'....cc.cc...',8:'...w.ww.w...'},200) ]),
+      A('Adventure','Parachute',[ F(UP1,{0:'...mmmmmm...',1:'..m.llll.m..'.replace('llll','....'),2:'..k......k..',6:'.....mm.....'},400), F(UP1,{0:'....mmmmmm..',1:'...m......m.',2:'...k.....k..',6:'.....mm.....'},400) ]),
+      A('Adventure','Hiking',[ F(BASE,{4:'.ssmmmmmm.h.',5:'.ssmkmmkm.h.',7:'...m...m..h.'},300), F(DOWN,{5:'.ssmmmmmm.h.',6:'.ssmkmmkm.h.',8:'..m...m...h.'},300) ]),
+      A('Adventure','Sailing',[ F(BASE,{0:'........w...',1:'......l.ww..',2:'.....lllwww.',8:'..hhhhhhhh..',9:'mm.mm.mm.mm.'},400), F(BASE,{0:'........w...',1:'......l.ww..',2:'.....lllwww.',8:'..hhhhhhhh..',9:'.mm.mm.mm.mm'},400) ]),
+      A('Adventure','Driving',[ F(BASE,{7:'..ssssssss..',8:'...k....k...',9:'w...........'},220), F(BASE,{7:'..ssssssss..',8:'...k....k...',9:'.....w.....w'},220) ]),
+      A('Adventure','Balloon ride',[ F(BASE,{0:'....llll....',1:'....llll....',2:'.....kk.....',3:'......o.....'},500), F(UP1,{0:'....llll....',1:'.....kk.....',8:'..w......w..'},500) ]),
+      A('Adventure','Teleport',[ F(BASE,{},400), F(BASE,{4:'...m.m.m.m..',5:'...k.m.k.m..',6:'...m.m.m.m..',7:'....m..m....'},200), F(BASE,{1:E,2:E,3:E,4:E,5:E,6:E,7:E,0:'....l..l....'},250), F(BASE,{},500) ]),
+      A('Adventure','Map check',[ F(BASE,{6:'...wwwwww...',7:'...wwwwww...',5:XL},500), F(BASE,{6:'...wwwwww...',7:'...wwwwww...',5:XR},500) ]),
+      A('Adventure','Campfire',[ F(BASE,{5:'...mkmmkm...',8:'.c..........',9:'.kk.........',7:'.c..m..m....'},300), F(BASE,{8:'.h..........',9:'.kk.........',7:'.c..m..m....',5:XX,6:BL},300) ]),
+      // ═══ WEATHER ═══
+      A('Weather','Umbrella',[ F(BASE,{0:'...mmmmmm...',1:'......k.....',2:'.....lll....'.replace('lll','.k.'),3:'......k.....',1:'..w...k...w.'},1), F(BASE,{0:'...mmmmmm...',1:'..w...k...w.',2:'......k.....',3:'......k.....'},400), F(BASE,{0:'...mmmmmm...',1:'......k.....',2:'.w....k...w.',3:'......k.....'},400) ].slice(1)),
+      A('Weather','Snow scarf',[ F(BASE,{4:'...cccccc...',5:'...mkmmkm..c',0:'.w....w...w.'},400), F(BASE,{4:'...cccccc...',5:'...mkmmkm..c',0:'...w....w...',1:'w.....l....w'},400) ]),
+      A('Weather','Sunbathing',[ F(BASE,{5:'...kkmmkk...',0:'hh..........',1:'hh....l.....'},600), F(BASE,{5:'...kkmmkk...',0:'hh..........',1:'hh....l.....',6:BL},600) ]),
+      A('Weather','Windy',[ F(BASE,{1:'.......l....',2:'......lll...',0:'l...........'},300), F(BASE,{1:'........l...',2:'.......lll..'.slice(0,12),0:'....l.......'},300) ]),
+      A('Weather','Lightning',[ F(BASE,{0:'..l.........',1:'...l..l.....'},150), F(UP1,{4:'...mwmmwm...'},250), F(BASE,{},600) ]),
+      A('Weather','Rainbow',[ F(BASE,{0:'..l.........'},300), F(BASE,{0:'..lh........',1:'..hl..l.....'.replace('ll','hl').slice(0,12)},300), F(BASE,{0:'..lhc.......',1:'..chl.l.....'.slice(0,12),2:'..mch.lll...'.slice(0,12)},600) ]),
+      A('Weather','Autumn',[ F(BASE,{0:'..h......c..'},400), F(BASE,{1:'..c...l..h..',0:E},400), F(BASE,{8:'..h......c..'},500) ]),
+      A('Weather','Photosynth',[ F(BASE,{0:'hh..........',1:'hh....l.....'},600), F(BASE,{0:'hh..lml.....',1:'hh...l......',2:'....lll.....',6:BL},800) ]),
+      A('Weather','Stargazing',[ F(BASE,{0:'..l....l..l.',5:XX},500), F(BASE,{0:'.l...l....l.',5:XX,6:BL},500) ]),
+      A('Weather','Blossom',[ F(BASE,{0:'..m....m....',1:'....m.l.....'},400), F(BASE,{0:'.....m....m.',1:'..m...l.....',2:'.....lllm...'.slice(0,12)},400) ]),
+      // ═══ DAILY ═══
+      A('Daily','Tucked in',[ F(BASE,{6:'..wwwwwwww..',7:'..wwwwwwww..',5:XX,1:'.....l...l..'},700), F(BASE,{6:'..wwwwwwww..',7:'..wwwwwwww..',5:XX,0:'.........l..',1:'.....l......'},700) ]),
+      A('Daily','Brush leaves',[ F(BASE,{1:'....h.l.....',2:'....hlll....'},300), F(BASE,{1:'......l.h...',2:'.....lllh...'},300) ]),
+      A('Daily','Rain shower',[ F(BASE,{0:'....mmmm....',1:'...w..l..w..',2:'....wlllw...'.slice(0,12),6:BL},350), F(BASE,{0:'....mmmm....',1:'....w.l.w...',2:'...w.lll.w..',6:BL},350) ]),
+      A('Daily','Bedtime story',[ F(BASE,{6:'...mwwwwm...',7:'....wwww....',0:'..h.........',5:XX},700), F(BASE,{6:'...mwwwwm...',7:'....wwww....',0:'..h.........',5:XC},700) ]),
+      A('Daily','Gaming',[ F(BASE,{6:'...mkkkkm...',7:'....k..k....',5:XL},200), F(BASE,{6:'...mkkkkm...',7:'....k..k....',5:XR},200), F(BASE,{6:'...mkkkkm...',5:XC,0:'.........l..'},300) ]),
+      A('Daily','Selfie',[ F(BASE,{4:'...mmmmmm.kk',5:'...mkmmkm.kk',6:BL},600), F(BASE,{4:'...mmmmmm.ww',5:'...mkmmkm.ww',6:BL,3:'......o..w..'},250) ]),
+      A('Daily','Groceries',[ F(BASE,{7:'...m...m....',4:'...mmmmmm.s.',5:'...mkmmkmsss',6:'...mmmmmmshs'},300), F(DOWN,{8:'..m...m.....',5:'...mmmmmm.s.',6:'...mkmmkmsss',7:'...mmmmmmshs'},300) ]),
+      A('Daily','Laundry',[ F(BASE,{8:'.sssss......',7:'.swws..m....'.slice(0,12)},400), F(BASE,{8:'.sssss......',7:'.s..s...m...'.slice(0,12),0:'..w.........',1:'..w...l.....'},400) ]),
+      A('Daily','Vacuuming',[ F(BASE,{7:'....m..m.k..',8:'.wkkkkkkkk..'},250), F(BASE,{7:'....m..m.k..',8:'..kkkkkkkk..',9:'.w..........'},250) ]),
+      A('Daily','Mirror',[ F(BASE,{4:'ss.mmmmmm...',5:'ss.mkmmkm...',6:'ss.mmmmmm...'},500), F(BASE,{4:'ss.mmmmmm...',5:'ss.kmmkmm...'.replace('kmmkmm',XL.slice(3,9)),6:'ss.mommom...'},500) ]),
+      // ═══ KANBAN ═══
+      A('Kanban','Drag card',[ F(BASE,{8:'..ww........',7:'...m...m....'},300), F(DOWN,{9:'.....ww.....',8:'..m...m.....'},300), F(BASE,{8:'........ww..',7:'....m..m....'},400) ]),
+      A('Kanban','Stack columns',[ F(BASE,{8:'.........s..',5:XR},400), F(BASE,{7:'....m..m.s..',8:'.........s..',5:XR},400), F(BASE,{6:'...mmmmmms..',7:'....m..m.s..',8:'.........s..',5:XR,0:'..........l.'},600) ]),
+      A('Kanban','Check!',[ F(BASE,{5:XC},400), F(UP1,{0:'..........l.',1:'.....l...l..'.replace('.l..','ll..'),4:XX,5:BL.replace('...m','...m')},1), F(UP1,{0:'..........l.',1:'.....l...ll.',4:XX},500), F(BASE,{6:BL},600) ].filter((f,i)=>i!==1)),
+      A('Kanban','Inbox zero',[ F(BASE,{2:'..m..lll.w..',0:'.l........l.'},300), F(UP1,{1:'..w..lll.m..'.replace('lll','lll'),0:'l....l.....l',6:'.....mm.....'},300), F(BASE,{0:'..l...m..w..'},300) ]),
+      A('Kanban','Bug squash',[ F(BASE,{8:'.k..........',5:XL},400), F(BASE,{8:'..k.........',7:'....m..m....',5:XL},300), F(BASE,{7:'...mm..m....',8:'...w........',5:XC},400) ]),
+      A('Kanban','Ship it',[ F(BASE,{8:'.ww.........',9:'.cc.........'},300), F(BASE,{4:'.wwmmmmmm...',5:'.ccmkmmkm...'},250), F(BASE,{0:'.ww.........',1:'.cc...l.....'},250), F(BASE,{0:'ww..........'},300) ]),
+      A('Kanban','Sorting',[ F(BASE,{8:'.ww......ll.',5:XL},400), F(BASE,{8:'.ll......ww.',5:XR},400) ]),
+      A('Kanban','Sticky notes',[ F(BASE,{0:'..l..w..m...'},350), F(BASE,{0:'..m..l..w...'},350), F(BASE,{0:'..w..m..l...'},350) ]),
+      A('Kanban','Archive',[ F(BASE,{8:'........ssss',2:'.....lll.ww.'},400), F(BASE,{8:'........ssss',5:'...mkmmkm.ww'},400), F(BASE,{8:'........ssss',7:'....m..m.kkk'.slice(0,12)},500) ]),
+      A('Kanban','Merge',[ F(BASE,{8:'.ww......ww.'},400), F(BASE,{8:'...ww..ww...'},300), F(BASE,{8:'....wwww....',0:'.....l..l...'},500) ]),
+      // ═══ SILLY ═══
+      A('Silly','Juggling',[ F(BASE,{0:'...l..c..m..'},250), F(BASE,{0:'...m..l..c..'},250), F(BASE,{0:'...c..m..l..'},250) ]),
+      A('Silly','Magic bunny',[ F(BASE,{8:'.kkk........',9:'.kkk........',5:XL},500), F(BASE,{7:'.ww.m..m....',8:'.kkk........',9:'.kkk........',5:XL,0:'l...........'},500) ]),
+      A('Silly','Disguise',[ F(BASE,{},600), F(BASE,{6:'...mkkkkm...',5:'...mkmmkm...'},900) ]),
+      A('Silly','Robot dance',[ F(BASE,{7:'...m....m...'},250), F(UP1,{6:'...m....m...',4:'...kmmkmm...'.replace('kmmkmm',XL.slice(3,9))},250), F(BASE,{7:'....m..m....',5:XR},250), F(DOWN,{8:'...m....m...'},250) ]),
+      A('Silly','Spin',[ F(BASE,{5:XL},200), F(BASE,{5:XC,1:'.....l......'},200), F(BASE,{5:XR,1:'.......l....'},200), F(BASE,{5:XX},200) ]),
+      A('Silly','Moonwalk',[ F(BASE,{7:'..m...m.....',8:'.........ww.'},250), F(BASE,{7:'...m...m....',8:'.......ww...'},250), F(BASE,{7:'....m...m...',8:'.....ww.....'},250) ]),
+      A('Silly','Superhero',[ F(BASE,{4:'.ccmmmmmm...',5:'.ccmkmmkm...',6:'.c.mmmmmm...',8:'..w......w..'},300), F(UP1,{3:'.ccmmmmmm...',4:'.ccmkmmkm...',5:'.c.mmmmmm...',7:'.w........w.'},300) ]),
+      A('Silly','Wizard',[ F(BASE,{0:'......m.....',1:'.....mmm..l.',2:'....mmmmm...'.slice(0,12),3:'......o.....'},400), F(BASE,{0:'......m.....',1:'.....mmm....',2:'....mmmmm...'.slice(0,12),3:'......o...l.',4:'...mmmmmm..l'},400) ]),
+      A('Silly','Ghost Klay',[ F(BASE,{1:E,2:E,3:E,4:'...wwwwww...',5:'...wkwwkw...',6:'...wwwwww...',7:'...w.ww.w...'},450), F(UP1,{0:E,1:E,2:E,3:'...wwwwww...',4:'...wkwwkw...',5:'...wwwwww...',6:'...w.ww.w...',7:E},450) ]),
+      A('Silly','Party',[ F(BASE,{0:'......l.....',1:'.....ll..m..',2:'....llll....'.replace('llll','lll.'),0:'..w...l..m..'},1), F(BASE,{0:'..w...l..m..',1:'.....lll....'.replace('lll','ll.'),6:BL},350), F(BASE,{0:'.m....l...w.',1:'....llll....'.slice(0,12),6:BL},350) ].slice(1)),
+      ];
+
+      function render(map, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 12 * scale);
+        svg.setAttribute('height', 11 * scale);
+        map.forEach((row, y) => {
+          [...row].slice(0, 12).forEach((ch, x) => {
+            const color = P[ch];
+            if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale); r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale); r.setAttribute('height', scale);
+            r.setAttribute('fill', color);
+            svg.appendChild(r);
+          });
+        });
+        return svg;
+      }
+      function play(mount, anim, scale) {
+        let idx = 0, timer;
+        function tick() {
+          mount.textContent = '';
+          mount.appendChild(render(anim.frames[idx].map, scale));
+          timer = setTimeout(() => { idx = (idx + 1) % anim.frames.length; tick(); }, anim.frames[idx].ms);
+        }
+        tick();
+        return () => clearTimeout(timer);
+      }
+      function waveify(el, word) {
+        el.textContent = ''; let i = 0;
+        for (const ch of word) { const s = document.createElement('span'); s.textContent = ch; s.style.setProperty('--i', i++); el.appendChild(s); }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const heroMount = document.getElementById('hero-anim');
+      const heroName = document.getElementById('hero-name');
+      let stopHero = null, activeCard = null;
+      function setHero(anim) {
+        if (stopHero) stopHero();
+        stopHero = play(heroMount, anim, 15);
+        heroName.textContent = anim.cat + ' · ' + anim.name;
+      }
+
+      const sections = document.getElementById('sections');
+      const cats = [...new Set(ANIMS.map(a => a.cat))];
+      cats.forEach((cat) => {
+        const h = document.createElement('h2'); h.textContent = cat; sections.appendChild(h);
+        const grid = document.createElement('div'); grid.className = 'grid'; sections.appendChild(grid);
+        ANIMS.filter(a => a.cat === cat).forEach((anim) => {
+          const card = document.createElement('div'); card.className = 'card';
+          const stage = document.createElement('div'); stage.className = 'stage';
+          const holder = document.createElement('div');
+          play(holder, anim, 9);
+          stage.appendChild(holder); card.appendChild(stage);
+          const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = anim.name; card.appendChild(nm);
+          card.addEventListener('click', () => {
+            if (activeCard) activeCard.classList.remove('active');
+            card.classList.add('active'); activeCard = card;
+            setHero(anim);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          grid.appendChild(card);
+        });
+      });
+      setHero(ANIMS[0]);
+    </script>
+  </body>
+</html>
