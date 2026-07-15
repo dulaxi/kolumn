@@ -1,33 +1,34 @@
 import { useEffect, useRef } from 'react'
-import { WifiSlash } from '@phosphor-icons/react'
 import { showToast } from '../../utils/toast'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { useBoardStore } from '../../store/boardStore'
 import { useNoteStore } from '../../store/noteStore'
 
+/**
+ * Headless offline watcher. Offline state renders as a persistent
+ * showToast.offline (top-center, where every toast lands) instead of a
+ * layout-shifting banner; reconnecting swaps it for the lime success
+ * toast and refetches. Decision: error-style-decisions-2.html (O2).
+ */
 export default function OfflineBanner() {
   const online = useOnlineStatus()
-  const wasOffline = useRef(false)
+  const toastId = useRef(null)
   const fetchBoards = useBoardStore((s) => s.fetchBoards)
   const fetchNotes = useNoteStore((s) => s.fetchNotes)
 
   useEffect(() => {
     if (!online) {
-      wasOffline.current = true
-    } else if (wasOffline.current) {
-      wasOffline.current = false
+      if (!toastId.current) {
+        toastId.current = showToast.offline("You're offline — changes may not be saved")
+      }
+    } else if (toastId.current) {
+      showToast.dismiss(toastId.current)
+      toastId.current = null
       showToast.success('Back online — syncing data')
       fetchBoards()
       fetchNotes()
     }
   }, [online, fetchBoards, fetchNotes])
 
-  if (online) return null
-
-  return (
-    <div className="bg-[var(--color-honey)] text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium">
-      <WifiSlash className="w-4 h-4 shrink-0" />
-      You're offline — changes may not be saved
-    </div>
-  )
+  return null
 }

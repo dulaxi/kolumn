@@ -63,6 +63,27 @@ function make(iconName, bg, color, duration) {
     })
 }
 
+// Offline is a *state*, not an event: a warn-styled toast that stays
+// until connectivity returns (duration: Infinity, no dismiss button —
+// the user can't dismiss being offline). The pulse dot encodes
+// "ongoing". Dismissed programmatically via showToast.dismiss(id).
+function offlineToast(message) {
+  return toast(
+    () =>
+      createElement(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%' } },
+        createElement('span', { className: 'toast-pulse-dot' }),
+        phIcon('wifi-slash', '#1B1B18'),
+        createElement('span', { style: { flex: 1, textAlign: 'left' } }, message),
+      ),
+    {
+      duration: Infinity,
+      style: { ...BASE, background: '#D4A843', color: '#1B1B18' },
+    },
+  )
+}
+
 export const showToast = {
   success: make('check-circle', '#C2D64A', '#1B1B18', 3000),
   error:   make('warning-circle', '#C27A4A', '#FAF8F6', 4000),
@@ -72,4 +93,6 @@ export const showToast = {
   info:    make('info',            '#FAF8F6', '#5C5C57', 3000),
   warn:    make('warning',         '#D4A843', '#1B1B18', 4000),
   overdue: make('alarm',           '#C27A4A', '#FAF8F6', 5000),
+  offline: offlineToast,
+  dismiss: (id) => toast.dismiss(id),
 }
