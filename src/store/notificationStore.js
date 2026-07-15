@@ -2,6 +2,18 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
 
+// Debounce guard for realtime reconnect — prevents concurrent reconnect races
+let reconnectTimer = null
+let lastUserId = null
+let activeChannel = null
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    if (lastUserId) useNotificationStore.getState().subscribeToNotifications(lastUserId)
+  }, 3000)
+}
+
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -92,6 +104,15 @@ export const useNotificationStore = create((set, get) => ({
   subscribeToNotifications: (userId) => {
     if (!userId) return () => {}
 
+    lastUserId = userId
+
+    // Remove any previous channel first — a reconnect must not stack
+    // channels on top of a still-live one.
+    if (activeChannel) {
+      supabase.removeChannel(activeChannel)
+      activeChannel = null
+    }
+
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -105,8 +126,25 @@ export const useNotificationStore = create((set, get) => ({
           }))
         }
       )
-      .subscribe()
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logError('Realtime notifications subscription error:', err)
+          scheduleReconnect()
+        }
+      })
 
-    return () => supabase.removeChannel(channel)
+    activeChannel = channel
+
+    return () => {
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+      lastUserId = null
+      // Act on the module-scoped activeChannel, not the closed-over `channel`
+      // local — a reconnect may have already swapped in a newer channel by
+      // the time this teardown runs, and we must remove whichever is live.
+      if (activeChannel) {
+        supabase.removeChannel(activeChannel)
+        activeChannel = null
+      }
+    }
   },
 }))

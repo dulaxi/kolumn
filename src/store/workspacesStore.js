@@ -6,6 +6,19 @@ import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
 import { fetchProfilesByIds } from '../utils/supabaseHelpers'
 
+// Debounce guard for realtime reconnect — prevents concurrent reconnect races
+let reconnectTimer = null
+let lastEmail = null
+let lastUserId = null
+let activeChannel = null
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    if (lastEmail) useWorkspacesStore.getState().subscribeToInvitations(lastEmail, lastUserId)
+  }, 3000)
+}
+
 /**
  * workspacesStore — the Workspaces feature (team/org containers).
  *
@@ -188,6 +201,16 @@ export const useWorkspacesStore = create(
         if (!email) return () => {}
         const lower = email.toLowerCase()
 
+        lastEmail = email
+        lastUserId = userId
+
+        // Remove any previous channel first — a reconnect must not stack
+        // channels on top of a still-live one.
+        if (activeChannel) {
+          supabase.removeChannel(activeChannel)
+          activeChannel = null
+        }
+
         const channel = supabase
           .channel(`workspace-invites:${lower}`)
           .on(
@@ -204,8 +227,28 @@ export const useWorkspacesStore = create(
           )
         }
 
-        channel.subscribe()
-        return () => supabase.removeChannel(channel)
+        channel.subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logError('Realtime workspaces subscription error:', err)
+            scheduleReconnect()
+          }
+        })
+
+        activeChannel = channel
+
+        return () => {
+          if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+          lastEmail = null
+          lastUserId = null
+          // Act on the module-scoped activeChannel, not the closed-over
+          // `channel` local — a reconnect may have already swapped in a
+          // newer channel by the time this teardown runs, and we must
+          // remove whichever is live.
+          if (activeChannel) {
+            supabase.removeChannel(activeChannel)
+            activeChannel = null
+          }
+        }
       },
 
       // ====== Actions ======
