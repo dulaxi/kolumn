@@ -14,6 +14,18 @@
 
 import * as Sentry from '@sentry/react'
 
+// Supabase's PostgrestError is a plain object, not an Error instance —
+// String(err) yields "[object Object]" and the DB message is lost.
+const isErrorLike = (a) =>
+  a && typeof a === 'object' && !(a instanceof Error) && typeof a.message === 'string'
+
+export const formatLogArgs = (args) =>
+  args
+    .map((a) =>
+      isErrorLike(a) ? `${a.message}${a.code ? ` (${a.code})` : ''}` : String(a),
+    )
+    .join(' ')
+
 const findError = (args) => args.find((a) => a instanceof Error)
 
 export const logError = import.meta.env.DEV
@@ -23,12 +35,12 @@ export const logError = import.meta.env.DEV
       if (err) {
         Sentry.captureException(err, { extra: { args } })
       } else {
-        Sentry.captureMessage(args.map(String).join(' '), { level: 'error' })
+        Sentry.captureMessage(formatLogArgs(args), { level: 'error', extra: { args } })
       }
     }
 
 export const logWarn = import.meta.env.DEV
   ? (...args) => console.warn(...args)
   : (...args) => {
-      Sentry.captureMessage(args.map(String).join(' '), { level: 'warning' })
+      Sentry.captureMessage(formatLogArgs(args), { level: 'warning' })
     }
