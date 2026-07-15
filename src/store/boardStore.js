@@ -231,7 +231,11 @@ export const useBoardStore = create((set, get) => ({
       .from('boards')
       .insert(validated.data)
 
-    if (error) return null
+    if (error) {
+      logError('Failed to create board:', error)
+      showToast.error('Failed to create board')
+      return null
+    }
 
     // Step 2: Fetch board back + insert columns in parallel
     // (board fetch needed because RLS SELECT depends on board_members trigger)
@@ -249,7 +253,11 @@ export const useBoardStore = create((set, get) => ({
 
     const board = boardRes.data
     const cols = colsRes.data
-    if (!board) return null
+    if (!board) {
+      logError('Board created but could not be loaded back:', boardRes.error, colsRes.error)
+      showToast.error('Failed to create board')
+      return null
+    }
 
     localStorage.setItem(ACTIVE_BOARD_KEY, board.id)
     set((state) => {
@@ -315,7 +323,18 @@ export const useBoardStore = create((set, get) => ({
     const shouldDelete = await undoableDelete('Board deleted — undo?')
 
     if (shouldDelete) {
-      await supabase.from('boards').delete().eq('id', boardId)
+      const { error } = await supabase.from('boards').delete().eq('id', boardId)
+      if (error) {
+        logError('Failed to delete board:', error)
+        set((s) => {
+          const columns = { ...s.columns }
+          const cards = { ...s.cards }
+          prevColumns.forEach((c) => { columns[c.id] = c })
+          prevCards.forEach((c) => { cards[c.id] = c })
+          return { boards: { ...s.boards, [boardId]: prevBoard }, columns, cards }
+        })
+        showToast.error('Failed to delete board — it was restored')
+      }
     } else {
       set((s) => {
         const columns = { ...s.columns }
@@ -443,7 +462,16 @@ export const useBoardStore = create((set, get) => ({
     const shouldDelete = await undoableDelete('Section deleted — undo?')
 
     if (shouldDelete) {
-      await supabase.from('columns').delete().eq('id', columnId)
+      const { error } = await supabase.from('columns').delete().eq('id', columnId)
+      if (error) {
+        logError('Failed to delete section:', error)
+        set((s) => {
+          const cards = { ...s.cards }
+          prevCards.forEach((c) => { cards[c.id] = c })
+          return { columns: { ...s.columns, [columnId]: prevColumn }, cards }
+        })
+        showToast.error('Failed to delete section — it was restored')
+      }
     } else {
       set((s) => {
         const cards = { ...s.cards }
@@ -897,15 +925,20 @@ export const useBoardStore = create((set, get) => ({
       .filter(Boolean)
 
     // Parallel writes to minimize race window
-    await Promise.all(writes.map(({ id, ...rest }) =>
+    const results = await Promise.all(writes.map(({ id, ...rest }) =>
       supabase.from('cards').update(rest).eq('id', id)
-        .then(({ error }) => { if (error) logError('Failed to persist card position:', error) })
+        .then(({ error }) => {
+          if (error) logError('Failed to persist card position:', error)
+          return !error
+        })
     ))
+    const anyFailed = results.some((ok) => !ok)
+    if (anyFailed) showToast.error('Some card moves failed to save — resyncing')
 
     // Refetch cards after cross-column moves to recover any realtime updates
     // that were silently dropped while _isDragging was true
     const boardId = state.activeBoardId
-    if (movedCrossColumn && boardId && boardId !== '__all__') {
+    if ((movedCrossColumn || anyFailed) && boardId && boardId !== '__all__') {
       const { data } = await supabase.from('cards').select('*').eq('board_id', boardId)
       if (data) {
         set((s) => {
@@ -1135,6 +1168,10 @@ export const useBoardStore = create((set, get) => ({
 
     if (error) {
       logError('Failed to save attachment metadata:', error)
+      // The storage object is already uploaded — remove it so a metadata
+      // failure doesn't orphan a file the UI will never reference.
+      supabase.storage.from('attachments').remove([storagePath]).catch(() => {})
+      showToast.error('Failed to attach file')
       return null
     }
 
