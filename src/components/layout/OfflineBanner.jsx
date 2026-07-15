@@ -30,5 +30,18 @@ export default function OfflineBanner() {
     }
   }, [online, fetchBoards, fetchNotes])
 
+  // Unmount-only cleanup, deliberately separate from the effect above: this
+  // component unmounts on routes outside AppLayout (e.g. /upgrade/pro), which
+  // would otherwise orphan the duration-Infinity offline toast and stack a
+  // second one on remount. Folding this into the effect above would also fire
+  // on the offline→online dependency change and suppress the "Back online"
+  // branch.
+  useEffect(() => () => {
+    if (toastId.current) {
+      showToast.dismiss(toastId.current)
+      toastId.current = null
+    }
+  }, [])
+
   return null
 }

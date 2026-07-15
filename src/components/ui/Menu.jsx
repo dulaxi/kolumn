@@ -39,7 +39,7 @@ function MenuItem({
         'select-none transition-colors text-left cursor-pointer',
         'focus:outline-none focus-visible:bg-[var(--color-cream)]',
         destructive
-          ? 'text-[var(--color-copper)] hover:bg-[var(--color-copper-wash)]'
+          ? 'text-[var(--label-red-text)] hover:bg-[var(--label-red-bg)]'
           : 'text-[var(--text-primary)] hover:bg-[var(--color-cream)]',
         'disabled:opacity-50 disabled:pointer-events-none',
         className,
@@ -50,7 +50,7 @@ function MenuItem({
         <span
           className={mergeClassNames(
             'shrink-0 flex items-center justify-center',
-            destructive ? 'text-[var(--color-copper)]' : 'text-[var(--color-stone)]',
+            destructive ? 'text-[var(--label-red-text)]' : 'text-[var(--color-stone)]',
           )}
           style={{ width: 16, height: 16 }}
         >

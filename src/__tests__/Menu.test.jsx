@@ -27,14 +27,14 @@ describe('Menu', () => {
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
-  test('Menu.Item destructive applies copper styling', () => {
+  test('Menu.Item destructive applies red styling', () => {
     render(
       <MenuHarness
         panel={<Menu.Item destructive onSelect={() => {}}>Delete</Menu.Item>}
       />,
     )
     const item = screen.getByText('Delete').closest('button')
-    expect(item.className).toMatch(/text-\[var\(--color-copper\)\]/)
+    expect(item.className).toMatch(/text-\[var\(--label-red-text\)\]/)
   })
 
   test('Menu.Item selected (single-select) shows a trailing checkmark', () => {
