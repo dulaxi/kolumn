@@ -50,3 +50,36 @@ describe('InlineNotice', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('InlineNotice grammar upgrade', () => {
+  it('error variant uses copper wash + default icon + role=alert', () => {
+    const { container } = render(<InlineNotice variant="error">Nope</InlineNotice>)
+    const notice = screen.getByRole('alert')
+    expect(notice.className).toContain('bg-[var(--color-copper-wash)]')
+    expect(notice.className).toContain('text-[var(--notice-error-text)]')
+    expect(container.querySelector('svg')).toBeInTheDocument()
+  })
+
+  it('danger variant uses label-red tokens and role=alert', () => {
+    render(<InlineNotice variant="danger">Careful</InlineNotice>)
+    const notice = screen.getByRole('alert')
+    expect(notice.className).toContain('bg-[var(--label-red-bg)]')
+    expect(notice.className).toContain('border-[var(--label-red-text)]')
+  })
+
+  it('warn variant uses honey wash and role=status', () => {
+    render(<InlineNotice variant="warn">Heads up</InlineNotice>)
+    const notice = screen.getByRole('status')
+    expect(notice.className).toContain('bg-[var(--color-honey-wash)]')
+  })
+
+  it('icon={false} suppresses the default icon', () => {
+    const { container } = render(<InlineNotice variant="error" icon={false}>Nope</InlineNotice>)
+    expect(container.querySelector('svg')).not.toBeInTheDocument()
+  })
+
+  it('renders an action node after the message', () => {
+    render(<InlineNotice variant="error" action={<button>Retry</button>}>Nope</InlineNotice>)
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+  })
+})
