@@ -68,4 +68,24 @@ describe('streamChat', () => {
     expect(bodySent.mode).toBe('chat')
     expect('boardId' in bodySent).toBe(false)
   })
+
+  test('network failure on the initial POST routes to onError instead of rejecting', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+    const onError = vi.fn()
+    await expect(
+      streamChat({ message: 'hi', mode: 'chat' }, { onText: vi.fn(), onDone: vi.fn(), onError }),
+    ).resolves.toBeUndefined()
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining('Failed to fetch'), undefined)
+  })
+
+  test('JSON envelope errors surface message + code, and 429 remaining reaches onTier', async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ error: 'rate_limit', message: 'You have reached your daily limit of 20 messages.', remaining: 0 }),
+      { status: 429 },
+    ))
+    const onError = vi.fn(); const onTier = vi.fn()
+    await streamChat({ message: 'hi', mode: 'chat' }, { onText: vi.fn(), onDone: vi.fn(), onError, onTier })
+    expect(onTier).toHaveBeenCalledWith(expect.objectContaining({ remaining: 0 }))
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining('daily limit'), 'rate_limit')
+  })
 })

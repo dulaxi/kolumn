@@ -10,11 +10,11 @@ import { logError } from '../utils/logger'
 export function friendlyChatError(raw) {
   const s = String(raw)
   if (/daily limit/i.test(s)) return { message: s, isLimit: true }
-  if (/not authenticated|error 401|unauthorized/i.test(s)) {
-    return { message: "You're signed out — sign in again to keep chatting.", isLimit: false }
-  }
   if (/overloaded|529|error 5\d\d|claude api error: 5/i.test(s)) {
     return { message: 'Claude is busy right now — give it a moment and try again.', isLimit: false }
+  }
+  if (/not authenticated|error 401\b|^unauthorized/i.test(s)) {
+    return { message: "You're signed out — sign in again to keep chatting.", isLimit: false }
   }
   if (/failed to fetch|networkerror|load failed|no response stream/i.test(s)) {
     return { message: "Couldn't reach the server — check your connection and try again.", isLimit: false }
@@ -134,9 +134,11 @@ export const useChatStore = create(persist((set, get) => ({
         onTier: (info) => {
           set({ tierInfo: info })
         },
-        onError: (error) => {
-          logError('[chatStore] stream error:', error)
-          const friendly = friendlyChatError(error)
+        onError: (error, code) => {
+          logError('[chatStore] stream error:', error, code)
+          const friendly = code
+            ? { message: String(error), isLimit: code === 'rate_limit' }
+            : friendlyChatError(error)
           set((s) => ({
             streamingConversationId: null,
             messages: {

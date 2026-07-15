@@ -122,4 +122,9 @@ describe('friendlyChatError', () => {
     expect(friendlyChatError('Failed to fetch').message).toMatch(/connection/i)
     expect(friendlyChatError('No response stream').message).toMatch(/connection/i)
   })
+
+  test('friendlyChatError classifies a 5xx containing "unauthorized" as busy, not auth', () => {
+    const res = friendlyChatError('Error 502: upstream said unauthorized gateway')
+    expect(res.message).toMatch(/busy|moment/i)
+  })
 })

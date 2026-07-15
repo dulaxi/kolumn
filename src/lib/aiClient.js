@@ -16,27 +16,35 @@ export async function streamChat({ message, history = [], mode, boardId, today }
   if (boardId) body.boardId = boardId
   if (today) body.today = today
 
-  const response = await fetch(`${env.supabaseUrl}/functions/v1/chat`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-      'apikey': env.supabaseAnonKey,
-    },
-    body: JSON.stringify(body),
-  })
+  let response
+  try {
+    response = await fetch(`${env.supabaseUrl}/functions/v1/chat`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'apikey': env.supabaseAnonKey,
+      },
+      body: JSON.stringify(body),
+    })
+  } catch (err) {
+    logError('[aiClient] request failed', err)
+    onError(err.message, undefined)
+    return
+  }
 
   if (!response.ok) {
     const text = await response.text()
     logError('[aiClient] error response', { status: response.status, text })
     try {
       const err = JSON.parse(text)
-      if (err.error === 'rate_limit') {
-        onError(err.message)
+      if (err && typeof err.message === 'string') {
+        if (typeof err.remaining === 'number') onTier?.({ remaining: err.remaining })
+        onError(err.message, err.error)
         return
       }
     } catch {}
-    onError(`Error ${response.status}: ${text}`)
+    onError(`Error ${response.status}`, undefined)
     return
   }
 
@@ -82,7 +90,7 @@ export async function streamChat({ message, history = [], mode, boardId, today }
             onDone({ stopReason: event.stopReason ?? null })
             return
           } else if (event.type === 'error') {
-            onError(event.content)
+            onError(event.content, undefined)
             return
           }
         } catch (callbackErr) {
