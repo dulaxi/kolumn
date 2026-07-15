@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { ArrowLeft, Envelope, Kanban } from '@phosphor-icons/react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import InlineNotice from '../components/ui/InlineNotice'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -56,9 +57,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm space-y-4">
             {error && (
-              <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)] rounded-xl px-3 py-2">
-                {error}
-              </div>
+              <InlineNotice variant="error">{error}</InlineNotice>
             )}
 
             <div>

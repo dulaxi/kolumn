@@ -7,6 +7,7 @@ import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, Chat
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import InlineNotice from '../components/ui/InlineNotice'
 import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
 import PlanCard from '../components/PlanCard'
@@ -1370,9 +1371,7 @@ function HeroAuthCard() {
     <div className="mx-4 sm:mx-auto w-full max-w-md min-w-[20rem]">
       <div className="bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-[2rem] p-7 shadow-[0_4px_24px_0_rgba(0,0,0,0.04),0_2px_64px_0_rgba(0,0,0,0.02)] space-y-5">
         {error && (
-          <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)]/60 border border-[var(--color-copper)]/30 rounded-xl px-3 py-2.5">
-            {error}
-          </div>
+          <InlineNotice variant="error">{error}</InlineNotice>
         )}
 
         <div className="flex flex-col gap-3">

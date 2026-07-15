@@ -5,6 +5,7 @@ import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Tooltip from '../components/ui/Tooltip'
+import InlineNotice from '../components/ui/InlineNotice'
 import PlanCard from '../components/PlanCard'
 import { PLANS } from '../data/plans'
 import { addDays, format } from 'date-fns'
@@ -340,9 +341,7 @@ function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
           <form onSubmit={onSubmit} className="mx-auto w-full">
             <div className="mx-auto grid gap-3">
               {error && (
-                <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)]/60 border border-[var(--color-copper)]/30 rounded-xl px-3 py-2.5">
-                  {error}
-                </div>
+                <InlineNotice variant="error">{error}</InlineNotice>
               )}
 
               <div className="rounded-2xl border border-[var(--color-sand)] bg-[var(--surface-card)] p-5 space-y-4 shadow-sm">
@@ -451,9 +450,7 @@ function DetailsStep({
           <form onSubmit={onSubmit} className="mx-auto w-full">
             <div className="mx-auto grid gap-3">
               {error && (
-                <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)]/60 border border-[var(--color-copper)]/30 rounded-xl px-3 py-2.5">
-                  {error}
-                </div>
+                <InlineNotice variant="error">{error}</InlineNotice>
               )}
 
               <div className="rounded-2xl border border-[var(--color-sand)] bg-[var(--surface-card)] p-5 space-y-4 shadow-sm">
@@ -919,9 +916,7 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
 
       <div className="flex w-full max-w-[450px] flex-col items-center gap-3">
         {error && (
-          <div className="w-full text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)]/60 border border-[var(--color-copper)]/30 rounded-xl px-3 py-2.5 text-center">
-            {error}
-          </div>
+          <InlineNotice variant="error" className="w-full">{error}</InlineNotice>
         )}
 
         <form onSubmit={onSubmit} className="flex w-full flex-col gap-3">
@@ -1065,9 +1060,7 @@ function PlanStep({ plans, committingPlan, error, onPick }) {
       </header>
 
       {error && (
-        <div className="text-sm text-[var(--color-copper)] bg-[var(--color-copper-wash)]/60 border border-[var(--color-copper)]/30 rounded-xl px-3 py-2.5 max-w-md w-full">
-          {error}
-        </div>
+        <InlineNotice variant="error" className="max-w-md w-full">{error}</InlineNotice>
       )}
 
       <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-4">
