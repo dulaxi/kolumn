@@ -8,6 +8,7 @@ import { logError } from '../../utils/logger'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
+import LetterWave from '../ui/LetterWave'
 
 export default function QuickAddBar({ boardId }) {
   const [expanded, setExpanded] = useState(false)
