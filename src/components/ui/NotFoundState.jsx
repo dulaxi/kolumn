@@ -64,8 +64,8 @@ export default function NotFoundState({
 
       {body && (
         <p
-          className={`text-[var(--text-muted)] max-w-sm ${
-            isPage ? 'text-sm mb-6' : 'text-[13px] mb-3.5'
+          className={`text-[var(--text-muted)] text-balance ${
+            isPage ? 'text-sm mb-6 max-w-xl' : 'text-[13px] mb-3.5 max-w-sm'
           }`}
         >
           {body}
