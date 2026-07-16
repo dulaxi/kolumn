@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard Klay clock · Kolumn</title>
+    <style>
+      :root {
+        --surface-page:#FAF8F6; --surface-card:#FFFFFF; --surface-raised:#F2EDE8;
+        --text-primary:#1B1B18; --text-secondary:#5C5C57; --text-muted:#8E8E89; --text-faint:#A8A8A4;
+        --border-default:#E0DBD5; --border-subtle:#EAE5DF; --color-lime-dark:#A8BA32; --color-logo:#8BA32E;
+      }
+      [data-theme="dark"] {
+        --surface-page:#1C1C1A; --surface-card:#262624; --surface-raised:#2E2E2B;
+        --text-primary:#E8E5E0; --text-secondary:#B0ADA7; --text-muted:#8A8782; --text-faint:#6B6966;
+        --border-default:#454340; --border-subtle:#332F2D; --color-logo:#A8BA32;
+      }
+      * { box-sizing:border-box }
+      body { margin:0; background:var(--surface-page); color:var(--text-primary);
+             font-family:'Mona Sans Variable','Mona Sans',system-ui,sans-serif; font-size:14px; line-height:1.5 }
+      .wrap { max-width:1120px; margin:0 auto; padding:56px 32px 96px }
+      header { margin-bottom:34px; position:relative }
+      h1 { font-family:'Sentient',Georgia,serif; font-weight:400; font-size:42px; letter-spacing:-.02em; margin:0 0 8px }
+      header p { color:var(--text-secondary); margin:0; max-width:760px }
+      .theme-toggle { position:absolute; top:4px; right:0; background:var(--surface-card); border:1px solid var(--border-default);
+                      border-radius:8px; padding:6px 12px; cursor:pointer; font:500 12px 'IBM Plex Mono',monospace; color:var(--text-secondary) }
+      .now { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--color-lime-dark); margin-top:10px }
+
+      .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px }
+      @media (max-width:900px){ .grid { grid-template-columns:1fr } }
+      .card { background:var(--surface-card); border:1px solid var(--border-default); border-radius:14px; padding:22px }
+      .card.live { border-color:var(--color-lime-dark) }
+      .slot-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:2px }
+      .slot-name { font-size:16px; font-weight:600 }
+      .slot-time { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted) }
+      .anim-name { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--color-lime-dark); margin-bottom:14px }
+      .anim-name .live-tag { color:var(--color-logo); font-weight:600 }
+
+      .stage { background:var(--surface-page); border:1px solid var(--border-subtle); border-radius:10px;
+               height:150px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; position:relative }
+      .floor { position:absolute; left:16%; right:16%; bottom:34px; height:1px; background:var(--border-default) }
+      .klay { line-height:0; position:relative } .klay-row { display:flex }
+
+      .lines { font-size:12.5px; color:var(--text-secondary); margin-bottom:12px }
+      .lines b { color:var(--text-primary); font-weight:500 }
+      .strip { display:flex; gap:6px; flex-wrap:wrap }
+      .fr { background:var(--surface-page); border:1px solid var(--border-subtle); border-radius:7px; padding:6px 5px 3px; text-align:center }
+      .fr-ms { font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-faint); margin-top:3px }
+
+      footer { margin-top:36px; padding-top:20px; border-top:1px solid var(--border-default); color:var(--text-muted); font-size:12px }
+      code { background:var(--surface-raised); padding:1px 6px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-secondary) }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">◐ theme</button>
+        <h1>The dashboard clock — Klay's four shifts</h1>
+        <p>Exact runtime frames from <code>klayAnimations.js</code>, mapped by <code>KLAY_BY_SLOT</code> in <code>src/utils/greeting.js</code>. The same <code>getGreetingSlot()</code> read picks the words and the posture, so they can never disagree. The thin line under each Klay is his floor — the chat input's top edge.</p>
+        <p class="now" id="now"></p>
+      </header>
+
+      <div class="grid" id="grid"></div>
+
+      <footer>
+        Wiring: <code>DashboardPage.jsx</code> → <code>&lt;PixelKlay animation={KLAY_BY_SLOT[slot]} scale={6}/&gt;</code> perched at <code>-top-12 right-8</code> · contract-tested in <code>greeting.test.js</code> (every slot must map to a real ANIMATIONS key) · greeting line rotates daily within its slot.
+      </footer>
+    </div>
+
+    <script>
+      const PAL={o:'#8BA32E',l:'#C2D64A',m:'#A8969E',k:'#1B1B18'}
+      const E='............'
+      const BASE=[E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E]
+      const DOWN=[E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E]
+      const CLOSED='...mmmmmm...'
+      const F=(base,mod,ms)=>{const c=base.slice();if(mod)for(const y in mod)c[+y]=mod[y];return{map:c,ms}}
+
+      // Exact runtime frame data (klayAnimations.js)
+      const ANIMS={
+        grow:[F(BASE,{1:E,2:E,3:E},800),F(BASE,{1:E,2:'......l.....',3:'......o.....'},800),F(BASE,null,800),F(BASE,{0:'.....lml....'},1400)],
+        tap:[F(BASE,null,260),F(BASE,{7:'....m.......',8:'.......m....'},200),F(BASE,null,200),F(BASE,{7:'....m.......',8:'.......m....'},200)],
+        idle:[F(BASE,null,550),F(DOWN,null,550)],
+        sleep:[F(BASE,{5:CLOSED,1:'......l..l..'},800),F(BASE,{5:CLOSED,0:'..........l.'},800)],
+      }
+      const SLOTS=[
+        {name:'Morning', time:'05:00 – 11:59', anim:'grow', slot:'morning',
+         desc:'sprouts in stages — pot → stem → leaves → bloom',
+         lines:['Clear the board','Ship it','Fresh columns']},
+        {name:'Afternoon', time:'12:00 – 16:59', anim:'tap', slot:'afternoon',
+         desc:'heads-down — feet tapping the work rhythm',
+         lines:["Momentum's yours",'Keep the flow','Halfway through']},
+        {name:'Evening', time:'17:00 – 20:59', anim:'idle', slot:'evening',
+         desc:'winding down — the slow bob',
+         lines:['Close it out','Wrap the day','One more move']},
+        {name:'Night', time:'21:00 – 04:59', anim:'sleep', slot:'night',
+         desc:'asleep on the ledge — eyes closed, leaf drifting',
+         lines:['Still at it','Locked in','The quiet hours']},
+      ]
+
+      function getGreetingSlot(h){ if(h>=5&&h<=11)return'morning'; if(h>=12&&h<=16)return'afternoon'; if(h>=17&&h<=20)return'evening'; return'night' }
+      const hour=new Date().getHours()
+      const liveSlot=getGreetingSlot(hour)
+      document.getElementById('now').textContent=`right now it's ${String(hour).padStart(2,'0')}:00-ish → ${liveSlot} — that card is live on your dashboard`
+
+      function draw(el,fr,px){
+        el.innerHTML=''
+        fr.map.forEach(row=>{const r=document.createElement('div');r.className='klay-row'
+          for(const ch of row){const p=document.createElement('div');p.style.width=px+'px';p.style.height=px+'px';if(PAL[ch])p.style.background=PAL[ch];r.appendChild(p)}
+          el.appendChild(r)})
+      }
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const grid=document.getElementById('grid')
+      SLOTS.forEach(s=>{
+        const card=document.createElement('div')
+        card.className='card'+(s.slot===liveSlot?' live':'')
+        card.innerHTML=`
+          <div class="slot-head"><span class="slot-name">${s.name}</span><span class="slot-time">${s.time}</span></div>
+          <div class="anim-name">${s.anim} — ${s.desc}${s.slot===liveSlot?' <span class="live-tag">● live now</span>':''}</div>
+          <div class="stage"><div class="floor"></div><div class="klay" role="img" aria-label="Klay ${s.anim}"></div></div>
+          <div class="lines">greeting lines: ${s.lines.map(l=>`<b>${l}</b>`).join(' · ')}</div>
+          <div class="strip"></div>`
+        grid.appendChild(card)
+        const holder=card.querySelector('.klay')
+        const frames=ANIMS[s.anim]
+        let i=0
+        draw(holder,frames[0],7)
+        if(!reduced&&frames.length>1){
+          const step=()=>{i=(i+1)%frames.length;draw(holder,frames[i],7);setTimeout(step,frames[i].ms)}
+          setTimeout(step,frames[0].ms)
+        }
+        const strip=card.querySelector('.strip')
+        frames.forEach(f=>{
+          const cell=document.createElement('div');cell.className='fr'
+          const c=document.createElement('div');draw(c,f,3.5)
+          const ms=document.createElement('div');ms.className='fr-ms';ms.textContent=f.ms+'ms'
+          cell.append(c,ms);strip.appendChild(cell)
+        })
+      })
+    </script>
+  </body>
+</html>
