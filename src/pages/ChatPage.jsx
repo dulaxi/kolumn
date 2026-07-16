@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useChatStore } from '../store/chatStore'
 import ChatMessage from '../components/chat/ChatMessage'
 import ChatInput from '../components/chat/ChatInput'
 import TypingIndicator from '../components/chat/TypingIndicator'
+import NotFoundState from '../components/ui/NotFoundState'
 
 export default function ChatPage() {
   const { id } = useParams()
@@ -32,9 +33,12 @@ export default function ChatPage() {
 
   if (!conversation) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-[var(--text-muted)]">
-        <p className="text-sm">Conversation not found</p>
-        <Link to="/dashboard" className="text-sm text-[var(--color-logo)] hover:underline">Back to Home</Link>
+      <div className="flex h-full items-center justify-center">
+        <NotFoundState
+          title="This conversation is gone"
+          body="It may have been deleted on another device."
+          actions={[{ label: 'Back to chats', to: '/chat' }]}
+        />
       </div>
     )
   }

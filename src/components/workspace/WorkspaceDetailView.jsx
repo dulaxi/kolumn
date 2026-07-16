@@ -6,6 +6,7 @@ import WorkspaceHeader from './WorkspaceHeader'
 import WorkspaceMembers from './WorkspaceMembers'
 import WorkspaceInvitations from './WorkspaceInvitations'
 import WorkspaceDangerZone from './WorkspaceDangerZone'
+import NotFoundState from '../ui/NotFoundState'
 
 // Stable empty-array reference — if put inline as `|| []` inside a Zustand selector,
 // useSyncExternalStore sees a new reference every render and re-renders infinitely.
@@ -65,7 +66,11 @@ export default function WorkspaceDetailView({ workspaceId }) {
   if (!workspace) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <p className="text-sm text-[var(--text-muted)]">Workspace not found.</p>
+        <NotFoundState
+          title="This workspace isn't here"
+          body="You may have been removed from it, or it was deleted."
+          actions={[{ label: 'All workspaces', to: '/workspace' }]}
+        />
       </div>
     )
   }
