@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus, Sparkle } from '@phosphor-icons/react'
+import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus } from '@phosphor-icons/react'
 
 import { capture } from '../lib/analytics'
 import { useAuthStore } from '../store/authStore'
 import { useBoardStore } from '../store/boardStore'
 import { useChatStore } from '../store/chatStore'
 import ChatInput from '../components/chat/ChatInput'
+import PixelKlay from '../components/klay/PixelKlay'
+import { getGreetingSlot, pickGreeting, KLAY_BY_SLOT } from '../utils/greeting'
 import Button from '../components/ui/Button'
 
 const ACTIONS = [
@@ -37,27 +39,6 @@ const TEMPLATES = [
   },
 ]
 
-const GREETINGS = {
-  morning: ['Clear the board', 'Ship it', 'Fresh columns'],
-  afternoon: ["Momentum's yours", 'Keep the flow', 'Halfway through'],
-  evening: ['Close it out', 'Wrap the day', 'One more move'],
-  night: ['Still at it', 'Locked in', 'The quiet hours'],
-}
-
-function getGreetingSlot(hour) {
-  if (hour >= 5 && hour <= 11) return 'morning'
-  if (hour >= 12 && hour <= 16) return 'afternoon'
-  if (hour >= 17 && hour <= 20) return 'evening'
-  return 'night'
-}
-
-function pickGreeting() {
-  const slot = getGreetingSlot(new Date().getHours())
-  const options = GREETINGS[slot]
-  const dayIndex = Math.floor(Date.now() / 86400000)
-  return options[dayIndex % options.length]
-}
-
 function triggerCreateBoard() {
   let attempts = 0
   let handled = false
@@ -76,6 +57,9 @@ export default function DashboardPage() {
   const profile = useAuthStore((s) => s.profile)
   const fullName = profile?.display_name || ''
   const firstName = fullName.split(' ')[0] || 'there'
+
+  // One clock read drives both the words and Klay's posture.
+  const slot = getGreetingSlot(new Date().getHours())
 
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const addBoard = useBoardStore((s) => s.addBoard)
@@ -113,8 +97,8 @@ export default function DashboardPage() {
         {/* Greeting */}
         <div className="w-full flex justify-center">
           <div className="flex items-center gap-3 text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-logo)', fontWeight: 400, lineHeight: 1.5, fontSize: 'clamp(1.875rem, 1.2rem + 2vw, 2.5rem)' }}>
-            <Sparkle size={32} weight="fill" className="shrink-0 text-[var(--accent-sparkle)]" />
-            <span className="whitespace-nowrap select-none">{pickGreeting()}, <span className="text-[var(--color-logo)]">{firstName}</span></span>
+            <PixelKlay animation={KLAY_BY_SLOT[slot]} scale={4} label={`Klay (${slot})`} className="shrink-0" />
+            <span className="whitespace-nowrap select-none">{pickGreeting(slot)}, <span className="text-[var(--color-logo)]">{firstName}</span></span>
           </div>
         </div>
 
