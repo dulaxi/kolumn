@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from '../../store/settingsStore'
 import Skeleton from '../ui/Skeleton'
+import KolumnLogo from './KolumnLogo'
 import BoardSkeleton from '../board/BoardSkeleton'
 import PixelKlay from '../klay/PixelKlay'
 import LetterWave from '../ui/LetterWave'
@@ -48,13 +49,18 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         /* Collapsed rail — mirrors Sidebar.jsx's w-12 */
         <aside
           aria-hidden="true"
-          className="hidden md:flex w-12 shrink-0 flex-col items-center gap-4 border-r border-[var(--border-default)] bg-[var(--surface-sidebar)] py-4"
+          className="hidden md:flex w-12 shrink-0 flex-col items-center border-r border-[var(--border-default)] bg-[var(--surface-sidebar)]"
         >
-          <span className="font-logo text-lg font-semibold text-[var(--text-primary)]">K</span>
-          <Skeleton variant="circle" width={20} height={20} />
-          <Skeleton variant="circle" width={20} height={20} />
-          <Skeleton variant="circle" width={20} height={20} />
-          <div className="mt-auto">
+          {/* Same geometry as Sidebar.jsx's collapsed logo row: h-12, centered */}
+          <div className="flex h-12 items-center justify-center px-1">
+            <KolumnLogo size={22} />
+          </div>
+          <div className="flex flex-col items-center gap-4 pt-2">
+            <Skeleton variant="circle" width={20} height={20} />
+            <Skeleton variant="circle" width={20} height={20} />
+            <Skeleton variant="circle" width={20} height={20} />
+          </div>
+          <div className="mt-auto pb-4">
             <Skeleton variant="circle" width={24} height={24} />
           </div>
         </aside>
@@ -62,15 +68,21 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         /* Expanded sidebar — mirrors Sidebar.jsx's w-[287px] */
         <aside
           aria-hidden="true"
-          className="hidden md:flex w-[287px] shrink-0 flex-col gap-3.5 border-r border-[var(--border-default)] bg-[var(--surface-sidebar)] px-4 py-4"
+          className="hidden md:flex w-[287px] shrink-0 flex-col gap-3.5 border-r border-[var(--border-default)] bg-[var(--surface-sidebar)] px-2 py-2"
         >
-          <span className="font-logo text-lg font-semibold text-[var(--text-primary)] mb-2">
-            Kolumn
-          </span>
-          <Skeleton variant="line" width={128} />
-          <Skeleton variant="line" width={96} />
-          <Skeleton variant="line" width={140} />
-          <div className="mt-auto flex items-center gap-2.5">
+          {/* Same logo row as Sidebar.jsx expanded: h-16, mark 30 + wordmark */}
+          <div className="flex h-16 items-center gap-2 px-2">
+            <KolumnLogo size={30} />
+            <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+              Kolumn
+            </span>
+          </div>
+          <div className="flex flex-col gap-3.5 px-2">
+            <Skeleton variant="line" width={128} />
+            <Skeleton variant="line" width={96} />
+            <Skeleton variant="line" width={140} />
+          </div>
+          <div className="mt-auto flex items-center gap-2.5 px-2 pb-2">
             <Skeleton variant="circle" width={28} height={28} />
             <div className="flex flex-col gap-1.5">
               <Skeleton variant="line" width={88} height={8} />

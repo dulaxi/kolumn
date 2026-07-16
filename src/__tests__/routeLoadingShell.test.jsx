@@ -59,10 +59,16 @@ describe('RouteLoadingShell (staged, destination-aware reload fallback)', () => 
     expect(screen.getByTestId(testid)).toBeInTheDocument()
   })
 
-  test('honors the persisted collapsed sidebar', () => {
+  test('honors the persisted collapsed sidebar — mark only, no wordmark', () => {
     useSettingsStore.setState({ sidebarCollapsed: true })
-    renderAt('/boards')
-    expect(screen.getByText('K')).toBeInTheDocument()
+    const { container } = renderAt('/boards')
     expect(screen.queryByText('Kolumn')).not.toBeInTheDocument()
+    expect(container.querySelector('aside svg')).toBeInTheDocument()
+  })
+
+  test('expanded sidebar shows the logo mark AND the wordmark', () => {
+    const { container } = renderAt('/boards')
+    expect(screen.getByText('Kolumn')).toBeInTheDocument()
+    expect(container.querySelector('aside svg')).toBeInTheDocument()
   })
 })

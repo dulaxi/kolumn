@@ -7,17 +7,14 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { Kanban, Plus } from '@phosphor-icons/react'
+import { Plus } from '@phosphor-icons/react'
 import ConfirmModal from '../board/ConfirmModal'
 import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
 import SidebarBottom from './SidebarBottom'
 import DynamicIcon from '../board/DynamicIcon'
 import Tooltip from '../ui/Tooltip'
-
-function KolumnLogo({ size = 30 }) {
-  return <Kanban size={size} weight="fill" className="shrink-0 text-[var(--color-logo)]" />
-}
+import KolumnLogo from './KolumnLogo'
 
 // Dispatches a "new board" event with a small retry to handle the case where
 // BoardsPage hasn't mounted yet — used by the Plus buttons in section headers.
