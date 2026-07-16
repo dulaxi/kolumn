@@ -43,6 +43,12 @@ export default function WorkspacePage() {
                 {invitationsCount > 0 ? ` and ${invitationsCount} pending invitation${invitationsCount !== 1 ? 's' : ''}` : ''}.
               </>
             }
+            action={
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus className="w-4 h-4" />
+                New workspace
+              </Button>
+            }
           />
 
           {/* Pending invitations */}
@@ -94,27 +100,6 @@ export default function WorkspacePage() {
               })}
             </div>
           )}
-
-          {/* Action cards — "Browse workspaces" removed since this IS
-              the workspaces page; the sidebar already lists workspaces.
-              Kept "Create a new workspace" as the primary action. */}
-          <div className="flex w-full flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => setCreateOpen(true)}
-              className="flex w-full items-center gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 text-left shadow-sm transition-colors hover:bg-[var(--surface-raised)] cursor-pointer"
-            >
-              <div className="flex shrink-0 items-center rounded-full bg-[var(--surface-hover)] p-1.5">
-                <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Plus className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-0.5">
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Create a new workspace</span>
-                <span className="text-sm text-[var(--text-muted)]">Start a team container, invite members, and share boards.</span>
-              </div>
-            </button>
-          </div>
         </div>
       </div>
 

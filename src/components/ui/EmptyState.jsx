@@ -31,7 +31,7 @@ export default function EmptyState({ icon: Icon, klay, klayLabel, title, body, a
     >
       {klay ? (
         <div className="mb-3">
-          <PixelKlay animation={klay} scale={7} label={klayLabel || 'Klay'} />
+          <PixelKlay animation={klay} scale={9} label={klayLabel || 'Klay'} />
         </div>
       ) : (
         Icon && <Icon size={56} weight="light" className="text-[var(--text-faint)]" />

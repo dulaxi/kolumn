@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Empty-state hierarchy · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root {
+        --surface-page:#FAF8F6; --surface-card:#FFFFFF; --surface-raised:#F2EDE8; --surface-hover:#E8E2DB;
+        --text-primary:#1B1B18; --text-secondary:#5C5C57; --text-muted:#8E8E89; --text-faint:#A8A8A4;
+        --border-default:#E0DBD5; --border-subtle:#EAE5DF; --accent-lime-wash:#EEF2D6;
+        --color-logo:#8BA32E; --color-lime-dark:#A8BA32; --color-copper:#C27A4A; --color-mist:#C4BFB8;
+        --btn-bg:#1B1B18; --btn-fg:#FAF8F6;
+      }
+      [data-theme="dark"] {
+        --surface-page:#1C1C1A; --surface-card:#262624; --surface-raised:#2E2E2B; --surface-hover:#3A3937;
+        --text-primary:#E8E5E0; --text-secondary:#B0ADA7; --text-muted:#8A8782; --text-faint:#6B6966;
+        --border-default:#454340; --border-subtle:#332F2D; --accent-lime-wash:#3A4920;
+        --color-logo:#A8BA32; --color-mist:#4A4845; --btn-bg:#E8E5E0; --btn-fg:#1B1B18;
+      }
+      * { box-sizing:border-box }
+      body { margin:0; background:var(--surface-page); color:var(--text-primary);
+             font-family:'Mona Sans Variable','Mona Sans',system-ui,sans-serif; font-size:14px; line-height:1.5 }
+      .wrap { max-width:1180px; margin:0 auto; padding:56px 32px 96px }
+      header { margin-bottom:36px; position:relative }
+      h1 { font-family:'Sentient',Georgia,serif; font-weight:400; font-size:42px; letter-spacing:-.02em; margin:0 0 8px }
+      header p { color:var(--text-secondary); margin:0; max-width:780px }
+      .theme-toggle { position:absolute; top:4px; right:0; background:var(--surface-card); border:1px solid var(--border-default);
+                      border-radius:8px; padding:6px 12px; cursor:pointer; font:500 12px 'IBM Plex Mono',monospace; color:var(--text-secondary) }
+      section { margin-bottom:22px; background:var(--surface-card); border:1px solid var(--border-default); border-radius:14px; padding:24px }
+      .sec-head { display:flex; align-items:baseline; gap:12px; margin-bottom:6px }
+      .sec-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); padding:2px 8px; background:var(--surface-raised); border-radius:4px; white-space:nowrap }
+      .sec-head h2 { font-size:16px; font-weight:600; margin:0 }
+      .sec-copy { color:var(--text-secondary); margin:0 0 20px; max-width:820px }
+      .note { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); line-height:1.7; margin-top:14px }
+      .note b { color:var(--color-copper); font-weight:500 }
+      .good .note b { color:var(--color-lime-dark) }
+
+      .stage { background:var(--surface-page); border:1px solid var(--border-subtle); border-radius:10px; padding:26px 20px; }
+      .row3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+      @media (max-width:1000px){ .row3 { grid-template-columns:1fr } }
+      .pane-label { display:flex; align-items:center; gap:8px; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted) }
+      .pane-label::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--color-mist); flex-shrink:0 }
+      .bad .pane-label::before { background:var(--color-copper) }
+      .good .pane-label::before { background:var(--color-lime-dark) }
+
+      /* empty state comps */
+      .es { display:flex; flex-direction:column; align-items:center; text-align:center; }
+      .klay { line-height:0 }
+      .klay-row { display:flex }
+
+      /* CURRENT sizing */
+      .t-cur { font-size:16px; font-weight:500; margin:12px 0 0 }
+      .b-cur { font-size:14px; color:var(--text-muted); max-width:320px; margin:4px 0 0 }
+      .btn-sm { height:32px; padding:0 12px; border-radius:8px; background:var(--btn-bg); color:var(--btn-fg);
+                font:500 12px inherit; display:inline-flex; align-items:center; gap:6px; border:none; cursor:pointer; margin-top:16px }
+
+      /* HERO sizing (matches NotFoundState) */
+      .t-hero { font-family:'Sentient',Georgia,serif; font-size:26px; font-weight:400; margin:16px 0 6px; letter-spacing:-.01em }
+      .b-hero { font-size:14px; color:var(--text-muted); max-width:420px; margin:0 }
+      .btn-md { height:36px; padding:0 16px; border-radius:8px; background:var(--btn-bg); color:var(--btn-fg);
+                font:500 13px inherit; display:inline-flex; align-items:center; gap:6px; border:none; cursor:pointer; margin-top:20px }
+
+      /* action card */
+      .card { display:flex; width:100%; max-width:460px; align-items:center; gap:16px; border-radius:12px;
+              border:1px solid var(--border-default); background:var(--surface-card); padding:20px; text-align:left;
+              box-shadow:0 1px 2px rgba(0,0,0,.05); cursor:pointer; margin-top:22px }
+      .card .ic { display:flex; flex-shrink:0; align-items:center; justify-content:center; border-radius:9999px; background:var(--accent-lime-wash); padding:10px }
+      .card .ic i { font-size:20px; color:var(--color-logo); width:20px; height:20px; display:flex; align-items:center; justify-content:center }
+      .card .col { display:flex; flex:1; flex-direction:column; gap:2px; min-width:0 }
+      .card .ct { font-size:15px; font-weight:600 }
+      .card .cd { font-size:14px; color:var(--text-secondary) }
+      /* the vestigial hand-rolled one */
+      .card.ws .ic { background:var(--surface-hover); padding:6px }
+      .card.ws .ic i { color:inherit }
+      .card.ws .ct { font-size:14px }
+      .card.ws .cd { color:var(--text-muted) }
+
+      .ruler { position:relative; margin-top:10px; height:16px }
+      .ruler span { position:absolute; top:0; height:100%; border-left:1px dashed var(--color-copper); border-right:1px dashed var(--color-copper);
+                    font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--color-copper); display:flex; align-items:center; justify-content:center }
+
+      .verdict { background:var(--surface-card); border:1px solid var(--border-default); border-left:3px solid var(--color-lime-dark);
+                 border-radius:14px; padding:24px; margin-top:32px }
+      .verdict h2 { font-family:'Sentient',Georgia,serif; font-weight:500; font-size:24px; margin:0 0 10px }
+      .verdict p, .verdict ul { color:var(--text-secondary); max-width:820px }
+      .verdict b { color:var(--text-primary) }
+      .verdict li { margin:6px 0 }
+      footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--border-default); color:var(--text-muted); font-size:12px }
+      code { background:var(--surface-raised); padding:1px 6px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-secondary) }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">◐ theme</button>
+        <h1>Your instinct was right — the hero is undersized</h1>
+        <p>Two things are off, and they're related. <b>(1)</b> Your <em>404 page</em> has a bigger, more deliberate hero than your actual empty states — Klay 8 + serif 26px + a 420px column, vs Klay 7 + sans 16px + a 320px column. The error page out-dresses the product. <b>(2)</b> WorkspacePage sits a <b>460px card</b> under a <b>320px text column</b> — that's the raggedness you're seeing.</p>
+      </header>
+
+      <section class="bad">
+        <div class="sec-head"><span class="sec-tag">A · TODAY</span><h2>Three heroes, three sizes, two action patterns</h2></div>
+        <p class="sec-copy">Chat and Builder end in a small button. Workspace ends in a full-width card — a leftover: your own comment says "Browse workspaces removed… kept Create a new workspace." It was a <b>two-card menu</b>; one card was deleted and the survivor kept its shell.</p>
+        <div class="row3">
+          <div>
+            <div class="pane-label">chat</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="converse" data-px="7"></div>
+              <h3 class="t-cur">Looking to start a chat?</h3>
+              <p class="b-cur">Ask questions about your boards, get summaries, or work through your project with Claude.</p>
+              <button class="btn-sm"><i class="ph ph-plus"></i>New chat</button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">builder</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="blueprint" data-px="7"></div>
+              <h3 class="t-cur">Looking to build a board?</h3>
+              <p class="b-cur">Describe what you want to track and we'll set up columns, labels, and starter cards.</p>
+              <button class="btn-sm"><i class="ph ph-plus"></i>New build</button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">workspace</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="duo" data-px="7"></div>
+              <h3 class="t-cur">Your workspaces</h3>
+              <p class="b-cur">Workspaces group your team's boards, members, and invitations. You have 2 workspaces.</p>
+              <button class="card ws">
+                <span class="ic"><i class="ph ph-plus"></i></span>
+                <span class="col">
+                  <span class="ct">Create a new workspace</span>
+                  <span class="cd">Start a team container, invite members, and share boards.</span>
+                </span>
+              </button>
+            </div></div>
+          </div>
+        </div>
+        <div class="note">
+          <b>Klay 7 · title sans 16px · body 320px</b> — smaller than the 404's hero<br />
+          <b>workspace says it twice</b> — the body and the card's description are the same sentence<br />
+          <b>460px card under a 320px column</b> — the composition your eye caught
+        </div>
+      </section>
+
+      <section class="good">
+        <div class="sec-head"><span class="sec-tag">B · RECOMMENDED</span><h2>One hero size, one action: a button</h2></div>
+        <p class="sec-copy">Klay 8 + serif 26px + a 420px column — the same hero the 404 already uses, so nothing new is invented. One action per page, so it's a button, not a card. Workspace loses the vestigial card and the duplicated sentence.</p>
+        <div class="row3">
+          <div>
+            <div class="pane-label">chat</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="converse" data-px="8"></div>
+              <h3 class="t-hero">Looking to start a chat?</h3>
+              <p class="b-hero">Ask questions about your boards, get summaries, or work through your project with Claude.</p>
+              <button class="btn-md"><i class="ph ph-plus"></i>New chat</button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">builder</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="blueprint" data-px="8"></div>
+              <h3 class="t-hero">Looking to build a board?</h3>
+              <p class="b-hero">Describe what you want to track and we'll set up columns, labels, and starter cards.</p>
+              <button class="btn-md"><i class="ph ph-plus"></i>New build</button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">workspace</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="duo" data-px="8"></div>
+              <h3 class="t-hero">Your workspaces</h3>
+              <p class="b-hero">Workspaces group your team's boards, members, and invitations. You have 2 workspaces.</p>
+              <button class="btn-md"><i class="ph ph-plus"></i>New workspace</button>
+            </div></div>
+          </div>
+        </div>
+        <div class="note">
+          <b>identical to the 404 hero</b> — Klay 8, Sentient 26px, 420px column<br />
+          <b>one action = one button</b> — a card is a menu affordance; there's no menu left<br />
+          <b>no duplicate sentence</b> — the body explains, the button acts
+        </div>
+      </section>
+
+      <section>
+        <div class="sec-head"><span class="sec-tag">C · ALTERNATIVE</span><h2>Keep the card — then all three get one</h2></div>
+        <p class="sec-copy">If you like the card's weight, the answer to "do chat and builder need to look like that too?" is <b>yes</b> — a card on one page and a button on the others is the mismatch. This is the real ActionCard (lime-wash badge, olive icon), and the body gets shortened so it isn't said twice.</p>
+        <div class="row3">
+          <div>
+            <div class="pane-label">chat</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="converse" data-px="8"></div>
+              <h3 class="t-hero">Looking to start a chat?</h3>
+              <button class="card">
+                <span class="ic"><i class="ph ph-chats-circle"></i></span>
+                <span class="col"><span class="ct">Start a new chat</span>
+                <span class="cd">Ask about your boards, get summaries, think out loud.</span></span>
+              </button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">builder</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="blueprint" data-px="8"></div>
+              <h3 class="t-hero">Looking to build a board?</h3>
+              <button class="card">
+                <span class="ic"><i class="ph ph-blueprint"></i></span>
+                <span class="col"><span class="ct">Describe a board</span>
+                <span class="cd">We'll set up columns, labels, and starter cards.</span></span>
+              </button>
+            </div></div>
+          </div>
+          <div>
+            <div class="pane-label">workspace</div>
+            <div class="stage"><div class="es">
+              <div class="klay" data-k="duo" data-px="8"></div>
+              <h3 class="t-hero">Your workspaces</h3>
+              <button class="card">
+                <span class="ic"><i class="ph ph-plus"></i></span>
+                <span class="col"><span class="ct">Create a new workspace</span>
+                <span class="cd">Start a team container, invite members, and share boards.</span></span>
+              </button>
+            </div></div>
+          </div>
+        </div>
+        <div class="note">
+          <b>consistent</b>, and the card carries the description so the body can go<br />
+          <b>but</b> a card implies "one of several choices" — with one option it's a button wearing a costume
+        </div>
+      </section>
+
+      <section class="verdict">
+        <h2>Answering your three questions</h2>
+        <ul>
+          <li><b>Is it okay as-is?</b> No — but the button isn't really the problem. The <em>hero</em> is undersized and the card is a leftover.</li>
+          <li><b>Do Klay and the text need to be bigger?</b> Yes. Klay 7 → 8 and a serif 26px title, matching the 404 you already shipped. Right now your error page is dressed better than your product.</li>
+          <li><b>Do chat and builder need to match?</b> Yes — whichever way you go. That's the actual defect: <b>one action pattern per app</b>, not a card here and a button there.</li>
+        </ul>
+        <p style="margin-bottom:0;"><b>I'd take B.</b> The card exists only because a second card was deleted; SettingsPage uses cards correctly — three of them, a real menu. With one action, a button is the honest control, and the three pages become the same page with different words. If you want the card's presence, take C — but then all three get one and the bodies get trimmed.</p>
+      </section>
+
+      <footer>
+        Reply <code>B</code> or <code>C</code> — or say "bigger still" and I'll push the hero up another step.
+      </footer>
+    </div>
+
+    <script>
+      const PAL = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', s:'#E0DBD5', S:'#C4BFB8', b:'#1A5DBA', B:'#DCEBF9' }
+      const E='............'
+      const LEFT=[E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E]
+      const R={ right:'mmkmmk......' }
+      const P=(art,x,y)=>{const o={};art.forEach((ln,i)=>{const r='.'.repeat(x)+ln;o[y+i]=r+'.'.repeat(Math.max(0,24-r.length))});return o}
+      const F=(mod,hi)=>{const c=LEFT.slice();if(mod)for(const y in mod)c[+y]=mod[y];return{map:c,hi:hi||null}}
+      const BUB=['.SSSSSSSS.','SwwwwwwwwS','SwkwkwkwwS','SwwwwwwwwS','.SSSSSSSS.','.S........']
+      const BP=['bbbbbbbbbb','bBBbBBbBBb','bBBbBBbBBb','bBBbBBbBBb','bBBbBBbBBb','bBBbBBbBBb','bBBbBBbBBb','bbbbbbbbbb']
+      const MATE={1:'...l.....l..',2:'..lll...lll.',3:'...o.....o..',4:'mmmmmm.sssss',5:'mkmmkm.sksks',6:'mmmmmm.sssss',7:'.m..m...s.s.'}
+      const KEY={ converse:F({5:R.right},P(BUB,13,2)), blueprint:F({5:R.right},P(BP,13,4)), duo:F(MATE,null) }
+      document.querySelectorAll('.klay').forEach(el=>{
+        const fr=KEY[el.dataset.k], px=+el.dataset.px, half=px/2
+        const w=document.createElement('div'); w.style.position='relative'; w.style.width=12*px+'px'; w.style.height=11*px+'px'
+        fr.map.forEach(row=>{const r=document.createElement('div');r.className='klay-row'
+          for(const ch of row){const p=document.createElement('div');p.style.width=px+'px';p.style.height=px+'px';if(PAL[ch])p.style.background=PAL[ch];r.appendChild(p)}
+          w.appendChild(r)})
+        if(fr.hi){const L=document.createElement('div');L.style.position='absolute';L.style.inset='0'
+          for(const y in fr.hi)[...fr.hi[y]].forEach((ch,x)=>{if(!PAL[ch])return
+            const p=document.createElement('div');p.style.position='absolute';p.style.left=x*half+'px';p.style.top=y*half+'px'
+            p.style.width=half+'px';p.style.height=half+'px';p.style.background=PAL[ch];L.appendChild(p)})
+          w.appendChild(L)}
+        el.appendChild(w)
+      })
+    </script>
+  </body>
+</html>
