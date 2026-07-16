@@ -49,13 +49,23 @@ export default function BoardSkeletonSandbox() {
         <TypingIndicator />
       </div>
 
-      {/* RouteLoadingShell specimen — stage 2 forced visible (klayDelayMs=0) */}
+      {/* RouteLoadingShell specimens — destination-shaped, Klay stage forced
+          on the /boards one (klayDelayMs=0); others show stage 1 only */}
       <div className="shrink-0">
         <p className="font-mono text-[10px] text-[var(--text-faint)] mb-1">
-          RouteLoadingShell (reload fallback, Klay stage forced)
+          RouteLoadingShell (reload fallback) — /boards with Klay stage forced, then /chat/:id, /dashboard, /settings
         </p>
-        <div className="border border-[var(--border-default)] rounded-xl overflow-hidden h-[420px] [&>div]:min-h-0 [&>div]:h-full">
-          <RouteLoadingShell klayDelayMs={0} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {[
+            ['/boards', 0],
+            ['/chat/abc', null],
+            ['/dashboard', null],
+            ['/settings', null],
+          ].map(([path, delay]) => (
+            <div key={path} className="border border-[var(--border-default)] rounded-xl overflow-hidden h-[340px] [&>div]:min-h-0 [&>div]:h-full">
+              <RouteLoadingShell pathname={path} klayDelayMs={delay} />
+            </div>
+          ))}
         </div>
       </div>
 
