@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay empty-state animations · Kolumn</title>
+    <style>
+      :root {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --surface-hover: #E8E2DB; --text-primary: #1B1B18; --text-secondary: #5C5C57;
+        --text-muted: #8E8E89; --text-faint: #A8A8A4; --color-mist: #C4BFB8;
+        --color-lime-dark: #A8BA32; --color-copper: #C27A4A;
+        --border-default: #E0DBD5; --border-subtle: #EAE5DF;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624; --surface-raised: #2E2E2B;
+        --surface-hover: #3A3937; --text-primary: #E8E5E0; --text-secondary: #B0ADA7;
+        --text-muted: #8A8782; --text-faint: #6B6966; --color-mist: #4A4845;
+        --border-default: #454340; --border-subtle: #332F2D;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--surface-page); color: var(--text-primary);
+        font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, sans-serif;
+        font-size: 14px; line-height: 1.5;
+      }
+      .wrap { max-width: 1160px; margin: 0 auto; padding: 56px 32px 96px; }
+      header { margin-bottom: 40px; position: relative; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header p { color: var(--text-secondary); margin: 0; max-width: 740px; }
+      .theme-toggle {
+        position: absolute; top: 4px; right: 0; background: var(--surface-card);
+        border: 1px solid var(--border-default); border-radius: 8px; padding: 6px 12px;
+        cursor: pointer; font: 500 12px 'IBM Plex Mono', monospace; color: var(--text-secondary);
+      }
+      section { margin-bottom: 22px; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 24px; }
+      .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+      .sec-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); padding: 2px 8px; background: var(--surface-raised); border-radius: 4px; white-space: nowrap; }
+      .sec-head h2 { font-size: 16px; font-weight: 600; margin: 0; }
+      .sec-copy { color: var(--text-secondary); margin: 0 0 20px; max-width: 780px; }
+      .sec-copy em { color: var(--text-muted); font-style: normal; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+      .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+      @media (max-width: 980px) { .row { grid-template-columns: repeat(2, 1fr); } }
+      .cell {
+        background: var(--surface-page); border: 1px solid var(--border-subtle);
+        border-radius: 10px; padding: 14px 10px 12px; text-align: center;
+      }
+      .cell.pick { border-color: var(--color-lime-dark); }
+      .stage { display: flex; align-items: center; justify-content: center; height: 130px; }
+      .name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-primary); margin-top: 8px; }
+      .cell.pick .name::after { content: ' ★'; color: var(--color-lime-dark); }
+      .desc { font-size: 11px; color: var(--text-faint); margin-top: 3px; line-height: 1.45; }
+      .klay-row { display: flex; }
+
+      footer { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border-default); color: var(--text-muted); font-size: 12px; }
+      code { background: var(--surface-raised); padding: 1px 6px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">◐ theme</button>
+        <h1>Klay — five takes per empty state</h1>
+        <p>Real sprite data (coarse 12×11 Klay + fine 24×22 props), real frame timings — these are the actual frames I'd port into <code>klayAnimations.js</code>, not sketches. Mauve stays Klay's alone, so teammates and props are sand/cream/honey/mist. ★ marks my pick per row.</p>
+      </header>
+
+      <section>
+        <div class="sec-head"><span class="sec-tag">CHAT · /chat</span><h2>Looking to start a chat?</h2></div>
+        <p class="sec-copy"><em>Ask questions about your boards, get summaries, or work through your project with Claude.</em><br />The moment is <b>invitation to talk</b> — Klay should look like conversation is about to happen.</p>
+        <div class="row" id="row-chat"></div>
+      </section>
+
+      <section>
+        <div class="sec-head"><span class="sec-tag">BUILDER · /build</span><h2>Looking to build a board?</h2></div>
+        <p class="sec-copy"><em>Describe what you want to track and we'll set up columns, labels, and starter cards.</em><br />The moment is <b>construction</b> — something gets assembled out of nothing.</p>
+        <div class="row" id="row-builder"></div>
+      </section>
+
+      <section>
+        <div class="sec-head"><span class="sec-tag">WORKSPACE · /workspace</span><h2>Your workspaces</h2></div>
+        <p class="sec-copy"><em>Workspaces group your team's boards, members, and invitations.</em><br />The moment is <b>together</b> — Klay plus others. Teammates are sand pots: the mauve-is-Klay rule makes "not Klay" legible for free.</p>
+        <div class="row" id="row-workspace"></div>
+      </section>
+
+      <footer>
+        Reply with one name per row (e.g. <code>chat:ask builder:raise-columns workspace:duo</code>) — or ask for more takes on any row. Frames port straight into <code>ANIMATIONS</code> via <code>frame(BASE|DOWN|UP1, coarseOverrides, hiRows, ms)</code>.
+      </footer>
+    </div>
+
+    <script>
+      const PALETTE = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18',
+                        w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5',
+                        K:'#5C5C57', S:'#C4BFB8' }
+      const E = '............'
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E]
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E]
+      const EYES = { center:'...mkmmkm...', closed:'...mmmmmm...', left:'...kmmkmm...', right:'...mmkmmk...' }
+
+      // LEFT pose: Klay at coarse cols 0-5 instead of 3-8. Centred Klay leaves
+      // only 3 coarse cols for props (6 fine px — a sliver); shifting him left
+      // hands the prop layer cols 6-11 (12 fine px), which is a real canvas.
+      const LEFT      = [E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E]
+      const LEFT_DOWN = [E,E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E]
+      const LEYES = { center:'mkmmkm......', closed:'mmmmmm......', right:'mmkmmk......', left:'kmmkmm......' }
+      const LARM  = 'mmmmmmm.....'   // arm out (row 4)
+      const LARM_UP = '......m.....'  // hand raised (row 3)
+
+      function F(base, mod, hi, ms) {
+        const c = base.slice()
+        if (mod) for (const y in mod) c[+y] = mod[y]
+        return { map: c, hi: hi || null, ms: ms || 300 }
+      }
+      function P(art, x, y) {
+        const hi = {}
+        art.forEach((line, i) => {
+          const row = '.'.repeat(x) + line
+          hi[y + i] = row + '.'.repeat(Math.max(0, 24 - row.length))
+        })
+        return hi
+      }
+      function M(...objs) {
+        const out = {}
+        for (const o of objs) for (const y in o) {
+          if (!out[y]) { out[y] = o[y]; continue }
+          const a = out[y], b = o[y]
+          out[y] = Array.from({ length: 24 }, (_, i) => (b[i] && b[i] !== '.' ? b[i] : (a[i] || '.'))).join('')
+        }
+        return out
+      }
+      // Vertical bar: width w at fine x, height h, sitting on ground y=15.
+      function bar(x, h, ch) {
+        const hi = {}
+        for (let i = 0; i < h; i++) hi[15 - i] = '.'.repeat(x) + (ch || 's').repeat(3) + '.'.repeat(24 - x - 3)
+        return hi
+      }
+
+      // ══════════ props (fine grid, drawn in the cols 12-23 canvas) ══════════
+      const BUB_S   = ['SS','SS']
+      const BUB_M   = ['.SSSS.','SwwwwS','SwwwwS','.SSSS.','.S....']
+      const BUB_BIG = ['.SSSSSSSS.','SwwwwwwwwS','SwkwkwkwwS','SwwwwwwwwS','.SSSSSSSS.','.S........']
+      const BUB_IN  = ['.SSSSSSSS.','SwwwwwwwwS','SwwkwkwkwS','SwwwwwwwwS','.SSSSSSSS.','........S.']
+      const DOT1 = ['.SSSSSSSS.','SwwwwwwwwS','SwkwwwwwwS','SwwwwwwwwS','.SSSSSSSS.','.S........']
+      const DOT2 = ['.SSSSSSSS.','SwwwwwwwwS','SwkwkwwwwS','SwwwwwwwwS','.SSSSSSSS.','.S........']
+      const DOT3 = ['.SSSSSSSS.','SwwwwwwwwS','SwkwkwkwwS','SwwwwwwwwS','.SSSSSSSS.','.S........']
+      const QMARK = ['.hhhh.','hh..hh','....hh','...hh.','..hh..','......','..hh..']
+      const SCROLL_1 = ['SS','Sw','Sw','Sw','Sw','SS']
+      const SCROLL_2 = ['SSSS','SwwS','SwwS','SwwS','SwwS','SSSS']
+      const SCROLL_3 = ['SSSSSSSS','SwwwwwwS','SwSSSSwS','SwwwwwwS','SwSSSSwS','SSSSSSSS']
+      const HAMMER = ['hhhh','hhhh','.KK.','.KK.','.KK.']
+      const PEG = ['ssss','ssss']
+      const PENCIL = ['...hh','..hh.','.hh..','KK...']
+      const ENVELOPE = ['SSSSSSSS','SwwwwwwS','SKwwwwKS','SwKKKKwS','SSSSSSSS']
+      const CARD = ['SSSS','SwwS','SSSS']
+
+      // Sand teammate at coarse cols 7-11 (lime sprout, sand pot — mauve is Klay's alone)
+      const MATE = { 1:'...l.....l..', 2:'..lll...lll.', 3:'...o.....o..',
+                     4:'mmmmmm.sssss', 5:'mkmmkm.sksks', 6:'mmmmmm.sssss', 7:'.m..m...s.s.' }
+      const MATE_DOWN = { 2:'...l.....l..', 3:'..lll...lll.', 4:'...o.....o..',
+                          5:'mmmmmm.sssss', 6:'mkmmkm.sksks', 7:'mmmmmm.sssss', 8:'.m..m...s.s.' }
+      const MATE_MID = { 1:'...l......l.', 2:'..lll....lll', 3:'...o......o.',
+                         4:'mmmmmm..ssss', 5:'mkmmkm..skss', 6:'mmmmmm..ssss', 7:'.m..m....s.s' }
+
+      // ══════════ CHAT ══════════
+      const CHAT = [
+        { name:'speak', desc:'Bubble pops and grows — Klay is talking', pick:false, frames:[
+          F(LEFT, null, null, 450),
+          F(LEFT, {5:LEYES.right}, P(BUB_S, 14, 8), 200),
+          F(LEFT, {5:LEYES.right}, P(BUB_M, 13, 5), 200),
+          F(LEFT, {5:LEYES.right}, P(BUB_BIG, 13, 2), 750),
+        ]},
+        { name:'listen', desc:'A message arrives; Klay nods, then blinks', pick:false, frames:[
+          F(LEFT, {5:LEYES.right}, P(BUB_IN, 13, 2), 500),
+          F(LEFT_DOWN, {6:LEYES.right}, P(BUB_IN, 13, 2), 260),
+          F(LEFT, {5:LEYES.right}, P(BUB_IN, 13, 2), 400),
+          F(LEFT, {5:LEYES.closed}, P(BUB_IN, 13, 2), 220),
+        ]},
+        { name:'ask', desc:'A question mark rises — the invitation to ask', pick:true, frames:[
+          F(LEFT, null, null, 500),
+          F(LEFT, {5:LEYES.center}, P(['hh','hh'], 15, 8), 200),
+          F(LEFT, null, P(QMARK, 14, 3), 260),
+          F(LEFT, {5:LEYES.center}, P(QMARK, 14, 1), 900),
+        ]},
+        { name:'ponder', desc:'Thinking dots cycle; eyes drift, then close', pick:false, frames:[
+          F(LEFT, {5:LEYES.right}, P(DOT1, 13, 2), 340),
+          F(LEFT, {5:LEYES.right}, P(DOT2, 13, 2), 340),
+          F(LEFT, {5:LEYES.right}, P(DOT3, 13, 2), 340),
+          F(LEFT, {5:LEYES.closed}, P(DOT3, 13, 2), 560),
+        ]},
+        { name:'converse', desc:'Klay speaks, then a reply comes back', pick:false, frames:[
+          F(LEFT, {5:LEYES.right}, P(BUB_BIG, 13, 2), 560),
+          F(LEFT, {5:LEYES.right}, null, 160),
+          F(LEFT, {5:LEYES.right}, P(BUB_IN, 13, 8), 560),
+          F(LEFT, {5:LEYES.center}, null, 160),
+        ]},
+      ]
+
+      // ══════════ BUILDER ══════════
+      const BUILDER = [
+        { name:'raise-columns', desc:'Three columns rise, one by one — the kanban itself', pick:true, frames:[
+          F(LEFT, null, null, 420),
+          F(LEFT, {5:LEYES.right}, bar(13, 3), 280),
+          F(LEFT, {5:LEYES.right}, M(bar(13, 6), bar(17, 3)), 280),
+          F(LEFT, {5:LEYES.right}, M(bar(13, 8), bar(17, 6), bar(21, 3)), 950),
+        ]},
+        { name:'blueprint', desc:'A plan unrolls — describe it, Klay drafts it', pick:false, frames:[
+          F(LEFT, {5:LEYES.right}, P(SCROLL_1, 14, 6), 380),
+          F(LEFT, {5:LEYES.right}, P(SCROLL_2, 14, 6), 260),
+          F(LEFT, {5:LEYES.right}, P(SCROLL_3, 14, 6), 950),
+        ]},
+        { name:'hammer', desc:'Klay taps a peg into place', pick:false, frames:[
+          F(LEFT, {4:LARM}, M(P(HAMMER, 15, 4), P(PEG, 15, 13)), 340),
+          F(LEFT, {4:LARM}, M(P(HAMMER, 15, 7), P(PEG, 15, 13)), 180),
+          F(LEFT_DOWN, {5:LARM}, M(P(HAMMER, 15, 9), P(['ssss'], 15, 14)), 220),
+        ]},
+        { name:'stack', desc:'Blocks pile into a tower', pick:false, frames:[
+          F(LEFT, {5:LEYES.right}, P(['ssssss','ssssss'], 14, 14), 360),
+          F(LEFT, {5:LEYES.right}, M(P(['ssssss','ssssss'], 14, 14), P(['ssss','ssss'], 15, 11)), 360),
+          F(LEFT, {5:LEYES.right}, M(P(['ssssss','ssssss'], 14, 14), P(['ssss','ssss'], 15, 11), P(['ss','ss'], 16, 8)), 850),
+        ]},
+        { name:'sketch', desc:'A pencil draws a column outline', pick:false, frames:[
+          F(LEFT, {4:LARM}, M(P(PENCIL, 14, 8), P(['ssss'], 13, 15)), 300),
+          F(LEFT, {4:LARM}, M(P(PENCIL, 18, 8), P(['ssssssss'], 13, 15)), 300),
+          F(LEFT, {4:LARM, 5:LEYES.right}, M(P(PENCIL, 18, 4), P(['s......s','s......s','s......s','ssssssss'], 13, 12)), 850),
+        ]},
+      ]
+
+      // ══════════ WORKSPACE ══════════
+      const WORKSPACE = [
+        { name:'wave', desc:'Klay waves you in', pick:false, frames:[
+          F(LEFT, {2:'..lll..m....', 3:'...o..m.....', 4:LARM}, null, 320),
+          F(LEFT, {2:'..lll...m...', 3:'...o..m.....', 4:LARM}, null, 320),
+        ]},
+        { name:'duo', desc:'A teammate joins — sand pot, never mauve', pick:true, frames:[
+          F(LEFT, MATE, null, 520),
+          F(LEFT, MATE_DOWN, null, 520),
+        ]},
+        { name:'invite', desc:'Klay holds up an envelope', pick:false, frames:[
+          F(LEFT, {4:LARM}, P(ENVELOPE, 14, 9), 520),
+          F(LEFT, {4:LARM, 5:LEYES.right}, P(ENVELOPE, 14, 6), 420),
+          F(LEFT, {4:LARM}, P(ENVELOPE, 14, 9), 520),
+        ]},
+        { name:'gather', desc:'A teammate walks over to join Klay', pick:false, frames:[
+          F(LEFT, null, null, 420),
+          F(LEFT, MATE_MID, null, 300),
+          F(LEFT, MATE, null, 300),
+          F(LEFT, MATE_DOWN, null, 700),
+        ]},
+        { name:'handoff', desc:'Klay passes a card to a teammate', pick:false, frames:[
+          F(LEFT, M(MATE, {4:LARM}), P(CARD, 13, 9), 460),
+          F(LEFT, M(MATE, {4:LARM, 5:LEYES.right}), P(CARD, 16, 9), 300),
+          F(LEFT, MATE, P(CARD, 19, 9), 750),
+        ]},
+      ]
+
+      // ══════════ render ══════════
+      const COARSE_PX = 7
+      function draw(el, fr) {
+        el.innerHTML = ''
+        const half = COARSE_PX / 2
+        const wrap = document.createElement('div')
+        wrap.style.position = 'relative'
+        wrap.style.width = 12 * COARSE_PX + 'px'
+        wrap.style.height = 11 * COARSE_PX + 'px'
+        // coarse layer
+        fr.map.forEach((row) => {
+          const r = document.createElement('div')
+          r.className = 'klay-row'
+          for (const ch of row) {
+            const p = document.createElement('div')
+            p.style.width = COARSE_PX + 'px'; p.style.height = COARSE_PX + 'px'
+            if (PALETTE[ch]) p.style.background = PALETTE[ch]
+            r.appendChild(p)
+          }
+          wrap.appendChild(r)
+        })
+        // fine prop layer, drawn in front
+        if (fr.hi) {
+          const layer = document.createElement('div')
+          layer.style.position = 'absolute'; layer.style.inset = '0'
+          for (const y in fr.hi) {
+            ;[...fr.hi[y]].forEach((ch, x) => {
+              if (!PALETTE[ch]) return
+              const p = document.createElement('div')
+              p.style.position = 'absolute'
+              p.style.left = x * half + 'px'; p.style.top = y * half + 'px'
+              p.style.width = half + 'px'; p.style.height = half + 'px'
+              p.style.background = PALETTE[ch]
+              layer.appendChild(p)
+            })
+          }
+          wrap.appendChild(layer)
+        }
+        el.appendChild(wrap)
+      }
+
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      function mount(rowId, list) {
+        const row = document.getElementById(rowId)
+        list.forEach((anim) => {
+          const cell = document.createElement('div')
+          cell.className = 'cell' + (anim.pick ? ' pick' : '')
+          const stage = document.createElement('div')
+          stage.className = 'stage'
+          const holder = document.createElement('div')
+          holder.setAttribute('role', 'img')
+          holder.setAttribute('aria-label', `Klay ${anim.name}`)
+          stage.appendChild(holder)
+          const name = document.createElement('div'); name.className = 'name'; name.textContent = anim.name
+          const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = anim.desc
+          cell.append(stage, name, desc)
+          row.appendChild(cell)
+
+          let i = 0
+          // ?freeze=1 pins each animation on its longest ("resolution") frame —
+          // the composition review needs a fixed frame, not a random one.
+          const freeze = new URLSearchParams(location.search).has('freeze')
+          if (freeze) {
+            const best = anim.frames.reduce((a, b) => (b.ms > a.ms ? b : a), anim.frames[0])
+            draw(holder, best)
+            return
+          }
+          draw(holder, anim.frames[0])
+          if (!reduced && anim.frames.length > 1) {
+            const step = () => {
+              i = (i + 1) % anim.frames.length
+              draw(holder, anim.frames[i])
+              setTimeout(step, anim.frames[i].ms)
+            }
+            setTimeout(step, anim.frames[0].ms)
+          }
+        })
+      }
+      mount('row-chat', CHAT)
+      mount('row-builder', BUILDER)
+      mount('row-workspace', WORKSPACE)
+    </script>
+  </body>
+</html>
