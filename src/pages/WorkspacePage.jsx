@@ -33,7 +33,8 @@ export default function WorkspacePage() {
         <div className="flex flex-col items-center gap-10 w-full" style={{ maxWidth: 530 }}>
           {/* Illustration + heading */}
           <EmptyState
-            icon={Users}
+            klay="duo"
+            klayLabel="Klay joined by a teammate"
             title="Your workspaces"
             body={
               <>

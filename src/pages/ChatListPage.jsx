@@ -84,7 +84,8 @@ export default function ChatListPage() {
         </div>
       ) : (
         <EmptyState
-          icon={ChatsCircle}
+          klay="converse"
+          klayLabel="Klay having a conversation"
           title="Looking to start a chat?"
           body="Ask questions about your boards, get summaries, or work through your project with Claude."
           action={

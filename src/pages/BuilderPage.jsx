@@ -1,4 +1,4 @@
-import { Blueprint, CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
 import EmptyState from '../components/ui/EmptyState'
 import Button from '../components/ui/Button'
 
@@ -31,7 +31,8 @@ export default function BuilderPage() {
       </div>
 
       <EmptyState
-        icon={Blueprint}
+        klay="blueprint"
+        klayLabel="Klay drafting a board"
         title="Looking to build a board?"
         body="Describe what you want to track and we'll set up columns, labels, and starter cards."
         action={

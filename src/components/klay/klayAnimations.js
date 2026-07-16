@@ -21,6 +21,8 @@ export const PALETTE = {
   s: '#E0DBD5', // sand — props
   K: '#5C5C57', // charcoal — prop shading
   S: '#C4BFB8', // mist — prop shading
+  b: '#1A5DBA', // blueprint blue — props (Kolumn's --label-blue-text)
+  B: '#DCEBF9', // blueprint line — props (Kolumn's --label-blue-bg)
 }
 
 export const COARSE_COLS = 12
@@ -34,6 +36,19 @@ const E = '............'
 export const BASE = [E, '......l.....', '.....lll....', '......o.....', '...mmmmmm...', '...mkmmkm...', '...mmmmmm...', '....m..m....', E, E, E]
 export const DOWN = [E, E, '......l.....', '.....lll....', '......o.....', '...mmmmmm...', '...mkmmkm...', '...mmmmmm...', '....m..m....', E, E]
 export const UP1 = ['......l.....', '.....lll....', '......o.....', '...mmmmmm...', '...mkmmkm...', '...mmmmmm...', '....m..m....', E, E, E, E]
+
+// LEFT poses — Klay at coarse cols 0-5 instead of 3-8. Centred, he leaves only
+// 3 coarse cols for props (a 6px sliver); shifted left, the prop layer gets
+// cols 6-11 = 12 fine px, which is enough to draw a scene. Use for
+// prop-heavy animations; keep BASE for Klay-only ones.
+export const LEFT = [E, '...l........', '..lll.......', '...o........', 'mmmmmm......', 'mkmmkm......', 'mmmmmm......', '.m..m.......', E, E, E]
+export const LEFT_DOWN = [E, E, '...l........', '..lll.......', '...o........', 'mmmmmm......', 'mkmmkm......', 'mmmmmm......', '.m..m.......', E, E]
+export const LEFT_EYES = {
+  center: 'mkmmkm......',
+  closed: 'mmmmmm......',
+  left: 'kmmkmm......',
+  right: 'mmkmmk......',
+}
 
 // Eye rows (swap into y5 of BASE / y6 of DOWN / y4 of UP1)
 export const EYES = {
@@ -54,6 +69,44 @@ export function frame(base, mod, hi, ms) {
   if (mod) for (const y in mod) map[+y] = mod[y]
   return { map, hi: hi || null, ms: ms || 300 }
 }
+
+/**
+ * hi(art, x, y) — place a small art block on the fine grid, returning the
+ * sparse {rowIndex: '24-char string'} shape `frame` expects. Beats
+ * hand-counting dots, which is how props end up one pixel off.
+ */
+export function hi(art, x, y) {
+  const rows = {}
+  art.forEach((line, i) => {
+    const row = '.'.repeat(x) + line
+    rows[y + i] = row + '.'.repeat(Math.max(0, FINE_COLS - row.length))
+  })
+  return rows
+}
+
+// ── Props for the empty-state set ────────────────────────────────────────
+// Cream (#FDFBF7) is invisible on the cream page (#FAF8F6) — every cream prop
+// carries a mist outline so it exists in light mode. Sand reads unaided.
+const BUB_S = ['SS', 'SS']
+const BUB_M = ['.SSSS.', 'SwwwwS', 'SwwwwS', '.SSSS.', '.S....']
+const BUB_BIG = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwkwkwkwwS', 'SwwwwwwwwS', '.SSSSSSSS.', '.S........']
+const BUB_IN = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwwkwkwkwS', 'SwwwwwwwwS', '.SSSSSSSS.', '........S.']
+
+// Blueprint: deep blue paper, pale blue drafting lines.
+const BP_ROLL = ['bb', 'bb', 'bb', 'bb', 'bb', 'bb', 'bb', 'bb']
+const BP_U1 = ['bbbb', 'bbbb', 'bbbb', 'bbbb', 'bbbb', 'bbbb', 'bbbb', 'bbbb']
+const BP_U2 = ['bbbbbbb', 'bbbbbbb', 'bbbbbbb', 'bbbbbbb', 'bbbbbbb', 'bbbbbbb', 'bbbbbbb', 'bbbbbbb']
+const BP_BLANK = ['bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb']
+const BP_C1 = ['bbbbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bbbbbbbbbb']
+const BP_C2 = ['bbbbbbbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bbbbbbbbbb']
+const BP_C3 = ['bbbbbbbbbb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bbbbbbbbbb']
+
+// Teammate: sand pot walking in from the right. Sand, never mauve — the
+// palette rule makes "that one isn't Klay" legible for free.
+const MATE_FAR = { 1: '...l........', 2: '..lll.......', 3: '...o.......o', 4: 'mmmmmm.....s', 5: 'mkmmkm.....s', 6: 'mmmmmm.....s', 7: '.m..m.......' }
+const MATE_MID = { 1: '...l......l.', 2: '..lll....lll', 3: '...o......o.', 4: 'mmmmmm..ssss', 5: 'mkmmkm..skss', 6: 'mmmmmm..ssss', 7: '.m..m....s.s' }
+const MATE = { 1: '...l.....l..', 2: '..lll...lll.', 3: '...o.....o..', 4: 'mmmmmm.sssss', 5: 'mkmmkm.sksks', 6: 'mmmmmm.sssss', 7: '.m..m...s.s.' }
+const MATE_DOWN = { 2: '...l.....l..', 3: '..lll...lll.', 4: '...o.....o..', 5: 'mmmmmm.sssss', 6: 'mkmmkm.sksks', 7: 'mmmmmm.sssss', 8: '.m..m...s.s.' }
 
 // ── Core animation library (the shipped set — extend freely) ──
 export const ANIMATIONS = {
@@ -116,5 +169,46 @@ export const ANIMATIONS = {
   deliver: [
     frame(BASE, { 4: '...mmmmmmww.', 5: '...mkmmkmww.', 7: '....m...m...' }, null, 200),
     frame(DOWN, { 5: '...mmmmmmww.', 6: '...mkmmkmww.', 8: '...m...m....' }, null, 200),
+  ],
+
+  // ── Empty-state set (LEFT pose; long loops) ──────────────────────────
+  // These run ~3-4s rather than the core set's ~1-2s: an empty state is read,
+  // not glanced at, so each loop opens on a beat, builds a step at a time, and
+  // holds its payoff ~1s. Same low frame rate — the story is longer, not slower.
+  // Design record: docs/design-mockups/klay-emptystate-finals.html
+
+  // Chat: a whole exchange — Klay asks, a reply comes back.
+  converse: [
+    frame(LEFT, null, null, 700),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BUB_S, 14, 8), 200),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BUB_M, 13, 5), 200),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BUB_BIG, 13, 2), 950),
+    frame(LEFT, { 5: LEFT_EYES.center }, null, 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BUB_S, 14, 10), 200),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BUB_IN, 13, 8), 950),
+    frame(LEFT, { 5: LEFT_EYES.center }, null, 450),
+  ],
+
+  // Builder: the plan unrolls, then three columns get drafted onto it.
+  blueprint: [
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_ROLL, 13, 4), 550),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_U1, 13, 4), 220),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_U2, 13, 4), 220),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_BLANK, 13, 4), 450),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_C1, 13, 4), 320),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_C2, 13, 4), 320),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(BP_C3, 13, 4), 1100),
+  ],
+
+  // Workspace: Klay alone, someone walks in, they settle together.
+  duo: [
+    frame(LEFT, null, null, 650),
+    frame(LEFT, MATE_FAR, null, 250),
+    frame(LEFT, MATE_MID, null, 250),
+    frame(LEFT, MATE, null, 450),
+    frame(LEFT, MATE_DOWN, null, 420),
+    frame(LEFT, MATE, null, 420),
+    frame(LEFT, MATE_DOWN, null, 420),
+    frame(LEFT, MATE, null, 1000),
   ],
 }
