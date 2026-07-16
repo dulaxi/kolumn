@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PixelKlay from '../klay/PixelKlay'
+import KolumnLogo from '../layout/KolumnLogo'
 import Button from './Button'
 
 /**
@@ -26,15 +27,23 @@ export default function NotFoundState({
   actions = [],
   klayScale = 5,
   size = 'inline',
+  logo = false,
   className = '',
 }) {
   const isPage = size === 'page'
   return (
-    <div
-      className={`flex flex-col items-center justify-center text-center px-6 ${
-        isPage ? 'gap-0' : 'gap-0'
-      } ${className}`}
-    >
+    <div className={`flex flex-col items-center justify-center text-center px-6 ${className}`}>
+      {/* Standalone pages (the 404) render outside the app chrome, so the
+          logo has to come along — in-app states already sit under it. */}
+      {logo && (
+        <span className="flex items-center gap-2 mb-8">
+          <KolumnLogo size={26} />
+          <span className="text-[20px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+            Kolumn
+          </span>
+        </span>
+      )}
+
       <PixelKlay animation="look" scale={klayScale} label="Klay looking around" />
 
       {eyebrow && (
@@ -46,8 +55,8 @@ export default function NotFoundState({
       <h1
         className={
           isPage
-            ? 'font-heading text-[26px] font-medium text-[var(--text-primary)] mt-1.5 mb-1.5'
-            : 'text-[15px] font-semibold text-[var(--text-primary)] mt-2.5 mb-1'
+            ? 'font-heading text-[26px] font-normal text-[var(--text-primary)] mt-1.5 mb-1.5'
+            : 'text-[15px] font-medium text-[var(--text-primary)] mt-2.5 mb-1'
         }
       >
         {title}

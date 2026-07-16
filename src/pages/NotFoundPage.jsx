@@ -5,9 +5,10 @@ export default function NotFoundPage() {
     <div className="min-h-screen bg-[var(--surface-page)] flex flex-col items-center justify-center px-4">
       <NotFoundState
         size="page"
+        logo
         klayScale={8}
         eyebrow="404"
-        title="This page wandered off"
+        title="Page not found"
         body="Klay looked everywhere. The link may be old, or the page moved."
         actions={[
           { label: 'Back to Dashboard', to: '/dashboard' },

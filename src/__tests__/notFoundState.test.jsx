@@ -28,11 +28,13 @@ describe('NotFoundState', () => {
 })
 
 describe('NotFoundPage (404)', () => {
-  test('leads with Klay and the headline, demotes 404 to an eyebrow', () => {
+  test('leads with the logo + Klay, demotes 404 to an eyebrow', () => {
     renderIn(<NotFoundPage />)
     expect(screen.getByRole('img', { name: /klay/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'This page wandered off' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
     expect(screen.getByText('404')).toBeInTheDocument()
+    // standalone page: wordmark travels with it (no app chrome to sit under)
+    expect(screen.getByText('Kolumn')).toBeInTheDocument()
   })
 
   test('offers both a primary and a secondary route out', () => {
