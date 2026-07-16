@@ -104,17 +104,22 @@ export default function DashboardPage() {
 
         {/* Chat input — Klay perches on its shoulder, reading the same
             clock as the greeting words (decision: dashboard-klay-options-v2,
-            C). BASE feet sit on the input's top edge at -top-8 (32px = grid
-            rows 0-7 at scale 4); DOWN frames dip 4px onto the card, which is
-            the bob. pointer-events-none: he never blocks the control. */}
+            C). The input's top edge is his FLOOR: BASE feet (grid rows 0-7,
+            8×6px at scale 6) sit flush on it via -top-12, and the card is
+            painted in front of him (it comes later in the DOM with its own
+            positioning context), so bobbing frames dip BEHIND the edge
+            instead of sliding onto the control. pointer-events-none: he
+            never costs a click. */}
         <div className="w-full relative">
-          <ChatInput onSend={handleSubmit} docked={false} />
           <PixelKlay
             animation={KLAY_BY_SLOT[slot]}
-            scale={4}
+            scale={6}
             label={`Klay (${slot})`}
-            className="absolute right-6 -top-8 pointer-events-none select-none"
+            className="absolute right-8 -top-12 pointer-events-none select-none"
           />
+          <div className="relative">
+            <ChatInput onSend={handleSubmit} docked={false} />
+          </div>
         </div>
 
         {/* Kanban-action pills */}
