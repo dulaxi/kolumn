@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus, Sparkle } from '@phosphor-icons/react'
 
 import { capture } from '../lib/analytics'
 import { useAuthStore } from '../store/authStore'
@@ -97,14 +97,24 @@ export default function DashboardPage() {
         {/* Greeting */}
         <div className="w-full flex justify-center">
           <div className="flex items-center gap-3 text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-logo)', fontWeight: 400, lineHeight: 1.5, fontSize: 'clamp(1.875rem, 1.2rem + 2vw, 2.5rem)' }}>
-            <PixelKlay animation={KLAY_BY_SLOT[slot]} scale={4} label={`Klay (${slot})`} className="shrink-0" />
+            <Sparkle size={32} weight="fill" className="shrink-0 text-[var(--accent-sparkle)]" />
             <span className="whitespace-nowrap select-none">{pickGreeting(slot)}, <span className="text-[var(--color-logo)]">{firstName}</span></span>
           </div>
         </div>
 
-        {/* Chat input */}
-        <div className="w-full">
+        {/* Chat input — Klay perches on its shoulder, reading the same
+            clock as the greeting words (decision: dashboard-klay-options-v2,
+            C). BASE feet sit on the input's top edge at -top-8 (32px = grid
+            rows 0-7 at scale 4); DOWN frames dip 4px onto the card, which is
+            the bob. pointer-events-none: he never blocks the control. */}
+        <div className="w-full relative">
           <ChatInput onSend={handleSubmit} docked={false} />
+          <PixelKlay
+            animation={KLAY_BY_SLOT[slot]}
+            scale={4}
+            label={`Klay (${slot})`}
+            className="absolute right-6 -top-8 pointer-events-none select-none"
+          />
         </div>
 
         {/* Kanban-action pills */}
