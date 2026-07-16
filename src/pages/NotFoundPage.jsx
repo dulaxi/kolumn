@@ -2,7 +2,7 @@ import NotFoundState from '../components/ui/NotFoundState'
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-[var(--surface-raised)] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--surface-page)] flex flex-col items-center justify-center px-4">
       <NotFoundState
         size="page"
         klayScale={8}
