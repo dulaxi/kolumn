@@ -32,7 +32,7 @@ function ColumnGroup({ title, items, onCardClick, selectedCardId, completeCard }
           <button
             type="button"
             onClick={() => setVisibleCount((c) => c + 20)}
-            className="w-full py-1.5 text-[12px] font-medium text-[var(--color-lime-dark)] hover:text-[var(--color-lime-dark)] hover:bg-[var(--accent-lime-wash)] rounded-lg transition-colors"
+            className="w-full py-1.5 text-[12px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
           >
             Show {Math.min(remaining, 20)} more ({remaining} remaining)
           </button>

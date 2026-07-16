@@ -32,7 +32,7 @@ function AcceptButton({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)] hover:bg-[var(--color-lime)] hover:text-white transition-colors"
+      className="inline-flex items-center gap-1 h-6 px-2 text-[11px] font-medium rounded-md bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] transition-colors"
     >
       <Check className="w-3 h-3" weight="bold" />
       Accept

@@ -30,7 +30,7 @@ export default function ChatListPage() {
             Sort by Activity
             <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
           </Button>
-          <Button variant="accent" size="sm" onClick={() => navigate('/dashboard')}>
+          <Button size="sm" onClick={() => navigate('/dashboard')}>
             <Plus className="w-4 h-4" />
             New chat
           </Button>
@@ -88,7 +88,7 @@ export default function ChatListPage() {
           title="Looking to start a chat?"
           body="Ask questions about your boards, get summaries, or work through your project with Claude."
           action={
-            <Button variant="accent" size="sm" onClick={() => navigate('/dashboard')}>
+            <Button size="sm" onClick={() => navigate('/dashboard')}>
               <Plus className="w-4 h-4" />
               New chat
             </Button>

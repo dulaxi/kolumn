@@ -34,7 +34,7 @@ export default class ErrorBoundary extends Component {
           <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-md">
             An unexpected error occurred. Your data is safe — try refreshing this section.
           </p>
-          <Button variant="accent" onClick={this.handleReset}>
+          <Button onClick={this.handleReset}>
             <ArrowsClockwise className="w-4 h-4" />
             Try again
           </Button>

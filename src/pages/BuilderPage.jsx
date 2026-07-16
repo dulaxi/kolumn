@@ -12,7 +12,7 @@ export default function BuilderPage() {
             Sort by Activity
             <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
           </Button>
-          <Button variant="accent" size="sm">
+          <Button size="sm">
             <Plus className="w-4 h-4" />
             New build
           </Button>
@@ -35,7 +35,7 @@ export default function BuilderPage() {
         title="Looking to build a board?"
         body="Describe what you want to track and we'll set up columns, labels, and starter cards."
         action={
-          <Button variant="accent" size="sm">
+          <Button size="sm">
             <Plus className="w-4 h-4" />
             New build
           </Button>

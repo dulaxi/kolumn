@@ -11,7 +11,7 @@ function mergeClassNames(...parts) {
  *   icon={SquaresFour}
  *   title="Create your first board"
  *   body="Boards hold your columns and cards."
- *   action={<Button variant="accent" onClick={...}>New board</Button>}
+ *   action={<Button onClick={...}>New board</Button>}
  * />
  */
 export default function EmptyState({ icon: Icon, title, body, action, className = '' }) {

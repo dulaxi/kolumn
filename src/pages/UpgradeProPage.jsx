@@ -133,8 +133,7 @@ export default function UpgradeProPage() {
 
           {/* ── Subscribe CTA ── */}
           <Button
-            variant="accent"
-            size="lg"
+                        size="lg"
             onClick={handleSubscribe}
             loading={submitting}
             loadingText="Activating"

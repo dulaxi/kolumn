@@ -93,7 +93,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
                   type="button"
                   onMouseDown={(e) => { e.preventDefault(); handleAddColumn() }}
                   disabled={addingColumn}
-                  className="px-3 py-1.5 text-xs font-medium bg-[var(--color-lime)] text-white rounded-md hover:bg-[var(--color-lime-dark)] transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs font-medium bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] rounded-md hover:bg-[var(--btn-primary-hover)] transition-colors disabled:opacity-50"
                 >
                   {addingColumn ? 'Adding...' : 'Add section'}
                 </button>

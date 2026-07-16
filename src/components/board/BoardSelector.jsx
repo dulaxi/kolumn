@@ -132,7 +132,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               <Funnel className="w-4 h-4 -ml-0.5" />
               Filter
               {activeFilterCount > 0 && (
-                <span className="flex items-center justify-center w-4 h-4 text-[10px] font-semibold text-white bg-[var(--color-lime)] rounded-full">
+                <span className="flex items-center justify-center w-4 h-4 text-[10px] font-semibold text-[var(--btn-primary-text)] bg-[var(--btn-primary-bg)] rounded-full">
                   {activeFilterCount}
                 </span>
               )}

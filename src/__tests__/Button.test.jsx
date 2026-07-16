@@ -51,7 +51,7 @@ describe('Button', () => {
   })
 
   test('each variant produces distinct className', () => {
-    const variants = ['primary', 'accent', 'secondary', 'ghost', 'destructive']
+    const variants = ['primary', 'secondary', 'ghost', 'destructive']
     const classes = variants.map((v) => {
       const { container, unmount } = render(<Button variant={v}>X</Button>)
       const cn = container.querySelector('button').className

@@ -105,7 +105,7 @@ src/
 ├── components/
 │   ├── ui/                         # Design-system primitives — see Design System → Primitives
 │   │   ├── Avatar.jsx              # Initials avatar, hash-derived color, 4 sizes
-│   │   ├── Button.jsx              # 5 variants × 6 sizes, loading + asChild support
+│   │   ├── Button.jsx              # 4 variants × 6 sizes, loading + asChild support
 │   │   ├── Input.jsx + Textarea.jsx # Bordered fields, leading-icon + error states
 │   │   ├── Modal.jsx               # Portal, focus trap, body scroll lock, stacked-modal aware
 │   │   ├── Popover.jsx             # Anchored overlay with click-outside + escape
@@ -370,7 +370,7 @@ mockups live in `docs/design-mockups/{button,input,menu,ghost-buttons}-decisions
 | Primitive  | API surface                                                       |
 |------------|-------------------------------------------------------------------|
 | `Avatar`   | `name`, `size` (xs/sm/md/lg), `ring`. Hash-derived color.         |
-| `Button`   | `variant` (primary/accent/secondary/ghost/destructive), `size` (sm/md/lg + icon-{sm,md,lg}), `loading`, `loadingText`, `asChild` (Slot pattern). Defaults to `type="button"`. |
+| `Button`   | `variant` (primary/secondary/ghost/destructive — no lime accent, see Coherency Rules), `size` (sm/md/lg + icon-{sm,md,lg}), `loading`, `loadingText`, `asChild` (Slot pattern). Defaults to `type="button"`. |
 | `Input`    | `error`, `leadingIcon`, `wrapperClassName`. 1px ink focus border. |
 | `Textarea` | `error`, `rows`. Same focus + error states as `Input`.            |
 | `Modal`    | `open`, `onClose`, `contentClassName`. Portal, focus trap, body scroll lock, stacked-modal aware (only topmost responds to Escape). Suppresses stale `:focus-visible` on trigger after mouse-driven close. |
@@ -397,7 +397,7 @@ without a deliberate reason discussed with the user.
 - **Inputs: 1px ink (`#1B1B18`) border on focus.** No lime focus ring, no glow. Hover bumps border from sand to mist.
 - **Modals: no backdrop blur.** Just dimmed ink overlay (`rgba(27,27,24,0.45)`). Perf + visual win.
 - **Toasts: always `showToast.*` from `src/utils/toast.js`.** Never roll inline. Pick the most specific intent (`delete` not `error`, `restore` not `success`).
-- **Buttons: ink primary, lime accent for create/save/positive, red (`--color-red`) for destructive.** Copper means *failure* (errors); red means *destructive intent* (buttons, menu items, confirm dialogs). Destructive hover affordances (delete/remove/leave) use red; copper hovers that remain are non-destructive accents (options, toggles, active indicators). Decision: docs/design-mockups/error-style-decisions-2.html (R2).
+- **Buttons: ink for every affirmative action (create/save/submit/retry), red (`--color-red`) for destructive.** There is no lime button — the `accent` variant was removed 2026-07-15 after an audit found it split "create" across two hues (New Board was ink, New chat was lime) and that three hand-rolled lime buttons shipped `text-white` at 1.61:1. Lime survives as a *state* color (selection `--accent-lime-soft`, success toasts/notices, badges), never as a button fill. Copper means *failure* (errors); red means *destructive intent* (buttons, menu items, confirm dialogs). Destructive hover affordances (delete/remove/leave) use red; copper hovers that remain are non-destructive accents (options, toggles, active indicators). Decision: docs/design-mockups/error-style-decisions-2.html (R2).
 - **Border radius: 8px small (buttons, inputs), 10-12px raised (modals, panels, tiles).** Deliberate exception: kanban card surfaces (`Card`, `AICardSkeleton`, `InlineCardEditor`, `CardDetailPanel`) use 16px (`rounded-2xl`) — a product choice; don't "fix" them back to 12px.
 - **Shadows: minimal.** Default raised shadow is `0 4px 24px rgba(27,27,24,0.10)` (matches toasts).
 - **Card field names are snake_case** (DB columns). See Key Data Shapes.
