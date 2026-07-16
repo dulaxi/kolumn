@@ -5,6 +5,7 @@ import Skeleton from '../components/ui/Skeleton'
 import Button from '../components/ui/Button'
 import TypingIndicator from '../components/chat/TypingIndicator'
 import PixelKlay from '../components/klay/PixelKlay'
+import RouteLoadingShell from '../components/layout/RouteLoadingShell'
 
 // Dev-only sandbox for iterating on BoardSkeleton (the F1 first-load
 // ghost board). Renders the exact loading chrome BoardsPage shows while
@@ -46,6 +47,16 @@ export default function BoardSkeletonSandbox() {
         <Button variant="secondary" size="sm" loading loadingText="Importing">Import data</Button>
         <Button size="lg" loading loadingText="Setting up your workspace">Create account</Button>
         <TypingIndicator />
+      </div>
+
+      {/* RouteLoadingShell specimen — stage 2 forced visible (klayDelayMs=0) */}
+      <div className="shrink-0">
+        <p className="font-mono text-[10px] text-[var(--text-faint)] mb-1">
+          RouteLoadingShell (reload fallback, Klay stage forced)
+        </p>
+        <div className="border border-[var(--border-default)] rounded-xl overflow-hidden h-[420px] [&>div]:min-h-0 [&>div]:h-full">
+          <RouteLoadingShell klayDelayMs={0} />
+        </div>
       </div>
 
       {/* Klay specimens (real PixelKlay component) */}
