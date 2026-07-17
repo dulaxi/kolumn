@@ -92,7 +92,10 @@ export default function SessionsList() {
                     <span className="truncate text-[var(--text-primary)]">{displayDevice(s.device)}</span>
                   </Tooltip>
                   {s.current && (
-                    <span className="shrink-0 rounded-full bg-[var(--accent-lime-soft)] px-2 py-0.5 text-[11px] text-[var(--text-primary)]">
+                    // Badge = wash fill + lime border + ink text, the same
+                    // contrast-safe pairing as InlineNotice's success variant
+                    // (lime-on-lime text failed the app's contrast audit).
+                    <span className="shrink-0 rounded-full border border-[var(--color-lime)] bg-[var(--accent-lime-wash)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)]">
                       Current
                     </span>
                   )}
