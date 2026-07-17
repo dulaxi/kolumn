@@ -12,9 +12,8 @@ dist
 dist-ssr
 *.local
 
-# Screenshots (but real image assets under src/assets are tracked)
+# Screenshots
 *.png
-!src/assets/*.png
 *.jpeg
 
 # MCP config (contains PAT)

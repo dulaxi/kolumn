@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus } from '@phosphor-icons/react'
-import rippleUrl from '../assets/ripple.png'
+import { Bug, Calendar, ClipboardText, Columns, Lightning, MagnifyingGlass, Plus, Sparkle } from '@phosphor-icons/react'
 
 import { capture } from '../lib/analytics'
 import { useAuthStore } from '../store/authStore'
@@ -98,10 +97,7 @@ export default function DashboardPage() {
         {/* Greeting */}
         <div className="w-full flex justify-center">
           <div className="flex items-center gap-3 text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-logo)', fontWeight: 400, lineHeight: 1.5, fontSize: 'clamp(1.875rem, 1.2rem + 2vw, 2.5rem)' }}>
-            {/* Hand-drawn mauve ripple (source: ripple.psd, exported with
-                alpha at 128px = 4× the 32px display size for retina). Same
-                footprint the Phosphor Sparkle had. */}
-            <img src={rippleUrl} width={32} height={32} alt="" aria-hidden="true" className="shrink-0 select-none" />
+            <Sparkle size={32} weight="fill" className="shrink-0 text-[var(--accent-sparkle)]" />
             <span className="whitespace-nowrap select-none">{pickGreeting(slot)}, <span className="text-[var(--color-logo)]">{firstName}</span></span>
           </div>
         </div>
