@@ -5,6 +5,7 @@ import WorkspaceSidebar from './WorkspaceSidebar'
 import Header from './Header'
 import SearchDialog from '../SearchDialog'
 import ShortcutsSheet from '../ShortcutsSheet'
+import SettingsModal from '../settings/SettingsModal'
 import BottomTabBar from './BottomTabBar'
 import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
@@ -22,7 +23,6 @@ const pageTitles = {
   '/boards': 'Boards',
   '/build': 'Builder',
   '/workspace': 'Workspace',
-  '/settings': 'Settings',
 }
 
 export default function AppLayout() {
@@ -36,6 +36,7 @@ export default function AppLayout() {
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const { showMigration, migrating, handleMigrate, handleSkipMigration } = useAppData()
 
@@ -57,11 +58,14 @@ export default function AppLayout() {
   useEffect(() => {
     const openSearch = () => setSearchOpen(true)
     const openShortcuts = () => setShortcutsOpen(true)
+    const openSettings = () => setSettingsOpen(true)
     window.addEventListener('kolumn:focus-search', openSearch)
     window.addEventListener('kolumn:open-shortcuts', openShortcuts)
+    window.addEventListener('kolumn:open-settings', openSettings)
     return () => {
       window.removeEventListener('kolumn:focus-search', openSearch)
       window.removeEventListener('kolumn:open-shortcuts', openShortcuts)
+      window.removeEventListener('kolumn:open-settings', openSettings)
     }
   }, [])
 
@@ -77,7 +81,7 @@ export default function AppLayout() {
   // that BoardsPage listens for. They live here so the listener is
   // installed once at the layout level instead of being re-installed
   // every time BoardsPage mounts.
-  const aDialogIsOpen = searchOpen || shortcutsOpen
+  const aDialogIsOpen = searchOpen || shortcutsOpen || settingsOpen
   const onBoardsPage = location.pathname.startsWith('/boards')
 
   const shortcuts = useMemo(() => [
@@ -109,6 +113,7 @@ export default function AppLayout() {
     <div className="h-screen flex flex-col bg-[var(--surface-board)] overflow-hidden">
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <OfflineBanner />
       <InlineErrorBoundary name="sidebar">
         <Sidebar />

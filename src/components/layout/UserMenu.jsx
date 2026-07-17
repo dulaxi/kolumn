@@ -46,7 +46,7 @@ export default function UserMenu({ variant = 'header', collapsed = false }) {
         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{profile?.display_name || 'User'}</p>
         <p className="text-xs text-[var(--text-muted)] truncate">{profile?.email || ''}</p>
       </div>
-      <Menu.Item icon={<Gear size={16} />} onSelect={() => { setOpen(false); navigate('/settings') }}>
+      <Menu.Item icon={<Gear size={16} />} onSelect={() => { setOpen(false); window.dispatchEvent(new CustomEvent('kolumn:open-settings')) }}>
         Settings
       </Menu.Item>
       <Menu.Item
