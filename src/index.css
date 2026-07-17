@@ -87,6 +87,12 @@
   --accent-lime-wash: #EEF2D6;
   --accent-lime-soft: #D4E07A;
 
+  /* Amber accent chip (claude.ai's --cds-text-accent/bg-accent pairing):
+     tone-on-tone badge text + its wash. Used by status chips like the
+     sessions table's "Current" badge — distinct from honey (= warning). */
+  --accent-amber: #E59700;
+  --accent-amber-wash: #FCF3E0;
+
   --btn-primary-bg: #1B1B18;
   --btn-primary-text: #FFFFFF;
   --btn-primary-hover: #333333;
@@ -159,6 +165,11 @@
   --accent-lime-dark: #A8BA32;
   --accent-lime-wash: #3A4920;  /* was #2E3B1A — visible as a tint (~2.8:1) instead of merging with page */
   --accent-lime-soft: #7A9230;  /* was #4F6520 — confident toggle-on fill (~5.5:1) */
+
+  /* Amber chip pair — amber text carries well on dark; wash is the same
+     hue mixed into the dark card surface. */
+  --accent-amber: #E59700;
+  --accent-amber-wash: #483A1E;
 
   --btn-primary-bg: #E8E5E0;     /* was #C2D64A — cream button preserves "strongest contrast" CTA in dark, distinct from lime accent */
   --btn-primary-text: #1C1C1A;

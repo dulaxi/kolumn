@@ -92,10 +92,9 @@ export default function SessionsList() {
                     <span className="min-w-0 truncate text-[var(--text-primary)]">{displayDevice(s.device)}</span>
                   </Tooltip>
                   {s.current && (
-                    // Badge = wash fill + lime border + ink text, the same
-                    // contrast-safe pairing as InlineNotice's success variant
-                    // (lime-on-lime text failed the app's contrast audit).
-                    <span className="shrink-0 rounded-full border border-[var(--color-lime)] bg-[var(--accent-lime-wash)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)]">
+                    // Amber tone-on-tone chip per the claude.ai Badge
+                    // reference — --accent-amber pair, small radius, no border.
+                    <span className="shrink-0 rounded-[6px] bg-[var(--accent-amber-wash)] px-2 py-0.5 text-[11px] font-medium text-[var(--accent-amber)]">
                       Current
                     </span>
                   )}
