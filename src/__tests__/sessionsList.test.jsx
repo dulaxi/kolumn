@@ -3,10 +3,25 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SessionsList from '../components/settings/SessionsList'
 import { listSessions, revokeSession } from '../lib/accountClient'
+import { showToast } from '../utils/toast'
 
 vi.mock('../lib/accountClient', () => ({
   listSessions: vi.fn(),
   revokeSession: vi.fn(),
+}))
+
+// Mock toast so we can assert on calls without rendering react-hot-toast
+vi.mock('../utils/toast', () => ({
+  showToast: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    success: vi.fn(),
+    restore: vi.fn(),
+    archive: vi.fn(),
+    delete: vi.fn(),
+    info: vi.fn(),
+    overdue: vi.fn(),
+  },
 }))
 
 afterEach(() => cleanup())
@@ -43,6 +58,16 @@ describe('SessionsList', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Revoke' }))
     expect(revokeSession).toHaveBeenCalledWith('oth')
     await waitFor(() => expect(screen.queryByText('Safari · iOS')).toBeNull())
+  })
+
+  test('revoke failure shows an error toast and keeps the row', async () => {
+    listSessions.mockResolvedValue(ROWS)
+    revokeSession.mockRejectedValue(new Error("You can't revoke the session you're using."))
+    render(<SessionsList />)
+    await screen.findByText('Safari · iOS')
+    await userEvent.click(screen.getByRole('button', { name: 'Revoke' }))
+    await waitFor(() => expect(showToast.error).toHaveBeenCalledWith("You can't revoke the session you're using."))
+    expect(screen.getByText('Safari · iOS')).toBeTruthy()
   })
 
   test('load failure shows an error notice with retry', async () => {
