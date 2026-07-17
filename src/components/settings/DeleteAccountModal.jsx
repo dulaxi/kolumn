@@ -18,6 +18,18 @@ export default function DeleteAccountModal({ open, onClose, onDeleted }) {
 
   const reset = () => { setTyped(''); setBlockers(null); setError(null); setBusy(false) }
 
+  // Locked while busy: the delete request is still in flight against the
+  // server. If we let Escape/overlay-click/Cancel dismiss the modal here,
+  // the pending promise still resolves afterward — either forcing a
+  // sign-out + navigation the user never asked for (post-"cancel"), or
+  // silently swallowing a failure by calling setError on an unmounted-look
+  // hidden modal. So every dismissal path must no-op until busy clears.
+  const handleClose = () => {
+    if (busy) return
+    reset()
+    onClose()
+  }
+
   const handleDelete = async () => {
     setBusy(true)
     setError(null)
@@ -33,7 +45,15 @@ export default function DeleteAccountModal({ open, onClose, onDeleted }) {
   }
 
   return (
-    <Modal open={open} onClose={() => { reset(); onClose() }} role="alertdialog" ariaLabel="Delete account" zIndex={60}>
+    <Modal
+      open={open}
+      onClose={handleClose}
+      dismissOnEscape={!busy}
+      dismissOnOutside={!busy}
+      role="alertdialog"
+      ariaLabel="Delete account"
+      zIndex={60}
+    >
       <div className="w-full max-w-md mx-4 rounded-xl border border-[var(--label-red-text)] bg-[var(--surface-card)] p-5">
         <div className="mb-2 flex items-center gap-2">
           <Warning className="h-4 w-4 text-[var(--label-red-text)]" />
@@ -73,7 +93,7 @@ export default function DeleteAccountModal({ open, onClose, onDeleted }) {
           >
             Delete my account
           </Button>
-          <Button variant="ghost" onClick={() => { reset(); onClose() }}>Cancel</Button>
+          <Button variant="ghost" disabled={busy} onClick={handleClose}>Cancel</Button>
         </div>
       </div>
     </Modal>

@@ -46,4 +46,20 @@ describe('DeleteAccountModal', () => {
     expect(await screen.findByText(/Design Team/)).toBeTruthy()
     expect(screen.getByText(/Roadmap/)).toBeTruthy()
   })
+
+  test('dismissal is locked while the delete is in flight', async () => {
+    let resolveDelete
+    deleteAccount.mockReturnValue(new Promise((res) => { resolveDelete = res }))
+    const onClose = vi.fn()
+    const onDeleted = vi.fn()
+    render(<DeleteAccountModal open onClose={onClose} onDeleted={onDeleted} />)
+    await userEvent.type(screen.getByLabelText(/type your email/i), 'me@example.com')
+    await userEvent.click(screen.getByRole('button', { name: /delete my account/i }))
+    // cancel disabled + escape ignored while busy
+    expect(screen.getByRole('button', { name: /cancel/i }).disabled).toBe(true)
+    await userEvent.keyboard('{Escape}')
+    expect(onClose).not.toHaveBeenCalled()
+    resolveDelete()
+    await waitFor(() => expect(onDeleted).toHaveBeenCalled())
+  })
 })
