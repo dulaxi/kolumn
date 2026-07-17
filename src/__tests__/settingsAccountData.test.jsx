@@ -10,6 +10,7 @@ import { listSessions } from '../lib/accountClient'
 vi.mock('../lib/accountClient', () => ({
   listSessions: vi.fn(),
   revokeSession: vi.fn(),
+  deleteAccount: vi.fn(),
 }))
 
 afterEach(() => cleanup())

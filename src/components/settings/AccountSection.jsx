@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import Button from '../ui/Button'
 import SettingsSection from './SettingsSection'
 import SettingsRow from './SettingsRow'
 import SessionsList from './SessionsList'
+import DeleteAccountModal from './DeleteAccountModal'
 
 export default function AccountSection({ onClose }) {
   const navigate = useNavigate()
@@ -11,12 +13,22 @@ export default function AccountSection({ onClose }) {
   const user = useAuthStore((s) => s.user)
   const signOut = useAuthStore((s) => s.signOut)
   const signOutEverywhere = useAuthStore((s) => s.signOutEverywhere)
+  const clearAfterAccountDeletion = useAuthStore((s) => s.clearAfterAccountDeletion)
 
   const email = profile?.email || user?.email || ''
+
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const leave = async (fn) => {
     onClose()
     await fn()
+    navigate('/')
+  }
+
+  const handleDeleted = () => {
+    setDeleteOpen(false)
+    onClose()
+    clearAfterAccountDeletion()
     navigate('/')
   }
 
@@ -49,6 +61,19 @@ export default function AccountSection({ onClose }) {
           </Button>
         </SettingsRow>
       </SettingsSection>
+
+      <SettingsSection title="Danger zone">
+        <SettingsRow title="Delete account" description="Permanently delete your account and all your data.">
+          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+            Delete account
+          </Button>
+        </SettingsRow>
+      </SettingsSection>
+      <DeleteAccountModal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={handleDeleted}
+      />
     </>
   )
 }

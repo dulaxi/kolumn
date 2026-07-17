@@ -194,6 +194,9 @@ export const useAuthStore = create((set, get) => ({
     localStorage.removeItem('kolumn_active_board')
   },
 
+  // The account row is already gone server-side; just drop local state.
+  clearAfterAccountDeletion: () => get()._resetLocalState(),
+
   // This device only. Other sessions keep working (see signOutEverywhere).
   signOut: () => {
     get()._resetLocalState()
