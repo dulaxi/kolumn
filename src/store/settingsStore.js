@@ -1,11 +1,23 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { applyTheme } from '../utils/theme'
+
+// v0 → v1: the theme setting used 'default' to mean light; it is now an
+// explicit 'system' | 'light' | 'dark'. Persisted 'default' becomes 'light'
+// (preserving the user's effective theme rather than switching them to
+// system-following behavior they never chose).
+export function migrateSettingsState(persistedState) {
+  if (persistedState?.theme === 'default') {
+    return { ...persistedState, theme: 'light' }
+  }
+  return persistedState
+}
 
 export const useSettingsStore = create(
   persist(
     (set, get) => ({
       sidebarCollapsed: false,
-      theme: 'default',
+      theme: 'system',
       font: 'mona-sans',
       mobileMenuOpen: false,
       favoriteBoards: [],
@@ -40,7 +52,7 @@ export const useSettingsStore = create(
       closeMobileMenu: () => set({ mobileMenuOpen: false }),
       setTheme: (theme) => {
         set({ theme })
-        document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light')
+        applyTheme(theme)
       },
       setFont: (font) => set({ font }),
       toggleFavorite: (boardId) => {
@@ -69,6 +81,8 @@ export const useSettingsStore = create(
     }),
     {
       name: 'kolumn-settings',
+      version: 1,
+      migrate: migrateSettingsState,
     }
   )
 )

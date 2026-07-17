@@ -9,6 +9,7 @@ import BottomTabBar from './BottomTabBar'
 import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
 import { useSettingsStore } from '../../store/settingsStore'
+import { applyTheme } from '../../utils/theme'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { useAppData } from '../../hooks/useAppData'
@@ -38,14 +39,14 @@ export default function AppLayout() {
 
   const { showMigration, migrating, handleMigrate, handleSkipMigration } = useAppData()
 
-  // Apply the data-theme attribute for non-default themes
+  // Apply the resolved theme; while set to 'system', follow OS changes live.
   useEffect(() => {
-    if (theme !== 'default') {
-      document.documentElement.setAttribute('data-theme', theme)
-    } else {
-      document.documentElement.removeAttribute('data-theme')
-    }
-    return () => document.documentElement.removeAttribute('data-theme')
+    applyTheme(theme)
+    if (theme !== 'system') return
+    const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = () => applyTheme('system')
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
   }, [theme])
 
   useEffect(() => {
