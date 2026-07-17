@@ -100,7 +100,7 @@ src/
 │   ├── noteStore.js                # Private notes — ⚠️ unwired from UI (see "Removed pages")
 │   ├── notificationStore.js        # In-app notifications
 │   ├── templateStore.js            # Board/card templates
-│   ├── settingsStore.js            # Local-only: sidebar, theme, font
+│   ├── settingsStore.js            # Local-only: sidebar, theme ('system'|'light'|'dark'), font
 │   └── selectors.js                # Cross-store derived selectors
 ├── components/
 │   ├── ui/                         # Design-system primitives — see Design System → Primitives
@@ -111,12 +111,14 @@ src/
 │   │   ├── Popover.jsx             # Anchored overlay with click-outside + escape
 │   │   ├── Menu.jsx                # Popover + Item/Divider/Label sub-components
 │   │   ├── Tooltip.jsx             # Hover/focus tip — replaces title= attributes
-│   │   └── Skeleton.jsx            # Default + ai-shimmer tones
+│   │   ├── Skeleton.jsx            # Default + ai-shimmer tones
+│   │   └── SegmentedControl.jsx    # Radiogroup toggle, sliding thumb
 │   ├── auth/ProtectedRoute.jsx
 │   ├── chat/                       # Chat UI (message list, composer, tool-call cards)
 │   ├── workspace/                  # Workspace switcher, settings, member list
 │   ├── layout/                     # AppLayout, Sidebar, Header, OfflineBanner
 │   ├── board/                      # Board, columns, cards, detail panel, modals
+│   ├── settings/                   # Settings modal: shell (SettingsModal) + section panes (General/Profile/Account/Data) + SettingsRedirect
 │   ├── ActionCard.jsx              # AI-suggested action card
 │   ├── SearchDialog.jsx            # ⌘K search
 │   ├── ErrorBoundary.jsx + InlineErrorBoundary.jsx
@@ -128,7 +130,6 @@ src/
 │   ├── BoardsPage.jsx              # Primary kanban view
 │   ├── ChatPage.jsx + ChatListPage.jsx
 │   ├── WorkspacePage.jsx
-│   ├── SettingsPage.jsx
 │   ├── NotFoundPage.jsx
 │   └── CalendarPage.jsx + NotesPage.jsx  # ⚠️ unwired — see "Removed pages" note
 ├── utils/
@@ -378,6 +379,7 @@ mockups live in `docs/design-mockups/{button,input,menu,ghost-buttons}-decisions
 | `Menu`     | Wraps `Popover`. Sub-components: `Menu.Item` (with `icon`, `shortcut`, `destructive`, `selected`, `checkbox`), `Menu.Divider`, `Menu.Label`. |
 | `Tooltip`  | `content`, `placement`, `delay` (default 300ms), `disabled`. Wraps a single child. |
 | `Skeleton` | `variant` (block/line/circle/pill), `tone` (default/ai), `width`, `height`. |
+| `SegmentedControl` | `options` (`[{value, label?, icon?, ariaLabel?}]`), `value`, `onChange`, `ariaLabel`. Radiogroup semantics, sliding thumb. |
 | `InlineNotice` | The persistent ("wash") tier of the error grammar: mono 12px, 18px default Phosphor icon, 1px border, 10px radius. `variant` (info/error/warn/danger/success), `icon` (node or `false`), `action` (node, e.g. Retry), `onDismiss`. Errors/danger get `role="alert"`. |
 | `FieldError`   | Micro tier: single-input validation line. Mono 11px + 13px icon, no box. Self-guards on falsy children. |
 
@@ -476,6 +478,6 @@ Migrations live in `supabase/migrations/`; the canonical full schema is
 
 - Tailwind v4 uses `@theme {}` blocks in CSS — there is no `tailwind.config.js`.
 - `lucide-react` was removed; `@phosphor-icons/react` is the only icon library. Legacy lucide names persisted in DB are remapped at render time by `DynamicIcon`.
-- `settingsStore` is the only store that persists locally (sidebar, theme, font). All other state lives in Supabase.
+- `settingsStore` is the only store that persists locally (sidebar, theme, font). All other state lives in Supabase. Theme is `'system' | 'light' | 'dark'`; a persisted legacy `'default'` value migrates to `'light'`.
 - Realtime is wired but uses last-write-wins; expect transient flicker on simultaneous edits.
 - Sentry + PostHog are wired in production; check `src/utils/logger.js` before adding ad-hoc `console.error`.
