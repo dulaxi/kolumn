@@ -48,23 +48,39 @@ describe('ProfileSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useAuthStore.setState({
-      profile: { display_name: 'Dula', icon: null, color: null, tier: 'free' },
+      profile: { display_name: 'Dula Hassan', nickname: '', icon: null, color: null, tier: 'free' },
       updateProfile: vi.fn().mockResolvedValue({}),
     })
   })
 
-  test('renders the current display name', () => {
+  test('renders the current full name and nickname', () => {
     render(<ProfileSection />)
-    expect(screen.getByLabelText('Display name').value).toBe('Dula')
+    expect(screen.getByLabelText('Full name').value).toBe('Dula Hassan')
+    expect(screen.getByLabelText('Display name').value).toBe('')
   })
 
-  test('committing a new display name calls updateProfile on blur', async () => {
+  test('committing a new full name calls updateProfile on blur', async () => {
     render(<ProfileSection />)
-    const input = screen.getByLabelText('Display name')
+    const input = screen.getByLabelText('Full name')
     await userEvent.clear(input)
     await userEvent.type(input, 'Abdullah')
     await userEvent.tab()
     expect(useAuthStore.getState().updateProfile).toHaveBeenCalledWith({ display_name: 'Abdullah' })
+  })
+
+  test('committing a nickname calls updateProfile; clearing it commits empty', async () => {
+    useAuthStore.setState({
+      profile: { display_name: 'Dula Hassan', nickname: 'Dula', icon: null, color: null, tier: 'free' },
+    })
+    render(<ProfileSection />)
+    const input = screen.getByLabelText('Display name')
+    await userEvent.clear(input)
+    await userEvent.type(input, 'Abdu')
+    await userEvent.tab()
+    expect(useAuthStore.getState().updateProfile).toHaveBeenCalledWith({ nickname: 'Abdu' })
+    await userEvent.clear(input)
+    await userEvent.tab()
+    expect(useAuthStore.getState().updateProfile).toHaveBeenCalledWith({ nickname: '' })
   })
 
   test('picking a color calls updateProfile', async () => {
@@ -80,7 +96,7 @@ describe('ProfileSection', () => {
   test('failed profile update shows an error toast, not a success toast', async () => {
     useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })
     render(<ProfileSection />)
-    const input = screen.getByLabelText('Display name')
+    const input = screen.getByLabelText('Full name')
     await userEvent.clear(input)
     await userEvent.type(input, 'Abdullah')
     await userEvent.tab()

@@ -56,7 +56,8 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const profile = useAuthStore((s) => s.profile)
   const fullName = profile?.display_name || ''
-  const firstName = fullName.split(' ')[0] || 'there'
+  // Nickname (settings → Display name) wins; else first word of the full name
+  const firstName = profile?.nickname || fullName.split(' ')[0] || 'there'
 
   // One clock read drives both the words and Klay's posture.
   const slot = getGreetingSlot(new Date().getHours())

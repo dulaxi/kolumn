@@ -8,6 +8,8 @@ create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   display_name text not null default '',
+  -- Short name preferred by the dashboard greeting; display_name is the full name
+  nickname text not null default '',
   icon text,
   color text default 'bg-[#7EB8DA]',
   tour_board_seeded_at timestamptz,

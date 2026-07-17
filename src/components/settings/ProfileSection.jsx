@@ -57,9 +57,9 @@ export default function ProfileSection() {
           )}
         </div>
       </SettingsRow>
-      <SettingsRow title="Display name" htmlFor="settings-display-name">
+      <SettingsRow title="Full name" htmlFor="settings-full-name">
         <Input
-          id="settings-display-name"
+          id="settings-full-name"
           key={profile?.display_name || ''}
           defaultValue={profile?.display_name || ''}
           placeholder="Your name…"
@@ -71,6 +71,25 @@ export default function ProfileSection() {
               return
             }
             if (next !== profile?.display_name) update({ display_name: next })
+          }}
+        />
+      </SettingsRow>
+      <SettingsRow
+        title="Display name"
+        description="What the dashboard greeting calls you."
+        htmlFor="settings-nickname"
+      >
+        <Input
+          id="settings-nickname"
+          key={`nick-${profile?.nickname || ''}`}
+          defaultValue={profile?.nickname || ''}
+          placeholder="First name…"
+          wrapperClassName="w-56"
+          onBlur={(e) => {
+            // Empty is valid here — clearing falls back to the first word
+            // of the full name in the greeting.
+            const next = e.target.value.trim()
+            if (next !== (profile?.nickname || '')) update({ nickname: next })
           }}
         />
       </SettingsRow>
