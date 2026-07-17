@@ -160,12 +160,45 @@ Deno.serve(async (req) => {
         .neq("board_members.user_id", user.id),
     ])
     if (ws.error || bd.error) return json(500, { error: "ownership_check_failed" })
+
+    // Workspace-scoped boards the caller owns are visible to the whole
+    // workspace (RLS grants access via workspace membership, no
+    // board_members rows) — block on those too.
+    const wsBoards = await admin.from("boards")
+      .select("id, name, workspace_id")
+      .eq("owner_id", user.id)
+      .not("workspace_id", "is", null)
+    if (wsBoards.error) return json(500, { error: "ownership_check_failed" })
+    let wsBoardBlockers: { type: string; name: string }[] = []
+    const wsIds = [...new Set((wsBoards.data ?? []).map((b) => b.workspace_id))]
+    if (wsIds.length > 0) {
+      const members = await admin.from("workspace_members")
+        .select("workspace_id, user_id")
+        .in("workspace_id", wsIds)
+        .neq("user_id", user.id)
+      if (members.error) return json(500, { error: "ownership_check_failed" })
+      const sharedWs = new Set((members.data ?? []).map((m) => m.workspace_id))
+      wsBoardBlockers = (wsBoards.data ?? [])
+        .filter((b) => sharedWs.has(b.workspace_id))
+        .map((b) => ({ type: "board", name: b.name }))
+    }
+
     const blockers = [
       ...(ws.data ?? []).map((w: { name: string }) => ({ type: "workspace", name: w.name })),
       ...(bd.data ?? []).map((b: { name: string }) => ({ type: "board", name: b.name })),
+      ...wsBoardBlockers,
     ]
-    if (blockers.length > 0) {
-      return json(409, { error: "owned_shared_resources", blockers })
+    // Dedupe by type+name — a board can be reached both via board_members
+    // and via workspace membership.
+    const seen = new Set<string>()
+    const dedupedBlockers = blockers.filter((b) => {
+      const key = `${b.type}:${b.name}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    if (dedupedBlockers.length > 0) {
+      return json(409, { error: "owned_shared_resources", blockers: dedupedBlockers })
     }
     const { error } = await admin.auth.admin.deleteUser(user.id)
     if (error) return json(500, { error: "delete_failed" })
