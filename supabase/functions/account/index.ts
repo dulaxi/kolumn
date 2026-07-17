@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       .eq("owner_id", user.id)
       .not("workspace_id", "is", null)
     if (wsBoards.error) return json(500, { error: "ownership_check_failed" })
-    let wsBoardBlockers: { type: string; name: string }[] = []
+    let wsBoardBlockers: { type: string; name: string; id: string }[] = []
     const wsIds = [...new Set((wsBoards.data ?? []).map((b) => b.workspace_id))]
     if (wsIds.length > 0) {
       const members = await admin.from("workspace_members")
@@ -180,23 +180,25 @@ Deno.serve(async (req) => {
       const sharedWs = new Set((members.data ?? []).map((m) => m.workspace_id))
       wsBoardBlockers = (wsBoards.data ?? [])
         .filter((b) => sharedWs.has(b.workspace_id))
-        .map((b) => ({ type: "board", name: b.name }))
+        .map((b) => ({ type: "board", name: b.name, id: b.id }))
     }
 
     const blockers = [
-      ...(ws.data ?? []).map((w: { name: string }) => ({ type: "workspace", name: w.name })),
-      ...(bd.data ?? []).map((b: { name: string }) => ({ type: "board", name: b.name })),
+      ...(ws.data ?? []).map((w: { id: string; name: string }) => ({ type: "workspace", name: w.name, id: w.id })),
+      ...(bd.data ?? []).map((b: { id: string; name: string }) => ({ type: "board", name: b.name, id: b.id })),
       ...wsBoardBlockers,
     ]
-    // Dedupe by type+name — a board can be reached both via board_members
-    // and via workspace membership.
+    // Dedupe by type+ID (names are not unique) — a board can be reached
+    // both via board_members and via workspace membership.
     const seen = new Set<string>()
-    const dedupedBlockers = blockers.filter((b) => {
-      const key = `${b.type}:${b.name}`
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
+    const dedupedBlockers = blockers
+      .filter((b) => {
+        const key = `${b.type}:${b.id}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .map(({ type, name }) => ({ type, name }))
     if (dedupedBlockers.length > 0) {
       return json(409, { error: "owned_shared_resources", blockers: dedupedBlockers })
     }
