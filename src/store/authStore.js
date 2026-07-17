@@ -181,7 +181,8 @@ export const useAuthStore = create((set, get) => ({
     throw new Error('check-email returned unexpected shape')
   },
 
-  signOut: () => {
+  // Shared local cleanup for every way of leaving the account.
+  _resetLocalState: () => {
     set({ user: null, session: null, profile: null })
     Sentry.setUser(null)
     resetUser()
@@ -191,8 +192,21 @@ export const useAuthStore = create((set, get) => ({
     import('./workspacesStore').then(({ useWorkspacesStore }) => useWorkspacesStore.getState().resetStore())
     import('./boardSharingStore').then(({ useBoardSharingStore }) => useBoardSharingStore.getState().resetStore())
     localStorage.removeItem('kolumn_active_board')
-    supabase.auth.signOut({ scope: 'global' }).catch((err) => {
+  },
+
+  // This device only. Other sessions keep working (see signOutEverywhere).
+  signOut: () => {
+    get()._resetLocalState()
+    supabase.auth.signOut({ scope: 'local' }).catch((err) => {
       logError('Sign out error:', err)
+    })
+  },
+
+  // Revokes every session for this user (all devices).
+  signOutEverywhere: () => {
+    get()._resetLocalState()
+    supabase.auth.signOut({ scope: 'global' }).catch((err) => {
+      logError('Sign out everywhere error:', err)
     })
   },
 
