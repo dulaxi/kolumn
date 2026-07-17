@@ -6,6 +6,12 @@ import SettingsModal from '../components/settings/SettingsModal'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
 
+vi.mock('../lib/accountClient', () => ({
+  listSessions: vi.fn().mockResolvedValue([]),
+  revokeSession: vi.fn(),
+  deleteAccount: vi.fn(),
+}))
+
 afterEach(() => cleanup())
 
 function renderModal(props = {}) {
@@ -29,9 +35,10 @@ describe('SettingsModal', () => {
 
   test('renders nav items and the General pane (profile + preferences) by default', () => {
     renderModal()
-    for (const item of ['General', 'Account', 'Data']) {
+    for (const item of ['General', 'Account', 'Privacy', 'Billing']) {
       expect(screen.getByRole('button', { name: item })).toBeTruthy()
     }
+    expect(screen.queryByRole('button', { name: 'Data' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Profile' })).toBeNull()
     expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Preferences' })).toBeTruthy()
@@ -47,7 +54,7 @@ describe('SettingsModal', () => {
   test('search auto-selects the first matching section and dims the rest', async () => {
     renderModal()
     await userEvent.type(screen.getByLabelText('Search settings'), 'export')
-    expect(screen.getByRole('heading', { name: 'Data' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Privacy' })).toBeTruthy()
     const general = screen.getByRole('button', { name: 'General' })
     expect(general.className).toContain('opacity-40')
   })

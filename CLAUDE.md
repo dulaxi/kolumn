@@ -118,7 +118,7 @@ src/
 │   ├── workspace/                  # Workspace switcher, settings, member list
 │   ├── layout/                     # AppLayout, Sidebar, Header, OfflineBanner
 │   ├── board/                      # Board, columns, cards, detail panel, modals
-│   ├── settings/                   # Settings modal: shell (SettingsModal) + section panes (General = Profile + Preferences blocks, Account, Data) + SettingsRedirect
+│   ├── settings/                   # Settings modal: shell (SettingsModal) + panes (General = Profile + Preferences, Account = sessions/sign-out/danger zone, Privacy = data protection + export, Billing = plan) + SettingsRedirect
 │   ├── ActionCard.jsx              # AI-suggested action card
 │   ├── SearchDialog.jsx            # ⌘K search
 │   ├── ErrorBoundary.jsx + InlineErrorBoundary.jsx
@@ -144,12 +144,13 @@ supabase/
 ├── schema.sql                      # Tables, triggers, RLS
 ├── migrations/                     # Versioned SQL migrations
 └── functions/
-    └── chat/                       # AI agent edge function
-        ├── index.ts                # Entry — auth, tier check, Claude API stream
-        ├── context.ts              # Builds system prompt from user's boards/cards
-        ├── tools.ts                # 18 tool definitions (create_card, move_card, …)
-        ├── tier.ts                 # Free/Pro gating + per-tool access list + daily limit
-        └── stream.ts               # SSE writer
+    ├── chat/                       # AI agent edge function
+    │   ├── index.ts                # Entry — auth, tier check, Claude API stream
+    │   ├── context.ts              # Builds system prompt from user's boards/cards
+    │   ├── tools.ts                # 16 tool definitions (create_card, move_card, …)
+    │   ├── tier.ts                 # Free/Pro gating + per-tool access list + daily limit
+    │   └── stream.ts               # SSE writer
+    └── account/                    # Sessions list/revoke + delete-account, used by settings' Account pane
 ```
 
 ### Removed pages (intentional, do not re-wire)
@@ -203,7 +204,7 @@ Supabase Edge Function. Everything else is plumbing around it.
 |-------|------|-------|------|
 | Edge — handler | `supabase/functions/chat/index.ts` | ~180 | Auth → tier check → context build → Claude API stream → SSE re-emit. **Only file that talks to Anthropic.** |
 | Edge — system prompt | `supabase/functions/chat/context.ts` | ~130 | Fetches user's boards/columns/cards/notes/members via 6 parallel Supabase queries and assembles a ~1,500-word system prompt. **One template today; needs to branch by `mode`.** |
-| Edge — tools | `supabase/functions/chat/tools.ts` | ~280 | 18 tool definitions (schema only; execution happens in the browser). |
+| Edge — tools | `supabase/functions/chat/tools.ts` | ~280 | 16 tool definitions (schema only; execution happens in the browser). |
 | Edge — tier/model | `supabase/functions/chat/tier.ts` | ~80 | Rate limit, per-tool gating, model selection. Hardcodes the model ID in four places. **Needs to extend gating to the `(mode × tier)` matrix.** |
 | Edge — SSE infra | `supabase/functions/chat/stream.ts` | ~40 | `SSEWriter` wrapper around a `ReadableStream`. |
 | Frontend — pill | `src/components/board/QuickAddBar.jsx` | ~155 | **The action surface.** Mounted per board, forces `board: boardName` into every tool call. Has a fast path that splits comma/newline input and skips the LLM. |
@@ -241,7 +242,7 @@ icon list, anything user-agnostic) at the top, volatile data (boards, alerts,
 activity) at the bottom. The split exists conceptually but is not yet enforced
 with separate `cache_control` blocks (T2-#4).
 
-### Tools (18 total — schema in `tools.ts`)
+### Tools (16 total — schema in `tools.ts`)
 
 | Group | Tools |
 |-------|-------|
@@ -267,7 +268,7 @@ gated by **(surface × tier)**, not just tier.
 
 | Surface × tier | Free | Pro / Teams |
 |----------------|------|-------------|
-| **Pill** (write side) | 3 create_* tools | All 18 write tools |
+| **Pill** (write side) | 3 create_* tools | All 16 write tools |
 | **Chat** (read side) | None — pure text Q&A | `search_cards`, `summarize_board` (read-only) |
 
 - Daily message limit (currently 20 for free) lives in `tier.ts` and increments via the `increment_chat_usage` RPC. If that RPC errors, the function 500s with no fallback.

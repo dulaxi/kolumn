@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   IdentificationCard,
   MagnifyingGlass,
+  ShieldCheck,
+  CreditCard,
   Sliders,
   X,
 } from '@phosphor-icons/react'
@@ -11,6 +13,8 @@ import Button from '../ui/Button'
 import GeneralSection from './GeneralSection'
 import ProfileSection from './ProfileSection'
 import AccountSection from './AccountSection'
+import PrivacySection from './PrivacySection'
+import BillingSection from './BillingSection'
 
 // Nav registry. `keywords` powers the v1 search: substring match dims
 // non-matching nav items and auto-selects the first match.
@@ -21,14 +25,29 @@ const SECTIONS = [
     icon: Sliders,
     keywords: [
       'general', 'appearance', 'theme', 'system', 'light', 'dark', 'font', 'mona sans', 'sf mono',
-      'profile', 'avatar', 'icon', 'display name', 'color',
+      'profile', 'avatar', 'icon', 'display name', 'full name', 'color',
     ],
   },
   {
     id: 'account',
     label: 'Account',
     icon: IdentificationCard,
-    keywords: ['account', 'email', 'plan', 'tier', 'password', 'sign out'],
+    keywords: [
+      'account', 'email', 'password', 'sign out', 'log out', 'sessions', 'devices',
+      'delete account', 'danger',
+    ],
+  },
+  {
+    id: 'privacy',
+    label: 'Privacy',
+    icon: ShieldCheck,
+    keywords: ['privacy', 'data protection', 'policy', 'export', 'backup', 'json', 'data'],
+  },
+  {
+    id: 'billing',
+    label: 'Billing',
+    icon: CreditCard,
+    keywords: ['billing', 'plan', 'upgrade', 'downgrade', 'tier', 'pro', 'free', 'limits'],
   },
 ]
 
@@ -123,6 +142,8 @@ export default function SettingsModal({ open, onClose }) {
               </>
             )}
             {activeId === 'account' && <AccountSection onClose={handleClose} />}
+            {activeId === 'privacy' && <PrivacySection />}
+            {activeId === 'billing' && <BillingSection onClose={handleClose} />}
           </div>
         </div>
       </div>
