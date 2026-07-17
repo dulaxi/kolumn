@@ -47,4 +47,9 @@ describe('accountClient', () => {
     supabase.auth.getSession.mockResolvedValue({ data: { session: null } })
     await expect(listSessions()).rejects.toThrow(/signed in/i)
   })
+
+  test('network failure throws a friendly error', async () => {
+    fetch.mockRejectedValue(new TypeError('Failed to fetch'))
+    await expect(listSessions()).rejects.toThrow(/reach the server/i)
+  })
 })
