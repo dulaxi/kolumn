@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay work sets — one scene per greeting · Kolumn</title>
+    <style>
+      :root {
+        --surface-page:#FAF8F6; --surface-card:#FFFFFF; --surface-raised:#F2EDE8;
+        --text-primary:#1B1B18; --text-secondary:#5C5C57; --text-muted:#8E8E89; --text-faint:#A8A8A4;
+        --border-default:#E0DBD5; --border-subtle:#EAE5DF; --color-lime-dark:#A8BA32;
+      }
+      [data-theme="dark"] {
+        --surface-page:#1C1C1A; --surface-card:#262624; --surface-raised:#2E2E2B;
+        --text-primary:#E8E5E0; --text-secondary:#B0ADA7; --text-muted:#8A8782; --text-faint:#6B6966;
+        --border-default:#454340; --border-subtle:#332F2D;
+      }
+      * { box-sizing:border-box }
+      body { margin:0; background:var(--surface-page); color:var(--text-primary);
+             font-family:'Mona Sans Variable','Mona Sans',system-ui,sans-serif; font-size:14px; line-height:1.5 }
+      .wrap { max-width:1160px; margin:0 auto; padding:56px 32px 96px }
+      header { margin-bottom:34px; position:relative }
+      h1 { font-family:'Sentient',Georgia,serif; font-weight:400; font-size:42px; letter-spacing:-.02em; margin:0 0 8px }
+      header p { color:var(--text-secondary); margin:0 0 6px; max-width:780px }
+      .theme-toggle { position:absolute; top:4px; right:0; background:var(--surface-card); border:1px solid var(--border-default);
+                      border-radius:8px; padding:6px 12px; cursor:pointer; font:500 12px 'IBM Plex Mono',monospace; color:var(--text-secondary) }
+      section { margin-bottom:22px; background:var(--surface-card); border:1px solid var(--border-default); border-radius:14px; padding:24px }
+      .sec-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px }
+      .sec-head h2 { font-size:16px; font-weight:600; margin:0 }
+      .sec-time { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted) }
+      .row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+      @media (max-width:900px){ .row { grid-template-columns:1fr } }
+      .cell { background:var(--surface-page); border:1px solid var(--border-subtle); border-radius:10px; padding:14px 12px 12px }
+      .line { font-size:14px; font-weight:600; text-align:center }
+      .anim { font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--color-lime-dark); text-align:center; margin:2px 0 8px }
+      .stage { display:flex; align-items:center; justify-content:center; height:130px; position:relative }
+      .floor { position:absolute; left:12%; right:12%; bottom:24px; height:1px; background:var(--border-default) }
+      .desc { font-size:11px; color:var(--text-faint); text-align:center; line-height:1.5; margin-top:6px }
+      .meta { font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--text-faint); text-align:center; margin-top:4px }
+      .klay { line-height:0; position:relative } .klay-row { display:flex }
+      .verdict { background:var(--surface-card); border:1px solid var(--border-default); border-left:3px solid var(--color-lime-dark);
+                 border-radius:14px; padding:24px; margin-top:30px }
+      .verdict h2 { font-family:'Sentient',Georgia,serif; font-weight:500; font-size:24px; margin:0 0 10px }
+      .verdict p, .verdict ul { color:var(--text-secondary); max-width:820px }
+      .verdict b { color:var(--text-primary) }
+      footer { margin-top:36px; padding-top:20px; border-top:1px solid var(--border-default); color:var(--text-muted); font-size:12px }
+      code { background:var(--surface-raised); padding:1px 6px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-secondary) }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">◐ theme</button>
+        <h1>Twelve shifts — a work scene for every greeting</h1>
+        <p>The upgrade: the greeting already rotates its <b>line</b> by <code>dayIndex % 3</code>. Pair each line with its own animation and the same index picks both — <b>the words and the scene always match</b>, and the perch shows a different story every day on a 3-day cycle per slot.</p>
+        <p>All scenes are work-themed, 4–7 frames, 3–4.5s loops with a held payoff. LEFT pose + fine-grid props, palette-legal (mauve stays Klay's).</p>
+      </header>
+
+      <section><div class="sec-head"><h2>Morning</h2><span class="sec-time">05:00 – 11:59</span></div><div class="row" id="r-morning"></div></section>
+      <section><div class="sec-head"><h2>Afternoon</h2><span class="sec-time">12:00 – 16:59</span></div><div class="row" id="r-afternoon"></div></section>
+      <section><div class="sec-head"><h2>Evening</h2><span class="sec-time">17:00 – 20:59</span></div><div class="row" id="r-evening"></div></section>
+      <section><div class="sec-head"><h2>Night</h2><span class="sec-time">21:00 – 04:59</span></div><div class="row" id="r-night"></div></section>
+
+      <section class="verdict">
+        <h2>How it would wire</h2>
+        <p><code>KLAY_BY_SLOT</code> becomes <code>KLAY_BY_SLOT[slot][dayIndex % 3]</code> — the exact same arithmetic that picks the line, so "Ship it" days always show the shipping scene, "The quiet hours" always sleeps. Zero new state, still contract-tested (every entry must exist in <code>ANIMATIONS</code>). Twelve new animations port to <code>klayAnimations.js</code> with the <code>hi()</code> helper.</p>
+        <p style="margin-bottom:0;">Reply with swaps ("morning 2 → something with coffee") or <b>ship it</b> to port all twelve.</p>
+      </section>
+
+      <footer>
+        <code>?freeze=1</code> pins payoff frames · scenes reuse the LEFT pose + prop conventions from klay-emptystate-finals
+      </footer>
+    </div>
+
+    <script>
+      const PAL={o:'#8BA32E',l:'#C2D64A',m:'#A8969E',k:'#1B1B18',w:'#FDFBF7',h:'#D4A843',c:'#C27A4A',s:'#E0DBD5',K:'#5C5C57',S:'#C4BFB8',b:'#1A5DBA',B:'#DCEBF9'}
+      const E='............'
+      const LEFT=[E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E]
+      const LEFT_DOWN=[E,E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E]
+      const LEFT_UP=['...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E,E]
+      const LY={c:'mkmmkm......',x:'mmmmmm......',r:'mmkmmk......'}
+      const LARM='mmmmmmm.....'
+      const F=(base,mod,hi,ms)=>{const c=base.slice();if(mod)for(const y in mod)c[+y]=mod[y];return{map:c,hi:hi||null,ms:ms||400}}
+      const P=(art,x,y)=>{const o={};art.forEach((ln,i)=>{const r='.'.repeat(x)+ln;o[y+i]=r+'.'.repeat(Math.max(0,24-r.length))});return o}
+      const M=(...objs)=>{const out={};for(const o of objs)for(const y in o){if(!out[y]){out[y]=o[y];continue}
+        const a=out[y],b=o[y];out[y]=Array.from({length:24},(_,i)=>(b[i]&&b[i]!=='.'?b[i]:(a[i]||'.'))).join('')}return out}
+      const bar=(x,h,ch)=>{const o={};for(let i=0;i<h;i++)o[15-i]='.'.repeat(x)+(ch||'s').repeat(3)+'.'.repeat(24-x-3);return o}
+
+      // ── props ──
+      const BOARD=(specks)=>{ // 10-wide sand board, charcoal specks by list of [x,y] within
+        const g=Array.from({length:7},()=>Array(10).fill('s'))
+        for(let i=0;i<10;i++){g[0][i]='S';g[6][i]='S'}
+        for(let r=0;r<7;r++){g[r][0]='S';g[r][9]='S'}
+        specks.forEach(([x,y])=>{g[y][x]='K'})
+        return g.map(r=>r.join(''))
+      }
+      const BOX=['hhhhhh','hcchch','hhhhhh','hhhhhh']
+      const BOX_LID_OPEN=['cc....','hhhhhh','hSSSSh','hhhhhh']
+      const BOX_CLOSED=['cccccc','hhhhhh','hhhhhh']
+      const CARD=['SSSS','SwwS','SSSS']
+      const LIST0=['SSSSSSSS','SwwwwwwS','SwwwwwwS','SwwwwwwS','SSSSSSSS']
+      const LIST1=['SSSSSSSS','SkwwwwwS','SwwwwwwS','SwwwwwwS','SSSSSSSS']
+      const LIST2=['SSSSSSSS','SkwwwwwS','SkwwwwwS','SwwwwwwS','SSSSSSSS']
+      const LIST3=['SSSSSSSS','SkwwwwwS','SkwwwwwS','SkwwwwwS','SSSSSSSS']
+      const PROG=(f)=>{ // 8-wide progress bar, f of 6 filled
+        const inner='h'.repeat(f)+'w'.repeat(6-f)
+        return ['SSSSSSSS','S'+inner+'S','SSSSSSSS']
+      }
+      const LAMP_ON=['.hh.','hhhh','.KK.','.KK.']
+      const LAMP_GLOW=['h..h','.hh.','hhhh','.KK.','.KK.']
+      const CUP=['K..K','KwwK','KwwK','.KK.']
+      const STEAM1=['.S..','..S.']
+      const STEAM2=['..S.','.S..']
+      const MOON=['.hh','hh.','hh.','.hh']
+
+      // ══════════ the twelve ══════════
+      const SETS={
+        morning:[
+          {line:'Clear the board', name:'sweep', desc:'a speckled board wipes clean, row by row', frames:[
+            F(LEFT,{5:LY.r},P(BOARD([[2,2],[5,3],[7,1],[3,5]]),13,5),650),
+            F(LEFT_DOWN,{6:LY.r},P(BOARD([[5,3],[7,1],[3,5]]),13,5),420),
+            F(LEFT,{5:LY.r},P(BOARD([[7,1],[3,5]]),13,5),420),
+            F(LEFT_DOWN,{6:LY.r},P(BOARD([[3,5]]),13,5),420),
+            F(LEFT,{5:LY.r},P(BOARD([]),13,5),300),
+            F(LEFT,{5:LY.x},P(BOARD([]),13,5),1100),
+          ]},
+          {line:'Ship it', name:'ship', desc:'he pushes the box out of frame — shipped', frames:[
+            F(LEFT,{4:LARM},P(BOX,13,10),650),
+            F(LEFT_DOWN,{5:LARM},P(BOX,15,10),350),
+            F(LEFT,{4:LARM},P(BOX,18,10),350),
+            F(LEFT_DOWN,{5:LARM},P(BOX,21,10),350),
+            F(LEFT,{5:LY.r},null,500),
+            F(LEFT_UP,{4:LY.r},null,300),
+            F(LEFT,{5:LY.r},null,900),
+          ]},
+          {line:'Fresh columns', name:'raise-columns', desc:'three columns rise, one by one', frames:[
+            F(LEFT,null,null,420),
+            F(LEFT,{5:LY.r},bar(13,3),300),
+            F(LEFT,{5:LY.r},M(bar(13,6),bar(17,3)),300),
+            F(LEFT,{5:LY.r},M(bar(13,8),bar(17,6),bar(21,3)),1100),
+          ]},
+        ],
+        afternoon:[
+          {line:"Momentum's yours", name:'push-card', desc:'he nudges a card across the board', frames:[
+            F(LEFT,{4:LARM},P(CARD,13,11),600),
+            F(LEFT_DOWN,{5:LARM},P(CARD,15,11),350),
+            F(LEFT,{4:LARM},P(CARD,17,11),350),
+            F(LEFT_DOWN,{5:LARM},P(CARD,19,11),350),
+            F(LEFT,{5:LY.r},P(CARD,20,11),1100),
+          ]},
+          {line:'Keep the flow', name:'flow', desc:'cards stream past — the conveyor', frames:[
+            F(LEFT,{5:LY.r},M(P(CARD,13,11),P(CARD,19,11)),350),
+            F(LEFT,{5:LY.r},M(P(CARD,15,11),P(CARD,21,11)),350),
+            F(LEFT,{5:LY.r},M(P(CARD,13,11),P(CARD,17,11)),350),
+            F(LEFT_DOWN,{6:LY.r},M(P(CARD,15,11),P(CARD,19,11)),350),
+          ]},
+          {line:'Halfway through', name:'progress', desc:'the bar fills to half — and holds there', frames:[
+            F(LEFT,{5:LY.r},P(PROG(0),14,9),550),
+            F(LEFT,{5:LY.r},P(PROG(1),14,9),380),
+            F(LEFT_DOWN,{6:LY.r},P(PROG(2),14,9),380),
+            F(LEFT,{5:LY.r},P(PROG(3),14,9),1400),
+          ]},
+        ],
+        evening:[
+          {line:'Close it out', name:'checklist', desc:'three ticks land; the last one earns a hop', frames:[
+            F(LEFT,{5:LY.r},P(LIST0,14,7),550),
+            F(LEFT,{5:LY.r},P(LIST1,14,7),450),
+            F(LEFT_DOWN,{6:LY.r},P(LIST2,14,7),450),
+            F(LEFT,{5:LY.r},P(LIST3,14,7),300),
+            F(LEFT_UP,{4:LY.c},P(LIST3,14,7),350),
+            F(LEFT,{5:LY.x},P(LIST3,14,7),1100),
+          ]},
+          {line:'Wrap the day', name:'box-lid', desc:'the lid comes down; done means closed', frames:[
+            F(LEFT,{4:LARM},P(BOX_LID_OPEN,14,9),700),
+            F(LEFT_DOWN,{5:LARM},P(BOX_LID_OPEN,14,10),400),
+            F(LEFT,{5:LY.c},P(BOX_CLOSED,14,10),400),
+            F(LEFT,{5:LY.x},P(BOX_CLOSED,14,10),1300),
+          ]},
+          {line:'One more move', name:'last-move', desc:'one card hops from Doing to Done', frames:[
+            F(LEFT,{5:LY.r},M(bar(13,5),bar(20,5),P(CARD,13,9)),700),
+            F(LEFT,{5:LY.r},M(bar(13,5),bar(20,5),P(CARD,16,7)),350),
+            F(LEFT,{5:LY.r},M(bar(13,5),bar(20,5),P(CARD,20,9)),450),
+            F(LEFT_UP,{4:LY.r},M(bar(13,5),bar(20,5),P(CARD,20,9)),350),
+            F(LEFT,{5:LY.x},M(bar(13,5),bar(20,5),P(CARD,20,9)),1100),
+          ]},
+        ],
+        night:[
+          {line:'Still at it', name:'lamplight', desc:'working late by the lamp — it flickers', frames:[
+            F(LEFT,{5:LY.r},P(LAMP_ON,16,10),550),
+            F(LEFT,{7:'.m..........',8:'...m........'},P(LAMP_GLOW,16,9),300),
+            F(LEFT,{5:LY.r},P(LAMP_ON,16,10),450),
+            F(LEFT_DOWN,{6:LY.r},P(LAMP_GLOW,16,9),550),
+          ]},
+          {line:'Locked in', name:'night-focus', desc:'coffee steams; he does not look up', frames:[
+            F(LEFT,{5:LY.r},M(P(CUP,15,10),P(STEAM1,15,8)),650),
+            F(LEFT,{5:LY.r},M(P(CUP,15,10),P(STEAM2,15,8)),650),
+            F(LEFT_DOWN,{6:LY.r},M(P(CUP,15,10),P(STEAM1,15,8)),650),
+            F(LEFT,{5:LY.r},M(P(CUP,15,10),P(STEAM2,15,8)),650),
+          ]},
+          {line:'The quiet hours', name:'moonsleep', desc:'asleep under the moon — the deep loop', frames:[
+            F(LEFT,{5:LY.x,1:'...l..l.....'},P(MOON,19,2),900),
+            F(LEFT,{5:LY.x,0:'......l.....'},M(P(MOON,19,2),P(['S'],15,5)),900),
+            F(LEFT_DOWN,{6:LY.x},M(P(MOON,19,2),P(['S','.S'],15,4)),1100),
+          ]},
+        ],
+      }
+
+      function draw(el,fr,px){
+        el.innerHTML=''
+        const half=px/2
+        const w=document.createElement('div');w.style.position='relative';w.style.width=12*px+'px';w.style.height=11*px+'px'
+        fr.map.forEach(row=>{const r=document.createElement('div');r.className='klay-row'
+          for(const ch of row){const p=document.createElement('div');p.style.width=px+'px';p.style.height=px+'px';if(PAL[ch])p.style.background=PAL[ch];r.appendChild(p)}
+          w.appendChild(r)})
+        if(fr.hi){const L=document.createElement('div');L.style.position='absolute';L.style.inset='0'
+          for(const y in fr.hi)[...fr.hi[y]].forEach((ch,x)=>{if(!PAL[ch])return
+            const p=document.createElement('div');p.style.position='absolute';p.style.left=x*half+'px';p.style.top=y*half+'px'
+            p.style.width=half+'px';p.style.height=half+'px';p.style.background=PAL[ch];L.appendChild(p)})
+          w.appendChild(L)}
+        el.appendChild(w)
+      }
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const freeze=new URLSearchParams(location.search).has('freeze')
+      Object.entries(SETS).forEach(([slot,items])=>{
+        const row=document.getElementById('r-'+slot)
+        items.forEach((it,idx)=>{
+          const total=(it.frames.reduce((a,f)=>a+f.ms,0)/1000).toFixed(1)
+          const cell=document.createElement('div');cell.className='cell'
+          cell.innerHTML=`<div class="line">"${it.line}"</div>
+            <div class="anim">${it.name}</div>
+            <div class="stage"><div class="floor"></div><div class="klay" role="img" aria-label="Klay ${it.name}"></div></div>
+            <div class="desc">${it.desc}</div>
+            <div class="meta">${it.frames.length} frames · ${total}s loop · day ${idx} of the cycle</div>`
+          row.appendChild(cell)
+          const holder=cell.querySelector('.klay')
+          let i=0
+          if(freeze){
+            const best=it.frames.reduce((a,b)=>(b.ms>a.ms?b:a),it.frames[0])
+            draw(holder,best,7)
+          } else {
+            draw(holder,it.frames[0],7)
+            if(!reduced&&it.frames.length>1){
+              const step=()=>{i=(i+1)%it.frames.length;draw(holder,it.frames[i],7);setTimeout(step,it.frames[i].ms)}
+              setTimeout(step,it.frames[0].ms)
+            }
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

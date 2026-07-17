@@ -8,7 +8,7 @@ import { useBoardStore } from '../store/boardStore'
 import { useChatStore } from '../store/chatStore'
 import ChatInput from '../components/chat/ChatInput'
 import PixelKlay from '../components/klay/PixelKlay'
-import { getGreetingSlot, pickGreeting, KLAY_BY_SLOT } from '../utils/greeting'
+import { getGreetingSlot, pickGreeting, pickKlay } from '../utils/greeting'
 import Button from '../components/ui/Button'
 
 const ACTIONS = [
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             never costs a click. */}
         <div className="w-full relative">
           <PixelKlay
-            animation={KLAY_BY_SLOT[slot]}
+            animation={pickKlay(slot)}
             scale={6}
             label={`Klay (${slot})`}
             className="absolute right-8 -top-12 pointer-events-none select-none"

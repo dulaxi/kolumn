@@ -1,13 +1,14 @@
 /**
  * Dashboard greeting logic — the words and Klay read the same clock.
  *
- * One source of truth: getGreetingSlot() buckets the hour into four
- * dayparts. GREETINGS picks the copy (rotating daily within the slot),
- * KLAY_BY_SLOT picks the posture. Because both derive from the same
- * slot, the greeting can never say "The quiet hours" while Klay is
- * wide awake tapping his feet.
+ * Two sources feed one index: getGreetingSlot() buckets the hour into four
+ * dayparts, and the day-of-epoch picks position 0-2 within the slot.
+ * GREETINGS[slot][i] is the line, KLAY_BY_SLOT[slot][i] is its work scene —
+ * paired by construction, so "Ship it" day always shows the shipping scene
+ * and "The quiet hours" always sleeps.
  *
- * Decision record: docs/design-mockups/dashboard-klay-options-v2.html (B).
+ * Decision records: docs/design-mockups/dashboard-klay-options-v2.html (B),
+ * dashboard-klay-worksets.html + dashboard-klay-freshcolumns-r2.html (A).
  */
 
 export const GREETINGS = {
@@ -17,13 +18,14 @@ export const GREETINGS = {
   night: ['Still at it', 'Locked in', 'The quiet hours'],
 }
 
-// Klay matches the slot's mood: sprouting into the morning, heads-down
-// through the afternoon, winding down in the evening, asleep at night.
+// One work scene per greeting line, same order as GREETINGS — index i of a
+// slot's lines pairs with index i of its animations. Keep the two arrays in
+// lockstep when editing either.
 export const KLAY_BY_SLOT = {
-  morning: 'grow',
-  afternoon: 'tap',
-  evening: 'idle',
-  night: 'sleep',
+  morning: ['sweep', 'ship', 'sprout-columns'],
+  afternoon: ['push-card', 'flow', 'progress'],
+  evening: ['checklist', 'box-lid', 'last-move'],
+  night: ['lamplight', 'night-focus', 'moonsleep'],
 }
 
 export function getGreetingSlot(hour) {
@@ -33,10 +35,22 @@ export function getGreetingSlot(hour) {
   return 'night'
 }
 
+// Day-of-epoch — the shared rotation clock. Both pickers derive their index
+// from this so the line and the scene can never drift apart.
+function dayIndex() {
+  return Math.floor(Date.now() / 86400000)
+}
+
 // Rotates within the slot by day-of-epoch, so the same daypart doesn't
 // repeat its line two days running.
 export function pickGreeting(slot) {
   const options = GREETINGS[slot]
-  const dayIndex = Math.floor(Date.now() / 86400000)
-  return options[dayIndex % options.length]
+  return options[dayIndex() % options.length]
+}
+
+// The paired picker: same slot, same day → the scene that matches today's
+// line.
+export function pickKlay(slot) {
+  const options = KLAY_BY_SLOT[slot]
+  return options[dayIndex() % options.length]
 }

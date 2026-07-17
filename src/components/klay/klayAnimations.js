@@ -43,12 +43,15 @@ export const UP1 = ['......l.....', '.....lll....', '......o.....', '...mmmmmm..
 // prop-heavy animations; keep BASE for Klay-only ones.
 export const LEFT = [E, '...l........', '..lll.......', '...o........', 'mmmmmm......', 'mkmmkm......', 'mmmmmm......', '.m..m.......', E, E, E]
 export const LEFT_DOWN = [E, E, '...l........', '..lll.......', '...o........', 'mmmmmm......', 'mkmmkm......', 'mmmmmm......', '.m..m.......', E, E]
+export const LEFT_UP = ['...l........', '..lll.......', '...o........', 'mmmmmm......', 'mkmmkm......', 'mmmmmm......', '.m..m.......', E, E, E, E]
 export const LEFT_EYES = {
   center: 'mkmmkm......',
   closed: 'mmmmmm......',
   left: 'kmmkmm......',
   right: 'mmkmmk......',
 }
+// Arm-out row for LEFT poses (pot row extended one px toward the prop).
+const LEFT_ARM = 'mmmmmmm.....'
 
 // Eye rows (swap into y5 of BASE / y6 of DOWN / y4 of UP1)
 export const EYES = {
@@ -101,12 +104,79 @@ const BP_C1 = ['bbbbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbbbb', 'bBBbbbbb
 const BP_C2 = ['bbbbbbbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bBBbBBbbbb', 'bbbbbbbbbb']
 const BP_C3 = ['bbbbbbbbbb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bBBbBBbBBb', 'bbbbbbbbbb']
 
+/**
+ * merge(...layers) — overlay several sparse fine-grid layers (later wins per
+ * pixel). Lets a frame compose independent props (two cards, moon + z's)
+ * without hand-weaving their rows.
+ */
+function merge(...layers) {
+  const out = {}
+  for (const layer of layers) {
+    for (const y in layer) {
+      if (!out[y]) {
+        out[y] = layer[y]
+        continue
+      }
+      const a = out[y]
+      const b = layer[y]
+      out[y] = Array.from({ length: FINE_COLS }, (_, i) => (b[i] && b[i] !== '.' ? b[i] : a[i] || '.')).join('')
+    }
+  }
+  return out
+}
+
 // Teammate: sand pot walking in from the right. Sand, never mauve — the
 // palette rule makes "that one isn't Klay" legible for free.
 const MATE_FAR = { 1: '...l........', 2: '..lll.......', 3: '...o.......o', 4: 'mmmmmm.....s', 5: 'mkmmkm.....s', 6: 'mmmmmm.....s', 7: '.m..m.......' }
 const MATE_MID = { 1: '...l......l.', 2: '..lll....lll', 3: '...o......o.', 4: 'mmmmmm..ssss', 5: 'mkmmkm..skss', 6: 'mmmmmm..ssss', 7: '.m..m....s.s' }
 const MATE = { 1: '...l.....l..', 2: '..lll...lll.', 3: '...o.....o..', 4: 'mmmmmm.sssss', 5: 'mkmmkm.sksks', 6: 'mmmmmm.sssss', 7: '.m..m...s.s.' }
 const MATE_DOWN = { 2: '...l.....l..', 3: '..lll...lll.', 4: '...o.....o..', 5: 'mmmmmm.sssss', 6: 'mkmmkm.sksks', 7: 'mmmmmm.sssss', 8: '.m..m...s.s.' }
+
+// ── Props for the dashboard perch set ────────────────────────────────────
+// board(specks): 10×7 sand board, mist frame, charcoal specks at [x,y].
+function board(specks) {
+  const g = Array.from({ length: 7 }, () => Array(10).fill('s'))
+  for (let i = 0; i < 10; i++) {
+    g[0][i] = 'S'
+    g[6][i] = 'S'
+  }
+  for (let r = 0; r < 7; r++) {
+    g[r][0] = 'S'
+    g[r][9] = 'S'
+  }
+  specks.forEach(([x, y]) => {
+    g[y][x] = 'K'
+  })
+  return g.map((r) => r.join(''))
+}
+// bar(x, h, tip): sand column, 3 fine px wide, bottom on the floor line
+// (fine y15 = Klay's feet). Optional lime crown for the sprouting variant.
+function bar(x, h, tip) {
+  const rows = {}
+  for (let i = 0; i < h; i++) rows[15 - i] = '.'.repeat(x) + 'sss' + '.'.repeat(FINE_COLS - x - 3)
+  if (tip) rows[15 - h] = '.'.repeat(x + 1) + 'l' + '.'.repeat(FINE_COLS - x - 2)
+  return rows
+}
+// seed(x): a single lime pixel on the floor — lime, not olive, so Klay's own
+// stem color stays his (same reservation logic as mauve).
+const seed = (x) => hi(['l'], x + 1, 15)
+
+const BOX = ['hhhhhh', 'hcchch', 'hhhhhh', 'hhhhhh']
+const BOX_LID_OPEN = ['cc....', 'hhhhhh', 'hSSSSh', 'hhhhhh']
+const BOX_CLOSED = ['cccccc', 'hhhhhh', 'hhhhhh']
+const CARD = ['SSSS', 'SwwS', 'SSSS']
+const LIST0 = ['SSSSSSSS', 'SwwwwwwS', 'SwwwwwwS', 'SwwwwwwS', 'SSSSSSSS']
+const LIST1 = ['SSSSSSSS', 'SkwwwwwS', 'SwwwwwwS', 'SwwwwwwS', 'SSSSSSSS']
+const LIST2 = ['SSSSSSSS', 'SkwwwwwS', 'SkwwwwwS', 'SwwwwwwS', 'SSSSSSSS']
+const LIST3 = ['SSSSSSSS', 'SkwwwwwS', 'SkwwwwwS', 'SkwwwwwS', 'SSSSSSSS']
+// prog(f): 8-wide progress bar, f of 6 inner cells honey-filled.
+const prog = (f) => ['SSSSSSSS', 'S' + 'h'.repeat(f) + 'w'.repeat(6 - f) + 'S', 'SSSSSSSS']
+const LAMP_ON = ['.hh.', 'hhhh', '.KK.', '.KK.']
+const LAMP_GLOW = ['h..h', '.hh.', 'hhhh', '.KK.', '.KK.']
+const CUP = ['K..K', 'KwwK', 'KwwK', '.KK.']
+const STEAM1 = ['.S..', '..S.']
+const STEAM2 = ['..S.', '.S..']
+const MOON = ['.hh', 'hh.', 'hh.', '.hh']
 
 // ── Core animation library (the shipped set — extend freely) ──
 export const ANIMATIONS = {
@@ -210,5 +280,122 @@ export const ANIMATIONS = {
     frame(LEFT, MATE, null, 420),
     frame(LEFT, MATE_DOWN, null, 420),
     frame(LEFT, MATE, null, 1000),
+  ],
+
+  // ── Dashboard perch set (LEFT pose; long loops) ──────────────────────
+  // One work scene per greeting line — GREETINGS and KLAY_BY_SLOT in
+  // src/utils/greeting.js share the same day index, so the words and the
+  // scene always match ("Ship it" day shows the shipping scene). Same
+  // story shape as the empty-state set: beat → build → ~1s payoff hold.
+  // Design records: docs/design-mockups/dashboard-klay-worksets.html and
+  // dashboard-klay-freshcolumns-r2.html (morning[2] = sprout-columns, A).
+
+  // Morning 0 · "Clear the board": a speckled board wipes clean, row by row.
+  sweep: [
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(board([[2, 2], [5, 3], [7, 1], [3, 5]]), 13, 5), 650),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, hi(board([[5, 3], [7, 1], [3, 5]]), 13, 5), 420),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(board([[7, 1], [3, 5]]), 13, 5), 420),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, hi(board([[3, 5]]), 13, 5), 420),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(board([]), 13, 5), 300),
+    frame(LEFT, { 5: LEFT_EYES.closed }, hi(board([]), 13, 5), 1100),
+  ],
+
+  // Morning 1 · "Ship it": he pushes the box out of frame (PixelKlay clips
+  // at the fine-grid edge, so the x=21 frame is the box half-gone).
+  ship: [
+    frame(LEFT, { 4: LEFT_ARM }, hi(BOX, 13, 10), 650),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, hi(BOX, 15, 10), 350),
+    frame(LEFT, { 4: LEFT_ARM }, hi(BOX, 18, 10), 350),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, hi(BOX, 21, 10), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, null, 500),
+    frame(LEFT_UP, { 4: LEFT_EYES.right }, null, 300),
+    frame(LEFT, { 5: LEFT_EYES.right }, null, 900),
+  ],
+
+  // Morning 2 · "Fresh columns": three seeds grow into lime-tipped columns.
+  'sprout-columns': [
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, seed(13), 500),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(seed(13), seed(17)), 400),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(seed(13), seed(17), seed(21)), 400),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 3, 1), seed(17), seed(21)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 5, 1), bar(17, 3, 1), seed(21)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 7, 1), bar(17, 5, 1), bar(21, 3, 1)), 350),
+    frame(LEFT_UP, { 4: LEFT_EYES.center }, merge(bar(13, 8, 1), bar(17, 6, 1), bar(21, 4, 1)), 400),
+    frame(LEFT, { 5: LEFT_EYES.closed }, merge(bar(13, 8, 1), bar(17, 6, 1), bar(21, 4, 1)), 1300),
+  ],
+
+  // Afternoon 0 · "Momentum's yours": he nudges a card across the board.
+  'push-card': [
+    frame(LEFT, { 4: LEFT_ARM }, hi(CARD, 13, 11), 600),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, hi(CARD, 15, 11), 350),
+    frame(LEFT, { 4: LEFT_ARM }, hi(CARD, 17, 11), 350),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, hi(CARD, 19, 11), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(CARD, 20, 11), 1100),
+  ],
+
+  // Afternoon 1 · "Keep the flow": cards stream past — a seamless conveyor.
+  flow: [
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CARD, 13, 11), hi(CARD, 19, 11)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CARD, 15, 11), hi(CARD, 21, 11)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CARD, 13, 11), hi(CARD, 17, 11)), 350),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(hi(CARD, 15, 11), hi(CARD, 19, 11)), 350),
+  ],
+
+  // Afternoon 2 · "Halfway through": the bar fills to half — and holds there.
+  progress: [
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(prog(0), 14, 9), 550),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(prog(1), 14, 9), 380),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, hi(prog(2), 14, 9), 380),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(prog(3), 14, 9), 1400),
+  ],
+
+  // Evening 0 · "Close it out": ticks land one by one; the last earns a hop.
+  checklist: [
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(LIST0, 14, 7), 550),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(LIST1, 14, 7), 450),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, hi(LIST2, 14, 7), 450),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(LIST3, 14, 7), 300),
+    frame(LEFT_UP, { 4: LEFT_EYES.center }, hi(LIST3, 14, 7), 350),
+    frame(LEFT, { 5: LEFT_EYES.closed }, hi(LIST3, 14, 7), 1100),
+  ],
+
+  // Evening 1 · "Wrap the day": the lid comes down; done means closed.
+  'box-lid': [
+    frame(LEFT, { 4: LEFT_ARM }, hi(BOX_LID_OPEN, 14, 9), 700),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, hi(BOX_LID_OPEN, 14, 10), 400),
+    frame(LEFT, { 5: LEFT_EYES.center }, hi(BOX_CLOSED, 14, 10), 400),
+    frame(LEFT, { 5: LEFT_EYES.closed }, hi(BOX_CLOSED, 14, 10), 1300),
+  ],
+
+  // Evening 2 · "One more move": one card hops from Doing to Done.
+  'last-move': [
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9)), 700),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 5), bar(20, 5), hi(CARD, 16, 7)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 450),
+    frame(LEFT_UP, { 4: LEFT_EYES.right }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 350),
+    frame(LEFT, { 5: LEFT_EYES.closed }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 1100),
+  ],
+
+  // Night 0 · "Still at it": working late by the lamp — it flickers.
+  lamplight: [
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(LAMP_ON, 16, 10), 550),
+    frame(LEFT, { 7: '.m..........', 8: '...m........' }, hi(LAMP_GLOW, 16, 9), 300),
+    frame(LEFT, { 5: LEFT_EYES.right }, hi(LAMP_ON, 16, 10), 450),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, hi(LAMP_GLOW, 16, 9), 550),
+  ],
+
+  // Night 1 · "Locked in": coffee steams; he does not look up.
+  'night-focus': [
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CUP, 15, 10), hi(STEAM1, 15, 8)), 650),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CUP, 15, 10), hi(STEAM2, 15, 8)), 650),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(hi(CUP, 15, 10), hi(STEAM1, 15, 8)), 650),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(CUP, 15, 10), hi(STEAM2, 15, 8)), 650),
+  ],
+
+  // Night 2 · "The quiet hours": asleep under the moon — the deep loop.
+  moonsleep: [
+    frame(LEFT, { 5: LEFT_EYES.closed, 1: '...l..l.....' }, hi(MOON, 19, 2), 900),
+    frame(LEFT, { 5: LEFT_EYES.closed, 0: '......l.....' }, merge(hi(MOON, 19, 2), hi(['S'], 15, 5)), 900),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.closed }, merge(hi(MOON, 19, 2), hi(['S', '.S'], 15, 4)), 1100),
   ],
 }
