@@ -50,11 +50,10 @@ async function geolocate(ip: string | null, cache: Map<string, string>): Promise
   if (!ip || PRIVATE_IP.test(ip)) return "—"
   const hit = cache.get(ip)
   if (hit) return hit
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 2000)
   try {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), 2000)
     const res = await fetch(`https://ipwho.is/${ip}`, { signal: ctrl.signal })
-    clearTimeout(timer)
     const data = await res.json()
     const loc = data?.success && data.city && data.country
       ? `${data.city}, ${data.country}`
@@ -63,6 +62,8 @@ async function geolocate(ip: string | null, cache: Map<string, string>): Promise
     return loc
   } catch {
     return ip
+  } finally {
+    clearTimeout(timer)
   }
 }
 
