@@ -47,7 +47,7 @@ const SECTIONS = [
     id: 'billing',
     label: 'Billing',
     icon: CreditCard,
-    keywords: ['billing', 'plan', 'upgrade', 'downgrade', 'tier', 'pro', 'free', 'limits'],
+    keywords: ['billing', 'plan', 'upgrade', 'downgrade', 'tier', 'pro', 'free', 'limits', 'payment', 'invoices', 'cancel'],
   },
 ]
 

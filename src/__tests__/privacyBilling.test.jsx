@@ -32,19 +32,25 @@ describe('BillingSection', () => {
     useAuthStore.setState({ profile: { tier: 'free' }, setTier: vi.fn() })
   })
 
-  test('free tier shows plan, limits, and Upgrade', () => {
+  test('free tier: plan hero with limits + Upgrade, empty states, no Cancellation', () => {
     render(<MemoryRouter><BillingSection onClose={() => {}} /></MemoryRouter>)
-    expect(screen.getByText('Free')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Free plan' })).toBeTruthy()
     expect(screen.getByText(/20 AI messages/i)).toBeTruthy()
-    expect(screen.getByRole('button', { name: /upgrade/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Upgrade' })).toBeTruthy()
+    expect(screen.getByText('No payment method')).toBeTruthy()
+    expect(screen.getByText('No invoices yet')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Cancellation' })).toBeNull()
   })
 
-  test('pro tier shows Downgrade instead of Upgrade', async () => {
+  test('pro tier: Adjust plan + Cancellation with confirm before downgrade', async () => {
     useAuthStore.setState({ profile: { tier: 'pro' }, setTier: vi.fn().mockResolvedValue() })
     render(<MemoryRouter><BillingSection onClose={() => {}} /></MemoryRouter>)
-    expect(screen.getByText('Pro')).toBeTruthy()
-    const btn = screen.getByRole('button', { name: /downgrade/i })
-    await userEvent.click(btn)
+    expect(screen.getByRole('heading', { name: 'Pro plan' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Adjust plan' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    // confirm dialog gates the stub downgrade
+    expect(useAuthStore.getState().setTier).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel plan' }))
     expect(useAuthStore.getState().setTier).toHaveBeenCalledWith('free')
   })
 })
