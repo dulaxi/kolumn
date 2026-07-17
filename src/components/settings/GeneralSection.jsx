@@ -11,7 +11,7 @@ export default function GeneralSection() {
   const setFont = useSettingsStore((s) => s.setFont)
 
   return (
-    <SettingsSection title="General">
+    <SettingsSection title="Preferences">
       <SettingsRow title="Appearance" description="System follows your OS preference.">
         <SegmentedControl
           ariaLabel="Appearance"

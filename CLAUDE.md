@@ -118,7 +118,7 @@ src/
 │   ├── workspace/                  # Workspace switcher, settings, member list
 │   ├── layout/                     # AppLayout, Sidebar, Header, OfflineBanner
 │   ├── board/                      # Board, columns, cards, detail panel, modals
-│   ├── settings/                   # Settings modal: shell (SettingsModal) + section panes (General/Profile/Account/Data) + SettingsRedirect
+│   ├── settings/                   # Settings modal: shell (SettingsModal) + section panes (General = Profile + Preferences blocks, Account, Data) + SettingsRedirect
 │   ├── ActionCard.jsx              # AI-suggested action card
 │   ├── SearchDialog.jsx            # ⌘K search
 │   ├── ErrorBoundary.jsx + InlineErrorBoundary.jsx

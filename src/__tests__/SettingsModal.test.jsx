@@ -27,12 +27,14 @@ describe('SettingsModal', () => {
     })
   })
 
-  test('renders nav items and the General section by default', () => {
+  test('renders nav items and the General pane (profile + preferences) by default', () => {
     renderModal()
-    for (const item of ['General', 'Profile', 'Account', 'Data']) {
+    for (const item of ['General', 'Account', 'Data']) {
       expect(screen.getByRole('button', { name: item })).toBeTruthy()
     }
-    expect(screen.getByRole('heading', { name: 'General' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Profile' })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Preferences' })).toBeTruthy()
   })
 
   test('clicking a nav item switches sections', async () => {

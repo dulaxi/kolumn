@@ -4,7 +4,6 @@ import {
   IdentificationCard,
   MagnifyingGlass,
   Sliders,
-  User,
   X,
 } from '@phosphor-icons/react'
 import Modal from '../ui/Modal'
@@ -22,13 +21,10 @@ const SECTIONS = [
     id: 'general',
     label: 'General',
     icon: Sliders,
-    keywords: ['general', 'appearance', 'theme', 'system', 'light', 'dark', 'font', 'mona sans', 'sf mono'],
-  },
-  {
-    id: 'profile',
-    label: 'Profile',
-    icon: User,
-    keywords: ['profile', 'avatar', 'icon', 'display name', 'color'],
+    keywords: [
+      'general', 'appearance', 'theme', 'system', 'light', 'dark', 'font', 'mona sans', 'sf mono',
+      'profile', 'avatar', 'icon', 'display name', 'color',
+    ],
   },
   {
     id: 'account',
@@ -128,8 +124,12 @@ export default function SettingsModal({ open, onClose }) {
             </Button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-8 pb-6 pt-1">
-            {activeId === 'general' && <GeneralSection />}
-            {activeId === 'profile' && <ProfileSection />}
+            {activeId === 'general' && (
+              <>
+                <ProfileSection />
+                <GeneralSection />
+              </>
+            )}
             {activeId === 'account' && <AccountSection onClose={handleClose} />}
             {activeId === 'data' && <DataSection />}
           </div>
