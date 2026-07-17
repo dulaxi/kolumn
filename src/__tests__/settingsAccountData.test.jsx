@@ -5,22 +5,29 @@ import { MemoryRouter } from 'react-router-dom'
 import AccountSection from '../components/settings/AccountSection'
 import { buildExportPayload } from '../components/settings/DataSection'
 import { useAuthStore } from '../store/authStore'
+import { listSessions } from '../lib/accountClient'
+
+vi.mock('../lib/accountClient', () => ({
+  listSessions: vi.fn(),
+  revokeSession: vi.fn(),
+}))
 
 afterEach(() => cleanup())
 
 describe('AccountSection', () => {
   beforeEach(() => {
+    listSessions.mockResolvedValue([])
     useAuthStore.setState({
       profile: { display_name: 'Dula', email: 'dula@example.com', tier: 'pro' },
       user: { email: 'dula@example.com' },
       signOut: vi.fn(),
+      signOutEverywhere: vi.fn(),
     })
   })
 
-  test('shows email and capitalized plan', () => {
+  test('shows email', () => {
     render(<MemoryRouter><AccountSection onClose={() => {}} /></MemoryRouter>)
     expect(screen.getByText('dula@example.com')).toBeTruthy()
-    expect(screen.getByText('Pro')).toBeTruthy()
   })
 
   test('sign out calls authStore.signOut and closes the modal', async () => {
@@ -28,6 +35,14 @@ describe('AccountSection', () => {
     render(<MemoryRouter><AccountSection onClose={onClose} /></MemoryRouter>)
     await userEvent.click(screen.getByRole('button', { name: 'Sign out' }))
     expect(useAuthStore.getState().signOut).toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  test('log out everywhere calls authStore.signOutEverywhere and closes the modal', async () => {
+    const onClose = vi.fn()
+    render(<MemoryRouter><AccountSection onClose={onClose} /></MemoryRouter>)
+    await userEvent.click(screen.getByRole('button', { name: 'Log out everywhere' }))
+    expect(useAuthStore.getState().signOutEverywhere).toHaveBeenCalled()
     expect(onClose).toHaveBeenCalled()
   })
 })
