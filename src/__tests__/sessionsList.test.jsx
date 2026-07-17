@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { format } from 'date-fns'
 import SessionsList from '../components/settings/SessionsList'
 import { listSessions, revokeSession } from '../lib/accountClient'
 import { showToast } from '../utils/toast'
@@ -34,40 +35,51 @@ const ROWS = [
 describe('SessionsList', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  test('renders sessions with device, location, and This device tag', async () => {
+  async function openRowMenuAndRevoke() {
+    await userEvent.click(screen.getByRole('button', { name: 'Session actions for Safari (iOS)' }))
+    await userEvent.click(await screen.findByText('Revoke session'))
+  }
+
+  test('renders a table with device, location, dates, and Current tag', async () => {
     listSessions.mockResolvedValue(ROWS)
     render(<SessionsList />)
-    expect(await screen.findByText('Chrome · Windows')).toBeTruthy()
-    expect(screen.getByText('Safari · iOS')).toBeTruthy()
-    expect(screen.getByText('This device')).toBeTruthy()
+    expect(await screen.findByText('Chrome (Windows)')).toBeTruthy()
+    expect(screen.getByText('Safari (iOS)')).toBeTruthy()
+    expect(screen.getByText('Current')).toBeTruthy()
     expect(screen.getByText(/Dubai/)).toBeTruthy()
+    for (const header of ['Device', 'Location', 'Created', 'Last active']) {
+      expect(screen.getByRole('columnheader', { name: header })).toBeTruthy()
+    }
+    // computed, not hardcoded — format() renders in the local timezone
+    expect(screen.getByText(format(new Date(ROWS[0].created_at), 'MMM d, yyyy, h:mm a'))).toBeTruthy()
   })
 
-  test('current session has no revoke button; others do', async () => {
+  test('current session has no actions menu; others do', async () => {
     listSessions.mockResolvedValue(ROWS)
     render(<SessionsList />)
-    await screen.findByText('Chrome · Windows')
-    expect(screen.getAllByRole('button', { name: 'Revoke' })).toHaveLength(1)
+    await screen.findByText('Chrome (Windows)')
+    expect(screen.getAllByRole('button', { name: /^Session actions for/ })).toHaveLength(1)
+    expect(screen.queryByRole('button', { name: 'Session actions for Chrome (Windows)' })).toBeNull()
   })
 
-  test('revoke removes the row on success', async () => {
+  test('revoke via the row menu removes the row on success', async () => {
     listSessions.mockResolvedValue(ROWS)
     revokeSession.mockResolvedValue()
     render(<SessionsList />)
-    await screen.findByText('Safari · iOS')
-    await userEvent.click(screen.getByRole('button', { name: 'Revoke' }))
+    await screen.findByText('Safari (iOS)')
+    await openRowMenuAndRevoke()
     expect(revokeSession).toHaveBeenCalledWith('oth')
-    await waitFor(() => expect(screen.queryByText('Safari · iOS')).toBeNull())
+    await waitFor(() => expect(screen.queryByText('Safari (iOS)')).toBeNull())
   })
 
   test('revoke failure shows an error toast and keeps the row', async () => {
     listSessions.mockResolvedValue(ROWS)
     revokeSession.mockRejectedValue(new Error("You can't revoke the session you're using."))
     render(<SessionsList />)
-    await screen.findByText('Safari · iOS')
-    await userEvent.click(screen.getByRole('button', { name: 'Revoke' }))
+    await screen.findByText('Safari (iOS)')
+    await openRowMenuAndRevoke()
     await waitFor(() => expect(showToast.error).toHaveBeenCalledWith("You can't revoke the session you're using."))
-    expect(screen.getByText('Safari · iOS')).toBeTruthy()
+    expect(screen.getByText('Safari (iOS)')).toBeTruthy()
   })
 
   test('load failure shows an error notice with retry', async () => {
@@ -75,6 +87,6 @@ describe('SessionsList', () => {
     render(<SessionsList />)
     expect(await screen.findByRole('alert')).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: /retry/i }))
-    expect(await screen.findByText('Chrome · Windows')).toBeTruthy()
+    expect(await screen.findByText('Chrome (Windows)')).toBeTruthy()
   })
 })
