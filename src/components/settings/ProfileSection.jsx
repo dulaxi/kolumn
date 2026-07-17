@@ -14,9 +14,13 @@ export default function ProfileSection() {
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  const update = (updates) => {
-    updateProfile(updates)
-    showToast.success('Profile updated')
+  const update = async (updates) => {
+    try {
+      await updateProfile(updates)
+      showToast.success('Profile updated')
+    } catch {
+      showToast.error("Couldn't update profile")
+    }
   }
 
   const { style: avatarStyle, fallbackClass } = resolveProfileColor(profile?.color)
@@ -62,7 +66,11 @@ export default function ProfileSection() {
           wrapperClassName="w-56"
           onBlur={(e) => {
             const next = e.target.value.trim()
-            if (next && next !== profile?.display_name) update({ display_name: next })
+            if (!next) {
+              e.target.value = profile?.display_name || ''
+              return
+            }
+            if (next !== profile?.display_name) update({ display_name: next })
           }}
         />
       </SettingsRow>

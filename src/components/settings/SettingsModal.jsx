@@ -65,6 +65,7 @@ export default function SettingsModal({ open, onClose }) {
 
   const handleClose = () => {
     setQuery('')
+    setActiveId('general')
     onClose()
   }
 

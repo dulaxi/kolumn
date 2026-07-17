@@ -1,10 +1,26 @@
 import { describe, test, expect, vi, afterEach, beforeEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+// Mock toast so we can assert on calls without rendering react-hot-toast
+vi.mock('../utils/toast', () => ({
+  showToast: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    success: vi.fn(),
+    restore: vi.fn(),
+    archive: vi.fn(),
+    delete: vi.fn(),
+    info: vi.fn(),
+    overdue: vi.fn(),
+  },
+}))
+
 import GeneralSection from '../components/settings/GeneralSection'
 import ProfileSection from '../components/settings/ProfileSection'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAuthStore } from '../store/authStore'
+import { showToast } from '../utils/toast'
 
 afterEach(() => cleanup())
 
@@ -30,9 +46,10 @@ describe('GeneralSection', () => {
 
 describe('ProfileSection', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     useAuthStore.setState({
       profile: { display_name: 'Dula', icon: null, color: null, tier: 'free' },
-      updateProfile: vi.fn(),
+      updateProfile: vi.fn().mockResolvedValue({}),
     })
   })
 
@@ -58,5 +75,18 @@ describe('ProfileSection', () => {
     expect(useAuthStore.getState().updateProfile).toHaveBeenCalledWith(
       expect.objectContaining({ color: expect.any(String) }),
     )
+  })
+
+  test('failed profile update shows an error toast, not a success toast', async () => {
+    useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })
+    render(<ProfileSection />)
+    const input = screen.getByLabelText('Display name')
+    await userEvent.clear(input)
+    await userEvent.type(input, 'Abdullah')
+    await userEvent.tab()
+    await waitFor(() => {
+      expect(showToast.error).toHaveBeenCalledWith("Couldn't update profile")
+    })
+    expect(showToast.success).not.toHaveBeenCalled()
   })
 })
