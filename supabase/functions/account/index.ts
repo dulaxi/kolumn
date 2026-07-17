@@ -172,5 +172,9 @@ Deno.serve(async (req) => {
     return json(200, { ok: true })
   }
 
-  return json(405, { error: "method_not_allowed" })
+  // Known route, wrong method → 405. Anything else → 404.
+  if (route === "sessions" || route === "revoke" || route === "delete-account") {
+    return json(405, { error: "method_not_allowed" })
+  }
+  return json(404, { error: "not_found" })
 })

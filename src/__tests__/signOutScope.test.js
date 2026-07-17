@@ -68,6 +68,12 @@ describe('sign-out scopes', () => {
     await flushResets(1)
   })
 
+  test('clearAfterAccountDeletion is local-scope', async () => {
+    useAuthStore.getState().clearAfterAccountDeletion()
+    expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+    await flushResets(1)
+  })
+
   test('both clear the user from the store', async () => {
     // Flush between the two sign-outs (rather than once at the end for both)
     // so each _resetLocalState's four dynamic imports settle before the next

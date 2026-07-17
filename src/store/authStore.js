@@ -194,8 +194,13 @@ export const useAuthStore = create((set, get) => ({
     localStorage.removeItem('kolumn_active_board')
   },
 
-  // The account row is already gone server-side; just drop local state.
-  clearAfterAccountDeletion: () => get()._resetLocalState(),
+  // The account row is already gone server-side; drop local state AND the
+  // cached supabase session — otherwise a reload resurrects a ghost login
+  // from localStorage until the JWT expires.
+  clearAfterAccountDeletion: () => {
+    get()._resetLocalState()
+    supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+  },
 
   // This device only. Other sessions keep working (see signOutEverywhere).
   signOut: () => {

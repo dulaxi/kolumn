@@ -27,6 +27,13 @@ describe('DeleteAccountModal', () => {
     expect(btn.disabled).toBe(false)
   })
 
+  test('delete button ignores case and surrounding whitespace', async () => {
+    render(<DeleteAccountModal open onClose={() => {}} onDeleted={() => {}} />)
+    const btn = screen.getByRole('button', { name: /delete my account/i })
+    await userEvent.type(screen.getByLabelText(/type your email/i), 'ME@Example.com ')
+    expect(btn.disabled).toBe(false)
+  })
+
   test('successful delete calls onDeleted', async () => {
     deleteAccount.mockResolvedValue()
     const onDeleted = vi.fn()

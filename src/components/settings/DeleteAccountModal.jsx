@@ -87,7 +87,7 @@ export default function DeleteAccountModal({ open, onClose, onDeleted }) {
         <div className="mt-4 flex items-center gap-2">
           <Button
             variant="destructive"
-            disabled={typed !== email || busy}
+            disabled={typed.trim().toLowerCase() !== email.trim().toLowerCase() || busy}
             loading={busy}
             onClick={handleDelete}
           >
