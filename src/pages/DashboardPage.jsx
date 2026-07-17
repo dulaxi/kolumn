@@ -109,8 +109,11 @@ export default function DashboardPage() {
             painted in front of him (it comes later in the DOM with its own
             positioning context), so bobbing frames dip BEHIND the edge
             instead of sliding onto the control. pointer-events-none: he
-            never costs a click. */}
-        <div className="w-full relative">
+            never costs a click. mt-8 on top of the parent's gap-6 gives
+            the greeting and Klay separate vertical bands: he stands 48px
+            (8 grid rows × 6px) above the input, so the 56px total gap
+            means no greeting line + name, however long, can reach him. */}
+        <div className="w-full relative mt-8">
           <PixelKlay
             animation={pickKlay(slot)}
             scale={6}
