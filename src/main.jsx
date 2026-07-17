@@ -7,7 +7,7 @@ import '@fontsource/ibm-plex-mono/600.css'
 import './index.css'
 import App from './App.jsx'
 import { useAuthStore } from './store/authStore'
-import { applyTheme } from './utils/theme'
+import { applyTheme, pickBootTheme } from './utils/theme'
 import * as Sentry from '@sentry/react'
 import { env } from './lib/env'
 import { initAnalytics } from './lib/analytics'
@@ -42,9 +42,10 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 
 // Apply persisted theme before first paint to avoid flash. Runs before the
 // zustand persist migration, so resolveTheme's legacy-'default'→light
-// fallback covers un-migrated values.
+// fallback covers un-migrated values. Public/marketing routes are pinned
+// light (their CSS is not dark-ready) — only app shell routes are themed.
 const savedTheme = JSON.parse(localStorage.getItem('kolumn-settings') || '{}')?.state?.theme
-applyTheme(savedTheme || 'system')
+applyTheme(pickBootTheme(window.location.pathname, savedTheme))
 
 // Initialize auth before rendering
 useAuthStore.getState().initialize()

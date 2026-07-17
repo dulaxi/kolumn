@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
-import { resolveTheme, applyTheme } from '../utils/theme'
+import { resolveTheme, applyTheme, pickBootTheme } from '../utils/theme'
 import { migrateSettingsState } from '../store/settingsStore'
 
 afterEach(() => {
@@ -40,6 +40,28 @@ describe('applyTheme', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     applyTheme('light')
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+  })
+})
+
+describe('pickBootTheme', () => {
+  test('app paths use the saved theme', () => {
+    expect(pickBootTheme('/dashboard', 'dark')).toBe('dark')
+    expect(pickBootTheme('/boards/abc', 'dark')).toBe('dark')
+    expect(pickBootTheme('/settings', 'dark')).toBe('dark')
+  })
+
+  test('app paths fall back to system when nothing is saved', () => {
+    expect(pickBootTheme('/dashboard', undefined)).toBe('system')
+    expect(pickBootTheme('/boards/abc', undefined)).toBe('system')
+    expect(pickBootTheme('/settings', undefined)).toBe('system')
+  })
+
+  test('public paths are pinned light regardless of saved theme', () => {
+    expect(pickBootTheme('/', 'dark')).toBe('light')
+    expect(pickBootTheme('/onboarding', 'dark')).toBe('light')
+    expect(pickBootTheme('/update-password', 'dark')).toBe('light')
+    expect(pickBootTheme('/upgrade/pro', 'dark')).toBe('light')
+    expect(pickBootTheme('/sandbox/landing-board', 'dark')).toBe('light')
   })
 })
 

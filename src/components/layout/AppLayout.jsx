@@ -50,6 +50,10 @@ export default function AppLayout() {
     return () => mql.removeEventListener('change', onChange)
   }, [theme])
 
+  // Public pages outside the app shell are pinned light (their CSS is not
+  // dark-ready) — restore light when the shell unmounts.
+  useEffect(() => () => applyTheme('light'), [])
+
   useEffect(() => {
     document.documentElement.style.removeProperty('font-family')
   }, [font])
