@@ -86,10 +86,10 @@ export default function SessionsList() {
         <tbody>
           {sessions.map((s) => (
             <tr key={s.id} className="group border-t border-[var(--border-subtle)]">
-              <td className="max-w-44 py-2 pr-4">
+              <td className="w-56 max-w-56 py-2 pr-4">
                 <div className="flex min-w-0 items-center gap-2">
                   <Tooltip content={s.user_agent || undefined}>
-                    <span className="truncate text-[var(--text-primary)]">{displayDevice(s.device)}</span>
+                    <span className="min-w-0 truncate text-[var(--text-primary)]">{displayDevice(s.device)}</span>
                   </Tooltip>
                   {s.current && (
                     // Badge = wash fill + lime border + ink text, the same
