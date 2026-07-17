@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Download,
   IdentificationCard,
   MagnifyingGlass,
   Sliders,
@@ -12,7 +11,6 @@ import Button from '../ui/Button'
 import GeneralSection from './GeneralSection'
 import ProfileSection from './ProfileSection'
 import AccountSection from './AccountSection'
-import DataSection from './DataSection'
 
 // Nav registry. `keywords` powers the v1 search: substring match dims
 // non-matching nav items and auto-selects the first match.
@@ -31,12 +29,6 @@ const SECTIONS = [
     label: 'Account',
     icon: IdentificationCard,
     keywords: ['account', 'email', 'plan', 'tier', 'password', 'sign out'],
-  },
-  {
-    id: 'data',
-    label: 'Data',
-    icon: Download,
-    keywords: ['data', 'export', 'backup', 'json'],
   },
 ]
 
@@ -131,7 +123,6 @@ export default function SettingsModal({ open, onClose }) {
               </>
             )}
             {activeId === 'account' && <AccountSection onClose={handleClose} />}
-            {activeId === 'data' && <DataSection />}
           </div>
         </div>
       </div>

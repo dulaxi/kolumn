@@ -3,7 +3,7 @@ import { render, screen, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import AccountSection from '../components/settings/AccountSection'
-import { buildExportPayload } from '../components/settings/DataSection'
+import { buildExportPayload } from '../utils/exportData'
 import { useAuthStore } from '../store/authStore'
 import { listSessions } from '../lib/accountClient'
 

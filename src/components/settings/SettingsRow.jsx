@@ -1,5 +1,7 @@
 // One settings row: title (+ optional muted description) on the left,
 // control on the right. Pass htmlFor when the control is a labelable input.
+// `children` is optional — copy-only rows (no control) render the left
+// column alone and skip the right column entirely.
 export default function SettingsRow({ title, description, htmlFor, children }) {
   const Title = htmlFor ? 'label' : 'span'
   return (
@@ -12,7 +14,7 @@ export default function SettingsRow({ title, description, htmlFor, children }) {
           <p className="mt-0.5 text-xs text-[var(--text-secondary)]">{description}</p>
         )}
       </div>
-      <div className="flex shrink-0 items-center">{children}</div>
+      {children && <div className="flex shrink-0 items-center">{children}</div>}
     </div>
   )
 }
