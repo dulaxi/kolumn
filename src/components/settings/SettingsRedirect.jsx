@@ -9,7 +9,19 @@ export default function SettingsRedirect() {
 
   useEffect(() => {
     navigate('/dashboard', { replace: true })
-    window.dispatchEvent(new CustomEvent('kolumn:open-settings'))
+    // Deferred: this is a child of AppLayout, and React fires passive effects
+    // child-before-parent on a shared mount. A synchronous dispatch here would
+    // fire before AppLayout's own effect has registered the listener, so the
+    // event would be lost. Pushing it a macrotask out lets that effect run first.
+    //
+    // Deliberately NOT cleared on unmount: the navigate() above is what causes
+    // this component to unmount (swapped out by the /dashboard route) — that
+    // unmount always completes before this timeout's macrotask runs, so a
+    // clearTimeout in cleanup would cancel every dispatch and reintroduce the
+    // original bug. The event has no dependency on this component's lifecycle.
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('kolumn:open-settings'))
+    }, 0)
   }, [navigate])
 
   return null
