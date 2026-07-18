@@ -12,6 +12,7 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
 const UpgradeProPage = lazy(() => import('./pages/UpgradeProPage'))
+const PlanPickerPage = lazy(() => import('./pages/PlanPickerPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BoardsPage = lazy(() => import('./pages/BoardsPage'))
 const BuilderPage = lazy(() => import('./pages/BuilderPage'))
@@ -82,6 +83,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ErrorBoundary><UpgradeProPage /></ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/plans"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary><PlanPickerPage /></ErrorBoundary>
               </ProtectedRoute>
             }
           />

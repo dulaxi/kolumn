@@ -37,6 +37,7 @@ export default function AppLayout() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsSection, setSettingsSection] = useState('general')
 
   const { showMigration, migrating, handleMigrate, handleSkipMigration } = useAppData()
 
@@ -62,7 +63,10 @@ export default function AppLayout() {
   useEffect(() => {
     const openSearch = () => setSearchOpen(true)
     const openShortcuts = () => setShortcutsOpen(true)
-    const openSettings = () => setSettingsOpen(true)
+    const openSettings = (e) => {
+      setSettingsSection(e?.detail?.section || 'general')
+      setSettingsOpen(true)
+    }
     window.addEventListener('kolumn:focus-search', openSearch)
     window.addEventListener('kolumn:open-shortcuts', openShortcuts)
     window.addEventListener('kolumn:open-settings', openSettings)
@@ -70,6 +74,19 @@ export default function AppLayout() {
       window.removeEventListener('kolumn:focus-search', openSearch)
       window.removeEventListener('kolumn:open-shortcuts', openShortcuts)
       window.removeEventListener('kolumn:open-settings', openSettings)
+    }
+  }, [])
+
+  // Reopen Settings after returning from a focused route that lives outside
+  // this layout (e.g. the /plans page's Back button). That route unmounts
+  // AppLayout, so a same-tick custom event would land before this listener
+  // exists — a sessionStorage breadcrumb survives the remount instead.
+  useEffect(() => {
+    const pane = sessionStorage.getItem('kolumn:reopen-settings')
+    if (pane) {
+      sessionStorage.removeItem('kolumn:reopen-settings')
+      setSettingsSection(pane)
+      setSettingsOpen(true)
     }
   }, [])
 
@@ -117,7 +134,7 @@ export default function AppLayout() {
     <div className="h-screen flex flex-col bg-[var(--surface-board)] overflow-hidden">
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} initialSection={settingsSection} />
       <OfflineBanner />
       <InlineErrorBoundary name="sidebar">
         <Sidebar />

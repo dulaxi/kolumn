@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   IdentificationCard,
   MagnifyingGlass,
@@ -57,9 +57,16 @@ function sectionMatches(section, query) {
   return section.keywords.some((k) => k.includes(q))
 }
 
-export default function SettingsModal({ open, onClose }) {
+export default function SettingsModal({ open, onClose, initialSection = 'general' }) {
   const [activeId, setActiveId] = useState('general')
   const [query, setQuery] = useState('')
+
+  // When the modal opens, jump to the requested pane (e.g. reopened on
+  // Billing after returning from the /plans page). Only fires on the
+  // open transition, so clicking between panes while open is unaffected.
+  useEffect(() => {
+    if (open) setActiveId(initialSection)
+  }, [open, initialSection])
 
   const handleQueryChange = (e) => {
     const next = e.target.value

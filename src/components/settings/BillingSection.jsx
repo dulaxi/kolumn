@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore'
 import { TIERS } from '../../constants/tiers'
 import { showToast } from '../../utils/toast'
 import Button from '../ui/Button'
-import KolumnLogo from '../layout/KolumnLogo'
+import PixelKlay from '../klay/PixelKlay'
 import ConfirmModal from '../board/ConfirmModal'
 import SettingsSection from './SettingsSection'
 import SettingsRow from './SettingsRow'
@@ -25,7 +25,7 @@ export default function BillingSection({ onClose }) {
 
   const handleAdjust = () => {
     onClose()
-    navigate('/upgrade/pro')
+    navigate('/plans', { state: { from: 'settings' } })
   }
 
   const handleCancel = async () => {
@@ -48,7 +48,13 @@ export default function BillingSection({ onClose }) {
       {/* Plan hero — logo + plan identity, no section heading */}
       <div className="mb-8 flex items-center justify-between gap-8 border-b border-[var(--border-subtle)] pb-6">
         <div className="flex min-w-0 items-center gap-4">
-          <KolumnLogo size={48} />
+          <PixelKlay
+            animation={`tier-${tier}`}
+            playOnce
+            scale={5}
+            label={`${info.label} plan mascot`}
+            className="shrink-0"
+          />
           <div className="min-w-0">
             <h3 className="text-base font-semibold text-[var(--text-primary)]">{info.label} plan</h3>
             <p className="text-sm text-[var(--text-primary)]">{info.includes}</p>

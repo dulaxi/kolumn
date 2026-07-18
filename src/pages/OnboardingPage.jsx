@@ -7,7 +7,7 @@ import Input from '../components/ui/Input'
 import Tooltip from '../components/ui/Tooltip'
 import InlineNotice from '../components/ui/InlineNotice'
 import FieldError from '../components/ui/FieldError'
-import PlanCard from '../components/PlanCard'
+import PlanPicker from '../components/PlanPicker'
 import { PLANS } from '../data/plans'
 import { addDays, format } from 'date-fns'
 
@@ -238,7 +238,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 'plan' && (
-        <PlanStep
+        <PlanPicker
           plans={PLANS}
           committingPlan={committingPlan}
           error={error}
@@ -1047,35 +1047,3 @@ function DisclaimerStep({ shareTrainingData, setShareTrainingData, onContinue })
   )
 }
 
-function PlanStep({ plans, committingPlan, error, onPick }) {
-  const isCommitting = committingPlan !== null
-  return (
-    <div className="flex w-full flex-1 flex-col items-center gap-10 px-4 py-12 max-w-[90rem] mx-auto">
-      <header className="w-full max-w-md text-center mb-1">
-        <h1 className="text-[40px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.1] tracking-tight">
-          Choose your plan
-        </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
-          You can change this anytime in settings.
-        </p>
-      </header>
-
-      {error && (
-        <InlineNotice variant="error" className="max-w-md w-full">{error}</InlineNotice>
-      )}
-
-      <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-4">
-        {plans.map((plan) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            mode="picker"
-            onSelect={onPick}
-            loading={committingPlan === plan.id}
-            disabled={isCommitting && committingPlan !== plan.id}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
