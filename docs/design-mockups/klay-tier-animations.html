@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay × subscription tiers · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624; --surface-raised: #2E2E2B;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 760px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      svg { shape-rendering: crispEdges; display: block; }
+      .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
+      @media (max-width: 860px) { .tiers { grid-template-columns: 1fr; } }
+      .tier { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 12px; padding: 12px; }
+      .tier .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 210px; display: grid; place-items: center; cursor: pointer; position: relative; }
+      .tier .stage .hint { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-faint); opacity: 0; transition: opacity 150ms; }
+      .tier .stage:hover .hint { opacity: 1; }
+      .chip { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border-default); margin-bottom: 10px; }
+      .chip.free { color: var(--text-secondary); }
+      .chip.pro  { color: #A07A1E; border-color: #D4A843; }
+      .chip.team { color: #C27A4A; border-color: #C27A4A; }
+      .tier h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 20px; margin: 12px 0 4px; }
+      .tier p { color: var(--text-secondary); font-size: 13px; margin: 0; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+    <div class="wrap">
+      <header class="page">
+        <h1>Klay × subscription tiers — finals</h1>
+        <p>Play-once-then-rest: each animation runs a single 1.2–2s pass on mount, then freezes on its resting frame. No endless looping — the resting pose <em>is</em> the tier badge. Click a stage to replay.</p>
+        <p class="meta-line">2026-07-17 · round 3 (winners: Free B, Pro A, Team A) · runtime target: src/components/klay/klayAnimations.js — needs a playOnce mode in PixelKlay</p>
+      </header>
+      <div class="tiers" id="tiers"></div>
+      <p class="meta-line" style="margin-top:28px">Klay stays 4-color (olive, lime, mauve, ink); props use honey/copper/cream. Fine layer draws in front.</p>
+    </div>
+
+    <script>
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5', K:'#5C5C57', S:'#C4BFB8' };
+      const E = '............';
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E];
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E];
+      const XX='...mmmmmm...', XR='...mmkmmk...', BL='...mommom...';
+      function F(base, mod, hi, ms) { const c = base.slice(); if (mod) for (const y in mod) c[+y] = mod[y]; return { map: c, hi: hi || null, ms: ms || 300 }; }
+
+      // PRO star prop rows
+      const STAR_SOLID = {1:'...................h....',2:'..................hhh...',3:'.................hhhhh..',4:'..................hhh...',5:'...................h....'};
+      const STAR_TWINKLE = {0:'................w.....w.',2:'...................h....',3:'..................hhh...',4:'...................h....',6:'.................w....w.'};
+      const STAR_MID = {0:'...............h........',1:'..............hhh.......',2:'...............h........'};
+      const STAR_CROWN = {0:'...........h............',1:'..........hhh...........',2:'...........h............'};
+
+      // TEAM buddy prop rows (honey left, copper right)
+      const TEAM_LUP_RDOWN = {11:'...l....................',12:'..lll...............l...',13:'.hhhhh.............lll..',14:'.hkhkh............ccccc.',15:'.hhhhh............ckckc.',16:'..................ccccc.'};
+      const TEAM_LDOWN_RUP = {11:'....................l...',12:'...l...............lll..',13:'..lll.............ccccc.',14:'.hhhhh............ckckc.',15:'.hkhkh............ccccc.',16:'.hhhhh..................'};
+      const TEAM_HUDDLE = {11:'....l..............l....',12:'...lll............lll...',13:'..hhhhh..........ccccc..',14:'..hkhkh..........ckckc..',15:'..hhhhh..........ccccc..'};
+
+      // Last frame of each array is the resting frame — playback freezes there.
+      const TIERS = [
+        { key:'free', name:'Free', anim:'First sprout',
+          blurb:'Grows in beat by beat, blinks once, rests as the full open-eyed sprout. Zero props — the product metaphor itself.',
+          frames: [
+            F(BASE,{1:E,2:E,3:E},null,450),
+            F(BASE,{1:E,2:E,3:'......l.....'},null,300),
+            F(BASE,{1:E,2:'......l.....',3:'......o.....'},null,300),
+            F(BASE,null,null,750),
+            F(BASE,{5:XX},null,150),
+            F(BASE,null,null,0),                       // rest: open-eyed bloom
+          ] },
+        { key:'pro', name:'Pro', anim:'Star crown',
+          blurb:'Klay eyes the honey star, it twinkles, drifts over, and settles above his sprout. Rests wearing it, blushing, feet on the ground.',
+          frames: [
+            F(BASE,{5:XR},STAR_SOLID,450),
+            F(BASE,{5:XR},STAR_TWINKLE,250),
+            F(BASE,null,STAR_MID,250),
+            F(BASE,{6:BL},STAR_CROWN,0),               // rest: crowned + blush
+          ] },
+        { key:'team', name:'Team', anim:'Pot buddies',
+          blurb:'Honey and copper buddies bob in counterphase with Klay, then lean in level. Rests as a quiet group photo — mauve keeps Klay unmistakable.',
+          frames: [
+            F(BASE,null,TEAM_LUP_RDOWN,280),
+            F(DOWN,null,TEAM_LDOWN_RUP,280),
+            F(BASE,null,TEAM_LUP_RDOWN,280),
+            F(BASE,{6:BL},TEAM_HUDDLE,0),              // rest: huddle + blush
+          ] },
+      ];
+
+      function render(frame, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 12 * scale); svg.setAttribute('height', 11 * scale);
+        frame.map.forEach((row, y) => {
+          [...row].slice(0, 12).forEach((ch, x) => {
+            const color = P[ch]; if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale); r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale); r.setAttribute('height', scale);
+            r.setAttribute('fill', color); svg.appendChild(r);
+          });
+        });
+        if (frame.hi) {
+          const half = scale / 2;
+          for (const yStr in frame.hi) {
+            const row = frame.hi[yStr]; if (typeof row !== 'string') continue;
+            const y = +yStr;
+            [...row].slice(0, 24).forEach((ch, x) => {
+              const color = P[ch]; if (!color) return;
+              const r = document.createElementNS(ns, 'rect');
+              r.setAttribute('x', x * half); r.setAttribute('y', y * half);
+              r.setAttribute('width', half); r.setAttribute('height', half);
+              r.setAttribute('fill', color); svg.appendChild(r);
+            });
+          }
+        }
+        return svg;
+      }
+
+      // Play once, freeze on the final (resting) frame.
+      function playOnce(mount, frames, scale) {
+        let idx = 0, timer = null;
+        function show() { mount.textContent = ''; mount.appendChild(render(frames[idx], scale)); }
+        function tick() {
+          show();
+          if (idx < frames.length - 1) {
+            timer = setTimeout(() => { idx += 1; tick(); }, frames[idx].ms);
+          }
+        }
+        tick();
+        return function replay() { clearTimeout(timer); idx = 0; tick(); };
+      }
+
+      const root = document.getElementById('tiers');
+      TIERS.forEach((t) => {
+        const card = document.createElement('div'); card.className = 'tier';
+        card.innerHTML = '<span class="chip ' + t.key + '">' + t.name.toUpperCase() + '</span>';
+        const stage = document.createElement('div'); stage.className = 'stage';
+        const holder = document.createElement('div');
+        const replay = playOnce(holder, t.frames, 13);
+        stage.appendChild(holder);
+        const hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = 'click to replay';
+        stage.appendChild(hint);
+        stage.addEventListener('click', replay);
+        card.appendChild(stage);
+        const h = document.createElement('h2'); h.textContent = t.anim; card.appendChild(h);
+        const p = document.createElement('p'); p.textContent = t.blurb; card.appendChild(p);
+        root.appendChild(card);
+      });
+    </script>
+  </body>
+</html>

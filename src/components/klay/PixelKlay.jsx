@@ -7,11 +7,14 @@ import { ANIMATIONS, PALETTE, COARSE_COLS, COARSE_ROWS } from './klayAnimations'
  *   <PixelKlay animation="tap" scale={8} />
  *
  * `animation`: key of ANIMATIONS (idle, blink, look, tap, walk, hop, grow,
- *   wilt, sleep, delight, sit, deliver, …). Unknown keys fall back to idle.
+ *   wilt, sleep, delight, sit, deliver, tier-free/pro/team, …). Unknown keys
+ *   fall back to idle.
  * `scale`: size of one coarse Klay pixel in px (fine prop pixels are half).
+ * `playOnce`: run a single pass and freeze on the last (resting) frame instead
+ *   of looping. Use for the tier badges so Klay doesn't move forever.
  * `label`: accessible name; the sprite itself is presentational.
  */
-export default function PixelKlay({ animation = 'idle', scale = 8, label = 'Klay', className = '' }) {
+export default function PixelKlay({ animation = 'idle', scale = 8, playOnce = false, label = 'Klay', className = '' }) {
   const frames = ANIMATIONS[animation] || ANIMATIONS.idle
   const [idx, setIdx] = useState(0)
 
@@ -20,9 +23,10 @@ export default function PixelKlay({ animation = 'idle', scale = 8, label = 'Klay
   }, [animation])
 
   useEffect(() => {
+    if (playOnce && idx >= frames.length - 1) return undefined // rest on the last frame
     const timer = setTimeout(() => setIdx((i) => (i + 1) % frames.length), frames[idx].ms)
     return () => clearTimeout(timer)
-  }, [idx, frames])
+  }, [idx, frames, playOnce])
 
   const { map, hi } = frames[idx] || frames[0]
   const half = scale / 2

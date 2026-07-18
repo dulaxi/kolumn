@@ -398,4 +398,45 @@ export const ANIMATIONS = {
     frame(LEFT, { 5: LEFT_EYES.closed, 0: '......l.....' }, merge(hi(MOON, 19, 2), hi(['S'], 15, 5)), 900),
     frame(LEFT_DOWN, { 6: LEFT_EYES.closed }, merge(hi(MOON, 19, 2), hi(['S', '.S'], 15, 4)), 1100),
   ],
+
+  // ── Subscription-tier set (play-once, then rest) ─────────────────────
+  // One animation per profile.tier for the Billing pane's plan hero. These
+  // are meant to run a single pass on mount and FREEZE on the last frame —
+  // render them with <PixelKlay playOnce> so Klay doesn't loop forever next
+  // to the plan name. The final frame of each array is the resting pose (the
+  // tier "badge"), which is what's on screen 95% of the time — so it's
+  // designed to read as a still image, blush and all.
+  // Design record: docs/design-mockups/klay-tier-animations.html
+  // Prop-count escalates with tier: Free is pose-only, Pro earns one honey
+  // star, Team gets two pot-buddies (honey + copper — never mauve).
+
+  // Free · "First sprout": grows in beat by beat, blinks once, rests as the
+  // open-eyed bloom. Zero props — the product metaphor itself.
+  'tier-free': [
+    frame(BASE, { 1: E, 2: E, 3: E }, null, 450),
+    frame(BASE, { 1: E, 2: E, 3: '......l.....' }, null, 300),
+    frame(BASE, { 1: E, 2: '......l.....', 3: '......o.....' }, null, 300),
+    frame(BASE, null, null, 750),
+    frame(BASE, { 5: EYES.closed }, null, 150),
+    frame(BASE, null, null, 600), // rest: open-eyed bloom
+  ],
+
+  // Pro · "Star crown": Klay eyes a honey star, it twinkles, drifts over, and
+  // settles above his sprout. Rests wearing it, blushing, feet on the ground.
+  'tier-pro': [
+    frame(BASE, { 5: EYES.right }, { 1: '...................h....', 2: '..................hhh...', 3: '.................hhhhh..', 4: '..................hhh...', 5: '...................h....' }, 450),
+    frame(BASE, { 5: EYES.right }, { 0: '................w.....w.', 2: '...................h....', 3: '..................hhh...', 4: '...................h....', 6: '.................w....w.' }, 250),
+    frame(BASE, null, { 0: '...............h........', 1: '..............hhh.......', 2: '...............h........' }, 250),
+    frame(BASE, { 6: BLUSH }, { 0: '...........h............', 1: '..........hhh...........', 2: '...........h............' }, 600), // rest: crowned + blush
+  ],
+
+  // Team · "Pot buddies": honey + copper buddies bob in counterphase with
+  // Klay, then lean in level. Rests as a quiet group photo — mauve keeps Klay
+  // unmistakable in the crowd.
+  'tier-team': [
+    frame(BASE, null, { 11: '...l....................', 12: '..lll...............l...', 13: '.hhhhh.............lll..', 14: '.hkhkh............ccccc.', 15: '.hhhhh............ckckc.', 16: '..................ccccc.' }, 280),
+    frame(DOWN, null, { 11: '....................l...', 12: '...l...............lll..', 13: '..lll.............ccccc.', 14: '.hhhhh............ckckc.', 15: '.hkhkh............ccccc.', 16: '.hhhhh..................' }, 280),
+    frame(BASE, null, { 11: '...l....................', 12: '..lll...............l...', 13: '.hhhhh.............lll..', 14: '.hkhkh............ccccc.', 15: '.hhhhh............ckckc.', 16: '..................ccccc.' }, 280),
+    frame(BASE, { 6: BLUSH }, { 11: '....l..............l....', 12: '...lll............lll...', 13: '..hhhhh..........ccccc..', 14: '..hkhkh..........ckckc..', 15: '..hhhhh..........ccccc..' }, 600), // rest: huddle + blush
+  ],
 }
