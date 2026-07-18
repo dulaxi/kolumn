@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Error style decisions · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root {
+        --surface-page: #FAF8F6;
+        --surface-card: #FFFFFF;
+        --surface-hover: #E8E2DB;
+        --surface-raised: #F2EDE8;
+        --surface-input: #FFFFFF;
+        --text-primary: #1B1B18;
+        --text-secondary: #5C5C57;
+        --text-muted: #8E8E89;
+        --text-faint: #A8A8A4;
+        --color-cream: #F2EDE8;
+        --color-sand: #E0DBD5;
+        --color-ink: #1B1B18;
+        --color-mist: #C4BFB8;
+        --color-stone: #6B6966;
+        --color-lime: #C2D64A;
+        --color-lime-dark: #A8BA32;
+        --color-lime-wash: #EEF2D6;
+        --color-copper: #C27A4A;
+        --color-copper-dark: #A86434;
+        --color-copper-wash: #F2D9C7;
+        --color-honey: #D4A843;
+        --color-honey-wash: #F5EDCF;
+        --color-mauve: #A8969E;
+        --color-mauve-wash: #E8DDE2;
+        --border-default: #E0DBD5;
+        --border-subtle: #EAE5DF;
+        --border-focus: #1B1B18;
+        --shadow-raised: 0 4px 24px rgba(27,27,24,0.10);
+        /* wash-tier text: darker copper for AA-ish contrast on wash/card */
+        --err-text: #A86434;
+        --warn-text: #8A6B1F;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A;
+        --surface-card: #262624;
+        --surface-hover: #3A3937;
+        --surface-raised: #2E2E2B;
+        --surface-input: #2E2E2B;
+        --text-primary: #E8E5E0;
+        --text-secondary: #B0ADA7;
+        --text-muted: #8A8782;
+        --text-faint: #6B6966;
+        --color-cream: #2E2E2B;
+        --color-sand: #3A3937;
+        --color-mist: #4A4845;
+        --color-lime-wash: #3A4920;
+        --color-copper-wash: #3A2A20;
+        --color-honey-wash: #3A3520;
+        --color-mauve-wash: #3A3040;
+        --border-default: #454340;
+        --border-subtle: #332F2D;
+        --border-focus: #E8E5E0;
+        --shadow-raised: 0 4px 24px rgba(0,0,0,0.35);
+        --err-text: #D89A6E;
+        --warn-text: #D4B86A;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--surface-page);
+        color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 32px 96px; }
+      header { margin-bottom: 40px; position: relative; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header p { color: var(--text-secondary); margin: 0; max-width: 680px; }
+      .theme-toggle {
+        position: absolute; top: 4px; right: 0;
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-radius: 8px; padding: 6px 12px; cursor: pointer;
+        font: 500 12px 'IBM Plex Mono', monospace; color: var(--text-secondary);
+        display: flex; align-items: center; gap: 6px;
+      }
+      .theme-toggle:hover { background: var(--surface-hover); }
+
+      .decision { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+      .decision-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+      .decision-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); padding: 2px 8px; background: var(--surface-raised); border-radius: 4px; white-space: nowrap; }
+      .decision-title { font-size: 16px; font-weight: 600; margin: 0; }
+      .decision-desc { color: var(--text-secondary); margin: 0 0 20px; max-width: 760px; }
+      .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+      .opt { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; }
+      .opt-label { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .opt-label::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--color-mist); display: inline-block; flex-shrink: 0; }
+      .opt-current .opt-label::before { background: var(--color-copper); }
+      .opt-pick .opt-label::before { background: var(--color-lime-dark); }
+      .opt-note { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint); margin-top: auto; padding-top: 14px; line-height: 1.6; }
+      .opt-stage { flex: 1; }
+
+      /* ===== The grammar: shared anatomy ===== */
+      .g {
+        font-family: 'SF Mono', SFMono-Regular, 'IBM Plex Mono', Menlo, monospace;
+        font-size: 12px; line-height: 1.55;
+        border-radius: 10px; padding: 10px 14px;
+        display: flex; align-items: center; gap: 10px;
+        width: 100%; max-width: 440px;
+      }
+      .g .ph { font-size: 18px; flex-shrink: 0; }
+      .g .msg { flex: 1; text-align: left; }
+      .g .dismiss { margin-left: auto; opacity: 0.7; flex-shrink: 0; display: flex; cursor: pointer; background: none; border: none; padding: 0; color: inherit; }
+      .g .dismiss:hover { opacity: 1; }
+      .g .dismiss .ph { font-size: 14px; }
+
+      /* solid fill — the literal toast (hardcoded on purpose: this is exactly toast.js) */
+      .g-solid-err   { background: #C27A4A; color: #FAF8F6; border: 1px solid #1B1B18; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .g-solid-warn  { background: #D4A843; color: #1B1B18; border: 1px solid #1B1B18; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .g-solid-ok    { background: #C2D64A; color: #1B1B18; border: 1px solid #1B1B18; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+
+      /* wash fill — same grammar, persistent-friendly */
+      .g-wash-err  { background: var(--color-copper-wash); color: var(--err-text); border: 1px solid var(--color-copper); }
+      .g-wash-warn { background: var(--color-honey-wash); color: var(--warn-text); border: 1px solid var(--color-honey); }
+      .g-wash-ok   { background: var(--color-lime-wash); color: var(--color-lime-dark); border: 1px solid var(--color-lime-dark); }
+      .g-wash-neutral { background: var(--surface-raised); color: var(--text-secondary); border: 1px solid var(--border-default); }
+
+      /* micro tier — field-level */
+      .g-micro {
+        font-family: 'SF Mono', SFMono-Regular, 'IBM Plex Mono', Menlo, monospace;
+        font-size: 11px; color: var(--err-text);
+        display: flex; align-items: center; gap: 6px; margin-top: 6px;
+      }
+      .g-micro .ph { font-size: 13px; }
+
+      /* ===== Mini app contexts ===== */
+      .mini-form {
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-radius: 12px; padding: 20px; max-width: 360px; margin: 0 auto;
+      }
+      .mini-form h4 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
+      .mini-input {
+        width: 100%; background: var(--surface-input); border: 1px solid var(--border-default);
+        border-radius: 8px; padding: 8px 11px; font: 400 13px inherit; color: var(--text-primary);
+        margin-bottom: 10px;
+      }
+      .mini-input::placeholder { color: var(--text-faint); }
+      .mini-btn {
+        width: 100%; background: var(--color-ink); color: #FAF8F6; border: none;
+        border-radius: 8px; padding: 9px 0; font: 500 13px inherit; cursor: pointer; margin-top: 4px;
+      }
+      [data-theme="dark"] .mini-btn { background: #E8E5E0; color: #1B1B18; }
+      .mini-input.invalid { border-color: var(--color-copper); }
+
+      .chat-bubble {
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-radius: 12px; padding: 12px 16px; font-size: 14px; max-width: 420px; margin: 0 auto;
+      }
+      .chat-bubble .g { margin-top: 10px; max-width: none; }
+
+      .offline-bar {
+        width: 100%; padding: 8px 16px; display: flex; align-items: center;
+        justify-content: center; gap: 8px; border-radius: 6px;
+      }
+      .offline-current { background: var(--color-honey); color: #fff; font-size: 14px; font-weight: 500; }
+      .offline-current .ph { font-size: 16px; }
+      .offline-grammar {
+        background: var(--color-honey); color: #1B1B18; border-bottom: 1px solid #1B1B18;
+        font-family: 'SF Mono', SFMono-Regular, 'IBM Plex Mono', Menlo, monospace; font-size: 12px;
+      }
+      .offline-grammar .ph { font-size: 16px; }
+      .offline-wash {
+        background: var(--color-honey-wash); color: var(--warn-text); border-bottom: 1px solid var(--color-honey);
+        font-family: 'SF Mono', SFMono-Regular, 'IBM Plex Mono', Menlo, monospace; font-size: 12px;
+      }
+      .offline-wash .ph { font-size: 16px; }
+
+      /* anatomy figure */
+      .anatomy { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 8px; }
+      .anatomy .cell { text-align: center; }
+      .anatomy .cell .tier-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin: 12px 0 2px; }
+      .anatomy .cell .tier-use { font-size: 12px; color: var(--text-secondary); }
+      .anatomy .g, .anatomy .g-micro { margin: 0 auto; }
+      .anatomy .field-demo { max-width: 300px; margin: 0 auto; text-align: left; }
+
+      .verdict {
+        background: var(--surface-card); border: 1px solid var(--border-default);
+        border-left: 3px solid var(--color-lime-dark);
+        border-radius: 14px; padding: 24px; margin: 40px 0 20px;
+      }
+      .verdict h2 { font-family: 'Sentient', Georgia, serif; font-weight: 500; font-size: 24px; margin: 0 0 10px; }
+      .verdict p { color: var(--text-secondary); max-width: 760px; }
+      .verdict ul { color: var(--text-secondary); max-width: 760px; padding-left: 20px; }
+      .verdict li { margin: 6px 0; }
+      .verdict b { color: var(--text-primary); }
+
+      footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border-default); color: var(--text-muted); font-size: 12px; }
+      footer code { background: var(--surface-raised); padding: 1px 6px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'">
+          <i class="ph ph-moon"></i> theme
+        </button>
+        <h1>Error style — one voice everywhere</h1>
+        <p>Proposal: make the toast treatment (Catalog A) the app-wide error grammar. Below, every error surface shown as it is today vs. toastified. Two fills of the same grammar are on offer — <b>solid</b> (the literal toast) and <b>wash</b> (same anatomy, palette wash fill) — because the honest answer is that the solid fill doesn't survive everywhere. Toggle the theme; note which options adapt.</p>
+      </header>
+
+      <!-- ============ THE GRAMMAR ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">THE GRAMMAR</span>
+          <h2 class="decision-title">One anatomy, three weights</h2>
+        </div>
+        <p class="decision-desc">Everything shares the toast DNA: mono 12px, 18px Phosphor icon, 10px radius, 1px border, dismiss × where dismissible. What changes is the fill — matched to how long the message sits on screen.</p>
+        <div class="anatomy">
+          <div class="cell">
+            <div class="g g-solid-err"><i class="ph ph-warning-circle"></i><span class="msg">Failed to create task</span><button class="dismiss"><i class="ph ph-x"></i></button></div>
+            <div class="tier-name">SOLID — transient</div>
+            <div class="tier-use">Floats &amp; leaves (toasts, 3–5s). Loud is fine: it self-dismisses.</div>
+          </div>
+          <div class="cell">
+            <div class="g g-wash-err"><i class="ph ph-warning-circle"></i><span class="msg">Invalid login credentials</span><button class="dismiss"><i class="ph ph-x"></i></button></div>
+            <div class="tier-name">WASH — persistent</div>
+            <div class="tier-use">Sits in the layout until resolved (forms, banners, chat). Quieter fill, darker text, still unmistakably the same voice.</div>
+          </div>
+          <div class="cell">
+            <div class="field-demo">
+              <input class="mini-input invalid" value="dula@icloud" style="margin-bottom:0;" />
+              <div class="g-micro"><i class="ph ph-warning-circle"></i>This email has already been invited</div>
+            </div>
+            <div class="tier-name">MICRO — field-level</div>
+            <div class="tier-use">Tied to one input. No box — a box under every field outweighs the field itself.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 1: AUTH FORMS ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 1</span>
+          <h2 class="decision-title">Auth forms (Landing, Onboarding, password reset)</h2>
+        </div>
+        <p class="decision-desc">Today: three hand-rolled sans-serif banners with drifting opacities. The error persists until the user fixes their input — so this is the persistence test.</p>
+        <div class="row">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (LandingPage:1373)</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Sign in</h4>
+              <input class="mini-input" value="dula@icloud.com" />
+              <input class="mini-input" type="password" value="••••••••" />
+              <div style="font-size:14px;color:var(--color-copper);background:color-mix(in srgb, var(--color-copper-wash) 60%, transparent);border:1px solid color-mix(in srgb, var(--color-copper) 30%, transparent);border-radius:12px;padding:10px 12px;margin-bottom:10px;">Invalid login credentials</div>
+              <button class="mini-btn">Sign in</button>
+            </div></div>
+            <div class="opt-note">sans 14px · wash/60 · border/30 · one of three drifting variants</div>
+          </div>
+          <div class="opt">
+            <div class="opt-label">B · literal toast</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Sign in</h4>
+              <input class="mini-input" value="dula@icloud.com" />
+              <input class="mini-input" type="password" value="••••••••" />
+              <div class="g g-solid-err" style="margin-bottom:10px;max-width:none;"><i class="ph ph-warning-circle"></i><span class="msg">Invalid login credentials</span><button class="dismiss"><i class="ph ph-x"></i></button></div>
+              <button class="mini-btn">Sign in</button>
+            </div></div>
+            <div class="opt-note">solid copper shouts as loud as the CTA · 3.3:1 text contrast, persistent · ignores theme</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">C · wash grammar (recommended)</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Sign in</h4>
+              <input class="mini-input" value="dula@icloud.com" />
+              <input class="mini-input" type="password" value="••••••••" />
+              <div class="g g-wash-err" style="margin-bottom:10px;max-width:none;"><i class="ph ph-warning-circle"></i><span class="msg">Invalid login credentials</span></div>
+              <button class="mini-btn">Sign in</button>
+            </div></div>
+            <div class="opt-note">same voice, room-tone volume · themes correctly · = InlineNotice, which already exists</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 2: FIELD ERROR ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 2</span>
+          <h2 class="decision-title">Field-level errors (BoardShareModal invite)</h2>
+        </div>
+        <p class="decision-desc">Today: bare 12px copper text floating under the input — the lightest error in the app. The stress test for "toast everywhere": watch what a full banner does to a single input.</p>
+        <div class="row">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (BoardShareModal:219)</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Share board</h4>
+              <input class="mini-input invalid" value="sam@studio.co" style="margin-bottom:0;" />
+              <p style="font-size:12px;color:var(--color-copper);margin:6px 0 0;">This email has already been invited</p>
+            </div></div>
+            <div class="opt-note">bare sans 12px · no icon · easy to miss, but correctly lightweight</div>
+          </div>
+          <div class="opt">
+            <div class="opt-label">B · literal toast</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Share board</h4>
+              <input class="mini-input invalid" value="sam@studio.co" style="margin-bottom:0;" />
+              <div class="g g-solid-err" style="margin-top:8px;max-width:none;"><i class="ph ph-warning-circle"></i><span class="msg">This email has already been invited</span><button class="dismiss"><i class="ph ph-x"></i></button></div>
+            </div></div>
+            <div class="opt-note">the error now outweighs the input it belongs to · hierarchy inverted</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">C · micro grammar (recommended)</div>
+            <div class="opt-stage"><div class="mini-form">
+              <h4>Share board</h4>
+              <input class="mini-input invalid" value="sam@studio.co" style="margin-bottom:0;" />
+              <div class="g-micro"><i class="ph ph-warning-circle"></i>This email has already been invited</div>
+            </div></div>
+            <div class="opt-note">mono 11px + icon · same voice at field scale · pairs with the input's copper border</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3: DESTRUCTIVE CONFIRM ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 3</span>
+          <h2 class="decision-title">Destructive confirm (Settings → clear data)</h2>
+        </div>
+        <p class="decision-desc">Not an error but part of the same copper family — included so the whole vocabulary moves together.</p>
+        <div class="row">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (SettingsPage:310)</div>
+            <div class="opt-stage">
+              <div style="background:color-mix(in srgb, var(--color-copper-wash) 40%, transparent);border:1px solid color-mix(in srgb, var(--color-copper) 40%, transparent);border-radius:12px;padding:20px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <i class="ph ph-warning" style="color:var(--color-copper);font-size:16px;"></i>
+                  <span style="font-size:14px;font-weight:600;color:var(--color-copper);">Confirm — this cannot be undone</span>
+                </div>
+                <div style="font-size:14px;color:var(--text-secondary);">Permanently delete all your boards, notes, and settings.</div>
+              </div>
+            </div>
+            <div class="opt-note">wash/40 · border/40 · sans · yet another opacity recipe</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">B · wash grammar (recommended)</div>
+            <div class="opt-stage">
+              <div class="g g-wash-err" style="max-width:none;align-items:flex-start;">
+                <i class="ph ph-warning" style="margin-top:1px;"></i>
+                <span class="msg"><b style="display:block;margin-bottom:2px;">Confirm — this cannot be undone</b><span style="color:var(--text-secondary);">Permanently delete all your boards, notes, and settings.</span></span>
+              </div>
+            </div>
+            <div class="opt-note">full wash + full border · title line bold, body in text-secondary · mono keeps the "system speaking" tone for destructive moments</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4: CHAT STREAM ERROR ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 4</span>
+          <h2 class="decision-title">Chat — stream failure mid-reply</h2>
+        </div>
+        <p class="decision-desc">Today the raw error string is appended to the assistant's bubble as italic markdown and persisted with the conversation. Whatever wins here, the copy must stop being wire-level (that's finding #4 from the audit — fix independently).</p>
+        <div class="row">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (chatStore:117)</div>
+            <div class="opt-stage"><div class="chat-bubble">
+              I'll look for that card on your board…
+              <div style="margin-top:10px;font-style:italic;color:var(--text-secondary);">Error: Claude API error: 529 {"type":"error","error":{"type":"overloaded_error"…</div>
+            </div></div>
+            <div class="opt-note">italic markdown · raw wire error · saved to history forever</div>
+          </div>
+          <div class="opt">
+            <div class="opt-label">B · literal toast in the bubble</div>
+            <div class="opt-stage"><div class="chat-bubble">
+              I'll look for that card on your board…
+              <div class="g g-solid-err"><i class="ph ph-warning-circle"></i><span class="msg">Claude hit a snag — try sending that again</span><button class="dismiss"><i class="ph ph-x"></i></button></div>
+            </div></div>
+            <div class="opt-note">reads as a floating toast that got stuck in the transcript · dismiss implies it can leave (it can't — it's history)</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">C · wash grammar (recommended)</div>
+            <div class="opt-stage"><div class="chat-bubble">
+              I'll look for that card on your board…
+              <div class="g g-wash-err"><i class="ph ph-warning-circle"></i><span class="msg">Claude hit a snag — try sending that again</span></div>
+            </div></div>
+            <div class="opt-note">a quiet system interjection in the transcript · no dismiss (it's part of history) · friendly copy, detail goes to Sentry</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5: INLINE BOUNDARY ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 5</span>
+          <h2 class="decision-title">InlineErrorBoundary (section failed to render)</h2>
+        </div>
+        <p class="decision-desc">Today it's neutral gray while the full-page boundary is copper — two tones of "broken". Moving it into the grammar also decides: is a render failure an error-colored event or a neutral one?</p>
+        <div class="row">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (InlineErrorBoundary:35)</div>
+            <div class="opt-stage" style="display:flex;align-items:center;justify-content:center;">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:var(--text-muted);background:var(--surface-raised);border-radius:8px;">
+                <span>Couldn't load comments</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;font-size:12px;color:var(--text-secondary);background:var(--surface-card);border:1px solid var(--border-default);border-radius:4px;"><i class="ph ph-arrows-clockwise" style="font-size:12px;"></i>Retry</span>
+              </div>
+            </div>
+            <div class="opt-note">neutral gray · sans · disagrees with the copper full-page boundary</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">B · wash grammar + retry (recommended)</div>
+            <div class="opt-stage" style="display:flex;align-items:center;justify-content:center;">
+              <div class="g g-wash-err" style="max-width:360px;">
+                <i class="ph ph-warning-circle"></i><span class="msg">Couldn't load comments</span>
+                <button style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;font:inherit;font-size:11px;color:inherit;background:var(--surface-card);border:1px solid var(--color-copper);border-radius:6px;cursor:pointer;"><i class="ph ph-arrows-clockwise" style="font-size:12px;"></i>Retry</button>
+              </div>
+            </div>
+            <div class="opt-note">action slot replaces dismiss · same anatomy, copper family joins both boundaries</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 6: OFFLINE BANNER ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 6</span>
+          <h2 class="decision-title">Offline banner (full-width, top of app)</h2>
+        </div>
+        <p class="decision-desc">Today: white text on honey — ~2:1 contrast, fails AA, and the warn <em>toast</em> puts ink on the same honey. Two grammar takes: solid honey (it's a transient-ish status that leaves when you reconnect) or honey wash (it can sit for a long time).</p>
+        <div class="row" style="grid-template-columns: 1fr;">
+          <div class="opt opt-current">
+            <div class="opt-label">A · current (OfflineBanner:27)</div>
+            <div class="offline-bar offline-current"><i class="ph ph-wifi-slash"></i>You're offline — changes may not be saved</div>
+            <div class="opt-note">sans 14px · white on honey ≈ 2:1, fails AA</div>
+          </div>
+          <div class="opt">
+            <div class="opt-label">B · solid grammar</div>
+            <div class="offline-bar offline-grammar"><i class="ph ph-wifi-slash"></i>You're offline — changes may not be saved</div>
+            <div class="opt-note">mono 12px · ink on honey (matches the warn toast) · 1px ink bottom border</div>
+          </div>
+          <div class="opt opt-pick">
+            <div class="opt-label">C · wash grammar (recommended)</div>
+            <div class="offline-bar offline-wash"><i class="ph ph-wifi-slash"></i>You're offline — changes may not be saved</div>
+            <div class="opt-note">honey wash · calmer for a state that can persist for minutes · themes correctly</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 7: KEEP AS-IS ============ -->
+      <section class="decision">
+        <div class="decision-head">
+          <span class="decision-num">SURFACE 7</span>
+          <h2 class="decision-title">Full-page ErrorBoundary — keep as-is</h2>
+        </div>
+        <p class="decision-desc" style="margin-bottom:0;">The copper-circle + serif-heading + lime "Try again" layout is a <em>page state</em>, not a message — same family as the 404 and empty states. Squeezing it into a 420px mono strip would undersell a whole-section crash. Recommendation: leave it, but its icon circle and copy tone become the "page-scale" end of the same copper vocabulary.</p>
+      </section>
+
+      <!-- ============ VERDICT ============ -->
+      <section class="verdict">
+        <h2>So — is it a good idea?</h2>
+        <p><b>Standardizing on the toast grammar: yes, genuinely.</b> It's already Kolumn's most distinctive system voice (mono, ink border, Phosphor icon, palette fills), it's the error style users see most, and it kills the five-variant drift outright. <b>Standardizing on the literal solid toast: no.</b> Four reasons visible above:</p>
+        <ul>
+          <li><b>Transience is load-bearing.</b> The solid fill works <em>because</em> it leaves after 4 seconds. Persistent solid-copper blocks compete with CTAs (Surface 1B), invert field hierarchy (2B), and read as stuck toasts in chat (4B).</li>
+          <li><b>Contrast.</b> #FAF8F6 on copper is ~3.3:1 — a defensible cheat for a 4s toast, below AA for text someone must read while fixing a form. The wash tier pairs copper-dark text on copper-wash instead.</li>
+          <li><b>Theming.</b> The toast hardcodes its hexes and ink border (audit finding). Making it the universal style as-is would spread the app's only non-theming surface everywhere. The wash tier is token-native — flip the theme toggle above to see B options stay frozen while C options adapt.</li>
+          <li><b>You already own the wash tier.</b> InlineNotice <em>is</em> the toast grammar in wash form — one caller today. This proposal is less "restyle the app" and more "promote InlineNotice, add a micro variant, retire four hand-rolled banners."</li>
+        </ul>
+        <p><b>The palette extension you asked about</b> falls out naturally: copper=error, honey=warn/offline, lime=success, mauve=archive — each in solid (transient) and wash (persistent) form, all from existing tokens. One grammar, three weights, five hues.</p>
+      </section>
+
+      <footer>
+        Reply with picks per surface, e.g. <code>1C 2C 3B 4C 5B 6C</code> — or redirect any surface and I'll iterate this page. Solid-fill specimens intentionally hardcode toast.js hexes (that's the point being tested); wash/micro specimens run on tokens. Serve: <code>python3 -m http.server 8899 --directory docs/design-mockups</code>.
+      </footer>
+    </div>
+  </body>
+</html>
