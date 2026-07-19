@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
+import { guardRealtimeSetup } from '../lib/realtimeGuard'
 
 // Debounce guard for realtime reconnect — prevents concurrent reconnect races
 let reconnectTimer = null
@@ -116,6 +117,10 @@ export const useNotificationStore = create((set, get) => ({
       activeChannel = null
     }
 
+    // Guard channel setup so a synchronous WebSocket failure (CSP-blocked
+    // wss://, WebSocket unavailable) degrades gracefully instead of throwing
+    // into React and white-screening the app. See src/lib/realtimeGuard.js.
+    activeChannel = guardRealtimeSetup('notifications', () => {
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -136,7 +141,8 @@ export const useNotificationStore = create((set, get) => ({
         }
       })
 
-    activeChannel = channel
+      return channel
+    }, null)
 
     return () => {
       if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }

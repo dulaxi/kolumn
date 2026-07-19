@@ -9,6 +9,7 @@ import { useNotificationStore } from './notificationStore'
 import { addRecurrenceInterval } from '../utils/dateUtils'
 import { createRateLimiter, sanitizeText, sanitizeTitle, sanitizeDescription } from '../utils/rateLimit'
 import { logError } from '../utils/logger'
+import { guardRealtimeSetup } from '../lib/realtimeGuard'
 import { cardInsertSchema, boardInsertSchema, columnInsertSchema, commentInsertSchema } from '../utils/schemas'
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
@@ -1349,6 +1350,11 @@ export const useBoardStore = create((set, get) => ({
       existing.forEach((sub) => supabase.removeChannel(sub))
     }
 
+    // Guard all channel setup: a synchronous WebSocket failure (e.g. a
+    // CSP-blocked wss:// connection, or WebSocket being unavailable) must
+    // degrade to a working, non-live app — never escape into React and
+    // white-screen it. See src/lib/realtimeGuard.js.
+    const channels = guardRealtimeSetup('boards', () => {
     const activeBoardId = get().activeBoardId
 
     // Boards table: unfiltered (need to see renames/deletes across all boards)
@@ -1475,7 +1481,10 @@ export const useBoardStore = create((set, get) => ({
       subs.push(allDetailSub)
     }
 
-    set({ subscriptions: subs })
+    return subs
+    }, [])
+
+    set({ subscriptions: channels })
   },
 
   unsubscribeAll: () => {
