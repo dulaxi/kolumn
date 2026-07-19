@@ -1,0 +1,57 @@
+/*
+ * Self-hosted Fontshare faces (ITF Free Font License permits web self-hosting).
+ * Files in public/fonts/ were downloaded from cdn.fontshare.com — previously
+ * loaded via <link> in index.html, which made headings/wordmark silently fall
+ * back to Georgia/system whenever the Fontshare CDN was slow or blocked.
+ * Faces:
+ *   Sentient 200/300/400/500/700 static (--font-heading)
+ *   Clash Grotesk variable, wght 200–700 (--font-logo + page titles at 550)
+ */
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/sentient-200.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/sentient-300.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/sentient-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/sentient-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/sentient-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Clash Grotesk';
+  src: url('/fonts/clash-grotesk-variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
