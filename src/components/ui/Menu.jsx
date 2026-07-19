@@ -35,12 +35,14 @@ function MenuItem({
       type="button"
       onClick={onSelect}
       className={mergeClassNames(
-        'w-full flex items-center gap-2.5 px-2.5 py-1.5 text-[13px] rounded-md',
+        // Workspace-dropdown row standard (2026-07-19): h-8 / text-sm /
+        // rounded-lg / px-2, hover on --surface-raised.
+        'w-full flex items-center gap-2 h-8 px-2 text-sm rounded-lg',
         'select-none transition-colors text-left cursor-pointer',
-        'focus:outline-none focus-visible:bg-[var(--color-cream)]',
+        'focus:outline-none focus-visible:bg-[var(--surface-raised)]',
         destructive
           ? 'text-[var(--label-red-text)] hover:bg-[var(--label-red-bg)]'
-          : 'text-[var(--text-primary)] hover:bg-[var(--color-cream)]',
+          : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]',
         'disabled:opacity-50 disabled:pointer-events-none',
         className,
       )}
@@ -60,7 +62,7 @@ function MenuItem({
       <span className="flex-1 truncate">{children}</span>
       {/* Single-select checkmark trails the label */}
       {selected && !checkbox && (
-        <Check className="w-3.5 h-3.5 text-[var(--text-primary)] shrink-0" weight="bold" />
+        <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />
       )}
       {shortcut && (
         <span className="ml-auto font-mono text-[10px] text-[var(--color-stone)] shrink-0">
@@ -72,12 +74,12 @@ function MenuItem({
 }
 
 function MenuDivider({ className = '' }) {
-  return <div className={mergeClassNames('h-px bg-[var(--color-cream-dark)] my-1 mx-0.5', className)} />
+  return <div className={mergeClassNames('h-px bg-[var(--border-subtle)] my-1 mx-0.5', className)} />
 }
 
 function MenuLabel({ children, className = '' }) {
   return (
-    <div className={mergeClassNames('px-2.5 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]', className)}>
+    <div className={mergeClassNames('px-2 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]', className)}>
       {children}
     </div>
   )

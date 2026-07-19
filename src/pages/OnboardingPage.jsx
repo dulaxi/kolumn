@@ -826,7 +826,7 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
             panelClassName="!w-full"
             className="w-full"
             panel={
-              <div className="flex flex-col gap-0.5 p-1 max-h-[min(60vh,280px)] overflow-y-auto">
+              <div className="flex flex-col gap-0.5 max-h-[min(60vh,280px)] overflow-y-auto">
                 {ROLES.map((r) => (
                   <Menu.Item
                     key={r.id}

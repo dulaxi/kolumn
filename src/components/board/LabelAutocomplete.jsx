@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, forwardRef, useImperativeHandle } from 'react'
+import { Tag } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { selectBoardLabels } from '../../store/selectors'
 import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
@@ -95,38 +96,42 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
         autoFocus
         className="text-xs text-[var(--text-secondary)] lowercase bg-transparent border-none focus:outline-none w-24 placeholder-[var(--text-faint)]"
       />
-      <div className="absolute z-10 top-full left-0 mt-1 w-[220px] bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg shadow-md overflow-hidden">
+      {/* Standard dropdown surface (PANEL_BASE in ui/Popover) — kept outside
+          Popover because this combobox is "open while mounted" and its
+          blur/commit wiring owns the close lifecycle. Anatomy mirrors
+          WorkspaceDropdown: inset rounded rows, sectioned footer action. */}
+      <div className="absolute z-50 top-full left-0 mt-1.5 w-[220px] bg-[var(--surface-card)] border border-[var(--color-mist)] rounded-[10px] shadow-[0_10px_30px_rgba(27,27,24,0.10),0_2px_6px_rgba(27,27,24,0.04)] animate-dropdown overflow-hidden">
         {filtered.length > 0 && (
-          <div className="max-h-[180px] overflow-y-auto">
+          <div className="max-h-[224px] overflow-y-auto p-1">
             {filtered.map((l, i) => (
               <button
                 key={l.id}
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { onPick(l); setQuery(''); setHighlight(0) }}
-                className={`w-full flex items-center gap-2 px-2 py-1 text-xs text-left ${
-                  i === highlight ? 'bg-[var(--surface-hover)]' : 'hover:bg-[var(--surface-hover)]'
+                className={`w-full flex items-center gap-2 h-8 px-2 text-sm rounded-lg text-left ${
+                  i === highlight ? 'bg-[var(--surface-raised)]' : 'hover:bg-[var(--surface-raised)]'
                 }`}
               >
                 <span className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || ''}`} />
-                <span className="text-[var(--text-secondary)] capitalize truncate">{l.text}</span>
+                <span className="text-[var(--text-secondary)] lowercase truncate">{l.text}</span>
               </button>
             ))}
           </div>
         )}
         {query.trim() && !exactMatch && (
-          <div className={filtered.length > 0 ? 'border-t border-[var(--border-subtle)]' : ''}>
+          <div className={`p-1 ${filtered.length > 0 ? 'border-t border-[var(--border-subtle)]' : ''}`}>
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { onCreate(query.trim(), newColor); setQuery(''); setHighlight(0) }}
-              className="w-full flex items-center gap-2 px-2 py-1 text-xs text-left"
+              className="w-full flex items-center gap-2 h-8 px-2 text-sm rounded-lg text-left hover:bg-[var(--surface-raised)]"
             >
               <span className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[newColor]}`} />
               <span className="text-[var(--text-faint)] shrink-0">Create</span>
               <span className="text-[var(--text-secondary)] lowercase truncate">/{query.trim()}</span>
             </button>
-            <div className="flex items-center justify-start gap-1.5 px-2 pb-1.5">
+            <div className="flex items-center justify-start gap-1.5 px-2 pb-1.5 pt-1.5">
               {LABEL_COLORS.map((c) => (
                 <button
                   key={c}
@@ -144,14 +149,20 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
             </div>
           </div>
         )}
-        <button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => onManage()}
-          className="w-full text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] text-left px-2 py-1 border-t border-[var(--border-subtle)]"
-        >
-          Manage labels…
-        </button>
+        {/* Footer action — same shape as WorkspaceDropdown's "Manage workspaces" */}
+        <div className={`p-1 ${filtered.length > 0 || (query.trim() && !exactMatch) ? 'border-t border-[var(--border-subtle)]' : ''}`}>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onManage()}
+            className="w-full flex items-center gap-2 h-8 px-2 text-sm rounded-lg text-left text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]"
+          >
+            <span className="w-4 h-4 flex items-center justify-center shrink-0">
+              <Tag className="w-4 h-4" weight="light" />
+            </span>
+            <span className="truncate">Manage labels</span>
+          </button>
+        </div>
       </div>
     </div>
   )

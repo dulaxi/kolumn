@@ -24,7 +24,7 @@ export default function MobileUserMenu() {
       panelClassName="w-56"
       panel={
         <>
-          <div className="px-2.5 pt-1.5 pb-2 border-b border-[var(--color-cream-dark)] mb-1">
+          <div className="px-2 pt-1.5 pb-2 border-b border-[var(--border-subtle)] mb-1">
             <p className="text-sm font-medium text-[var(--text-primary)] truncate">{profile?.display_name || 'User'}</p>
             <p className="text-xs text-[var(--text-muted)] truncate">{profile?.email || ''}</p>
           </div>

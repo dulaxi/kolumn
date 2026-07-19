@@ -9,6 +9,7 @@ import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
 import IconPicker from './IconPicker'
 import LabelAutocomplete from './LabelAutocomplete'
+import PriorityMenu from './PriorityMenu'
 import { formatDueDateLabel, parseDueDate } from '../../utils/dateUtils'
 import Modal from '../ui/Modal'
 import Popover from '../ui/Popover'
@@ -333,13 +334,13 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               panel={
                 <>
                   <Menu.Item
-                    icon={<Copy size={14} />}
+                    icon={<Copy size={16} />}
                     onSelect={() => { duplicateCard(cardId); showToast.success('Duplicated'); setOpenMenu(null) }}
                   >
                     Duplicate
                   </Menu.Item>
                   <Menu.Item
-                    icon={<Bookmark size={14} />}
+                    icon={<Bookmark size={16} />}
                     onSelect={() => {
                       addTemplate({
                         name: card.title,
@@ -386,29 +387,11 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               </button>
             </Tooltip>
             {/* Priority flag */}
-            <Menu
+            <PriorityMenu
               open={openMenu === 'priority'}
               onOpenChange={(next) => setOpenMenu(next ? 'priority' : null)}
-              placement="bottom-end"
-              panelClassName="w-36"
-              panel={
-                <>
-                  {[
-                    { value: 'low', label: 'Low', color: 'var(--color-lime-dark)' },
-                    { value: 'medium', label: 'Medium', color: 'var(--color-honey)' },
-                    { value: 'high', label: 'High', color: 'var(--color-copper)' },
-                  ].map((opt) => (
-                    <Menu.Item
-                      key={opt.value}
-                      selected={priority === opt.value}
-                      onSelect={() => { setPriority(opt.value); setOpenMenu(null); scheduleSave() }}
-                      icon={<Flag className="w-3.5 h-3.5" fill={opt.color} style={{ color: opt.color }} />}
-                    >
-                      {opt.label}
-                    </Menu.Item>
-                  ))}
-                </>
-              }
+              value={priority}
+              onChange={(value) => { setPriority(value); setOpenMenu(null); scheduleSave() }}
             >
               <button
                 type="button"
@@ -418,7 +401,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               >
                 <Flag className="w-4 h-4" fill={priColor} style={{ color: priColor }} />
               </button>
-            </Menu>
+            </PriorityMenu>
           </div>
         </div>
 

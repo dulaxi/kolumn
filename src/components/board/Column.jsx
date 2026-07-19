@@ -188,7 +188,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
             panel={
               <>
                 <Menu.Item
-                  icon={<Pencil size={14} />}
+                  icon={<Pencil size={16} />}
                   onSelect={() => {
                     setMenuOpen(false)
                     setIsRenaming(true)
@@ -198,7 +198,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
                   Rename
                 </Menu.Item>
                 <Menu.Item
-                  icon={<Gauge size={14} />}
+                  icon={<Gauge size={16} />}
                   onSelect={() => {
                     setMenuOpen(false)
                     setEditingWip(true)
@@ -209,7 +209,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
-                  icon={<Trash size={14} />}
+                  icon={<Trash size={16} />}
                   destructive
                   onSelect={() => {
                     setMenuOpen(false)

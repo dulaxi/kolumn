@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { CalendarDot, CheckCircle, CheckSquare, FileText, Flag, Plus, X } from '@phosphor-icons/react'
+import { CalendarDot, CheckCircle, CheckSquare, FileText, Plus, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import DynamicIcon from './DynamicIcon'
@@ -12,6 +12,8 @@ import { PRIORITY_OPTIONS } from '../../constants/colors'
 import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
 import AssigneePicker from './cardDetail/AssigneePicker'
 import LabelAutocomplete from './LabelAutocomplete'
+import PriorityMenu from './PriorityMenu'
+import Popover from '../ui/Popover'
 import Tooltip from '../ui/Tooltip'
 import { selectCardLabels } from '../../store/selectors'
 
@@ -177,7 +179,13 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               className="flex-1 text-sm font-medium text-[var(--text-primary)] bg-transparent border-none focus:outline-none placeholder-[var(--text-faint)]"
             />
             {/* Priority check circle — cycles priority on click */}
-            <div className="relative shrink-0" data-menu-root>
+            <PriorityMenu
+              open={openMenu === 'priority'}
+              onOpenChange={(next) => setOpenMenu(next ? 'priority' : null)}
+              value={priority}
+              onChange={(value) => { setPriority(value); setOpenMenu(null) }}
+              className="shrink-0"
+            >
               <Tooltip content={`Priority: ${priOption.label}`}>
                 <button
                   type="button"
@@ -187,26 +195,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                   <CheckCircle className="w-4 h-4 transition-colors" style={{ color: priColor }} />
                 </button>
               </Tooltip>
-              {openMenu === 'priority' && (
-                <div className="absolute right-0 top-full mt-1 p-1.5 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl min-w-[8rem] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50">
-                  {[
-                    { value: 'low', label: 'Low', color: 'var(--color-lime-dark)' },
-                    { value: 'medium', label: 'Medium', color: 'var(--color-honey)' },
-                    { value: 'high', label: 'High', color: 'var(--color-copper)' },
-                  ].map((opt) => (
-                    <div
-                      key={opt.value}
-                      role="menuitem"
-                      onClick={() => { setPriority(opt.value); setOpenMenu(null) }}
-                      className="min-h-7 px-2 py-1 rounded-lg cursor-pointer text-xs flex items-center gap-2 hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
-                    >
-                      <Flag className="w-3.5 h-3.5 shrink-0" fill={opt.color} style={{ color: opt.color }} />
-                      <span className="flex-1 truncate">{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            </PriorityMenu>
           </div>
 
           {/* Labels inline — chips + LabelAutocomplete */}
@@ -285,28 +274,12 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
       <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
         <div className="flex items-center gap-2">
           {/* Date */}
-          <div className="relative" data-menu-root>
-            {dueDateObj ? (
-              <button
-                type="button"
-                onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
-                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}
-              >
-                <CalendarDot size={12} weight="bold" />
-                {formatDueDateLabel(dueDateObj)}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
-                className="flex items-center gap-1 text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors text-[10px]"
-              >
-                <CalendarDot size={12} weight="bold" />
-                Date
-              </button>
-            )}
-            {openMenu === 'date' && (
-              <div className="absolute left-0 top-full mt-1 p-2 bg-[var(--surface-card)] border-0.5 border-[var(--color-mist)] rounded-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] z-50 flex flex-col gap-1">
+          <Popover
+            open={openMenu === 'date'}
+            onOpenChange={(next) => setOpenMenu(next ? 'date' : null)}
+            placement="bottom-start"
+            panel={
+              <div className="flex flex-col gap-1 p-1">
                 <input
                   type="date"
                   value={dueDate ? dueDate.split('T')[0] : ''}
@@ -327,8 +300,28 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
                   </button>
                 )}
               </div>
+            }
+          >
+            {dueDateObj ? (
+              <button
+                type="button"
+                onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
+                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}
+              >
+                <CalendarDot size={12} weight="bold" />
+                {formatDueDateLabel(dueDateObj)}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
+                className="flex items-center gap-1 text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors text-[10px]"
+              >
+                <CalendarDot size={12} weight="bold" />
+                Date
+              </button>
             )}
-          </div>
+          </Popover>
 
           {/* Checklist counter — only show if items */}
           {hasChecklist && (
