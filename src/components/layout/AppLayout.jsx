@@ -163,7 +163,7 @@ export default function AppLayout() {
         {isDesktop && !['/dashboard', '/workspace', '/boards', '/build', '/chat'].includes(basePath) && (
           <div className="shrink-0 px-4 sm:px-8 w-full max-w-4xl mx-auto">
             <header className="flex items-end h-9 md:h-9 shrink-0 mb-6">
-              <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)] flex items-center gap-2 min-w-0">
+              <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] flex items-center gap-2 min-w-0">
                 <span className="truncate">{title}</span>
               </h1>
             </header>

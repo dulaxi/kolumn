@@ -1489,7 +1489,7 @@ function MobileNav() {
           className="flex items-center hover:opacity-90 transition-opacity"
         >
           <Kanban size={34} weight="fill" className="text-[var(--color-logo)]" />
-          <span className="text-[28px] font-[450] text-[var(--text-primary)] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
+          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
         </Link>
         <div className="flex items-center gap-3 py-6">
           <a
@@ -1519,7 +1519,7 @@ function MobileNav() {
           className="flex items-center hover:opacity-90 transition-opacity"
         >
           <Kanban size={34} weight="fill" className="text-[var(--color-logo)]" />
-          <span className="text-[28px] font-[450] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
+          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
         </Link>
         <button
           onClick={() => setMenuOpen(!menuOpen)}

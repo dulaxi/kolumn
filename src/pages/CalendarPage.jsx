@@ -62,7 +62,7 @@ export default function CalendarPage() {
             >
               <CaretRight className="w-5 h-5" />
             </button>
-            <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)] ml-2">
+            <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] ml-2">
               {format(currentMonth, 'MMMM yyyy')}
             </h1>
           </div>

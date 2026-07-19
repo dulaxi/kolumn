@@ -205,7 +205,7 @@ export default function OnboardingPage() {
       <div className="flex justify-center pt-10" aria-hidden="true">
         <div className="flex items-center">
           <Kanban size={28} weight="fill" className="text-[var(--color-logo)]" />
-          <span className="text-[22px] font-[450] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">
+          <span className="text-[22px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">
             Kolumn
           </span>
         </div>

@@ -73,7 +73,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
           {/* Same logo row as Sidebar.jsx expanded: h-16, mark 30 + wordmark */}
           <div className="flex h-16 items-center gap-2 px-2">
             <KolumnLogo size={30} />
-            <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+            <span className="text-[23px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
               Kolumn
             </span>
           </div>

@@ -38,7 +38,7 @@ export default function NotFoundState({
       {logo && (
         <span className="flex items-center gap-2 mb-8">
           <KolumnLogo size={26} />
-          <span className="text-[20px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+          <span className="text-[20px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
             Kolumn
           </span>
         </span>

@@ -6,7 +6,7 @@ export default function BuilderPage() {
   return (
     <div className="w-full py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading text-3xl tracking-tight text-[var(--text-primary)]">Builder</h1>
+        <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)]">Builder</h1>
         <div className="flex items-center gap-2 shrink-0">
           <Button variant="secondary" size="sm">
             Sort by Activity

@@ -238,7 +238,7 @@ export default function Sidebar() {
           >
             <KolumnLogo size={showCollapsed ? 22 : 30} />
             {!showCollapsed && (
-              <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
+              <span className="text-[23px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
                 Kolumn
               </span>
             )}
