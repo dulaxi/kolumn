@@ -4,6 +4,7 @@ import { useBoardStore } from '../store/boardStore'
 import { useBoardSharingStore } from '../store/boardSharingStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { useNotificationStore } from '../store/notificationStore'
+import { supabase } from '../lib/supabase'
 import { hasLocalData, migrateLocalData } from '../lib/migrateLocalData'
 import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
 import { showToast } from '../utils/toast'
@@ -61,7 +62,7 @@ export function useAppData() {
       fetchNotifications(),
     ])
 
-    loadAllData().then((results) => {
+    loadAllData().then(async (results) => {
       if (cancelled) return
 
       // Subscribe to realtime AFTER data is loaded so the channel can't
@@ -79,13 +80,23 @@ export function useAppData() {
 
       const profile = useAuthStore.getState().profile
       const displayName = profile?.display_name || ''
-      const cards = useBoardStore.getState().cards
       const todayStr = new Date().toISOString().split('T')[0]
+
+      // Targeted query instead of scanning every card — the scoped boot only
+      // loads the active board, so ask the DB directly for incomplete cards
+      // due today-or-earlier (a small, bounded set regardless of total cards).
+      const { data: dueCards, error: dueErr } = await supabase
+        .from('cards')
+        .select('due_date, assignees, assignee_name')
+        .eq('completed', false)
+        .eq('archived', false)
+        .not('due_date', 'is', null)
+        .lte('due_date', `${todayStr}T23:59:59`)
+      if (cancelled || dueErr) return
 
       let overdue = 0
       let dueToday = 0
-      Object.values(cards).forEach((card) => {
-        if (card.completed || card.archived || !card.due_date) return
+      ;(dueCards || []).forEach((card) => {
         if (displayName) {
           const names = (card.assignees && card.assignees.length)
             ? card.assignees

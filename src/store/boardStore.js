@@ -142,6 +142,8 @@ export const useBoardStore = create((set, get) => ({
   subscriptions: [],
   _isDragging: false,
   _tempIdMap: {},
+  _loadedBoardCards: new Set(),
+  _allCardsLoaded: false,
   comments: {},
   activity: {},
   attachments: {},
@@ -156,18 +158,21 @@ export const useBoardStore = create((set, get) => ({
     if (Object.keys(get().boards).length === 0) set({ loading: true })
 
     try {
-      const [boardsRes, columnsRes, cardsRes] = await Promise.all([
+      // Cards are loaded separately (scoped) below — boards, columns and
+      // labels are cheap and needed everywhere (board switcher, all-tasks
+      // column map, label pickers), so they always load in full.
+      const [boardsRes, columnsRes, labelsRes] = await Promise.all([
         supabase.from('boards').select('*').order('created_at'),
         supabase.from('columns').select('*').order('position'),
-        supabase.from('cards').select('*').order('position'),
+        supabase.from('labels').select('*'),
       ])
 
       if (boardsRes.error) logError('Failed to fetch boards:', boardsRes.error)
       if (columnsRes.error) logError('Failed to fetch columns:', columnsRes.error)
-      if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
+      if (labelsRes.error) logError('Failed to fetch labels:', labelsRes.error)
 
       // Surface first error to UI but continue with whatever data we got
-      const fetchError = boardsRes.error || columnsRes.error || cardsRes.error
+      const fetchError = boardsRes.error || columnsRes.error || labelsRes.error
       if (fetchError) showToast.error('Some boards failed to load — try refreshing')
 
       const boardMap = {}
@@ -176,22 +181,51 @@ export const useBoardStore = create((set, get) => ({
       const columnMap = {}
       ;(columnsRes.data || []).forEach((c) => { columnMap[c.id] = c })
 
-      const cardMap = {}
-      ;(cardsRes.data || []).forEach((c) => { cardMap[c.id] = c })
-
-      // Fetch labels + card_labels in parallel, scoped to the loaded cards
-      const cardIds = (cardsRes.data || []).map((c) => c.id)
-      const [labelsRes, cardLabelsRes] = await Promise.all([
-        supabase.from('labels').select('*'),
-        cardIds.length === 0
-          ? Promise.resolve({ data: [], error: null })
-          : supabase.from('card_labels').select('card_id, label_id').in('card_id', cardIds),
-      ])
-      if (labelsRes.error) logError('Failed to fetch labels:', labelsRes.error)
-      if (cardLabelsRes.error) logError('Failed to fetch card_labels:', cardLabelsRes.error)
-
       const labelMap = {}
       ;(labelsRes.data || []).forEach((l) => { labelMap[l.id] = l })
+
+      // Resolve the active board BEFORE loading cards so the initial card fetch
+      // can be scoped to it — the big boot win when a user has many boards.
+      // Other boards' cards load lazily on navigation (setActiveBoard →
+      // fetchBoardCards) or in bulk via ensureAllCardsLoaded() for the
+      // all-tasks / search / reminder surfaces.
+      const firstBoardId = boardsRes.data?.length ? boardsRes.data[0].id : null
+      const current = get().activeBoardId
+      const saved = localStorage.getItem(ACTIVE_BOARD_KEY)
+      const restoredId = current && boardMap[current] ? current
+        : saved && (saved === '__all__' || boardMap[saved]) ? saved
+        : firstBoardId
+
+      // A refetch preserves whatever scope was already loaded: if everything
+      // was loaded (all-tasks/search opened this session), reload everything;
+      // otherwise just the active board.
+      const loadAll = get()._allCardsLoaded
+      const scopedBoardId = !loadAll && restoredId && restoredId !== '__all__' && boardMap[restoredId]
+        ? restoredId
+        : null
+
+      let cardsData = []
+      const loaded = new Set()
+      if (loadAll) {
+        const cardsRes = await supabase.from('cards').select('*').order('position')
+        if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
+        cardsData = cardsRes.data || []
+        Object.keys(boardMap).forEach((id) => loaded.add(id))
+      } else if (scopedBoardId) {
+        const cardsRes = await supabase.from('cards').select('*').eq('board_id', scopedBoardId).order('position')
+        if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
+        cardsData = cardsRes.data || []
+        loaded.add(scopedBoardId)
+      }
+
+      const cardMap = {}
+      cardsData.forEach((c) => { cardMap[c.id] = c })
+
+      const cardIds = cardsData.map((c) => c.id)
+      const cardLabelsRes = cardIds.length === 0
+        ? { data: [], error: null }
+        : await supabase.from('card_labels').select('card_id, label_id').in('card_id', cardIds)
+      if (cardLabelsRes.error) logError('Failed to fetch card_labels:', cardLabelsRes.error)
 
       const cardLabelMap = {}
       ;(cardLabelsRes.data || []).forEach((cl) => {
@@ -201,13 +235,6 @@ export const useBoardStore = create((set, get) => ({
         cardLabelMap[cl.card_id] = next
       })
 
-      const firstBoardId = boardsRes.data?.length ? boardsRes.data[0].id : null
-      const current = get().activeBoardId
-      const saved = localStorage.getItem(ACTIVE_BOARD_KEY)
-      const restoredId = current && boardMap[current] ? current
-        : saved && (saved === '__all__' || boardMap[saved]) ? saved
-        : firstBoardId
-
       set({
         boards: boardMap,
         columns: columnMap,
@@ -216,6 +243,8 @@ export const useBoardStore = create((set, get) => ({
         cardLabels: cardLabelMap,
         activeBoardId: restoredId,
         loading: false,
+        _loadedBoardCards: loaded,
+        _allCardsLoaded: loadAll,
         error: fetchError ? { message: fetchError.message, action: 'fetchBoards' } : null,
       })
     } catch (err) {
@@ -235,9 +264,77 @@ export const useBoardStore = create((set, get) => ({
   setActiveBoard: (boardId) => {
     localStorage.setItem(ACTIVE_BOARD_KEY, boardId)
     set({ activeBoardId: boardId })
+    // Lazy-load this board's cards if we haven't yet (scoped-load path).
+    if (boardId && boardId !== '__all__') get().fetchBoardCards(boardId)
     // Re-subscribe with the new board filter so realtime is scoped correctly
     if (get().subscriptions.length > 0) {
       get().subscribeToBoards()
+    }
+  },
+
+  // Lazy-load one board's cards (+ their card_labels), merging without touching
+  // already-loaded boards. Idempotent — a board loaded once is skipped.
+  fetchBoardCards: async (boardId) => {
+    if (!boardId || boardId === '__all__') return
+    if (get()._loadedBoardCards?.has(boardId)) return
+    try {
+      const cardsRes = await supabase.from('cards').select('*').eq('board_id', boardId).order('position')
+      if (cardsRes.error) { logError('Failed to fetch board cards:', cardsRes.error); return }
+      const newCards = cardsRes.data || []
+      const ids = newCards.map((c) => c.id)
+      const clRes = ids.length
+        ? await supabase.from('card_labels').select('card_id, label_id').in('card_id', ids)
+        : { data: [] }
+      set((state) => {
+        const cards = { ...state.cards }
+        newCards.forEach((c) => { if (!state._loadedBoardCards?.has(c.board_id) || !cards[c.id]) cards[c.id] = c })
+        const cardLabels = { ...state.cardLabels }
+        ;(clRes.data || []).forEach((cl) => {
+          const next = new Set(cardLabels[cl.card_id] || [])
+          next.add(cl.label_id)
+          cardLabels[cl.card_id] = next
+        })
+        const loadedNext = new Set(state._loadedBoardCards || [])
+        loadedNext.add(boardId)
+        return { cards, cardLabels, _loadedBoardCards: loadedNext }
+      })
+    } catch (err) {
+      logError('fetchBoardCards failed:', err)
+    }
+  },
+
+  // Ensure cards for EVERY board are loaded — used by the cross-board surfaces
+  // (all-tasks view, ⌘K search, boot due-date reminders). Only fetches boards
+  // not already loaded, so it never overwrites in-progress edits on the active
+  // board. Awaitable so callers can gate on complete data.
+  ensureAllCardsLoaded: async () => {
+    if (get()._allCardsLoaded) return
+    const loaded = get()._loadedBoardCards || new Set()
+    const allBoardIds = Object.keys(get().boards)
+    const missing = allBoardIds.filter((id) => !loaded.has(id))
+    try {
+      const cardsRes = missing.length === 0
+        ? { data: [] }
+        : await supabase.from('cards').select('*').in('board_id', missing).order('position')
+      if (cardsRes.error) { logError('Failed to fetch all cards:', cardsRes.error); return }
+      const newCards = cardsRes.data || []
+      const ids = newCards.map((c) => c.id)
+      const clRes = ids.length
+        ? await supabase.from('card_labels').select('card_id, label_id').in('card_id', ids)
+        : { data: [] }
+      set((state) => {
+        const cards = { ...state.cards }
+        newCards.forEach((c) => { cards[c.id] = c })
+        const cardLabels = { ...state.cardLabels }
+        ;(clRes.data || []).forEach((cl) => {
+          const next = new Set(cardLabels[cl.card_id] || [])
+          next.add(cl.label_id)
+          cardLabels[cl.card_id] = next
+        })
+        return { cards, cardLabels, _allCardsLoaded: true, _loadedBoardCards: new Set(allBoardIds) }
+      })
+    } catch (err) {
+      logError('ensureAllCardsLoaded failed:', err)
     }
   },
 
@@ -1665,6 +1762,6 @@ export const useBoardStore = create((set, get) => ({
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
     const { subscriptions } = get()
     subscriptions.forEach((sub) => supabase.removeChannel(sub))
-    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
+    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, _loadedBoardCards: new Set(), _allCardsLoaded: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))

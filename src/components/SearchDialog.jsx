@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { Kanban, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { CardsThree, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../store/boardStore'
 import { useNavigate } from 'react-router-dom'
 import Modal from './ui/Modal'
@@ -13,6 +13,10 @@ export default function SearchDialog({ open, onClose }) {
   const cards = useBoardStore((s) => s.cards)
   const boards = useBoardStore((s) => s.boards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
+  const ensureAllCardsLoaded = useBoardStore((s) => s.ensureAllCardsLoaded)
+
+  // Search spans every board — load any the scoped boot skipped when opened.
+  useEffect(() => { if (open) ensureAllCardsLoaded() }, [open, ensureAllCardsLoaded])
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -48,7 +52,7 @@ export default function SearchDialog({ open, onClose }) {
       parts.push(
         <span
           key={found}
-          className="bg-[var(--accent-lime-wash)] text-[var(--accent-lime-dark)] rounded-[2px] px-px"
+          className="font-bold"
         >
           {text.slice(found, found + needle.length)}
         </span>,
@@ -138,12 +142,12 @@ export default function SearchDialog({ open, onClose }) {
                     onClick={() => handleSelect(card)}
                     className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-3 cursor-pointer truncate text-sm ${
                       idx === selectedIdx
-                        ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]'
+                        ? 'bg-[var(--color-mauve-wash)] text-[var(--text-primary)]'
                         : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
                     }`}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Kanban className="w-4 h-4 shrink-0 text-[var(--text-muted)]" />
+                      <CardsThree className="w-4 h-4 shrink-0 text-[var(--text-muted)]" />
                       <span className="truncate">{renderHighlighted(card.title, query)}</span>
                     </div>
                     <span className="text-xs text-[var(--text-muted)] shrink-0">

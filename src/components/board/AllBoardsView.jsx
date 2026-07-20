@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Stack } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import Card from './Card'
@@ -47,6 +47,11 @@ export default function AllBoardsView({ onCardClick, selectedCardId }) {
   const columns = useBoardStore((s) => s.columns)
   const cards = useBoardStore((s) => s.cards)
   const completeCard = useBoardStore((s) => s.completeCard)
+  const ensureAllCardsLoaded = useBoardStore((s) => s.ensureAllCardsLoaded)
+
+  // The all-tasks view spans every board, so pull in any boards whose cards
+  // the scoped boot didn't load.
+  useEffect(() => { ensureAllCardsLoaded() }, [ensureAllCardsLoaded])
 
   const columnMap = buildColumnMap(columns, boards, cards)
   const columnEntries = Array.from(columnMap.entries())

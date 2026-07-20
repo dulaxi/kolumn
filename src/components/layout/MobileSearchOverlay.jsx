@@ -12,10 +12,12 @@ export default function MobileSearchOverlay({ onClose }) {
   const cards = useBoardStore((s) => s.cards)
   const boards = useBoardStore((s) => s.boards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
+  const ensureAllCardsLoaded = useBoardStore((s) => s.ensureAllCardsLoaded)
 
   useEffect(() => {
     inputRef.current?.focus()
-  }, [])
+    ensureAllCardsLoaded() // search spans every board
+  }, [ensureAllCardsLoaded])
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
