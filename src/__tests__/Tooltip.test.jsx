@@ -47,6 +47,24 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBe(null)
   })
 
+  test('escapes overflow ancestors — tip is portaled out of the trigger subtree', () => {
+    render(
+      <div style={{ overflow: 'hidden', width: 40 }}>
+        <Tooltip content="A very long assignee name" delay={50}>
+          <button type="button">trigger</button>
+        </Tooltip>
+      </div>,
+    )
+    const trigger = screen.getByText('trigger')
+    fireEvent.mouseEnter(trigger)
+    act(() => { vi.advanceTimersByTime(60) })
+    const tip = screen.getByRole('tooltip')
+    // The tip must NOT live inside the trigger's wrapper — an in-place
+    // absolute tip gets clipped by any overflow ancestor (kanban cards).
+    expect(trigger.parentElement.contains(tip)).toBe(false)
+    expect(document.body.contains(tip)).toBe(true)
+  })
+
   test('forwards focus events through to the child', () => {
     const onFocus = vi.fn()
     render(
