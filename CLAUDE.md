@@ -90,6 +90,12 @@ src/
 ├── index.css                       # @theme tokens, light/dark CSS vars, scrollbar, animations
 ├── lib/
 │   ├── supabase.js                 # Supabase client singleton
+│   ├── aiClient.js                 # SSE client to the chat edge function (forwards `mode`)
+│   ├── pillAgentLoop.js            # Pill's agent loop — runPillLoop, closed tool_use/tool_result loop
+│   ├── toolExecutor.js             # Tool executor — fuzzy title→ID resolver, calls stores
+│   ├── realtimeGuard.js            # Wraps realtime subscription setup so a socket failure degrades gracefully
+│   ├── accountClient.js            # Client for the `account` edge function (sessions list/revoke, delete-account)
+│   ├── seedOnboardingBoard.js      # Seeds the getting-started board for new users
 │   └── migrateLocalData.js         # Legacy localStorage → Supabase migration
 ├── store/                          # Zustand stores
 │   ├── authStore.js                # User, session, profile
@@ -202,16 +208,17 @@ Supabase Edge Function. Everything else is plumbing around it.
 
 | Layer | File | Lines | Role |
 |-------|------|-------|------|
-| Edge — handler | `supabase/functions/chat/index.ts` | ~180 | Auth → tier check → context build → Claude API stream → SSE re-emit. **Only file that talks to Anthropic.** |
-| Edge — system prompt | `supabase/functions/chat/context.ts` | ~130 | Fetches user's boards/columns/cards/notes/members via 6 parallel Supabase queries and assembles a ~1,500-word system prompt. **One template today; needs to branch by `mode`.** |
-| Edge — tools | `supabase/functions/chat/tools.ts` | ~280 | 16 tool definitions (schema only; execution happens in the browser). |
-| Edge — tier/model | `supabase/functions/chat/tier.ts` | ~80 | Rate limit, per-tool gating, model selection. Hardcodes the model ID in four places. **Needs to extend gating to the `(mode × tier)` matrix.** |
-| Edge — SSE infra | `supabase/functions/chat/stream.ts` | ~40 | `SSEWriter` wrapper around a `ReadableStream`. |
-| Frontend — pill | `src/components/board/QuickAddBar.jsx` | ~155 | **The action surface.** Mounted per board, forces `board: boardName` into every tool call. Has a fast path that splits comma/newline input and skips the LLM. |
-| Frontend — chat page | `src/pages/ChatPage.jsx`, `ChatListPage.jsx`, `src/components/chat/*` | ~350 total | The conversation surface. Bubbles, composer, markdown rendering. **Currently shares the tool-execution path with the pill — needs to stop firing write tools.** |
-| Frontend — client | `src/lib/aiClient.js` | ~95 | `fetch` to `/functions/v1/chat`; SSE parser; dispatches `onText / onTier / onToolCall / onDone / onError`. **Needs to forward a `mode` parameter.** |
-| Frontend — store | `src/store/chatStore.js` | ~190 | Zustand: conversations, messages, tierInfo, streaming state. **Conversations live in localStorage only.** Used by ChatPage; pill bypasses it. |
-| Frontend — tool executor | `src/lib/toolExecutor.js` | ~380 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` exist as no-op placeholders (lines 372–374). |
+| Edge — handler | `supabase/functions/chat/index.ts` | ~290 | Auth → tier check → context build → Claude API stream → SSE re-emit. **Only file that talks to Anthropic.** |
+| Edge — system prompt | `supabase/functions/chat/context.ts` | ~250 | Fetches user's boards/columns/cards/notes/members via 6 parallel Supabase queries and assembles a ~1,500-word system prompt. **One template today; needs to branch by `mode`.** |
+| Edge — tools | `supabase/functions/chat/tools.ts` | ~240 | 16 tool definitions (schema only; execution happens in the browser). |
+| Edge — tier/model | `supabase/functions/chat/tier.ts` | ~110 | Rate limit, per-tool gating, model selection. Hardcodes the model ID in four places. **Needs to extend gating to the `(mode × tier)` matrix.** |
+| Edge — SSE infra | `supabase/functions/chat/stream.ts` | ~50 | `SSEWriter` wrapper around a `ReadableStream`. |
+| Frontend — pill | `src/components/board/QuickAddBar.jsx` | ~225 | **The action surface.** Mounted per board, forces `board: boardName` into every tool call. Has a fast path that splits comma/newline input and skips the LLM. Drives `src/lib/pillAgentLoop.js` for its multi-round tool loop. |
+| Frontend — chat page | `src/pages/ChatPage.jsx`, `ChatListPage.jsx`, `src/components/chat/*` | ~440 total | The conversation surface. Bubbles, composer, markdown rendering. **Chat mode fires no write tools** (enforced server-side by `(mode × tier)`). |
+| Frontend — client | `src/lib/aiClient.js` | ~105 | `fetch` to `/functions/v1/chat`; SSE parser; dispatches `onText / onTier / onToolCall / onDone / onError`. Forwards a `mode` parameter. |
+| Frontend — store | `src/store/chatStore.js` | ~160 | Zustand: conversations, messages, tierInfo, streaming state. **Conversations live in localStorage only.** Used by ChatPage; pill bypasses it. |
+| Frontend — pill agent loop | `src/lib/pillAgentLoop.js` | ~120 | **The pill's agent loop.** `runPillLoop()` runs up to `MAX_ROUNDS` (4) rounds of model → `tool_use` → browser executes → `tool_result` → model reacts, with proper `tool_use`/`tool_result` pairing. **The tool-result loop is closed here.** |
+| Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` exist as no-op placeholders. |
 
 Not AI despite the names: `src/components/ActionCard.jsx` (presentational only),
 `supabase/functions/check-email/` (signup email validation).
@@ -282,9 +289,9 @@ Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 
 **T1 — architecture & correctness:**
 1. **Implement the `mode` parameter** end-to-end (`aiClient.js` → `index.ts` → `tier.ts`). Backend computes effective tool list from `(mode × tier)`. Without this, the pill/chat split is policy, not enforcement.
-2. **Strip write tools from the chat path.** ChatPage must not be able to mutate state via the model. Belt-and-suspenders with T1-#1.
-3. **Close the tool-result loop.** After the browser executes a tool, follow up with a `tool_result` content block so the model can react to failures and chain steps reliably.
-4. **Persist conversations to Supabase.** Tables `chat_threads` and `chat_messages` already exist in `supabase/schema.sql`. Current localStorage-only history dies when the user clears cookies or switches devices.
+2. ✅ **DONE — Strip write tools from the chat path.** Chat mode fires no write tools; the effective tool list is computed server-side from `(mode × tier)`.
+3. ✅ **DONE — Close the tool-result loop.** `src/lib/pillAgentLoop.js` (`runPillLoop`, `MAX_ROUNDS`) runs proper multi-round `tool_use`/`tool_result` pairing: after the browser executes a tool, the result is fed back as a `tool_result` block so the model can react and chain steps.
+4. **Persist conversations to Supabase.** ⚠️ The `chat_threads` / `chat_messages` tables **do not exist anywhere in the repo** — only `chat_usage` does (`supabase/migrations/chat_tier_system.sql`). Persisting conversations means building those tables from scratch. Current localStorage-only history dies when the user clears cookies or switches devices.
 5. **Replace the 4s temp-ID polling in `toolExecutor.js`** with the existing realtime subscription in `boardStore`.
 
 **T2 — cost, latency, instrumentation:**
@@ -417,12 +424,24 @@ without a deliberate reason discussed with the user.
 id, board_id, column_id, position,
 task_number, global_task_number,
 title, description, icon, completed,
-assignee_name, priority, due_date,
+assignee_refs, assignees, assignee_name, priority, due_date,
 labels, checklist,
 created_at, updated_at
 ```
 
 Common pitfall: it's `assignee_name`, NOT `assignee`. It's `due_date`, NOT `dueDate`.
+
+**Assignee identity (changed 2026-07-20, `2026-07-20-assignee-refs.sql`).**
+`assignee_refs jsonb` = `[{ name, id }]` is now the **canonical** assignee
+identity (`id` is the member's profile id, or `null` for free-text
+non-members). `assignees text[]` and `assignee_name` are a **derived name
+mirror** maintained by the DB — a `BEFORE` trigger (`sync_assignee_refs`)
+resolves the names a client writes to member ids and keeps `assignee_refs` in
+sync; member renames propagate **by id** (`rename_member_in_board_cards`
+trigger), so namesakes never collide. Clients keep writing the name mirror as
+before and every existing reader still uses it. **Never write `assignee_name`
+(or `assignees`) as the source of truth on its own — the trigger derives it and
+will overwrite anything inconsistent with `assignee_refs`.**
 
 ### Board store shape (Zustand)
 ```js
@@ -443,19 +462,32 @@ Common pitfall: it's `assignee_name`, NOT `assignee`. It's `due_date`, NOT `dueD
 
 Tables: `profiles`, `workspaces`, `workspace_members`, `workspace_invitations`,
 `boards`, `board_members`, `board_invitations`, `columns`, `cards`, `notes`,
-plus chat tables (`chat_threads`, `chat_messages`, etc.).
+plus `chat_usage` (daily message-count tracking). **There are no `chat_threads`
+/ `chat_messages` tables** — conversation persistence is unbuilt (see AI backlog
+T1-#4).
+
+**Removed 2026-07-20** (`2026-07-20-index-and-plans-cleanup.sql`): the `plans`
+table and `profiles.plan_id` were dropped. `profiles.tier`
+(`'free' | 'pro' | 'team'`) is the sole source of truth for plan/tier; there is
+no plan subsystem to reconcile against.
 
 Triggers:
 - Auto-create profile on signup
 - Auto-add owner to `board_members` on board creation
 - Auto-accept pending invitations on new user signup
 - Auto-update `updated_at` on cards / notes
+- **`global_task_number` is assigned atomically by a DB sequence + `BEFORE INSERT`
+  trigger** (`2026-07-20-atomic-global-task-number.sql`) — the value the client
+  sends is ignored. Do not compute it client-side.
+- `sync_assignee_refs` / `rename_member_in_board_cards` keep the assignee name
+  mirror in sync with `assignee_refs` (see Card data shape).
 
 RLS: users see boards they're members of. Notes are private per user. Workspaces
 have member-based RLS.
 
-Migrations live in `supabase/migrations/`; the canonical full schema is
-`supabase/schema.sql`.
+Migrations live in `supabase/migrations/`. `supabase/schema.sql` was
+regenerated/patched on 2026-07-20 and is again the **authoritative** canonical
+full schema — treat it as the source of truth.
 
 ## Conventions
 

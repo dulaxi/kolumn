@@ -12,6 +12,8 @@ create table public.profiles (
   nickname text not null default '',
   icon text,
   color text default 'bg-[#7EB8DA]',
+  -- Subscription tier; source of truth for AI gating + plan features.
+  tier text not null default 'free' check (tier in ('free', 'pro', 'team')),
   tour_board_seeded_at timestamptz,
   created_at timestamptz default now()
 );
@@ -34,6 +36,179 @@ create policy "Users can insert own profile"
   with check (id = auth.uid());
 
 -- ============================================================
+-- 1.5 WORKSPACES (multi-tenant containers)
+-- ============================================================
+-- Team/org containers holding boards and members. Boards can be
+-- workspace-scoped (boards.workspace_id set) or personal (null).
+-- Declared before BOARDS so the boards.workspace_id FK resolves.
+create table public.workspaces (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default 'Untitled workspace',
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  icon text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+comment on table public.workspaces is 'Team/org containers holding boards and members';
+
+create index idx_workspaces_owner_id on public.workspaces (owner_id);
+
+alter table public.workspaces enable row level security;
+
+create table public.workspace_members (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.workspaces(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member' check (role in ('owner', 'member')),
+  created_at timestamptz default now(),
+  unique (workspace_id, user_id),
+  -- Second FK to public.profiles so PostgREST can embed `profiles(...)`
+  -- from workspace_members (mirrors board_members).
+  constraint workspace_members_user_id_profiles_fkey
+    foreign key (user_id) references public.profiles(id) on delete cascade
+);
+
+comment on table public.workspace_members is 'Users belonging to workspaces';
+
+create index idx_workspace_members_workspace_id on public.workspace_members (workspace_id);
+create index idx_workspace_members_user_id on public.workspace_members (user_id);
+
+alter table public.workspace_members enable row level security;
+
+create table public.workspace_invitations (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.workspaces(id) on delete cascade,
+  invited_email text not null,
+  invited_by uuid not null references public.profiles(id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined')),
+  created_at timestamptz default now()
+);
+
+comment on table public.workspace_invitations is 'Pending invitations to join workspaces';
+
+create index idx_workspace_invitations_workspace_id on public.workspace_invitations (workspace_id);
+create index idx_workspace_invitations_invited_by on public.workspace_invitations (invited_by);
+create index idx_workspace_invitations_email
+  on public.workspace_invitations (invited_email)
+  where status = 'pending';
+
+alter table public.workspace_invitations enable row level security;
+
+-- Helper: bypasses RLS to look up current user's workspace IDs (breaks recursion)
+create or replace function public.get_my_workspace_ids()
+returns setof uuid
+language sql
+security definer
+stable
+set search_path = ''
+as $$
+  select workspace_id from public.workspace_members where user_id = auth.uid()
+$$;
+
+-- Helper: bypasses RLS to look up workspaces the user is invited to
+create or replace function public.get_my_invited_workspace_ids()
+returns setof uuid
+language sql
+security definer
+stable
+set search_path = 'public'
+as $$
+  select workspace_id
+  from public.workspace_invitations
+  where status = 'pending'
+    and invited_email = lower(coalesce((auth.jwt() ->> 'email')::text, ''))
+$$;
+
+-- Workspaces RLS
+create policy "Members can read their workspaces"
+  on public.workspaces for select
+  using (
+    owner_id = auth.uid()
+    or id in (select get_my_workspace_ids())
+  );
+
+create policy "Invitees can read invited workspaces"
+  on public.workspaces for select
+  using (id in (select get_my_invited_workspace_ids()));
+
+create policy "Users can create workspaces"
+  on public.workspaces for insert
+  with check (owner_id = auth.uid());
+
+create policy "Owners can update their workspaces"
+  on public.workspaces for update
+  using (owner_id = auth.uid());
+
+create policy "Owners can delete their workspaces"
+  on public.workspaces for delete
+  using (owner_id = auth.uid());
+
+-- Workspace members RLS
+create policy "Members can read workspace membership"
+  on public.workspace_members for select
+  using (workspace_id in (select get_my_workspace_ids()));
+
+create policy "Owners can add members, users can self-join on accept"
+  on public.workspace_members for insert
+  with check (
+    workspace_id in (select id from public.workspaces where owner_id = auth.uid())
+    or user_id = auth.uid()
+  );
+
+create policy "Owners can remove, members can leave"
+  on public.workspace_members for delete
+  using (
+    workspace_id in (select id from public.workspaces where owner_id = auth.uid())
+    or user_id = auth.uid()
+  );
+
+-- Workspace invitations RLS
+create policy "See invitations to you or from your workspaces"
+  on public.workspace_invitations for select
+  using (
+    invited_email = (select email from public.profiles where id = auth.uid())
+    or workspace_id in (select id from public.workspaces where owner_id = auth.uid())
+  );
+
+create policy "Owners can create invitations"
+  on public.workspace_invitations for insert
+  with check (
+    invited_by = auth.uid()
+    and workspace_id in (select id from public.workspaces where owner_id = auth.uid())
+  );
+
+create policy "Invitees and owners can update status"
+  on public.workspace_invitations for update
+  using (
+    invited_email = (select email from public.profiles where id = auth.uid())
+    or workspace_id in (select id from public.workspaces where owner_id = auth.uid())
+  );
+
+create policy "Owners can delete invitations"
+  on public.workspace_invitations for delete
+  using (workspace_id in (select id from public.workspaces where owner_id = auth.uid()));
+
+-- Auto-add owner to workspace_members on workspace creation
+create or replace function public.handle_workspace_owner()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.workspace_members (workspace_id, user_id, role)
+  values (new.id, new.owner_id, 'owner')
+  on conflict (workspace_id, user_id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_workspace_created
+  after insert on public.workspaces
+  for each row execute function public.handle_workspace_owner();
+
+-- ============================================================
 -- 2. BOARDS
 -- ============================================================
 create table public.boards (
@@ -42,9 +217,13 @@ create table public.boards (
   icon text,
   owner_id uuid not null references auth.users(id) on delete cascade,
   next_task_number int not null default 1,
+  -- NULL = personal board; non-null = belongs to a workspace.
+  workspace_id uuid references public.workspaces(id) on delete cascade,
   is_tour boolean not null default false,
   created_at timestamptz default now()
 );
+
+comment on column public.boards.workspace_id is 'NULL = personal board; non-null = belongs to a workspace';
 
 -- At most one tour board per user.
 create unique index if not exists boards_tour_owner_uq
@@ -339,8 +518,11 @@ create table public.cards (
   global_task_number int not null default 0,
   title text not null default 'Untitled task',
   description text default '',
-  assignee_id uuid references auth.users(id) on delete set null,
+  -- Legacy name mirror (assignee_name = assignees[0]); assignee_refs is the
+  -- canonical [{name,id}] list. Both kept in sync by sync_assignee_refs().
   assignee_name text default '',
+  assignees text[] not null default '{}'::text[],
+  assignee_refs jsonb not null default '[]'::jsonb,
   priority text default 'medium' check (priority in ('low', 'medium', 'high')),
   due_date timestamptz,
   icon text,
@@ -436,6 +618,148 @@ create policy card_labels_delete on public.card_labels for delete
   using (card_id in (
     select c.id from public.cards c where c.board_id in (select get_my_board_ids())
   ));
+
+-- ============================================================
+-- 5.3 ASSIGNEE SYNC + ATOMIC GLOBAL TASK NUMBER
+-- ============================================================
+-- Canonical assignee column: cards.assignee_refs jsonb = [{name, id|null}].
+-- Clients keep writing the legacy name mirror (cards.assignees text[] +
+-- cards.assignee_name text); a BEFORE trigger resolves those names to member
+-- ids and keeps assignee_refs in sync. Invariant:
+--   assignees     = [ r.name for r in assignee_refs ]
+--   assignee_name = assignees[0] or ''
+
+-- Name mirror from refs.
+create or replace function public.assignee_names_from_refs(p_refs jsonb)
+returns text[]
+language sql
+immutable
+set search_path = public
+as $$
+  select coalesce(array_agg(elem->>'name' order by ord), '{}')
+  from jsonb_array_elements(coalesce(p_refs, '[]'::jsonb)) with ordinality as t(elem, ord)
+  where nullif(elem->>'name', '') is not null;
+$$;
+
+-- Build refs from a names array, resolving each name to a member id on that
+-- board (board member OR workspace member) by display_name or nickname, else
+-- null for free-text.
+create or replace function public.resolve_assignee_refs(p_board_id uuid, p_names text[])
+returns jsonb
+language sql
+stable
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(
+    jsonb_build_object(
+      'name', a.name,
+      'id', (
+        select p.id from public.profiles p
+        where (p.display_name = a.name or nullif(p.nickname, '') = a.name)
+          and (
+            exists (select 1 from public.board_members bm
+                    where bm.board_id = p_board_id and bm.user_id = p.id)
+            or exists (select 1 from public.workspace_members wm
+                       join public.boards b on b.id = p_board_id
+                       where wm.workspace_id = b.workspace_id and wm.user_id = p.id)
+          )
+        limit 1
+      )
+    ) order by a.ord
+  ) filter (where nullif(a.name, '') is not null), '[]'::jsonb)
+  from unnest(coalesce(p_names, '{}')) with ordinality as a(name, ord);
+$$;
+
+-- Rename every ref belonging to one user id (id-precise; namesakes untouched).
+create or replace function public.rename_id_in_refs(p_refs jsonb, p_id text, p_name text)
+returns jsonb
+language sql
+immutable
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(
+    case when elem->>'id' = p_id
+         then jsonb_set(elem, '{name}', to_jsonb(p_name))
+         else elem end
+    order by ord), '[]'::jsonb)
+  from jsonb_array_elements(coalesce(p_refs, '[]'::jsonb)) with ordinality as t(elem, ord);
+$$;
+
+-- BEFORE trigger: keep refs <-> name mirror in sync on every card write.
+create or replace function public.sync_assignee_refs()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'UPDATE' and new.assignee_refs is distinct from old.assignee_refs then
+    new.assignees := public.assignee_names_from_refs(new.assignee_refs);
+  else
+    new.assignee_refs := public.resolve_assignee_refs(new.board_id, new.assignees);
+  end if;
+  new.assignee_name := coalesce(new.assignees[1], '');
+  return new;
+end;
+$$;
+
+revoke execute on function public.sync_assignee_refs() from public, anon, authenticated;
+
+create trigger sync_assignee_refs_before
+before insert or update on public.cards
+for each row execute function public.sync_assignee_refs();
+
+-- Rename trigger: mutate refs by id; BEFORE trigger re-mirrors names.
+create or replace function public.rename_member_in_board_cards()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.display_name is not distinct from old.display_name then
+    return new;
+  end if;
+  if new.display_name is null or new.display_name = '' then
+    return new;
+  end if;
+
+  update public.cards c
+  set assignee_refs = public.rename_id_in_refs(c.assignee_refs, new.id::text, new.display_name)
+  where c.assignee_refs @> jsonb_build_array(jsonb_build_object('id', new.id::text));
+
+  return new;
+end;
+$$;
+
+revoke execute on function public.rename_member_in_board_cards() from public, anon, authenticated;
+
+create trigger on_profile_rename_update_cards
+after update on public.profiles
+for each row execute function public.rename_member_in_board_cards();
+
+-- Atomic global_task_number: assign from a dedicated sequence in a BEFORE
+-- INSERT trigger so every card gets a unique, monotonic number regardless of
+-- concurrency. The value the client sends is ignored.
+create sequence if not exists public.cards_global_task_number_seq start with 1;
+
+create or replace function public.set_global_task_number()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.global_task_number := nextval('public.cards_global_task_number_seq');
+  return new;
+end;
+$$;
+
+revoke execute on function public.set_global_task_number() from public, anon, authenticated;
+
+create trigger set_global_task_number_before
+before insert on public.cards
+for each row execute function public.set_global_task_number();
 
 -- ============================================================
 -- 6. NOTES (private per user)
