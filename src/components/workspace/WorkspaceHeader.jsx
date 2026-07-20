@@ -82,11 +82,11 @@ export default function WorkspaceHeader({
                 if (e.key === 'Escape') setEditingName(false)
               }}
               maxLength={64}
-              className="font-heading text-2xl text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:outline-none focus:border-[var(--text-muted)] min-w-0 flex-1"
+              className="font-heading font-[425] text-2xl text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:outline-none focus:border-[var(--text-muted)] min-w-0 flex-1"
             />
           ) : (
             <>
-              <h1 className="font-heading text-2xl text-[var(--text-primary)] truncate">{workspace.name}</h1>
+              <h1 className="font-heading font-[425] text-2xl text-[var(--text-primary)] truncate">{workspace.name}</h1>
               {isOwner && (
                 <button
                   type="button"

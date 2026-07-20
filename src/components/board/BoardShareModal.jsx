@@ -180,7 +180,7 @@ export default function BoardShareModal({ board, onClose }) {
             ) : (
               <Users className="w-5 h-5 text-[var(--text-secondary)]" />
             )}
-            <h2 className="font-heading text-lg font-light text-[var(--text-primary)]">
+            <h2 className="font-heading text-lg font-[425] text-[var(--text-primary)]">
               {isOwner ? `Share "${board.name}"` : `Members of "${board.name}"`}
             </h2>
           </div>

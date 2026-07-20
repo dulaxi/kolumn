@@ -434,7 +434,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 // focus box. Same visual whether viewing or editing; the
                 // contentEditable + cursor-text affordance signals that
                 // it's editable without chrome.
-                className="font-heading font-light text-[var(--text-primary)] text-left text-[22px] cursor-text focus:outline-none break-words min-w-0 flex-1"
+                className="font-heading font-[425] text-[var(--text-primary)] text-left text-[22px] cursor-text focus:outline-none break-words min-w-0 flex-1"
               >
                 {card?.title || 'Untitled task'}
               </span>

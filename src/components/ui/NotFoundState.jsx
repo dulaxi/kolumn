@@ -55,7 +55,7 @@ export default function NotFoundState({
       <h1
         className={
           isPage
-            ? 'font-heading text-[26px] font-normal text-[var(--text-primary)] mt-1.5 mb-1.5'
+            ? 'font-heading text-[26px] font-[425] text-[var(--text-primary)] mt-1.5 mb-1.5'
             : 'text-[15px] font-medium text-[var(--text-primary)] mt-2.5 mb-1'
         }
       >

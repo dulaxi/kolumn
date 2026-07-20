@@ -20,7 +20,7 @@ export default function OnboardingBoardSandbox() {
             <DynamicIcon name={icon} className="w-5 h-5 text-[var(--text-primary)]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-light text-3xl tracking-tight text-[var(--text-primary)] leading-tight">
+            <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] leading-tight">
               {name}
             </h1>
             <p className="mt-1 text-sm text-[var(--text-secondary)] max-w-2xl leading-relaxed">

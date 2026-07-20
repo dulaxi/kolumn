@@ -118,7 +118,7 @@ export default function CreateBoardModal({ onClose, workspaceId = null }) {
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-10 pt-12 pb-2">
             <h2
               id="create-board-title"
-              className="font-heading text-[30px] font-light leading-tight tracking-tight text-[var(--text-primary)] mb-7"
+              className="font-heading text-[30px] font-[425] leading-tight tracking-tight text-[var(--text-primary)] mb-7"
             >
               Create a new board
             </h2>
