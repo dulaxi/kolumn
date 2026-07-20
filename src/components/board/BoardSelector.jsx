@@ -99,7 +99,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-transparent border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
             >
               <Users className="w-4 h-4 -ml-0.5" />
               {isOwner ? 'Share' : 'Members'}
@@ -110,7 +110,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             <button
               type="button"
               onClick={onManageLabels}
-              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-[var(--surface-card)] border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
+              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-transparent border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
             >
               <Tag className="w-4 h-4 -ml-0.5" />
               Labels
@@ -126,7 +126,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               className={`relative flex items-center gap-1.5 h-8 px-2.5 text-sm rounded-lg border-[0.5px] transition-all duration-75 cursor-pointer active:scale-[0.995] ${
                 showFilters || activeFilterCount > 0
                   ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)] border-[var(--accent-lime-soft)]'
-                  : 'text-[var(--text-secondary)] bg-[var(--surface-card)] border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] bg-transparent border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Funnel className="w-4 h-4 -ml-0.5" />
@@ -195,7 +195,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               className={`flex items-center gap-1.5 h-8 px-2.5 text-sm rounded-lg border-[0.5px] transition-all duration-75 cursor-pointer active:scale-[0.995] ${
                 showArchived
                   ? 'bg-[var(--color-honey-wash)] text-[var(--color-honey)] border-[var(--color-honey)]'
-                  : 'text-[var(--text-secondary)] bg-[var(--surface-card)] border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] bg-transparent border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Archive className="w-4 h-4 -ml-0.5" />

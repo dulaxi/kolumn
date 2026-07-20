@@ -68,10 +68,10 @@ function IconGrid({ icons: iconList, value, onPick }) {
           type="button"
           onClick={() => onPick(name)}
           title={name}
-          className={`aspect-square flex items-center justify-center rounded-xl transition-all duration-75 cursor-pointer active:scale-90 ${
+          className={`aspect-square flex items-center justify-center rounded-xl border transition-all duration-75 cursor-pointer active:scale-90 ${
             value === name
-              ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]'
-              : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
+              ? 'bg-[var(--color-mauve-wash)] border-transparent text-[var(--text-primary)]'
+              : 'text-[var(--text-primary)] border-transparent hover:bg-[var(--surface-page)] hover:border-[var(--border-subtle)]'
           }`}
         >
           <DynamicIcon name={name} className="w-5 h-5" />
@@ -144,7 +144,7 @@ export default function IconPicker({ value, onChange, onClose }) {
 
         {/* Pill search bar — iOS UISearchBar shape */}
         <div className="px-3 pt-3 pb-2">
-          <div className="flex items-center gap-2 h-9 px-3 rounded-xl bg-[var(--surface-raised)]">
+          <div className="flex items-center gap-2 h-9 px-3 rounded-xl bg-[var(--surface-page)] border border-[var(--border-subtle)] focus-within:border-[var(--border-focus)] transition-colors">
             <MagnifyingGlass className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
             <input
               ref={inputRef}
@@ -203,10 +203,10 @@ export default function IconPicker({ value, onChange, onClose }) {
                       type="button"
                       onClick={() => setActiveCategory(tab.key)}
                       aria-label={tab.label}
-                      className={`shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+                      className={`shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-lg border transition-colors cursor-pointer ${
                         activeCategory === tab.key
-                          ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]'
-                          : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                          ? 'bg-[var(--surface-page)] border-[var(--border-subtle)] text-[var(--text-primary)]'
+                          : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                       }`}
                     >
                       <DynamicIcon name={tab.glyph} className="w-4 h-4" />

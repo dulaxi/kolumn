@@ -41,12 +41,15 @@
   --shadow-raised: 0 4px 24px rgba(27, 27, 24, 0.10);
 
   /* Selected-state fills — two intents, two colors:
-     - --accent-lime-soft: "I just toggled this on" (filter pills, icon
-       pick, search keyboard, template pick, mention pick, calendar day)
+     - --accent-lime-soft: "I just toggled this on" (filter pills,
+       search keyboard, template pick, mention pick, calendar day)
        — defined per-theme below so dark mode renders correctly.
      - --color-mauve-cream: "I'm currently inside this" (active sidebar
        nav row, open kanban card) — quieter, used on the largest
-       most-persistent surfaces */
+       most-persistent surfaces.
+     The icon picker's selected cell uses --color-mauve-wash: it marks
+     the card's *current* icon (current-state semantics, mauve family),
+     at wash strength so it stays legible at grid-cell size. */
 
   --animate-fadeIn: fadeIn 1s ease forwards;
 }
