@@ -7,7 +7,7 @@ import DynamicIcon from './DynamicIcon'
 import IconPicker from './IconPicker'
 import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
-import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
+import { useBoardMembers } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
 import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
 import AssigneePicker from './cardDetail/AssigneePicker'
@@ -55,7 +55,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   } = useCardEditState(card, { treatUntitledAsEmpty: true })
 
   const [showDescription, setShowDescription] = useState(() => !!card?.description)
-  const boardMemberNames = useBoardMemberNames(card)
+  const members = useBoardMembers(card)
   // useMenuState fires onClose synchronously before unmount, so we can
   // hand control to LabelAutocomplete here to flush its typed text
   // before its DOM node disappears (the input's onBlur is too late —
@@ -107,7 +107,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     if (!trimmedTitle) { onDone(); return }
     updateCard(resolvedId, {
       title: trimmedTitle,
-      assignees,
+      assigneeRefs: assignees,
       priority,
       due_date: dueDate || null,
       description: description.trim(),
@@ -335,7 +335,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
         <AssigneePicker
           assignees={assignees}
           setAssignees={setAssignees}
-          boardMemberNames={boardMemberNames}
+          members={members}
           profile={profile}
           open={openMenu === 'assignee'}
           onOpenChange={(next) => setOpenMenu(next === 'assignee' ? 'assignee' : null)}

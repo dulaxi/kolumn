@@ -29,14 +29,22 @@ describe('useCardEditState', () => {
     expect(result.current.priority).toBe('high')
     expect(result.current.dueDate).toBe('2026-04-20')
     expect(result.current.pendingLabels).toEqual([])
-    expect(result.current.assignees).toEqual(['Alice'])
+    // assignees is now an array of { name, id } refs; the legacy names mirror
+    // hydrates as free-text (id null).
+    expect(result.current.assignees).toEqual([{ name: 'Alice', id: null }])
     expect(result.current.checklist).toEqual([{ text: 'todo', done: false }])
+  })
+
+  test('prefers assignee_refs (member ids) when present', () => {
+    const card = { assignee_refs: [{ name: 'Alice', id: 'u1' }, { name: 'ext', id: null }], assignees: ['stale'] }
+    const { result } = renderHook(() => useCardEditState(card))
+    expect(result.current.assignees).toEqual([{ name: 'Alice', id: 'u1' }, { name: 'ext', id: null }])
   })
 
   test('falls back to assignee_name when assignees array missing', () => {
     const card = { assignee_name: 'Bob' }
     const { result } = renderHook(() => useCardEditState(card))
-    expect(result.current.assignees).toEqual(['Bob'])
+    expect(result.current.assignees).toEqual([{ name: 'Bob', id: null }])
   })
 
   test('returns empty assignees when neither field is set', () => {

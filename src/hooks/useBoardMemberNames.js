@@ -3,8 +3,11 @@ import { supabase } from '../lib/supabase'
 import { useBoardStore } from '../store/boardStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 
-export function useBoardMemberNames(card) {
-  const [names, setNames] = useState([])
+// Members (with ids) assignable on a card's board — board members for personal
+// boards, workspace members for workspace boards. Returns [{ id, display_name }]
+// so the assignee picker can capture the chosen member's id at pick time.
+export function useBoardMembers(card) {
+  const [members, setMembers] = useState([])
   const board = useBoardStore((s) => (card ? s.boards[card.board_id] : null))
   const workspaceId = board?.workspace_id || null
   const workspaceMembers = useWorkspacesStore((s) => (workspaceId ? s.members[workspaceId] : null))
@@ -12,9 +15,8 @@ export function useBoardMemberNames(card) {
   useEffect(() => {
     if (!card) return
 
-    // Clear prior names when switching boards so the picker never flashes
-    // stale members from the previously-open card.
-    setNames([])
+    // Clear when switching boards so the picker never flashes stale members.
+    setMembers([])
 
     if (workspaceId) {
       useWorkspacesStore.getState().fetchMembers(workspaceId)
@@ -34,20 +36,28 @@ export function useBoardMemberNames(card) {
         .select('id, display_name')
         .in('id', userIds)
       if (cancelled || pErr) return
-      setNames((profiles || []).map((p) => p.display_name).filter(Boolean))
+      setMembers((profiles || [])
+        .filter((p) => p.display_name)
+        .map((p) => ({ id: p.id, display_name: p.display_name })))
     })()
 
     return () => { cancelled = true }
     // Keyed on board_id, not the full `card` object: the store returns a new
-    // card identity on every edit, and re-running would clear + refetch member
-    // names mid-session. `card` is only used as a guard and for board_id.
+    // card identity on every edit, and re-running would clear + refetch mid-session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card?.board_id, workspaceId])
 
   useEffect(() => {
     if (!workspaceId) return
-    setNames((workspaceMembers || []).map((m) => m.display_name).filter(Boolean))
+    setMembers((workspaceMembers || [])
+      .filter((m) => m.display_name)
+      .map((m) => ({ id: m.user_id, display_name: m.display_name })))
   }, [workspaceId, workspaceMembers])
 
-  return names
+  return members
+}
+
+// Names-only convenience wrapper for consumers that don't need ids.
+export function useBoardMemberNames(card) {
+  return useBoardMembers(card).map((m) => m.display_name)
 }

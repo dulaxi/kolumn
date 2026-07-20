@@ -5,8 +5,8 @@ import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import { useMenuState } from '../../hooks/useMenuState'
-import { useCardEditState } from '../../hooks/useCardEditState'
-import { useBoardMemberNames } from '../../hooks/useBoardMemberNames'
+import { useCardEditState, cardAssigneeRefs } from '../../hooks/useCardEditState'
+import { useBoardMembers } from '../../hooks/useBoardMemberNames'
 import IconPicker from './IconPicker'
 import LabelAutocomplete from './LabelAutocomplete'
 import PriorityMenu from './PriorityMenu'
@@ -75,10 +75,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const descriptionRef = useRef(null)
   const [showLabelForm, setShowLabelForm] = useState(false)
   // Legacy assignee fallback preserved — formDataRef initialization below still needs this local
-  const initialAssignees = card?.assignees?.length
-    ? card.assignees
-    : (card?.assignee_name ? [card.assignee_name] : [])
-  const boardMemberNames = useBoardMemberNames(card)
+  const initialAssignees = cardAssigneeRefs(card)
+  const members = useBoardMembers(card)
 
   const isDirtyRef = useRef(false)
   const autoSaveTimerRef = useRef(null)
@@ -106,9 +104,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     setPriority(card.priority || 'medium')
     setDueDate(card.due_date || '')
     setAssignees(
-      card.assignees?.length
-        ? [...card.assignees]
-        : (card.assignee_name ? [card.assignee_name] : [])
+      cardAssigneeRefs(card)
     )
     setChecklist(card.checklist ? card.checklist.map((i) => ({ ...i })) : [])
     // Deliberately keyed on updated_at/id, not the full `card` object: the store
@@ -126,7 +122,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         useBoardStore.getState().updateCard(cardId, {
           title: d.title.trim() || card?.title || 'Untitled task',
           description: d.description,
-          assignees: d.assignees,
+          assigneeRefs: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
           priority: d.priority,
@@ -152,7 +148,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         useBoardStore.getState().updateCard(cardId, {
           title: d.title.trim() || 'Untitled task',
           description: d.description,
-          assignees: d.assignees,
+          assigneeRefs: d.assignees,
           due_date: d.dueDate || null,
           checklist: d.checklist,
           priority: d.priority,
@@ -166,7 +162,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const handleSave = () => {
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
     isDirtyRef.current = false
-    updateCard(cardId, { title: title.trim() || card.title, description, assignees, due_date: dueDate || null, checklist, priority })
+    updateCard(cardId, { title: title.trim() || card.title, description, assigneeRefs: assignees, due_date: dueDate || null, checklist, priority })
   }
 
   const handleSaveAndClose = () => { handleSave(); onClose() }
@@ -445,7 +441,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           <AssigneePicker
             assignees={assignees}
             setAssignees={setAssignees}
-            boardMemberNames={boardMemberNames}
+            members={members}
             profile={profile}
             scheduleSave={scheduleSave}
             open={openMenu === 'assignee'}

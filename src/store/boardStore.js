@@ -660,6 +660,7 @@ export const useBoardStore = create((set, get) => ({
         .map((n) => sanitizeTitle(n))
         .filter(Boolean),
       assignee_name: sanitizeTitle((cardData.assignees && cardData.assignees[0]) || cardData.assignee) || '',
+      assignee_refs: [],
       due_date: cardData.dueDate || null,
       priority: cardData.priority || 'medium',
       icon: cardData.icon || null,
@@ -736,6 +737,8 @@ export const useBoardStore = create((set, get) => ({
             if (tempCurrent.title !== optimisticCard.title) merged.title = tempCurrent.title
             if (tempCurrent.description !== optimisticCard.description) merged.description = tempCurrent.description
             if (tempCurrent.assignee_name !== optimisticCard.assignee_name) merged.assignee_name = tempCurrent.assignee_name
+            if (JSON.stringify(tempCurrent.assignees) !== JSON.stringify(optimisticCard.assignees)) merged.assignees = tempCurrent.assignees
+            if (JSON.stringify(tempCurrent.assignee_refs || []) !== JSON.stringify(optimisticCard.assignee_refs || [])) merged.assignee_refs = tempCurrent.assignee_refs
             if (tempCurrent.priority !== optimisticCard.priority) merged.priority = tempCurrent.priority
             if (tempCurrent.due_date !== optimisticCard.due_date) merged.due_date = tempCurrent.due_date
             if (JSON.stringify(tempCurrent.checklist) !== JSON.stringify(optimisticCard.checklist)) merged.checklist = tempCurrent.checklist
@@ -789,20 +792,33 @@ export const useBoardStore = create((set, get) => ({
     const dbUpdates = {}
     if ('title' in updates) dbUpdates.title = sanitizeTitle(updates.title) || 'Untitled task'
     if ('description' in updates) dbUpdates.description = sanitizeDescription(updates.description)
-    // All three inputs are sugar for the same thing: set the `assignees` array.
-    // The DB sync_assignee_refs trigger derives assignee_name + assignee_refs
-    // from `assignees`, and writing assignee_name ALONE is reverted by it — so
-    // singular assignee/assignee_name must go through the array too.
-    let assigneesInput
-    if ('assignees' in updates) assigneesInput = updates.assignees || []
-    else if ('assignee' in updates) assigneesInput = updates.assignee ? [updates.assignee] : []
-    else if ('assignee_name' in updates) assigneesInput = updates.assignee_name ? [updates.assignee_name] : []
-    if (assigneesInput !== undefined) {
-      const cleaned = assigneesInput.map((n) => sanitizeTitle(n)).filter(Boolean)
-      dbUpdates.assignees = cleaned
-      // Mirror first entry into assignee_name so optimistic local reads + the
-      // assignment-notification diff below stay correct pre-echo.
-      dbUpdates.assignee_name = cleaned[0] || ''
+    // Assignee writes take one of two paths:
+    //  - assigneeRefs (from the picker): [{name,id}] — member assignments carry
+    //    their user id, free-text is id null. Written to assignee_refs directly;
+    //    the sync trigger derives the assignees/assignee_name name mirror.
+    //  - assignee / assignee_name / assignees (AI, legacy, duplicate): names
+    //    only — the trigger resolves them to member ids on write. (Writing
+    //    assignee_name alone is reverted by the trigger, so singular inputs go
+    //    through the array too.)
+    if ('assigneeRefs' in updates) {
+      const refs = (updates.assigneeRefs || [])
+        .map((r) => ({ name: sanitizeTitle(r?.name), id: r?.id || null }))
+        .filter((r) => r.name)
+      dbUpdates.assignee_refs = refs
+      dbUpdates.assignees = refs.map((r) => r.name)
+      dbUpdates.assignee_name = refs[0]?.name || ''
+    } else {
+      let assigneesInput
+      if ('assignees' in updates) assigneesInput = updates.assignees || []
+      else if ('assignee' in updates) assigneesInput = updates.assignee ? [updates.assignee] : []
+      else if ('assignee_name' in updates) assigneesInput = updates.assignee_name ? [updates.assignee_name] : []
+      if (assigneesInput !== undefined) {
+        const cleaned = assigneesInput.map((n) => sanitizeTitle(n)).filter(Boolean)
+        dbUpdates.assignees = cleaned
+        // Mirror first entry into assignee_name so optimistic local reads + the
+        // assignment-notification diff below stay correct pre-echo.
+        dbUpdates.assignee_name = cleaned[0] || ''
+      }
     }
     if ('priority' in updates) dbUpdates.priority = updates.priority
     if ('dueDate' in updates) dbUpdates.due_date = updates.dueDate

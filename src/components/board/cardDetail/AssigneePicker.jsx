@@ -25,10 +25,12 @@ const SIZES = {
   },
 }
 
+// `assignees` is an array of { name, id } refs. Members carry their user id
+// (captured here at pick time); free-text entries carry id: null.
 export default function AssigneePicker({
   assignees,
   setAssignees,
-  boardMemberNames,
+  members = [],
   profile,
   scheduleSave,
   open,
@@ -44,31 +46,50 @@ export default function AssigneePicker({
 
   const sz = SIZES[size] || SIZES.lg
   const isMeName = (n) => profile?.display_name && n.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
+  // Identity: a member ref is me by id; a free-text ref falls back to name.
+  const isMeRef = (ref) => (ref.id ? ref.id === profile?.id : isMeName(ref.name))
   const { style: profileStyle, fallbackClass: profileFallback } = resolveProfileColor(profile?.color)
 
   const maxVisible = 3
   const visible = assignees.slice(0, maxVisible)
   const overflow = Math.max(0, assignees.length - maxVisible)
 
-  const toggleAssignee = (name) => {
-    const next = assignees.some((a) => a.toLowerCase() === name.toLowerCase())
-      ? assignees.filter((a) => a.toLowerCase() !== name.toLowerCase())
-      : [...assignees, name]
-    setAssignees(next)
-    scheduleSave?.()
+  const commit = (next) => { setAssignees(next); scheduleSave?.() }
+
+  // Toggle a real member — matched by id so two members with the same name
+  // never collide.
+  const toggleMember = (member) => {
+    const has = assignees.some((a) => a.id === member.id)
+    commit(has
+      ? assignees.filter((a) => a.id !== member.id)
+      : [...assignees, { name: member.display_name, id: member.id }])
+  }
+
+  // Toggle a free-text name (id null), matched case-insensitively by name.
+  const toggleFreeText = (name) => {
+    const lower = name.toLowerCase()
+    const has = assignees.some((a) => !a.id && a.name.toLowerCase() === lower)
+    commit(has
+      ? assignees.filter((a) => !(!a.id && a.name.toLowerCase() === lower))
+      : [...assignees, { name, id: null }])
   }
 
   const trimmed = search.trim()
   const trimmedLower = trimmed.toLowerCase()
-  const externalNames = assignees
-    .filter((a) => !boardMemberNames.some((m) => m.toLowerCase() === a.toLowerCase()))
-    .filter((a) => !trimmed || a.toLowerCase().includes(trimmedLower))
 
-  const memberMatches = boardMemberNames.filter((m) => !trimmed || m.toLowerCase().includes(trimmedLower))
+  // Refs whose id isn't a current member (free-text, or a former member) show
+  // at the top as removable chips.
+  const externalRefs = assignees
+    .filter((a) => !members.some((m) => m.id === a.id))
+    .filter((a) => !trimmed || a.name.toLowerCase().includes(trimmedLower))
+
+  const memberMatches = members.filter((m) => !trimmed || m.display_name.toLowerCase().includes(trimmedLower))
   const showAddNew =
     trimmed &&
-    !boardMemberNames.some((m) => m.toLowerCase() === trimmedLower) &&
-    !assignees.some((a) => a.toLowerCase() === trimmedLower)
+    !members.some((m) => m.display_name.toLowerCase() === trimmedLower) &&
+    !assignees.some((a) => a.name.toLowerCase() === trimmedLower)
+
+  const removeRef = (ref) => commit(assignees.filter((a) => a !== ref))
 
   const panel = (
     <>
@@ -78,11 +99,11 @@ export default function AssigneePicker({
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              const name = search.trim()
+              const name = trimmed
               if (!name) return
-              if (!assignees.some((a) => a.toLowerCase() === name.toLowerCase())) {
-                toggleAssignee(name)
-              }
+              const member = members.find((m) => m.display_name.toLowerCase() === name.toLowerCase())
+              if (member) toggleMember(member)
+              else if (!assignees.some((a) => a.name.toLowerCase() === name.toLowerCase())) toggleFreeText(name)
               setSearch('')
             } else if (e.key === 'Escape') {
               setOpen(false)
@@ -94,17 +115,17 @@ export default function AssigneePicker({
         />
       </div>
       <div className="max-h-56 overflow-y-auto">
-        {/* External (not-in-board-members) selected names appear first */}
-        {externalNames.map((name) => (
+        {/* Free-text / former-member selections appear first */}
+        {externalRefs.map((ref) => (
           <div
-            key={`ext-${name}`}
+            key={`ext-${ref.id || ref.name}`}
             role="menuitem"
-            onClick={() => toggleAssignee(name)}
+            onClick={() => removeRef(ref)}
             className="min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm bg-[var(--surface-hover)] font-medium"
           >
             <div className="flex items-center gap-2 w-full">
-              <Avatar name={name} />
-              <span className="flex-1 truncate">{name}</span>
+              <Avatar name={ref.name} />
+              <span className="flex-1 truncate">{ref.name}</span>
             </div>
             <Check className="w-4 h-4 text-[var(--text-secondary)]" />
           </div>
@@ -112,30 +133,30 @@ export default function AssigneePicker({
 
         {/* Board / workspace members */}
         {memberMatches.map((member) => {
-          const checked = assignees.some((a) => a.toLowerCase() === member.toLowerCase())
+          const checked = assignees.some((a) => a.id === member.id)
           return (
             <div
-              key={member}
+              key={member.id}
               role="menuitem"
-              onClick={() => toggleAssignee(member)}
+              onClick={() => toggleMember(member)}
               className={`min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm ${checked ? 'bg-[var(--surface-hover)] font-medium' : ''}`}
             >
               <div className="flex items-center gap-2 w-full">
-                <Avatar name={member} />
-                <span className="flex-1 truncate">{member}</span>
+                <Avatar name={member.display_name} />
+                <span className="flex-1 truncate">{member.display_name}</span>
               </div>
               {checked && <Check className="w-4 h-4 text-[var(--text-secondary)]" />}
             </div>
           )
         })}
 
-        {/* Free-text "add" — when search doesn't match anyone and not already assigned */}
+        {/* Free-text "add" — search matches no member and isn't already assigned */}
         {showAddNew && (
           <>
             <div role="separator" className="h-px bg-[var(--border-subtle)] my-1.5 mx-2" />
             <div
               role="menuitem"
-              onClick={() => { toggleAssignee(trimmed); setSearch('') }}
+              onClick={() => { toggleFreeText(trimmed); setSearch('') }}
               className="min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm text-[var(--text-secondary)]"
             >
               <div className="flex items-center gap-2 w-full">
@@ -152,7 +173,7 @@ export default function AssigneePicker({
             <div role="separator" className="h-px bg-[var(--border-subtle)] my-1.5 mx-2" />
             <div
               role="menuitem"
-              onClick={() => { setAssignees([]); scheduleSave?.() }}
+              onClick={() => commit([])}
               className="min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm text-[var(--text-muted)]"
             >
               <div className="flex items-center gap-2 w-full">
@@ -175,7 +196,7 @@ export default function AssigneePicker({
       panelClassName="min-w-[14rem]"
       panel={panel}
     >
-      <Tooltip content={assignees.length === 0 ? 'Assign someone' : assignees.join(', ')}>
+      <Tooltip content={assignees.length === 0 ? 'Assign someone' : assignees.map((a) => a.name).join(', ')}>
         <button
           type="button"
           onClick={() => { setOpen(!open); setSearch('') }}
@@ -187,12 +208,11 @@ export default function AssigneePicker({
             </span>
           ) : (
             <span className={`flex ${sz.spacing}`}>
-              {visible.map((name) => {
-                const isMe = isMeName(name)
-                if (isMe && profile?.icon) {
+              {visible.map((ref) => {
+                if (isMeRef(ref) && profile?.icon) {
                   return (
                     <span
-                      key={name}
+                      key={ref.id || ref.name}
                       className={`${sz.avatar} rounded-full flex items-center justify-center ring-2 ring-[var(--surface-page)] ${profileFallback}`}
                       style={profileStyle}
                     >
@@ -200,7 +220,7 @@ export default function AssigneePicker({
                     </span>
                   )
                 }
-                return <Avatar key={name} name={name} size={sz.avatarSize} ringed className={`ring-[var(--surface-page)] ${sz.avatar} ${sz.avatarTextClass}`} />
+                return <Avatar key={ref.id || ref.name} name={ref.name} size={sz.avatarSize} ringed className={`ring-[var(--surface-page)] ${sz.avatar} ${sz.avatarTextClass}`} />
               })}
               {overflow > 0 && (
                 <span className={`${sz.avatar} rounded-full flex items-center justify-center ring-2 ring-[var(--surface-page)] bg-[var(--surface-hover)] ${sz.overflowText} font-medium text-[var(--text-secondary)]`}>
