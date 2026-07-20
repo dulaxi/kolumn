@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useBoardStore } from '../store/boardStore'
-import { useNoteStore } from '../store/noteStore'
 import { useBoardSharingStore } from '../store/boardSharingStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { useNotificationStore } from '../store/notificationStore'
@@ -35,7 +34,6 @@ export function useAppData() {
   const spawnRecurringTasks = useBoardStore((s) => s.spawnRecurringTasks)
   const subscribeToBoards = useBoardStore((s) => s.subscribeToBoards)
   const unsubscribeAll = useBoardStore((s) => s.unsubscribeAll)
-  const fetchNotes = useNoteStore((s) => s.fetchNotes)
   const fetchInvitations = useBoardSharingStore((s) => s.fetchInvitations)
   const fetchSharedBoards = useBoardSharingStore((s) => s.fetchSharedBoards)
   const subscribeToBoardInvitations = useBoardSharingStore((s) => s.subscribeToInvitations)
@@ -56,7 +54,6 @@ export function useAppData() {
 
     const loadAllData = () => Promise.allSettled([
       fetchBoards(),
-      fetchNotes(),
       fetchInvitations(),
       fetchSharedBoards(),
       fetchWorkspaces(),
@@ -139,7 +136,6 @@ export function useAppData() {
     setMigrating(true)
     const fullyMigrated = await migrateLocalData()
     await fetchBoards()
-    await fetchNotes()
     setMigrating(false)
     setShowMigration(false)
     if (!fullyMigrated) {

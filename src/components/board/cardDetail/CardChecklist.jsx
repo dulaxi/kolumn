@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { nanoid } from 'nanoid'
 import { CheckCircle, Plus, X } from '@phosphor-icons/react'
 
 function ChecklistItem({ item, onToggle, onEdit, onDelete }) {
@@ -46,20 +47,25 @@ export default function CardChecklist({ checklist, setChecklist, scheduleSave })
   const handleAdd = () => {
     const t = newItem.trim()
     if (!t) return
-    setChecklist([...checklist, { text: t, done: false }])
+    setChecklist([...checklist, { id: nanoid(), text: t, done: false }])
     setNewItem('')
     scheduleSave()
   }
+
+  // Match the target item by identity (id when present, else object reference)
+  // rather than by array index, so a reorder or concurrent edit can't hit the
+  // wrong row.
+  const isItem = (item) => (c) => (item.id ? c.id === item.id : c === item)
 
   return (
     <div className="mt-5 max-w-sm">
       {checklist.map((item, idx) => (
         <ChecklistItem
-          key={`${item.text}-${idx}`}
+          key={item.id || `${item.text}-${idx}`}
           item={item}
-          onToggle={() => { setChecklist(checklist.map((c, i) => i === idx ? { ...c, done: !c.done } : c)); scheduleSave() }}
-          onEdit={(text) => { setChecklist(checklist.map((c, i) => i === idx ? { ...c, text } : c)); scheduleSave() }}
-          onDelete={() => { setChecklist(checklist.filter((_, i) => i !== idx)); scheduleSave() }}
+          onToggle={() => { setChecklist(checklist.map((c) => isItem(item)(c) ? { ...c, done: !c.done } : c)); scheduleSave() }}
+          onEdit={(text) => { setChecklist(checklist.map((c) => isItem(item)(c) ? { ...c, text } : c)); scheduleSave() }}
+          onDelete={() => { setChecklist(checklist.filter((c) => !isItem(item)(c))); scheduleSave() }}
         />
       ))}
       <div className="flex items-center gap-2 py-1">

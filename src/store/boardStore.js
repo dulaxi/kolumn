@@ -14,6 +14,37 @@ import { cardInsertSchema, boardInsertSchema, columnInsertSchema, commentInsertS
 
 const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
+// Cards with a local write in flight. Realtime echoes for these are skipped so
+// a stale echo (including the echo of the user's own earlier write) can't
+// clobber a newer optimistic edit. See the 2026-07-20 architecture audit.
+const _inFlightCards = new Set()
+
+// Apply a realtime card change, guarding against stale/echo overwrites.
+// Returns a partial state for zustand's set() ({} = no-op).
+function mergeCardEcho(state, payload) {
+  if (payload.eventType === 'DELETE') {
+    const { [payload.old.id]: _, ...rest } = state.cards
+    return { cards: rest }
+  }
+  const card = payload.new
+  if (_inFlightCards.has(card.id)) return {}
+  const existing = state.cards[card.id]
+  // Drop an echo that is older than what we already hold locally.
+  if (existing?.updated_at && card.updated_at &&
+      new Date(card.updated_at) < new Date(existing.updated_at)) {
+    return {}
+  }
+  return { cards: { ...state.cards, [card.id]: card } }
+}
+
+// Bound the temp→real id map so long AI sessions don't grow it without limit.
+// Object key order is insertion order, so this keeps the most recent entries.
+function pruneTempIdMap(map, keep = 50) {
+  const keys = Object.keys(map)
+  if (keys.length <= keep) return map
+  return Object.fromEntries(keys.slice(keys.length - keep).map((k) => [k, map[k]]))
+}
+
 // Debounce guard for realtime reconnect — prevents concurrent reconnect races
 let reconnectTimer = null
 function scheduleReconnect() {
@@ -552,12 +583,10 @@ export const useBoardStore = create((set, get) => ({
     // Persist in background
     ;(async () => {
       try {
-        // Get accurate numbers from DB
-        let globalNumber = localGlobalNumber
-        const { data: maxRow } = await supabase.from('cards').select('global_task_number').order('global_task_number', { ascending: false }).limit(1).single()
-        if (maxRow?.global_task_number >= globalNumber) {
-          globalNumber = maxRow.global_task_number + 1
-        }
+        // global_task_number is assigned authoritatively by a DB BEFORE-INSERT
+        // trigger (atomic sequence) — the value we send is just an optimistic
+        // placeholder the insert's returned row corrects on swap.
+        const globalNumber = localGlobalNumber
 
         let taskNumber = localTaskNumber
         const { data: atomicNum, error: rpcError } = await supabase.rpc('next_task_number', { target_board_id: boardId })
@@ -618,7 +647,7 @@ export const useBoardStore = create((set, get) => ({
           return {
             cards: { ...restCards, [realCard.id]: merged },
             boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: taskNumber + 1 } },
-            _tempIdMap: { ...(s._tempIdMap || {}), [tempId]: realCard.id },
+            _tempIdMap: pruneTempIdMap({ ...(s._tempIdMap || {}), [tempId]: realCard.id }),
           }
         })
 
@@ -663,14 +692,19 @@ export const useBoardStore = create((set, get) => ({
     const dbUpdates = {}
     if ('title' in updates) dbUpdates.title = sanitizeTitle(updates.title) || 'Untitled task'
     if ('description' in updates) dbUpdates.description = sanitizeDescription(updates.description)
-    if ('assignee' in updates) dbUpdates.assignee_name = sanitizeTitle(updates.assignee)
-    if ('assignee_name' in updates) dbUpdates.assignee_name = sanitizeTitle(updates.assignee_name)
-    if ('assignees' in updates) {
-      const cleaned = (updates.assignees || [])
-        .map((n) => sanitizeTitle(n))
-        .filter(Boolean)
+    // All three inputs are sugar for the same thing: set the `assignees` array.
+    // The DB sync_assignee_refs trigger derives assignee_name + assignee_refs
+    // from `assignees`, and writing assignee_name ALONE is reverted by it — so
+    // singular assignee/assignee_name must go through the array too.
+    let assigneesInput
+    if ('assignees' in updates) assigneesInput = updates.assignees || []
+    else if ('assignee' in updates) assigneesInput = updates.assignee ? [updates.assignee] : []
+    else if ('assignee_name' in updates) assigneesInput = updates.assignee_name ? [updates.assignee_name] : []
+    if (assigneesInput !== undefined) {
+      const cleaned = assigneesInput.map((n) => sanitizeTitle(n)).filter(Boolean)
       dbUpdates.assignees = cleaned
-      // Mirror first entry into assignee_name so legacy consumers keep working
+      // Mirror first entry into assignee_name so optimistic local reads + the
+      // assignment-notification diff below stay correct pre-echo.
       dbUpdates.assignee_name = cleaned[0] || ''
     }
     if ('priority' in updates) dbUpdates.priority = updates.priority
@@ -697,7 +731,10 @@ export const useBoardStore = create((set, get) => ({
     // Temp cards haven't been persisted yet — edits will be merged on swap
     if (typeof cardId === 'string' && cardId.startsWith('temp-')) return
 
+    // Mark in-flight so a realtime echo can't clobber this (or a newer) edit
+    _inFlightCards.add(cardId)
     const { error } = await supabase.from('cards').update(dbUpdates).eq('id', cardId)
+    _inFlightCards.delete(cardId)
     if (error) {
       logError('Failed to update card:', error)
       // Rollback optimistic update
@@ -1431,14 +1468,7 @@ export const useBoardStore = create((set, get) => ({
           filter: `board_id=eq.${activeBoardId}`,
         }, (payload) => {
           if (get()._isDragging && payload.eventType !== 'DELETE') return
-          set((state) => {
-            if (payload.eventType === 'DELETE') {
-              const { [payload.old.id]: _, ...rest } = state.cards
-              return { cards: rest }
-            }
-            const card = payload.new
-            return { cards: { ...state.cards, [card.id]: card } }
-          })
+          set((state) => mergeCardEcho(state, payload))
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -1463,14 +1493,7 @@ export const useBoardStore = create((set, get) => ({
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, (payload) => {
           if (get()._isDragging && payload.eventType !== 'DELETE') return
-          set((state) => {
-            if (payload.eventType === 'DELETE') {
-              const { [payload.old.id]: _, ...rest } = state.cards
-              return { cards: rest }
-            }
-            const card = payload.new
-            return { cards: { ...state.cards, [card.id]: card } }
-          })
+          set((state) => mergeCardEcho(state, payload))
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {

@@ -33,9 +33,11 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const totalCount = checklist?.length || 0
   const hasChecklist = totalCount > 0
 
-  const toggleCheckItem = (index) => {
-    const updated = checklist.map((item, i) =>
-      i === index ? { ...item, done: !item.done } : item
+  const toggleCheckItem = (target) => {
+    // Reconcile by item identity (id when present, else object reference) so a
+    // reorder or concurrent edit can't flip the wrong row by stale index.
+    const updated = checklist.map((item) =>
+      (item.id ? item.id === target.id : item === target) ? { ...item, done: !item.done } : item
     )
     updateCard(card.id, { checklist: updated })
   }
@@ -187,24 +189,30 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           {hasAssignee && (() => {
             const isMeName = (n) => profile?.display_name && n.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const { style: profileStyle, fallbackClass: profileFallback } = resolveProfileColor(profile?.color)
+            // Identity comes from the per-entry ref id when present (rename- and
+            // namesake-proof); fall back to name match for un-refed/legacy rows.
+            const entries = (card.assignee_refs && card.assignee_refs.length)
+              ? card.assignee_refs
+              : assignees.map((name) => ({ name, id: null }))
+            const isMeEntry = (e) => (e.id ? e.id === profile?.id : isMeName(e.name))
             const maxVisible = 3
-            const visible = assignees.slice(0, maxVisible)
-            const overflow = Math.max(0, assignees.length - maxVisible)
+            const visible = entries.slice(0, maxVisible)
+            const overflow = Math.max(0, entries.length - maxVisible)
             return (
-              <Tooltip content={assignees.join(', ')}>
+              <Tooltip content={entries.map((e) => e.name).join(', ')}>
                 <span className="flex -space-x-1.5">
-                  {visible.map((name) => {
-                    const isMe = isMeName(name)
+                  {visible.map((e, i) => {
+                    const isMe = isMeEntry(e)
                     return isMe && profile?.icon ? (
                       <span
-                        key={name}
+                        key={e.id || `${e.name}-${i}`}
                         className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${profileFallback}`}
                         style={profileStyle}
                       >
                         <DynamicIcon name={profile.icon} className="w-3 h-3" />
                       </span>
                     ) : (
-                      <Avatar key={name} name={name} size="sm" ringed className="text-[10px]" />
+                      <Avatar key={e.id || `${e.name}-${i}`} name={e.name} size="sm" ringed className="text-[10px]" />
                     )
                   })}
                   {overflow > 0 && (
@@ -224,10 +232,10 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       {hasChecklist && checklistOpen && (
         <div className="pt-2 border-t border-[var(--border-subtle)]" onClick={(e) => e.stopPropagation()}>
           {checklist.map((item, idx) => (
-            <div key={`${item.text}-${idx}`} className="flex items-center gap-2 py-1">
+            <div key={item.id || `${item.text}-${idx}`} className="flex items-center gap-2 py-1">
               <button
                 type="button"
-                onClick={() => toggleCheckItem(idx)}
+                onClick={() => toggleCheckItem(item)}
                 aria-label={item.done ? 'Mark incomplete' : 'Mark complete'}
                 className="shrink-0"
               >
