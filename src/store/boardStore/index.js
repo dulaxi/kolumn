@@ -6,6 +6,7 @@ import { createLabelsSlice } from './slices/labelsSlice'
 import { createCommentsSlice } from './slices/commentsSlice'
 import { createAttachmentsSlice } from './slices/attachmentsSlice'
 import { createRealtimeSlice } from './slices/realtimeSlice'
+import { onStoreEvent } from '../storeEvents'
 
 // boardStore composed from focused domain slices (Zustand slices pattern).
 // Every slice shares the same (set, get), so cross-slice access (e.g. a card
@@ -27,3 +28,8 @@ export const useBoardStore = create((set, get) => ({
     set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, _loadedBoardCards: new Set(), _allCardsLoaded: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))
+
+// React to cross-store lifecycle events (decoupled via the event bus, so
+// authStore / workspacesStore don't have to import this store).
+onStoreEvent('session:reset', () => useBoardStore.getState().resetStore())
+onStoreEvent('boards:refetch', () => useBoardStore.getState().fetchBoards())

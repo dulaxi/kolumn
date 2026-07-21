@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
 import { noteInsertSchema, noteUpdateSchema } from '../utils/schemas'
 import { useAuthStore } from './authStore'
+import { onStoreEvent } from './storeEvents'
 
 export const useNoteStore = create((set, get) => ({
   notes: {},
@@ -103,3 +104,5 @@ export const useNoteStore = create((set, get) => ({
 
   resetStore: () => set({ notes: {}, loading: false, error: null }),
 }))
+
+onStoreEvent('session:reset', () => useNoteStore.getState().resetStore())

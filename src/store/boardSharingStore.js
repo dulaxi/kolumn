@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
 import { useBoardStore } from './boardStore'
+import { onStoreEvent } from './storeEvents'
 import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
 import { fetchProfilesByIds } from '../utils/supabaseHelpers'
@@ -369,3 +370,6 @@ export const useBoardSharingStore = create((set, get) => ({
     }
   },
 }))
+
+onStoreEvent('session:reset', () => useBoardSharingStore.getState().resetStore())
+onStoreEvent('boards:refetch', () => useBoardSharingStore.getState().fetchSharedBoards())

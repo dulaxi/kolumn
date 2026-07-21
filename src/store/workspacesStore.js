@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './authStore'
+import { emitStoreEvent, onStoreEvent } from './storeEvents'
 import { logError } from '../utils/logger'
 import { showToast } from '../utils/toast'
 import { fetchProfilesByIds } from '../utils/supabaseHelpers'
@@ -408,12 +409,9 @@ export const useWorkspacesStore = create(
           }
           await get().fetchWorkspaces()
           await get().fetchInvitations()
-          // Joining a workspace grants read access to its boards. Pull the
-          // boardStore back into sync so those boards appear in the sidebar
-          // (otherwise the workspace shows up empty until the next full reload).
-          // Lazy import avoids circular dep with boardStore.
-          const { useBoardStore } = await import('./boardStore')
-          await useBoardStore.getState().fetchBoards()
+          // Joining a workspace grants read access to its boards — reload them
+          // so they appear in the sidebar. The board stores listen for this.
+          emitStoreEvent('boards:refetch')
         } catch (err) {
           logError('acceptInvitation failed:', err)
         }
@@ -462,16 +460,10 @@ export const useWorkspacesStore = create(
               activeWorkspaceId: s.activeWorkspaceId === workspaceId ? null : s.activeWorkspaceId,
             }
           })
-          // Leaving revokes read access to that workspace's boards. Resync
-          // boardStore + sharedBoards so the now-inaccessible boards drop out
-          // of the sidebar, Home grid, AllBoards view, etc. Lazy import avoids
-          // circular dep.
-          const { useBoardStore } = await import('./boardStore')
-          const { useBoardSharingStore } = await import('./boardSharingStore')
-          await Promise.all([
-            useBoardStore.getState().fetchBoards(),
-            useBoardSharingStore.getState().fetchSharedBoards(),
-          ])
+          // Leaving revokes read access to that workspace's boards — reload
+          // boards + shared boards so the inaccessible ones drop out of the
+          // sidebar, Home grid, AllBoards view, etc.
+          emitStoreEvent('boards:refetch')
         } catch (err) {
           logError('leaveWorkspace failed:', err)
         }
@@ -507,3 +499,6 @@ export const useWorkspacesStore = create(
     }
   )
 )
+
+// Reset tenant state when the session is cleared / the user changes.
+onStoreEvent('session:reset', () => useWorkspacesStore.getState().resetStore())

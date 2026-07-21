@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
 import * as Sentry from '@sentry/react'
 import { identifyUser, resetUser, capture } from '../lib/analytics'
+import { emitStoreEvent } from './storeEvents'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -68,12 +69,8 @@ export const useAuthStore = create((set, get) => ({
       const prevUserId = currentUser?.id
       const nextUserId = session?.user?.id
       if (prevUserId && prevUserId !== nextUserId) {
-        setTimeout(() => {
-          import('./boardStore').then(({ useBoardStore }) => useBoardStore.getState().resetStore())
-          import('./noteStore').then(({ useNoteStore }) => useNoteStore.getState().resetStore())
-          import('./workspacesStore').then(({ useWorkspacesStore }) => useWorkspacesStore.getState().resetStore())
-          import('./boardSharingStore').then(({ useBoardSharingStore }) => useBoardSharingStore.getState().resetStore())
-        }, 0)
+        // Defer past the auth callback, then let tenant stores reset themselves.
+        setTimeout(() => emitStoreEvent('session:reset'), 0)
       }
 
       set({ user: session?.user || null, session })
@@ -186,11 +183,8 @@ export const useAuthStore = create((set, get) => ({
     set({ user: null, session: null, profile: null })
     Sentry.setUser(null)
     resetUser()
-    // Lazy imports to avoid circular dependency (these stores import authStore)
-    import('./boardStore').then(({ useBoardStore }) => useBoardStore.getState().resetStore())
-    import('./noteStore').then(({ useNoteStore }) => useNoteStore.getState().resetStore())
-    import('./workspacesStore').then(({ useWorkspacesStore }) => useWorkspacesStore.getState().resetStore())
-    import('./boardSharingStore').then(({ useBoardSharingStore }) => useBoardSharingStore.getState().resetStore())
+    // Tenant-scoped stores reset their own state via the event bus.
+    emitStoreEvent('session:reset')
     localStorage.removeItem('kolumn_active_board')
   },
 
