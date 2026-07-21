@@ -55,7 +55,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
 
   const rootStyle = {
     ...(font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : null),
-    ...(watcher ? { boxShadow: `0 0 0 2px ${watcherStyle?.background || 'var(--mist)'}, 0 6px 18px rgba(27,27,24,0.10)`, borderColor: 'transparent' } : null),
+    ...(watcher ? { boxShadow: `0 0 0 2px ${watcherStyle?.background || 'var(--color-mist)'}, 0 6px 18px rgba(27,27,24,0.10)`, borderColor: 'transparent' } : null),
   }
 
   return (
