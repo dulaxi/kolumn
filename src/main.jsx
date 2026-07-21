@@ -34,11 +34,20 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('[Kolumn] Unhandled promise rejection:', event.reason)
 })
 
-// Register service worker for PWA (production only)
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
-  })
+// Register service worker for PWA (production only). In dev, actively
+// unregister any stale SW left over from a prior prod/preview run on this
+// origin — otherwise it intercepts and caches Vite module requests, serving
+// stale/404'd module URLs (e.g. a file that was renamed or moved).
+if ('serviceWorker' in navigator) {
+  if (import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    })
+  } else {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {})
+  }
 }
 
 // Apply persisted theme before first paint to avoid flash. Runs before the
