@@ -32,9 +32,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   const presenceByCard = usePresenceStore((s) => s.byCard)
+  // Teammates currently on this card (excludes you) — shown as haloed avatars
+  // in the card's avatar row, not a whole-card ring.
   const watchers = othersOnCard(presenceByCard, card.id, profile?.id)
-  const watcher = watchers[0]
-  const watcherStyle = watcher ? resolveProfileColor(watcher.color).style : null
 
   const checkedCount = checklist?.filter((item) => item.done).length || 0
   const totalCount = checklist?.length || 0
@@ -53,31 +53,22 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
 
   const dueDateObj = dueDate ? parseDueDate(dueDate) : null
 
-  const rootStyle = {
-    ...(font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : null),
-    ...(watcher ? { boxShadow: `0 0 0 2px ${watcherStyle?.background || 'var(--color-mist)'}, 0 6px 18px rgba(27,27,24,0.10)`, borderColor: 'transparent' } : null),
-  }
+  const fontStyle = font === 'sf-mono'
+    ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" }
+    : undefined
 
   return (
     <button
       type="button"
       aria-label={`Task: ${title}`}
       onClick={() => onClick(card.id)}
-      style={Object.keys(rootStyle).length > 0 ? rootStyle : undefined}
+      style={fontStyle}
       className={`relative w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group ${
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
       }`}
     >
-      {watcher && (
-        <span
-          className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium ring-2 ring-[var(--surface-card)]"
-          style={watcherStyle}
-        >
-          {watcher.name?.[0]?.toLowerCase() || '?'}
-        </span>
-      )}
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
         {/* Icon — toggleable between "boxed" (40×40 raised container) and
@@ -174,7 +165,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       )}
 
       {/* Bottom metadata row */}
-      {(dueDateObj || hasChecklist || hasAssignee) && (
+      {(dueDateObj || hasChecklist || hasAssignee || watchers.length > 0) && (
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {dueDateObj && (
@@ -206,6 +197,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
             })()}
           </div>
 
+          <div className="flex items-center gap-1.5">
           {hasAssignee && (() => {
             const isMeName = (n) => profile?.display_name && n.trim().toLowerCase() === profile.display_name.trim().toLowerCase()
             const { style: profileStyle, fallbackClass: profileFallback } = resolveProfileColor(profile?.color)
@@ -244,6 +236,25 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
               </Tooltip>
             )
           })()}
+          {watchers.length > 0 && (
+            <Tooltip content={`${watchers.map((w) => w.name).join(', ')} — here now`}>
+              <span className="flex -space-x-1.5">
+                {watchers.slice(0, 3).map((w) => {
+                  const pc = resolveProfileColor(w.color)
+                  return (
+                    <span
+                      key={w.user_id}
+                      className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[9px] font-medium ${pc.fallbackClass}`}
+                      style={{ ...pc.style, boxShadow: `0 0 0 1.5px var(--surface-card), 0 0 0 3px ${pc.style?.background || 'var(--color-mist)'}` }}
+                    >
+                      {w.icon ? <DynamicIcon name={w.icon} className="w-3 h-3" /> : (w.name?.[0]?.toLowerCase() || '?')}
+                    </span>
+                  )
+                })}
+              </span>
+            </Tooltip>
+          )}
+          </div>
         </div>
       )}
 
