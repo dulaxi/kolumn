@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { SquaresFour } from '@phosphor-icons/react'
 import { useBoardStore } from '../store/boardStore'
+import { usePresenceStore } from '../store/presenceStore'
+import { useAuthStore } from '../store/authStore'
 import BoardSelector from '../components/board/BoardSelector'
 import BoardSkeleton from '../components/board/BoardSkeleton'
 import BoardView from '../components/board/BoardView'
 import CreateBoardModal from '../components/board/CreateBoardModal'
 import LabelManagerModal from '../components/board/LabelManagerModal'
+import PresenceBar from '../components/board/PresenceBar'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import Skeleton from '../components/ui/Skeleton'
@@ -70,6 +73,18 @@ export default function BoardsPage() {
     }
   }, [activeBoardId, columns, addCard])
 
+  const profile = useAuthStore((s) => s.profile)
+  const joinBoard = usePresenceStore((s) => s.joinBoard)
+  const leaveBoard = usePresenceStore((s) => s.leaveBoard)
+  useEffect(() => {
+    if (!profile?.id || !activeBoardId || activeBoardId === '__all__') { leaveBoard(); return }
+    joinBoard(activeBoardId, {
+      user_id: profile.id, name: profile.display_name || 'Someone',
+      color: profile.color, icon: profile.icon,
+    })
+    return () => leaveBoard()
+  }, [activeBoardId, profile?.id, profile?.display_name, profile?.color, profile?.icon, joinBoard, leaveBoard])
+
   const handleCardClick = useCallback((cardId) => {
     setInlineCardId(null)
     setEditingCardId(cardId)
@@ -89,13 +104,16 @@ export default function BoardsPage() {
       className="h-full flex flex-col"
     >
       <div className="mb-4 shrink-0 flex items-start justify-between gap-4">
-        {boardsLoading ? (
-          <Skeleton variant="line" width={176} height={28} className="min-w-0 flex-1 max-w-44 self-end mb-1" />
-        ) : (
-          <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
-            {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
-          </h1>
-        )}
+        <div className="flex items-center justify-between gap-3 min-w-0 flex-1">
+          {boardsLoading ? (
+            <Skeleton variant="line" width={176} height={28} className="min-w-0 flex-1 max-w-44 self-end mb-1" />
+          ) : (
+            <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
+              {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
+            </h1>
+          )}
+          <PresenceBar />
+        </div>
         <div className="shrink-0">
           <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
         </div>
