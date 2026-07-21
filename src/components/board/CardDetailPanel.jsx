@@ -21,6 +21,9 @@ import CardFiles from './cardDetail/CardFiles'
 import { showToast } from '../../utils/toast'
 import { useTemplateStore } from '../../store/templateStore'
 import { selectCardLabels } from '../../store/selectors'
+import { usePresenceStore } from '../../store/presenceStore'
+import { othersOnCard } from '../../store/presence'
+import { resolveProfileColor } from '../../constants/colors'
 
 export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
@@ -39,6 +42,15 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const labels = useBoardStore(selectCardLabels(cardId))
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
+
+  const setViewingCard = usePresenceStore((s) => s.setViewingCard)
+  const presenceByCard = usePresenceStore((s) => s.byCard)
+  const selfId = useAuthStore((s) => s.profile?.id)
+  useEffect(() => {
+    setViewingCard(cardId)
+    return () => setViewingCard(null)
+  }, [cardId, setViewingCard])
+  const alsoHere = othersOnCard(presenceByCard, cardId, selfId)
 
   const {
     title, setTitle,
@@ -400,6 +412,18 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             </PriorityMenu>
           </div>
         </div>
+
+        {alsoHere.length > 0 && (() => {
+          const lead = alsoHere[0]
+          const { style } = resolveProfileColor(lead.color)
+          return (
+            <div className="flex items-center gap-1.5 mb-2 text-xs text-[var(--text-secondary)]">
+              <span className="w-2 h-2 rounded-full" style={style} />
+              <span><b className="font-medium text-[var(--text-primary)]">{lead.name}</b>
+                {alsoHere.length > 1 ? ` +${alsoHere.length - 1}` : ''} {alsoHere.length > 1 ? 'are' : 'is'} here</span>
+            </div>
+          )
+        })()}
 
         {/* Icon + Title + Labels + Assignee */}
         <div className="flex items-start justify-between gap-4 mb-4">

@@ -11,6 +11,8 @@ import { formatDueDateLabel, dueDateOutlineClass, parseDueDate } from '../../uti
 import Avatar from '../ui/Avatar'
 import Tooltip from '../ui/Tooltip'
 import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
+import { usePresenceStore } from '../../store/presenceStore'
+import { othersOnCard } from '../../store/presence'
 
 export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
   const { title, description, priority, due_date: dueDate, checklist, completed, icon } = card
@@ -29,6 +31,11 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const toggleIconStyle = useSettingsStore((s) => s.toggleIconStyle)
   const [checklistOpen, setChecklistOpen] = useState(false)
 
+  const presenceByCard = usePresenceStore((s) => s.byCard)
+  const watchers = othersOnCard(presenceByCard, card.id, profile?.id)
+  const watcher = watchers[0]
+  const watcherStyle = watcher ? resolveProfileColor(watcher.color).style : null
+
   const checkedCount = checklist?.filter((item) => item.done).length || 0
   const totalCount = checklist?.length || 0
   const hasChecklist = totalCount > 0
@@ -46,18 +53,31 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
 
   const dueDateObj = dueDate ? parseDueDate(dueDate) : null
 
+  const rootStyle = {
+    ...(font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : null),
+    ...(watcher ? { boxShadow: `0 0 0 2px ${watcherStyle?.background || 'var(--mist)'}, 0 6px 18px rgba(27,27,24,0.10)`, borderColor: 'transparent' } : null),
+  }
+
   return (
     <button
       type="button"
       aria-label={`Task: ${title}`}
       onClick={() => onClick(card.id)}
-      style={font === 'sf-mono' ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" } : undefined}
-      className={`w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group ${
+      style={Object.keys(rootStyle).length > 0 ? rootStyle : undefined}
+      className={`relative w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group ${
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
       }`}
     >
+      {watcher && (
+        <span
+          className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium ring-2 ring-[var(--surface-card)]"
+          style={watcherStyle}
+        >
+          {watcher.name?.[0]?.toLowerCase() || '?'}
+        </span>
+      )}
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
         {/* Icon — toggleable between "boxed" (40×40 raised container) and

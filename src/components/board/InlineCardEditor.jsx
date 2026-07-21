@@ -16,6 +16,7 @@ import PriorityMenu from './PriorityMenu'
 import Popover from '../ui/Popover'
 import Tooltip from '../ui/Tooltip'
 import { selectCardLabels } from '../../store/selectors'
+import { usePresenceStore } from '../../store/presenceStore'
 
 /**
  * InlineCardEditor — matches the new Card.jsx layout 1:1.
@@ -36,6 +37,12 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
   const removeLabelFromCard = useBoardStore((s) => s.removeLabelFromCard)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const profile = useAuthStore((s) => s.profile)
+
+  const setViewingCard = usePresenceStore((s) => s.setViewingCard)
+  useEffect(() => {
+    setViewingCard(resolvedId)
+    return () => setViewingCard(null)
+  }, [resolvedId, setViewingCard])
 
   const isExistingCard = !!card?.id && !card?._optimistic
 
