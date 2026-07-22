@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import WorkspaceSidebar from './WorkspaceSidebar'
 import Header from './Header'
+import { HeaderSlotProvider } from './headerSlot'
 import SearchDialog from '../SearchDialog'
 import ShortcutsSheet from '../ShortcutsSheet'
 import SettingsModal from '../settings/SettingsModal'
@@ -155,6 +156,7 @@ export default function AppLayout() {
             : 'ml-0'
         }`}
       >
+        <HeaderSlotProvider>
         <InlineErrorBoundary name="header">
           <Header title={title} />
         </InlineErrorBoundary>
@@ -169,7 +171,7 @@ export default function AppLayout() {
             </header>
           </div>
         )}
-        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${!isDesktop ? 'pb-20' : ''}`}>
+        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${isDesktop && basePath === '/boards' ? 'pt-[18px]' : ''} ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
             <InlineNotice variant="success" className="mb-4 justify-between font-sans">
@@ -189,6 +191,7 @@ export default function AppLayout() {
           )}
           <Outlet />
         </main>
+        </HeaderSlotProvider>
         <BottomTabBar />
       </div>
     </div>

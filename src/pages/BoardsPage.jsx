@@ -14,6 +14,7 @@ import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import Skeleton from '../components/ui/Skeleton'
 import Spinner from '../components/ui/Spinner'
+import { PageHeader } from '../components/layout/headerSlot'
 
 const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
 
@@ -104,12 +105,13 @@ export default function BoardsPage() {
     <div
       className="h-full flex flex-col"
     >
-      <div className="mb-4 shrink-0 flex items-start justify-between gap-4">
-        <div className="flex items-center justify-between gap-3 min-w-0 flex-1">
+      {/* Header — desktop: portaled into the 64px bar; mobile: inline here */}
+      <PageHeader align="wide" mobileClassName="mb-4 shrink-0 flex items-start justify-between gap-4">
+        <div className="flex items-end justify-between gap-3 min-w-0 flex-1">
           {boardsLoading ? (
-            <Skeleton variant="line" width={176} height={28} className="min-w-0 flex-1 max-w-44 self-end mb-1" />
+            <Skeleton variant="line" width={176} height={28} className="min-w-0 flex-1 max-w-44 mb-1" />
           ) : (
-            <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1 self-end">
+            <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)] truncate min-w-0 flex-1">
               {activeBoardId === '__all__' ? 'All tasks' : (activeBoardName || 'Boards')}
             </h1>
           )}
@@ -119,7 +121,7 @@ export default function BoardsPage() {
         <div className="shrink-0">
           <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
         </div>
-      </div>
+      </PageHeader>
 
       <div className="flex-1 min-h-0 relative">
         {boardsLoading ? (
