@@ -265,6 +265,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
                   card={ghostInfo.card}
                   moverName={ghostInfo.moverName}
                   moverColor={ghostInfo.moverColor}
+                  moverIcon={ghostInfo.moverIcon}
                   movedAt={ghostInfo.movedAt}
                 />
               ) : null

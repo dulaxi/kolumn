@@ -8,13 +8,13 @@ const noop = () => {}
 // prop): its border becomes dotted, and one attribution line is appended —
 // the mover's avatar + "<name> moved <when>". Inert: aria-hidden +
 // pointer-events none, never in the DnD context.
-export default function GhostCard({ card, moverName, moverColor, movedAt }) {
+export default function GhostCard({ card, moverName, moverColor, moverIcon, movedAt }) {
   if (!card) return null
   const when = movedAt ? formatDistanceToNowStrict(new Date(movedAt), { addSuffix: true }) : ''
 
   return (
     <div aria-hidden="true" style={{ pointerEvents: 'none' }} className="select-none">
-      <Card card={card} onClick={noop} onComplete={noop} ghost={{ moverName, moverColor, when }} />
+      <Card card={card} onClick={noop} onComplete={noop} ghost={{ moverName, moverColor, moverIcon, when }} />
     </div>
   )
 }

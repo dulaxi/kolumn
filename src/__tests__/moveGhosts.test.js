@@ -6,12 +6,12 @@ describe('buildLastMove', () => {
     const lm = buildLastMove(
       { columnId: 'col-a', position: 2 },
       { columnId: 'col-b', position: 0 },
-      { id: 'u1', name: 'Maya', color: 'copper', at: '2026-07-21T10:00:00.000Z' },
+      { id: 'u1', name: 'Maya', color: 'copper', icon: 'Star', at: '2026-07-21T10:00:00.000Z' },
     )
     expect(lm).toEqual({
       from_column_id: 'col-a', from_position: 2,
       to_column_id: 'col-b', to_position: 0,
-      moved_by_id: 'u1', moved_by_name: 'Maya', moved_by_color: 'copper',
+      moved_by_id: 'u1', moved_by_name: 'Maya', moved_by_color: 'copper', moved_by_icon: 'Star',
       moved_at: '2026-07-21T10:00:00.000Z',
     })
   })

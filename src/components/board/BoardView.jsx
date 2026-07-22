@@ -42,6 +42,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
     card: hoverCard,
     moverName: hoverCard.last_move.moved_by_name || 'Someone',
     moverColor: hoverCard.last_move.moved_by_color || null,
+    moverIcon: hoverCard.last_move.moved_by_icon || null,
     movedAt: hoverCard.last_move.moved_at || null,
   } : null
 

@@ -527,7 +527,7 @@ export const createCardsSlice = (set, get) => ({
     const lastMove = buildLastMove(
       { columnId: fromColumnId, position: fromPosition },
       { columnId: toColumnId, position: toPosition },
-      { id: profile?.id ?? null, name: profile?.display_name || 'Someone', color: profile?.color ?? null, at: new Date().toISOString() },
+      { id: profile?.id ?? null, name: profile?.display_name || 'Someone', color: profile?.color ?? null, icon: profile?.icon ?? null, at: new Date().toISOString() },
     )
 
     // Optimistic local update so the mover sees their own ghost immediately;

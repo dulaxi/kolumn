@@ -285,16 +285,19 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       {/* Ghost attribution — one appended line so nothing overlaps: the mover's
           avatar (left) + "<name> moved <when>". Only present on move ghosts. */}
       {ghost && (() => {
-        const pc = resolveProfileColor(ghost.moverColor)
-        const c = pc.style?.background || 'var(--color-mist)'
+        const { style: moverStyle, fallbackClass: moverFallback } = resolveProfileColor(ghost.moverColor)
         return (
           <div className="flex items-center gap-2 pt-2.5 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-secondary)]">
-            <span
-              className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-              style={{ ...pc.style, background: c }}
-            >
-              {(ghost.moverName?.[0] || '?').toLowerCase()}
-            </span>
+            {ghost.moverIcon ? (
+              <span
+                className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${moverFallback}`}
+                style={moverStyle}
+              >
+                <DynamicIcon name={ghost.moverIcon} className="w-3 h-3" />
+              </span>
+            ) : (
+              <Avatar name={ghost.moverName} size="sm" ringed className="text-[10px]" />
+            )}
             <span className="truncate">{ghost.moverName} moved {ghost.when}</span>
           </div>
         )

@@ -11,6 +11,7 @@ export function buildLastMove(origin, landing, actor) {
     moved_by_id: actor.id,
     moved_by_name: actor.name,
     moved_by_color: actor.color ?? null,
+    moved_by_icon: actor.icon ?? null,
     moved_at: actor.at,
   }
 }
