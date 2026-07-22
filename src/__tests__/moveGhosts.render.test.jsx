@@ -16,14 +16,14 @@ function ColumnGhosts({ cardIds, ghosts, info }) {
   return (
     <div>
       {seq.map((n, i) => n.type === 'ghost'
-        ? <GhostCard key={`g${i}`} card={info.card} moverName={info.moverName} moverColor={info.moverColor} age={n.ghost.age} approximate={n.ghost.approximate} />
+        ? <GhostCard key={`g${i}`} card={info.card} moverName={info.moverName} moverColor={info.moverColor} movedAt={info.movedAt} age={n.ghost.age} approximate={n.ghost.approximate} />
         : <div key={n.id} data-card={n.id}>{n.id}</div>)}
     </div>
   )
 }
 
 describe('column ghost interleave', () => {
-  const info = { card: { id: 'fix', title: 'Fix login bug' }, moverName: 'Maya', moverColor: 'copper' }
+  const info = { card: { id: 'fix', title: 'Fix login bug' }, moverName: 'Maya', moverColor: 'copper', movedAt: '2024-01-01T10:00:00.000Z' }
 
   test('a ghost slot renders a ditto GhostCard at its position', () => {
     render(<ColumnGhosts cardIds={['a', 'b']} ghosts={[{ position: 1, age: 1, approximate: false }]} info={info} />)
