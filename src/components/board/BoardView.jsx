@@ -39,7 +39,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   }, [hoverCard, boardColumns])
 
   const ghostInfo = hoverCard?.last_move ? {
-    title: hoverCard.title,
+    card: hoverCard,
     moverName: hoverCard.last_move.moved_by_name || 'Someone',
     moverColor: hoverCard.last_move.moved_by_color || null,
     movedAt: hoverCard.last_move.moved_at || null,

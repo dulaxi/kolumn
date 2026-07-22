@@ -1,18 +1,36 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+
+// The ghost renders the REAL Card as an exact ditto; mock it so this unit test
+// stays focused on GhostCard's own job (drain + inert wrapper + mover badge).
+vi.mock('../components/board/Card', () => ({
+  default: ({ card }) => <div data-testid="ditto-card">{card.title}</div>,
+}))
+
 import GhostCard from '../components/board/GhostCard'
 
 describe('GhostCard', () => {
-  test('renders the card title and who moved it', () => {
-    render(<GhostCard title="Fix login bug" moverName="Maya" moverColor="copper" movedAt="2026-07-21T10:00:00.000Z" age={1} approximate={false} />)
-    expect(screen.getByText('Fix login bug')).toBeInTheDocument()
-    expect(screen.getByText(/Maya moved this/)).toBeInTheDocument()
+  const card = { id: 'c1', title: 'Fix login bug', column_id: 'col-a' }
+
+  test('renders an exact ditto of the card via the real Card component', () => {
+    render(<GhostCard card={card} moverName="Maya" moverColor="copper" age={1} approximate={false} />)
+    expect(screen.getByTestId('ditto-card')).toHaveTextContent('Fix login bug')
   })
 
   test('is inert (aria-hidden, pointer-events none)', () => {
-    const { container } = render(<GhostCard title="X" moverName="Sam" movedAt="2026-07-21T10:00:00.000Z" age={1} approximate={false} />)
+    const { container } = render(<GhostCard card={card} moverName="Sam" age={1} />)
     const root = container.firstChild
     expect(root).toHaveAttribute('aria-hidden', 'true')
     expect(root.style.pointerEvents).toBe('none')
+  })
+
+  test('keeps a mover badge with the "who moved it" attribution', () => {
+    render(<GhostCard card={card} moverName="Maya" moverColor="copper" age={1} />)
+    expect(screen.getByTitle('Maya moved this')).toBeInTheDocument()
+  })
+
+  test('renders nothing without a card', () => {
+    const { container } = render(<GhostCard card={null} moverName="Maya" />)
+    expect(container.firstChild).toBeNull()
   })
 })
