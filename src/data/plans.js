@@ -37,7 +37,7 @@ export const PLANS = [
       'Unlimited boards & cards',
       'Drag-and-drop, labels, due dates, checklists',
       'Real-time team collaboration',
-      '20 AI messages per day',
+      'AI card creation — 20 messages per day',
     ],
   },
   {
@@ -56,7 +56,7 @@ export const PLANS = [
     inheritsFrom: 'Free',
     bullets: [
       'Unlimited AI messages',
-      'AI can create, move, and update cards for you',
+      'Claude can move, update, and reorganize cards across your boards',
       'Priority support',
     ],
   },
