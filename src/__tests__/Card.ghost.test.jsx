@@ -31,13 +31,13 @@ describe('Card ghost mode', () => {
     const { container } = render(
       <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
     )
-    expect(container.querySelector('button').className).toContain('border-dashed')
+    expect(container.querySelector('button').style.borderStyle).toBe('dashed')
     expect(container.textContent).toContain('Maya moved 3 hours ago')
   })
 
   test('without the ghost prop: solid border, no attribution line', () => {
     const { container } = render(<Card card={card} onClick={vi.fn()} />)
-    expect(container.querySelector('button').className).not.toContain('border-dashed')
+    expect(container.querySelector('button').style.borderStyle).toBe('')
     expect(container.textContent).not.toContain('moved')
   })
 })
