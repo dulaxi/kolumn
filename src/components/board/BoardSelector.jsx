@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, Funnel, Tag, Users, X } from '@phosphor-icons/react'
+import { Archive, Funnel, Tag, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -9,6 +9,7 @@ import DueFilter from './filters/DueFilter'
 import SortFilter from './filters/SortFilter'
 import ArchivedCardsPanel from './ArchivedCardsPanel'
 import Tooltip from '../ui/Tooltip'
+import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 
@@ -92,51 +93,41 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             height + push the divider down). flex-wrap permits graceful
             wrapping only when truly out of room. */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Owner: full Share modal (invite + remove). Non-owner member:
-              read-only Members modal (just see who's on the board). Same
-              modal, isOwner flag inside drives the difference. */}
-          {isRealBoard && (
-            <button
-              type="button"
-              onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-transparent border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
-            >
-              <Users className="w-4 h-4 -ml-0.5" />
-              {isOwner ? 'Share' : 'Members'}
-            </button>
-          )}
-
           {isRealBoard && onManageLabels && (
-            <button
-              type="button"
-              onClick={onManageLabels}
-              className="flex items-center gap-1.5 h-8 px-2.5 text-sm text-[var(--text-secondary)] bg-transparent border-[0.5px] border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-75 cursor-pointer active:scale-[0.995]"
-            >
-              <Tag className="w-4 h-4 -ml-0.5" />
-              Labels
-            </button>
+            <Tooltip content="Labels">
+              <button
+                type="button"
+                aria-label="Labels"
+                onClick={onManageLabels}
+                className={`${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`}
+              >
+                <Tag className="w-4 h-4" />
+              </button>
+            </Tooltip>
           )}
 
           {isRealBoard && <SortFilter sortBy={sortBy} setSortBy={setSortBy} />}
 
           {isRealBoard && (
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center gap-1.5 h-8 px-2.5 text-sm rounded-lg border-[0.5px] transition-all duration-75 cursor-pointer active:scale-[0.995] ${
-                showFilters || activeFilterCount > 0
-                  ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)] border-[var(--accent-lime-soft)]'
-                  : 'text-[var(--text-secondary)] bg-transparent border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Funnel className="w-4 h-4 -ml-0.5" />
-              Filter
-              {activeFilterCount > 0 && (
-                <span className="flex items-center justify-center w-4 h-4 text-[10px] font-semibold text-[var(--btn-primary-text)] bg-[var(--btn-primary-bg)] rounded-full">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
+            <Tooltip content="Filter">
+              <button
+                type="button"
+                aria-label="Filter"
+                onClick={() => setShowFilters(!showFilters)}
+                className={`${TOOLBAR_ICON_BTN} ${
+                  showFilters || activeFilterCount > 0
+                    ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]'
+                    : TOOLBAR_BTN_FILL
+                }`}
+              >
+                <Funnel className="w-4 h-4" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-semibold text-[var(--btn-primary-text)] bg-[var(--btn-primary-bg)] rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+            </Tooltip>
           )}
 
           {/* Filter pills — drawer expansion. Pills live in a wrapper whose
@@ -192,14 +183,27 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             <button
               type="button"
               onClick={() => setShowArchived(!showArchived)}
-              className={`flex items-center gap-1.5 h-8 px-2.5 text-sm rounded-lg border-[0.5px] transition-all duration-75 cursor-pointer active:scale-[0.995] ${
+              className={`${TOOLBAR_BTN} ${
                 showArchived
-                  ? 'bg-[var(--color-honey-wash)] text-[var(--color-honey)] border-[var(--color-honey)]'
-                  : 'text-[var(--text-secondary)] bg-transparent border-[var(--border-default)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--color-honey-wash)] text-[var(--color-honey)]'
+                  : TOOLBAR_BTN_FILL
               }`}
             >
               <Archive className="w-4 h-4 -ml-0.5" />
               Archived ({archivedCards.length})
+            </button>
+          )}
+
+          {/* Share sits at the far right of the toolbar, text-only. Owner: full
+              Share modal (invite + remove). Non-owner member: read-only Members
+              modal. Same modal; isOwner drives the difference. */}
+          {isRealBoard && (
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className={`ml-auto ${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
+            >
+              {isOwner ? 'Share' : 'Members'}
             </button>
           )}
 

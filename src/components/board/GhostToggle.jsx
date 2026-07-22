@@ -1,9 +1,12 @@
 import { Ghost } from '@phosphor-icons/react'
 import { useSettingsStore } from '../../store/settingsStore'
 import Tooltip from '../ui/Tooltip'
+import { TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
-// Header toggle that arms "ghost mode" for this board. Lime is a *state* color
-// here (armed = lime wash), never a button fill — per coherency rules.
+// Header toggle that arms "ghost mode" for this board. Icon-only, but with the
+// same filled body as the other board toolbar buttons (surface-raised fill,
+// lime-soft when armed) so it doesn't read as an orphan. Lime stays a *state*
+// color (armed = lime-soft fill), never a plain button fill.
 export default function GhostToggle({ boardId }) {
   const armed = useSettingsStore((s) => !!s.ghostBoards[boardId])
   const toggleGhostMode = useSettingsStore((s) => s.toggleGhostMode)
@@ -17,14 +20,11 @@ export default function GhostToggle({ boardId }) {
         aria-label="Ghost mode"
         aria-pressed={armed}
         onClick={() => toggleGhostMode(boardId)}
-        className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12.5px] font-medium transition-colors ${
-          armed
-            ? 'bg-[var(--accent-lime-wash)] border-[var(--accent-lime-dark)]/40 text-[var(--accent-lime-dark)]'
-            : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-muted)]'
+        className={`shrink-0 ${TOOLBAR_ICON_BTN} ${
+          armed ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
         }`}
       >
-        <Ghost size={16} weight={armed ? 'fill' : 'regular'} />
-        Ghosts
+        <Ghost className="w-4 h-4" weight={armed ? 'fill' : 'regular'} />
       </button>
     </Tooltip>
   )

@@ -1,3 +1,4 @@
+import { ArrowsDownUp } from '@phosphor-icons/react'
 import Menu from '../../ui/Menu'
 import FilterPill from './FilterPill'
 
@@ -12,7 +13,11 @@ const SORT_OPTIONS = [
 export default function SortFilter({ sortBy, setSortBy }) {
   const current = SORT_OPTIONS.find((o) => o.value === sortBy)
   return (
-    <FilterPill label={sortBy === 'manual' ? 'Sort' : current?.label} active={sortBy !== 'manual'}>
+    <FilterPill
+      icon={<ArrowsDownUp className="w-4 h-4" />}
+      tooltip={sortBy === 'manual' ? 'Sort' : `Sorted by ${current?.label}`}
+      active={sortBy !== 'manual'}
+    >
       {SORT_OPTIONS.map((opt) => (
         <Menu.Item
           key={opt.value}

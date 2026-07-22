@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Plus, Users, X } from '@phosphor-icons/react'
+import { Check, Users, X } from '@phosphor-icons/react'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import WorkspaceCreateModal from '../components/workspace/WorkspaceCreateModal'
 import WorkspaceDetailView from '../components/workspace/WorkspaceDetailView'
@@ -7,6 +7,7 @@ import DynamicIcon from '../components/board/DynamicIcon'
 import Button from '../components/ui/Button'
 import Tooltip from '../components/ui/Tooltip'
 import EmptyState from '../components/ui/EmptyState'
+import { TOOLBAR_BTN, TOOLBAR_BTN_FILL_PRIMARY } from '../constants/buttonStyles'
 
 /**
  * WorkspacePage — routes between two views:
@@ -44,10 +45,13 @@ export default function WorkspacePage() {
               </>
             }
             action={
-              <Button size="sm" onClick={() => setCreateOpen(true)}>
-                <Plus className="w-4 h-4" />
+              <button
+                type="button"
+                onClick={() => setCreateOpen(true)}
+                className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL_PRIMARY}`}
+              >
                 New workspace
-              </Button>
+              </button>
             }
           />
 

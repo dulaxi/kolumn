@@ -1,23 +1,24 @@
-import { CaretDown, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { CaretDown, MagnifyingGlass } from '@phosphor-icons/react'
 import EmptyState from '../components/ui/EmptyState'
-import Button from '../components/ui/Button'
+import { PageHeader } from '../components/layout/headerSlot'
+import { TOOLBAR_BTN, TOOLBAR_BTN_FILL, TOOLBAR_BTN_FILL_PRIMARY } from '../constants/buttonStyles'
 
 export default function BuilderPage() {
   return (
     <div className="w-full py-6">
-      <div className="flex items-center justify-between mb-6">
+      {/* Header — desktop: portaled into the 64px bar; mobile: inline here */}
+      <PageHeader align="narrow">
         <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)]">Builder</h1>
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="secondary" size="sm">
+          <button type="button" className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}>
             Sort by Activity
             <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
-          </Button>
-          <Button size="sm">
-            <Plus className="w-4 h-4" />
+          </button>
+          <button type="button" className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL_PRIMARY}`}>
             New build
-          </Button>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="relative mb-4">
         <MagnifyingGlass size={16} weight="regular" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -36,10 +37,9 @@ export default function BuilderPage() {
         title="Looking to build a board?"
         body="Describe what you want to track and we'll set up columns, labels, and starter cards."
         action={
-          <Button size="sm">
-            <Plus className="w-4 h-4" />
+          <button type="button" className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL_PRIMARY}`}>
             New build
-          </Button>
+          </button>
         }
       />
     </div>
