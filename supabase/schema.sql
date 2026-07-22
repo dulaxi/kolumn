@@ -570,7 +570,7 @@ create table public.labels (
   id uuid primary key default gen_random_uuid(),
   board_id uuid not null references public.boards(id) on delete cascade,
   text text not null check (length(trim(text)) > 0 and length(text) <= 64),
-  color text not null check (color in ('red','orange','yellow','green','blue','purple','pink','gray')),
+  color text not null check (color in ('red','orange','yellow','green','blue','purple','pink','gray','red-light','orange-light','yellow-light','green-light','blue-light','purple-light','pink-light','gray-light')),
   created_at timestamptz not null default now(),
   archived_at timestamptz
 );

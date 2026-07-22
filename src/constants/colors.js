@@ -6,6 +6,10 @@
 // Must match the DB check constraint on the labels.color column.
 export const LABEL_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray']
 
+// "Light" variant of each hue (softer identity tone). Stored as `${hue}-light`
+// in labels.color; rendered via the same maps (COLOR_DOT_CLASSES, LABEL_BG…).
+export const LABEL_COLORS_LIGHT = LABEL_COLORS.map((c) => `${c}-light`)
+
 // Tailwind background classes for each label color (used in pickers/dots)
 // Solid color swatches for dots and color pickers. These use the saturated
 // `-text` token (the label's identity color, e.g. #B53333), NOT the pale `-bg`
@@ -20,6 +24,14 @@ export const COLOR_DOT_CLASSES = {
   purple: 'bg-[var(--label-purple-text)]',
   pink: 'bg-[var(--label-pink-text)]',
   gray: 'bg-[var(--label-gray-text)]',
+  'red-light': 'bg-[var(--label-red-light)]',
+  'orange-light': 'bg-[var(--label-orange-light)]',
+  'yellow-light': 'bg-[var(--label-yellow-light)]',
+  'green-light': 'bg-[var(--label-green-light)]',
+  'blue-light': 'bg-[var(--label-blue-light)]',
+  'purple-light': 'bg-[var(--label-purple-light)]',
+  'pink-light': 'bg-[var(--label-pink-light)]',
+  'gray-light': 'bg-[var(--label-gray-light)]',
 }
 
 // Workspace identity colors — Phosphor system palette.

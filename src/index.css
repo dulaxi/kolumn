@@ -120,6 +120,13 @@
   --label-pink-bg: #F7DAE5;   --label-pink-text: #B82E67;
   --label-gray-bg: #E8E2DB;   --label-gray-text: #5C5C57;
 
+  /* Label "light" variants — a softer identity tone per hue, used as the dot
+     colour and pill text. The pill background reuses each hue's -bg wash. */
+  --label-red-light: #D98A8A;    --label-orange-light: #CE9366;
+  --label-yellow-light: #D4B45A; --label-green-light: #6FA653;
+  --label-blue-light: #6E97D1;   --label-purple-light: #8B84C4;
+  --label-pink-light: #D47A9F;   --label-gray-light: #A09E98;
+
   /* Profile color slots (12) — bg + paired fg. Each slot's bg+fg flips
      coherently per theme so the *role* of the slot is preserved (lightest
      neutral stays lightest neutral, etc.). The legacy stored value is the
@@ -196,6 +203,12 @@
   --label-purple-bg: #221C3B; --label-purple-text: #A298CD;
   --label-pink-bg: #3D1F2A;   --label-pink-text: #D980A8;
   --label-gray-bg: #333330;   --label-gray-text: #9C9A95;
+
+  /* Label "light" variants — dark theme (lighter pastels for dark surfaces). */
+  --label-red-light: #EDA6A6;    --label-orange-light: #E8C6AC;
+  --label-yellow-light: #ECD498; --label-green-light: #C0DCA8;
+  --label-blue-light: #A8C6E8;   --label-purple-light: #C2BAE2;
+  --label-pink-light: #E8A6C4;   --label-gray-light: #BAB8B3;
 
   /* ── Phosphor palette — dark-mode overrides ──
      The base @theme palette is light-tuned. Anywhere a component uses
