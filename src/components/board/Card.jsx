@@ -62,12 +62,12 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       type="button"
       aria-label={`Task: ${title}`}
       onClick={() => onClick(card.id)}
-      style={ghost ? { ...(fontStyle || {}), borderStyle: 'dashed', borderWidth: '2px' } : fontStyle}
+      style={fontStyle}
       className={`relative w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group ${
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
-      }`}
+      }${ghost ? ' border-dashed' : ''}`}
     >
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
