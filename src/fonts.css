@@ -5,7 +5,7 @@
  * back to Georgia/system whenever the Fontshare CDN was slow or blocked.
  * Faces:
  *   Sentient 200/300/400/500/700 static (--font-heading)
- *   Clash Grotesk variable, wght 200–700 (--font-logo + page titles at 550)
+ *   Clash Grotesk variable, wght 200–700 (--font-logo + --font-heading; app titles at 425, pre-auth display at 300)
  */
 
 @font-face {

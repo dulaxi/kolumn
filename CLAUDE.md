@@ -131,7 +131,8 @@ src/
 │   └── ...
 ├── pages/
 │   ├── LandingPage.jsx             # Marketing / public landing
-│   ├── LoginPage / SignupPage / ForgotPasswordPage / UpdatePasswordPage
+│   ├── OnboardingPage.jsx          # 7-step signup flow (terms → details → plan → upsell → disclaimer → name → role)
+│   ├── ForgotPasswordPage / UpdatePasswordPage / PlanPickerPage / UpgradeProPage
 │   ├── DashboardPage.jsx
 │   ├── BoardsPage.jsx              # Primary kanban view
 │   ├── ChatPage.jsx + ChatListPage.jsx
@@ -363,11 +364,11 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 | Token            | Font                  | Use                                |
 |------------------|-----------------------|------------------------------------|
 | `--font-sans`    | Mona Sans Variable    | Main app text                      |
-| `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark only             |
-| `--font-heading` | Sentient (serif)      | Display headings, avatar initials  |
+| `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark + pre-auth display (300) |
+| `--font-heading` | Clash Grotesk         | Page titles (weight 425)           |
 | `--font-mono`    | IBM Plex Mono         | Code, IDs, paths                   |
 | `--font-pill`    | Google Sans Text      | Pill labels (PRO, BETA, NEW)       |
-| `.landing-font`  | Plus Jakarta Sans     | Landing page only (scoped class)   |
+| `.landing-font`  | Plus Jakarta Sans     | Landing page only (scoped class) (+ .landing-font .font-heading → Sentient) |
 
 ### Primitives
 

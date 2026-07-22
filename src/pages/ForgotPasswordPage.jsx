@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Kanban className="w-10 h-10 text-[var(--text-primary)] mx-auto mb-3" weight="light" />
-          <h1 className="text-2xl font-[425] text-[var(--text-primary)] font-heading">Reset password</h1>
+          <h1 className="text-[26px] font-light tracking-tight text-[var(--text-primary)] font-logo">Reset password</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             {sent ? 'Check your email for a reset link' : 'Enter your email to receive a reset link'}
           </p>
