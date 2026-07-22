@@ -325,7 +325,7 @@ describe('OnboardingPage — role step', () => {
     trialCta.click()
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro', { state: { trial: true } })
+      expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro', { state: { trial: true, from: 'onboarding' } })
     })
     expect(mockSetTier).not.toHaveBeenCalled()
   })
@@ -344,7 +344,7 @@ describe('OnboardingPage — role step', () => {
     proCta.click()
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro')
+      expect(mockNavigate).toHaveBeenCalledWith('/upgrade/pro', { state: { from: 'onboarding' } })
     })
     expect(mockSetTier).not.toHaveBeenCalled()
   })

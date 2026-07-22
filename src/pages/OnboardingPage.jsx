@@ -141,7 +141,7 @@ export default function OnboardingPage() {
   const handlePickPlan = async (planId) => {
     setError('')
     if (planId === 'pro') {
-      navigate('/upgrade/pro')
+      navigate('/upgrade/pro', { state: { from: 'onboarding' } })
       return
     }
     if (planId === 'free') {
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleTryProTrial = () => navigate('/upgrade/pro', { state: { trial: true } })
+  const handleTryProTrial = () => navigate('/upgrade/pro', { state: { trial: true, from: 'onboarding' } })
   const handleSkipUpsell = () => setStep('disclaimer')
 
   const handleFinishDisclaimer = () => setStep('name')

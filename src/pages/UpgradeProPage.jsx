@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { addMonths, addYears, format } from 'date-fns'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { addDays, addMonths, addYears, format } from 'date-fns'
 
 import { useAuthStore } from '../store/authStore'
 import { showToast } from '../utils/toast'
@@ -16,7 +16,12 @@ const PRICES = {
 
 export default function UpgradeProPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const setTier = useAuthStore((s) => s.setTier)
+  const updateProfile = useAuthStore((s) => s.updateProfile)
+
+  const trial = !!location.state?.trial
+  const fromOnboarding = location.state?.from === 'onboarding'
 
   const [period, setPeriod] = useState('yearly') // claude.ai-style: yearly preselected (cheaper)
   const [submitting, setSubmitting] = useState(false)
@@ -28,6 +33,8 @@ export default function UpgradeProPage() {
     return format(next, 'M/d/yyyy')
   }, [period])
 
+  const trialEnd = useMemo(() => format(addDays(new Date(), 7), 'MMMM d'), [])
+
   const price = PRICES[period]
 
   const handleSubscribe = async () => {
@@ -38,8 +45,9 @@ export default function UpgradeProPage() {
       // now we write the tier directly so the rest of the app reflects
       // Pro state.
       await setTier('pro')
-      showToast.success('Welcome to Pro')
-      navigate('/dashboard', { replace: true })
+      if (trial) await updateProfile({ trial_ends_at: addDays(new Date(), 7).toISOString() })
+      showToast.success(trial ? 'Pro trial started' : 'Welcome to Pro')
+      navigate(fromOnboarding ? '/onboarding?step=disclaimer' : '/dashboard', { replace: true })
     } catch (err) {
       showToast.error(err?.message || 'Could not activate Pro')
       setSubmitting(false)
@@ -103,11 +111,18 @@ export default function UpgradeProPage() {
               <span className="tabular-nums">${price.amount}</span>
             </div>
 
+            {trial && (
+              <div className="flex justify-between w-full">
+                <span>7-day free trial</span>
+                <span className="tabular-nums">−${price.amount}</span>
+              </div>
+            )}
+
             <div className="w-full border-t border-[var(--color-sand)]" />
 
             <div className="flex justify-between w-full font-medium text-[var(--text-primary)]">
               <span>Total due today</span>
-              <span className="tabular-nums">${price.amount}</span>
+              <span className="tabular-nums">${trial ? 0 : price.amount}</span>
             </div>
           </section>
 
@@ -115,7 +130,9 @@ export default function UpgradeProPage() {
           <div className="flex items-start gap-4 p-5 border border-[var(--color-sand)] rounded-xl text-sm text-[var(--text-secondary)]">
             <Info size={18} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />
             <p className="leading-relaxed">
-              Your subscription will auto renew on {renewalDate}. You will be charged {price.label}. You can cancel anytime in your account settings.
+              {trial
+                ? `Pro is free until ${trialEnd}. After that your subscription renews at ${price.label} unless you cancel — anytime, in settings.`
+                : `Your subscription will auto renew on ${renewalDate}. You will be charged ${price.label}. You can cancel anytime in your account settings.`}
             </p>
           </div>
 
@@ -136,10 +153,10 @@ export default function UpgradeProPage() {
             size="lg"
             onClick={handleSubscribe}
             loading={submitting}
-            loadingText="Activating"
+            loadingText={trial ? 'Starting trial' : 'Activating'}
             className="mt-2 w-full"
           >
-            Activate Pro
+            {trial ? 'Start free trial' : 'Activate Pro'}
           </Button>
 
           <p className="text-center text-xs text-[var(--text-muted)] mt-1 max-w-md mx-auto">
