@@ -6,6 +6,9 @@ import Card from './Card'
 import AICardSkeleton from './AICardSkeleton'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { isAIBuilding } from '../../lib/toolExecutor'
+import { useGhostHoverStore } from '../../store/ghostHoverStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { useBoardStore } from '../../store/boardStore'
 
 export default memo(function SortableCard({ card, onClick, onComplete, isSelected }) {
   const [showSkeleton, setShowSkeleton] = useState(() => isAIBuilding(card.id))
@@ -17,6 +20,17 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
     }
   }, [showSkeleton])
   const isMobile = useIsMobile()
+
+  const setHoverCard = useGhostHoverStore((s) => s.setHoverCard)
+  const clearHoverCard = useGhostHoverStore((s) => s.clearHoverCard)
+
+  const onGhostEnter = () => {
+    if (!useSettingsStore.getState().isGhostArmed(card.board_id)) return
+    if (useBoardStore.getState()._isDragging) return
+    setHoverCard(card.id)
+  }
+  const onGhostLeave = () => clearHoverCard()
+
   const {
     attributes,
     listeners,
@@ -43,7 +57,7 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
 
   if (isMobile) {
     return (
-      <div ref={setNodeRef} style={style} className="flex items-stretch">
+      <div ref={setNodeRef} style={style} className="flex items-stretch" onMouseEnter={onGhostEnter} onMouseLeave={onGhostLeave}>
         <div
           ref={setActivatorNodeRef}
           {...attributes}
@@ -60,7 +74,7 @@ export default memo(function SortableCard({ card, onClick, onComplete, isSelecte
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} onMouseEnter={onGhostEnter} onMouseLeave={onGhostLeave}>
       <Card card={card} onClick={onClick} onComplete={onComplete} isSelected={isSelected} />
     </div>
   )
