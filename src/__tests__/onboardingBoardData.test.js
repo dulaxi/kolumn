@@ -18,4 +18,15 @@ describe('onboarding board data shape', () => {
     const welcome = allCards.find((c) => c.id === 'welcome')
     expect(welcome.checklist[0].done).toBe(true)
   })
+
+  test('Done column only contains completed cards', () => {
+    const done = ONBOARDING_BOARD.columns.find((c) => c.id === 'done')
+    for (const card of done.cards) expect(card.completed).toBe(true)
+  })
+
+  test('the AI card does not promise a chat panel or ⌘K chat', () => {
+    const chat = allCards.find((c) => c.id === 'chat')
+    expect(chat.description).not.toMatch(/panel on the right/i)
+    expect(chat.description).not.toMatch(/⌘K/)
+  })
 })
