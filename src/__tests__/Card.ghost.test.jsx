@@ -62,4 +62,14 @@ describe('Card ghost mode', () => {
     expect(cls).toContain('bg-[var(--surface-page)]')
     expect(cls).toContain('hover:bg-[var(--surface-card)]')
   })
+
+  test('ghost placeholder stays on the card surface even when armed', () => {
+    settings.current.ghostBoards = { b1: true }
+    const { container } = render(
+      <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
+    )
+    const cls = container.querySelector('button').className
+    expect(cls).toContain('bg-[var(--surface-card)]')
+    expect(cls).not.toContain('bg-[var(--surface-page)]')
+  })
 })

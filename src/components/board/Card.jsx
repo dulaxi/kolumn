@@ -60,10 +60,14 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
     ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" }
     : undefined
 
-  // Ghost mode swaps the two surface tokens for un-selected cards.
-  const unselectedClasses = ghostArmed
-    ? 'bg-[var(--surface-page)] border-[var(--color-mist)] hover:bg-[var(--surface-card)] hover:shadow-none hover:border-[var(--text-muted)]'
-    : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
+  // The ghost placeholder itself always sits on the card surface (so it pops
+  // against the armed board's page-coloured real cards). Otherwise ghost mode
+  // swaps the two surface tokens for un-selected cards.
+  const unselectedClasses = ghost
+    ? 'bg-[var(--surface-card)] border-[var(--color-mist)]'
+    : ghostArmed
+      ? 'bg-[var(--surface-page)] border-[var(--color-mist)] hover:bg-[var(--surface-card)] hover:shadow-none hover:border-[var(--text-muted)]'
+      : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
 
   return (
     <button
