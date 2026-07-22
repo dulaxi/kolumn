@@ -69,6 +69,13 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
       }${ghost ? ' border-dashed' : ''}`}
     >
+      {/* Ghost drains the CONTENT to grayscale + 75% opacity, leaving the
+          card's own (dashed) border in full colour. `contents` = no layout
+          change for normal cards. */}
+      <div
+        className={ghost ? 'flex flex-col gap-3 w-full' : 'contents'}
+        style={ghost ? { filter: 'grayscale(1)', opacity: 0.75 } : undefined}
+      >
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
         {/* Icon — toggleable between "boxed" (40×40 raised container) and
@@ -302,6 +309,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           </div>
         )
       })()}
+      </div>
     </button>
   )
 })

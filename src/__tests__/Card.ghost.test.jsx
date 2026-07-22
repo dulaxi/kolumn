@@ -32,6 +32,9 @@ describe('Card ghost mode', () => {
       <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
     )
     expect(container.querySelector('button').className).toContain('border-dashed')
+    const contentLayer = container.querySelector('button > div')
+    expect(contentLayer.style.filter).toContain('grayscale')
+    expect(contentLayer.style.opacity).toBe('0.75')
     expect(container.textContent).toContain('Maya moved 3 hours ago')
   })
 
