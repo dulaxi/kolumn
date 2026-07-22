@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 const mockSetTier = vi.fn()
 const mockUpdateProfile = vi.fn()
@@ -46,5 +46,31 @@ describe('UpgradeProPage — trial state', () => {
     render(<UpgradeProPage />)
 
     expect(screen.getByRole('button', { name: /^activate pro$/i })).toBeInTheDocument()
+  })
+})
+
+describe('UpgradeProPage — subscribe button', () => {
+  test('trial + from onboarding: sets Pro tier, records trial_ends_at, routes to onboarding disclaimer', async () => {
+    mockLocationState = { trial: true, from: 'onboarding' }
+    render(<UpgradeProPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: /start free trial/i }))
+
+    await waitFor(() => expect(mockSetTier).toHaveBeenCalledWith('pro'))
+    expect(mockUpdateProfile).toHaveBeenCalledTimes(1)
+    const profileArg = mockUpdateProfile.mock.calls[0][0]
+    expect(typeof profileArg.trial_ends_at).toBe('string')
+    expect(mockNavigate).toHaveBeenCalledWith('/onboarding?step=disclaimer', { replace: true })
+  })
+
+  test('non-trial, no state: sets Pro tier, skips trial profile update, routes to dashboard', async () => {
+    mockLocationState = null
+    render(<UpgradeProPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^activate pro$/i }))
+
+    await waitFor(() => expect(mockSetTier).toHaveBeenCalledWith('pro'))
+    expect(mockUpdateProfile).not.toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
   })
 })

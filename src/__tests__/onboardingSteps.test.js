@@ -20,6 +20,9 @@ describe('resolveStepRedirect', () => {
     expect(resolveStepRedirect('terms', { user: null, profile: null })).toBe(null)
     expect(resolveStepRedirect('name', { user, profile: {} })).toBe(null)
   })
+  test('already-onboarded users are sent out of the flow', () => {
+    expect(resolveStepRedirect('plan', { user, profile: { onboarded_at: 'x', terms_accepted_at: 'x' } })).toBe('done')
+  })
 })
 
 describe('resumeStep', () => {

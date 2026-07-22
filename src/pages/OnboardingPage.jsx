@@ -67,8 +67,13 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (import.meta.env.DEV) return
     const redirect = resolveStepRedirect(step, { user, profile })
-    if (redirect) setStep(redirect)
-  }, [step, user, profile])
+    if (!redirect) return
+    if (redirect === 'done') {
+      navigate('/dashboard', { replace: true })
+      return
+    }
+    setStep(redirect)
+  }, [step, user, profile, navigate])
 
   // ── terms step ────────────────────────────────────────────────────
   const [agreed, setAgreed] = useState(false)

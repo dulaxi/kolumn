@@ -8,6 +8,10 @@ const AUTH_STEPS = new Set(['plan', 'upsell', 'disclaimer', 'name', 'role'])
 
 // Where should this visitor actually be? null = current step is fine.
 export function resolveStepRedirect(step, { user, profile }) {
+  // Already-onboarded users re-entering /onboarding shouldn't be able to
+  // land on the plan step and silently re-pick a tier (e.g. downgrading/
+  // upgrading an existing Pro user by clicking Team). Bounce them out.
+  if (user && profile?.onboarded_at) return 'done'
   if (!user) return AUTH_STEPS.has(step) ? 'terms' : null
   // Signed in: no account creation, and terms only if not yet accepted
   // (OAuth signups skip the pre-signup flow entirely).

@@ -10,11 +10,11 @@
 export const TIERS = {
   free: {
     label: 'Free',
-    includes: '20 AI messages/day · unlimited boards & cards · real-time collaboration',
+    includes: 'AI card creation — 20 messages/day · unlimited boards & cards · real-time collaboration',
   },
   pro: {
     label: 'Pro',
-    includes: 'Unlimited AI messages · AI can create, move, and update cards · priority support',
+    includes: 'Unlimited AI messages · Claude can move, update, and reorganize cards · priority support',
   },
   team: {
     label: 'Team',

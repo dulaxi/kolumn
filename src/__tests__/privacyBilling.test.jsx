@@ -35,7 +35,7 @@ describe('BillingSection', () => {
   test('free tier: plan hero with limits + Upgrade, empty states, no Cancellation', () => {
     render(<MemoryRouter><BillingSection onClose={() => {}} /></MemoryRouter>)
     expect(screen.getByRole('heading', { name: 'Free plan' })).toBeTruthy()
-    expect(screen.getByText(/20 AI messages/i)).toBeTruthy()
+    expect(screen.getByText(/20 messages\/day/i)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Upgrade' })).toBeTruthy()
     expect(screen.getByText('No payment method')).toBeTruthy()
     expect(screen.getByText('No invoices yet')).toBeTruthy()
