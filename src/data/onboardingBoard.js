@@ -14,11 +14,11 @@ export const ONBOARDING_BOARD_LABELS = {
 export const ONBOARDING_BOARD = {
   name: 'Welcome',
   icon: 'hand-waving',
-  // sandbox-preview only - boards have no description column; user-facing copy lives in the welcome card
+  // sandbox-preview only — boards have no description column; user-facing copy lives in the welcome card
   description:
-    'A working board you can poke at. Drag, click, edit - every card here ' +
+    'A working board you can poke at. Drag, click, edit — every card here ' +
     'teaches you one thing Kolumn does. Use it as a sandbox; delete it when ' +
-    'you don\'t need it anymore.',
+    'you don’t need it anymore.',
   labels: ONBOARDING_BOARD_LABELS,
   columns: [
     {
@@ -33,9 +33,9 @@ export const ONBOARDING_BOARD = {
           labels: ['welcome'],
           description:
             'Kolumn is a kanban-first project tool with Claude as a teammate. ' +
-            'This board is a sandbox - drag, click, and edit anything; every ' +
+            'This board is a sandbox — drag, click, and edit anything; every ' +
             'card teaches one thing. Delete the board from its menu when ' +
-            'you\'re done. Start by dragging this card to "In progress".',
+            'you’re done. Start by dragging this card to "In progress".',
           checklist: [
             { text: 'Read this card',         done: true  },
             { text: 'Drag me to In progress', done: false },
@@ -90,7 +90,7 @@ export const ONBOARDING_BOARD = {
           labels: ['pro'],
           description:
             'Two ways to work with Claude: type into the pill at the bottom of ' +
-            'any board ("add a card for tomorrow\'s standup") and it happens, or ' +
+            'any board ("add a card for tomorrow’s standup") and it happens, or ' +
             'open Chat from the sidebar to ask questions about your boards.',
         },
       ],
@@ -106,7 +106,7 @@ export const ONBOARDING_BOARD = {
           priority: 'low',
           labels: ['style'],
           description:
-            'Card icons have two styles - boxed and plain. Tap mine ' +
+            'Card icons have two styles — boxed and plain. Tap mine ' +
             'and watch every card flip together. Tap again to flip back.',
         },
         {
@@ -117,7 +117,7 @@ export const ONBOARDING_BOARD = {
           labels: ['style'],
           description:
             'Labels render three ways: prose, outlined pill, and color ' +
-            'dot. Tap any label on me to cycle through them - board-wide.',
+            'dot. Tap any label on me to cycle through them — board-wide.',
         },
         {
           id: 'customize',
@@ -127,7 +127,7 @@ export const ONBOARDING_BOARD = {
           labels: ['learn'],
           description:
             'Rename columns, drag them around, pick a new board icon. ' +
-            'Boards bend to fit your work - not the other way around.',
+            'Boards bend to fit your work — not the other way around.',
           checklist: [
             { text: 'Rename a column',       done: false },
             { text: 'Reorder the columns',   done: false },
@@ -143,13 +143,13 @@ export const ONBOARDING_BOARD = {
         {
           id: 'ready',
           icon: 'rocket-launch',
-          title: 'You\'re ready',
+          title: 'You’re ready',
           priority: 'low',
           labels: ['done'],
           completed: true,
           description:
             'Make a fresh board for your real work. Keep this one around ' +
-            'as a cheat sheet - or delete it from the board menu.',
+            'as a cheat sheet — or delete it from the board menu.',
         },
       ],
     },
