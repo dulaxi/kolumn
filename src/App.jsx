@@ -9,6 +9,8 @@ import Spinner from './components/ui/Spinner'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'))
 const UpgradeProPage = lazy(() => import('./pages/UpgradeProPage'))
@@ -74,6 +76,8 @@ export default function App() {
             <Route path="/sandbox/board-skeleton" element={<ErrorBoundary><BoardSkeletonSandbox /></ErrorBoundary>} />
           )}
           <Route path="/onboarding" element={<ErrorBoundary><OnboardingPage /></ErrorBoundary>} />
+          <Route path="/terms" element={<ErrorBoundary><TermsPage /></ErrorBoundary>} />
+          <Route path="/privacy" element={<ErrorBoundary><PrivacyPage /></ErrorBoundary>} />
           <Route path="/forgot-password" element={<ErrorBoundary><ForgotPasswordPage /></ErrorBoundary>} />
           <Route path="/update-password" element={<ErrorBoundary><UpdatePasswordPage /></ErrorBoundary>} />
           {/* Auth-protected but renders OUTSIDE AppLayout — checkout-style
