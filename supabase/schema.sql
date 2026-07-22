@@ -528,6 +528,7 @@ create table public.cards (
   icon text,
   completed boolean default false,
   checklist jsonb default '[]'::jsonb,
+  last_move jsonb,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -988,6 +989,7 @@ create table public.card_activity (
   actor_name text not null default '',
   action text not null,
   detail text,
+  meta jsonb,
   created_at timestamptz default now()
 );
 
