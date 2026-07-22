@@ -14,7 +14,7 @@ import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
 import { usePresenceStore } from '../../store/presenceStore'
 import { othersOnCard } from '../../store/presence'
 
-export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride }) {
+export default memo(function Card({ card, onClick, onComplete, isSelected, iconOverride, ghost }) {
   const { title, description, priority, due_date: dueDate, checklist, completed, icon } = card
   const labels = useBoardStore(selectCardLabels(card.id))
   // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
@@ -67,7 +67,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
-      }`}
+      }${ghost ? ' border-dotted' : ''}`}
     >
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
@@ -281,6 +281,24 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           ))}
         </div>
       )}
+
+      {/* Ghost attribution — one appended line so nothing overlaps: the mover's
+          avatar (left) + "<name> moved <when>". Only present on move ghosts. */}
+      {ghost && (() => {
+        const pc = resolveProfileColor(ghost.moverColor)
+        const c = pc.style?.background || 'var(--color-mist)'
+        return (
+          <div className="flex items-center gap-2 pt-2.5 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-secondary)]">
+            <span
+              className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+              style={{ ...pc.style, background: c }}
+            >
+              {(ghost.moverName?.[0] || '?').toLowerCase()}
+            </span>
+            <span className="truncate">{ghost.moverName} moved {ghost.when}</span>
+          </div>
+        )
+      })()}
     </button>
   )
 })

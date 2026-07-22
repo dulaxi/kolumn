@@ -266,8 +266,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
                   moverName={ghostInfo.moverName}
                   moverColor={ghostInfo.moverColor}
                   movedAt={ghostInfo.movedAt}
-                  age={node.ghost.age}
-                  approximate={node.ghost.approximate}
                 />
               ) : null
             }

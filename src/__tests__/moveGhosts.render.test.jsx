@@ -2,10 +2,10 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { interleaveGhosts } from '../lib/moveGhosts'
 
-// Ghost renders the real Card as a ditto; mock it to keep this test focused on
-// the interleave→GhostCard contract without standing up the full DnD tree.
+// Ghost renders the real Card in ghost mode; mock it to keep this test focused
+// on the interleave→GhostCard contract without standing up the full DnD tree.
 vi.mock('../components/board/Card', () => ({
-  default: ({ card }) => <div data-testid="ditto">{card.title}</div>,
+  default: ({ card, ghost }) => <div data-testid="ditto">{card.title} · {ghost?.moverName}</div>,
 }))
 
 import GhostCard from '../components/board/GhostCard'
@@ -16,7 +16,7 @@ function ColumnGhosts({ cardIds, ghosts, info }) {
   return (
     <div>
       {seq.map((n, i) => n.type === 'ghost'
-        ? <GhostCard key={`g${i}`} card={info.card} moverName={info.moverName} moverColor={info.moverColor} movedAt={info.movedAt} age={n.ghost.age} approximate={n.ghost.approximate} />
+        ? <GhostCard key={`g${i}`} card={info.card} moverName={info.moverName} moverColor={info.moverColor} movedAt={info.movedAt} />
         : <div key={n.id} data-card={n.id}>{n.id}</div>)}
     </div>
   )
@@ -27,8 +27,9 @@ describe('column ghost interleave', () => {
 
   test('a ghost slot renders a ditto GhostCard at its position', () => {
     render(<ColumnGhosts cardIds={['a', 'b']} ghosts={[{ position: 1, age: 1, approximate: false }]} info={info} />)
-    expect(screen.getByTestId('ditto')).toHaveTextContent('Fix login bug')
-    expect(screen.getByTitle('Maya moved this')).toBeInTheDocument()
+    const ditto = screen.getByTestId('ditto')
+    expect(ditto).toHaveTextContent('Fix login bug')
+    expect(ditto).toHaveTextContent('Maya')
     expect(screen.getByText('a')).toBeInTheDocument()
     expect(screen.getByText('b')).toBeInTheDocument()
   })
