@@ -1,17 +1,17 @@
-// Real-Card render of the `ghost` mode: dotted border + one appended
-// attribution line. Mirrors the store setup used in labels.renderloop.test.jsx.
+// Real-Card render of ghost mode + the ghost-armed surface swap. Mirrors the
+// store setup used in labels.renderloop.test.jsx, with a mutable settings ref
+// so ghostBoards can vary per test.
 import { describe, test, expect, beforeEach, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import { useBoardStore } from '../store/boardStore'
+
+const { settings } = vi.hoisted(() => ({ settings: { current: {} } }))
 
 vi.mock('../store/authStore', () => ({
   useAuthStore: vi.fn((sel) => sel({ profile: { display_name: 'Alice', icon: null, color: 'bg-blue-200' } })),
 }))
 vi.mock('../store/settingsStore', () => ({
-  useSettingsStore: vi.fn((sel) => sel({
-    font: 'default', labelStyle: 'default', toggleLabelStyle: vi.fn(),
-    iconStyle: 'plain', toggleIconStyle: vi.fn(),
-  })),
+  useSettingsStore: vi.fn((sel) => sel(settings.current)),
 }))
 vi.mock('../components/board/DynamicIcon', () => ({ default: ({ name }) => <span>{name}</span> }))
 
@@ -24,10 +24,14 @@ const card = {
 
 describe('Card ghost mode', () => {
   beforeEach(() => {
+    settings.current = {
+      font: 'default', labelStyle: 'default', toggleLabelStyle: vi.fn(),
+      iconStyle: 'plain', toggleIconStyle: vi.fn(), ghostBoards: {},
+    }
     useBoardStore.setState({ cards: {}, labels: {}, cardLabels: {}, _tempIdMap: {} })
   })
 
-  test('dashed border + appended mover attribution line', () => {
+  test('ghost placeholder: dashed border + grayscale content + attribution line', () => {
     const { container } = render(
       <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
     )
@@ -42,5 +46,20 @@ describe('Card ghost mode', () => {
     const { container } = render(<Card card={card} onClick={vi.fn()} />)
     expect(container.querySelector('button').className).not.toContain('border-dashed')
     expect(container.textContent).not.toContain('moved')
+  })
+
+  test('ghost mode disarmed: normal surfaces (card bg, hover page)', () => {
+    const { container } = render(<Card card={card} onClick={vi.fn()} />)
+    const cls = container.querySelector('button').className
+    expect(cls).toContain('bg-[var(--surface-card)]')
+    expect(cls).toContain('hover:bg-[var(--surface-page)]')
+  })
+
+  test('ghost mode armed: surfaces swap (page bg, hover card)', () => {
+    settings.current.ghostBoards = { b1: true }
+    const { container } = render(<Card card={card} onClick={vi.fn()} />)
+    const cls = container.querySelector('button').className
+    expect(cls).toContain('bg-[var(--surface-page)]')
+    expect(cls).toContain('hover:bg-[var(--surface-card)]')
   })
 })

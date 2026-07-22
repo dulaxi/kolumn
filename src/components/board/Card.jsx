@@ -29,6 +29,9 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
   const toggleLabelStyle = useSettingsStore((s) => s.toggleLabelStyle)
   const iconStyle = useSettingsStore((s) => s.iconStyle)
   const toggleIconStyle = useSettingsStore((s) => s.toggleIconStyle)
+  // While ghost mode is armed for this board, the card surfaces swap: default
+  // becomes the page colour and hover lifts to the card colour.
+  const ghostArmed = useSettingsStore((s) => !!s.ghostBoards?.[card.board_id])
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   const presenceByCard = usePresenceStore((s) => s.byCard)
@@ -57,6 +60,11 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
     ? { fontFamily: "'SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace" }
     : undefined
 
+  // Ghost mode swaps the two surface tokens for un-selected cards.
+  const unselectedClasses = ghostArmed
+    ? 'bg-[var(--surface-page)] border-[var(--color-mist)] hover:bg-[var(--surface-card)] hover:shadow-none hover:border-[var(--text-muted)]'
+    : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
+
   return (
     <button
       type="button"
@@ -66,7 +74,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       className={`relative w-full flex flex-col gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-1 group ${
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
-          : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
+          : unselectedClasses
       }${ghost ? ' border-dashed' : ''}`}
     >
       {/* Ghost drains the CONTENT to grayscale + 75% opacity, leaving the
