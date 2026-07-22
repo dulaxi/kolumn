@@ -109,4 +109,9 @@ describe('Button', () => {
     expect(btn.className).toContain('bg-[var(--color-red)]')
     expect(btn.className).not.toContain('copper')
   })
+
+  test('renders xl size for full-width flow CTAs', () => {
+    render(<Button size="xl">Continue</Button>)
+    expect(screen.getByRole('button')).toHaveClass('h-11', 'text-base')
+  })
 })

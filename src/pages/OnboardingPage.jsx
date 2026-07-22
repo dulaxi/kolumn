@@ -382,9 +382,9 @@ function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
 
                 <Button
                   type="submit"
-                  size="lg"
+                  size="xl"
                   data-testid="continue"
-                  className="w-full !text-base !rounded-[0.6rem]"
+                  className="w-full"
                 >
                   Agree and continue
                 </Button>
@@ -495,10 +495,10 @@ function DetailsStep({
 
                 <Button
                   type="submit"
-                  size="lg"
+                  size="xl"
                   loading={loading}
                   loadingText={slow ? 'Setting up your workspace' : 'Creating account'}
-                  className="w-full !text-base !rounded-[0.6rem]"
+                  className="w-full"
                 >
                   Create account
                 </Button>
@@ -602,9 +602,9 @@ function UpsellStep({ onTryPro, onSkip }) {
         <div className="mx-auto flex w-full max-w-[450px] flex-col items-center gap-3">
           <Button
             type="button"
-            size="lg"
+            size="xl"
             onClick={onTryPro}
-            className="w-full !text-base !rounded-[0.6rem]"
+            className="w-full"
           >
             <Lightning size={16} weight="fill" className="mr-2 shrink-0" />
             Get Pro free for 1 week
@@ -616,9 +616,9 @@ function UpsellStep({ onTryPro, onSkip }) {
           <Button
             type="button"
             variant="ghost"
-            size="lg"
+            size="xl"
             onClick={onSkip}
-            className="w-full !text-base !rounded-[0.6rem]"
+            className="w-full"
           >
             Skip
           </Button>
@@ -896,9 +896,9 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
         <Button
           type="button"
           variant="ghost"
-          size="lg"
+          size="xl"
           onClick={onSkip}
-          className="w-full !text-base !rounded-[0.6rem]"
+          className="w-full"
         >
           I have my own topic
         </Button>
@@ -925,6 +925,8 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
         )}
 
         <form onSubmit={onSubmit} className="flex w-full flex-col gap-3">
+          {/* Deliberate design-system exception: oversized centered hero input
+              (like the kanban cards' 16px radius). Uses Input's focus tokens. */}
           <input
             type="text"
             value={displayName}
@@ -939,11 +941,11 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
           />
           <Button
             type="submit"
-            size="lg"
+            size="xl"
             loading={loading}
             loadingText="Saving"
             disabled={!displayName.trim()}
-            className="w-full !text-base !rounded-[0.6rem]"
+            className="w-full"
           >
             Continue
           </Button>
@@ -1029,9 +1031,9 @@ function DisclaimerStep({ onContinue }) {
 
         <Button
           type="button"
-          size="lg"
+          size="xl"
           onClick={onContinue}
-          className="w-full !text-base !rounded-[0.6rem]"
+          className="w-full"
         >
           Continue
         </Button>
