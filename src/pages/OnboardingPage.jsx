@@ -84,6 +84,7 @@ export default function OnboardingPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [errorCode, setErrorCode] = useState(null)
   const [loading, setLoading] = useState(false)
   const [slow, setSlow] = useState(false)
   const slowTimer = useRef(null)
@@ -109,6 +110,7 @@ export default function OnboardingPage() {
   const handleSubmitDetails = async (e) => {
     e.preventDefault()
     setError('')
+    setErrorCode(null)
     if (!email) { setError('Enter your email to continue'); return }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return }
     if (password !== confirmPassword) { setError('Passwords do not match'); return }
@@ -128,6 +130,7 @@ export default function OnboardingPage() {
       setStep('plan')
     } catch (err) {
       setError(err.message)
+      setErrorCode(err.code || null)
     } finally {
       clearTimeout(slowTimer.current)
       setLoading(false)
@@ -159,10 +162,6 @@ export default function OnboardingPage() {
   const handleTryProTrial = () => navigate('/upgrade/pro', { state: { trial: true } })
   const handleSkipUpsell = () => setStep('disclaimer')
 
-  // Disclaimer: opt-in to training shares is the default (matches the
-  // Claude.ai onboarding pattern). Hold locally for now — wire to
-  // profile prefs when the column lands.
-  const [shareTrainingData, setShareTrainingData] = useState(true)
   const handleFinishDisclaimer = () => setStep('name')
 
   // Display-name step. signUp earlier defaulted to the email prefix; the
@@ -231,6 +230,7 @@ export default function OnboardingPage() {
           confirmPassword={confirmPassword}
           setConfirmPassword={setConfirmPassword}
           error={error}
+          errorCode={errorCode}
           loading={loading}
           slow={slow}
           onSubmit={handleSubmitDetails}
@@ -251,11 +251,7 @@ export default function OnboardingPage() {
       )}
 
       {step === 'disclaimer' && (
-        <DisclaimerStep
-          shareTrainingData={shareTrainingData}
-          setShareTrainingData={setShareTrainingData}
-          onContinue={handleFinishDisclaimer}
-        />
+        <DisclaimerStep onContinue={handleFinishDisclaimer} />
       )}
 
       {step === 'name' && (
@@ -390,7 +386,7 @@ function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
                   data-testid="continue"
                   className="w-full !text-base !rounded-[0.6rem]"
                 >
-                  Create account
+                  Agree and continue
                 </Button>
               </div>
             </div>
@@ -403,7 +399,7 @@ function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
           {email ? (
             <>
               <div>
-                Email verified as{' '}
+                Continuing as{' '}
                 <span className="font-medium text-[var(--text-secondary)]">{email}</span>
               </div>
               <Link
@@ -434,7 +430,7 @@ function DetailsStep({
   email, setEmail, initialEmail,
   password, setPassword,
   confirmPassword, setConfirmPassword,
-  error, loading, slow,
+  error, errorCode, loading, slow,
   onSubmit,
 }) {
   return (
@@ -451,7 +447,7 @@ function DetailsStep({
           <form onSubmit={onSubmit} className="mx-auto w-full">
             <div className="mx-auto grid gap-3">
               {error && (
-                <InlineNotice variant="error">{error}</InlineNotice>
+                <InlineNotice variant={errorCode === 'confirm_email' ? 'info' : 'error'}>{error}</InlineNotice>
               )}
 
               <div className="rounded-2xl border border-[var(--color-sand)] bg-[var(--surface-card)] p-5 space-y-4 shadow-sm">
@@ -555,6 +551,7 @@ function UpsellStep({ onTryPro, onSkip }) {
     },
     {
       tag: 'For your stack',
+      comingSoon: true,
       title: 'Connect your tools',
       body: 'Google Calendar, Slack, Notion, and your code.',
       visual: <IntegrationsVisual />,
@@ -581,9 +578,16 @@ function UpsellStep({ onTryPro, onSkip }) {
             {features.map((f) => (
               <li key={f.title} className="flex flex-col overflow-hidden">
                 <div className="flex flex-col p-6 pb-0">
-                  <span className="inline-flex w-fit items-center rounded-md px-1.5 py-0.5 text-xs font-medium border border-[var(--color-sand)] bg-[var(--surface-raised)] text-[var(--text-secondary)]">
-                    {f.tag}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-flex w-fit items-center rounded-md px-1.5 py-0.5 text-xs font-medium border border-[var(--color-sand)] bg-[var(--surface-raised)] text-[var(--text-secondary)]">
+                      {f.tag}
+                    </span>
+                    {f.comingSoon && (
+                      <span className="inline-flex w-fit items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide border border-[var(--color-sand)] text-[var(--text-muted)]">
+                        Coming soon
+                      </span>
+                    )}
+                  </div>
                   <h2 className="text-[var(--text-primary)] mt-4 text-base font-semibold">{f.title}</h2>
                   <p className="text-[var(--text-secondary)] mt-2 text-sm leading-normal">{f.body}</p>
                 </div>
@@ -949,7 +953,7 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
   )
 }
 
-function DisclaimerStep({ shareTrainingData, setShareTrainingData, onContinue }) {
+function DisclaimerStep({ onContinue }) {
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-10">
       <div
@@ -996,39 +1000,28 @@ function DisclaimerStep({ shareTrainingData, setShareTrainingData, onContinue })
               <ArrowCounterClockwise size={18} weight="duotone" />
             </div>
             <p className="text-[var(--text-primary)] text-sm leading-relaxed">
-              <span className="font-semibold">Undo by default.</span>{' '}
+              <span className="font-semibold">Deletes are undoable.</span>{' '}
               <span className="text-[var(--text-secondary)]">
-                Anything Claude does on your boards is reversible. One click rolls back any action.
+                Anything Claude deletes comes with a one-click undo, and destructive
+                actions ask for your approval before they run.
               </span>
             </p>
           </li>
 
           <li className="flex gap-4 items-start">
-            <label className="w-9 shrink-0 mt-0.5 relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={shareTrainingData}
-                onChange={(e) => setShareTrainingData(e.target.checked)}
-                aria-labelledby="disclaimer-training-label"
-                className="sr-only peer"
-              />
-              <div className="w-9 h-5 rounded-full bg-[var(--surface-raised)] border border-[var(--color-sand)] peer-checked:bg-[var(--accent-lime)] peer-checked:border-[var(--accent-lime)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--surface-card)] peer-focus-visible:ring-[var(--text-primary)]/30 transition-colors" />
-              <div className="absolute start-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--surface-card)] shadow-[0_1px_2px_rgba(27,27,24,0.2)] transition-transform peer-checked:translate-x-4" />
-            </label>
-            <p
-              id="disclaimer-training-label"
-              className="text-[var(--text-primary)] text-sm leading-relaxed"
+            <div
+              aria-hidden="true"
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[var(--label-blue-bg)] text-[var(--label-blue-text)]"
             >
-              <span className="font-semibold">Help Kolumn improve:</span>{' '}
+              <GraduationCap size={18} weight="duotone" />
+            </div>
+            <p className="text-[var(--text-primary)] text-sm leading-relaxed">
+              <span className="font-semibold">Not training data.</span>{' '}
               <span className="text-[var(--text-secondary)]">
-                Share your chats and AI actions so Claude gets better at planning. Change anytime in{' '}
-                <Link
-                  to="/settings"
-                  className="underline underline-offset-[3px] decoration-[var(--color-sand)] hover:decoration-[var(--text-secondary)] text-[var(--text-secondary)]"
-                >
-                  privacy settings
-                </Link>
-                .
+                We never use your boards, cards, or chats to train AI models. Full details in our{' '}
+                <Link to="/privacy" className="underline underline-offset-[3px] decoration-[var(--color-sand)] hover:decoration-[var(--text-secondary)] text-[var(--text-secondary)]">
+                  Privacy Policy
+                </Link>.
               </span>
             </p>
           </li>

@@ -116,7 +116,9 @@ export const useAuthStore = create((set, get) => ({
     })
     if (error) throw error
     if (!data.session) {
-      throw new Error('Please check your email to confirm your account.')
+      const err = new Error('Check your inbox to confirm your account, then sign in.')
+      err.code = 'confirm_email'
+      throw err
     }
     set({ user: data.session.user, session: data.session })
     if (data.user) Sentry.setUser({ id: data.user.id, email })

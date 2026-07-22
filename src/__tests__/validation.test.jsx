@@ -37,14 +37,14 @@ beforeEach(() => {
 // step, so this helper accepts terms and advances to the form fields.
 async function passTermsStep() {
   await userEvent.click(screen.getByRole('checkbox'))
-  screen.getByRole('button', { name: /create account/i }).click()
+  screen.getByRole('button', { name: /agree and continue/i }).click()
   await screen.findByPlaceholderText('you@example.com')
 }
 
 describe('OnboardingPage — terms step', () => {
   test('blocks advance when terms not accepted', async () => {
     render(<OnboardingPage />)
-    screen.getByRole('button', { name: /create account/i }).click()
+    screen.getByRole('button', { name: /agree and continue/i }).click()
     await waitFor(() => {
       expect(screen.getByText('Please accept the terms to continue')).toBeInTheDocument()
     })
