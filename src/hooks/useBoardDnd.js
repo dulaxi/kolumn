@@ -88,7 +88,7 @@ export function useBoardDnd({ boardId, boardColumns }) {
     }
 
     const card = state.cards[id]
-    dragOriginRef.current = card ? { cardId: id, columnId: card.column_id } : null
+    dragOriginRef.current = card ? { cardId: id, columnId: card.column_id, position: card.position } : null
     setActiveCardId(id)
     setDragging(true)
     affectedCardsRef.current = new Set([id])
@@ -182,11 +182,11 @@ export function useBoardDnd({ boardId, boardColumns }) {
     // Detect cross-column move (origin column ≠ current column)
     let movedCrossColumn = false
     if (dragOriginRef.current) {
-      const { cardId: draggedId, columnId: origColumnId } = dragOriginRef.current
+      const { cardId: draggedId, columnId: origColumnId, position: origPosition } = dragOriginRef.current
       const currentCard = useBoardStore.getState().cards[draggedId]
       if (currentCard && currentCard.column_id !== origColumnId) {
         movedCrossColumn = true
-        logCardMove(draggedId, origColumnId, currentCard.column_id)
+        logCardMove(draggedId, origColumnId, currentCard.column_id, origPosition, currentCard.position)
       }
       dragOriginRef.current = null
     }

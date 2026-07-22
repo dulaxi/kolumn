@@ -9,6 +9,7 @@ import { createRateLimiter, sanitizeTitle, sanitizeDescription } from '../../../
 import { logError } from '../../../utils/logger'
 import { cardInsertSchema } from '../../../utils/schemas'
 import { _inFlightCards, pruneTempIdMap, undoableDelete, logActivity } from '../helpers'
+import { buildLastMove } from '../../../lib/moveGhosts'
 
 const cardCreateLimiter = createRateLimiter(10, 10000)   // 10 cards per 10s
 
@@ -517,11 +518,35 @@ export const createCardsSlice = (set, get) => ({
     }
   },
 
-  logCardMove: (cardId, fromColumnId, toColumnId) => {
+  logCardMove: (cardId, fromColumnId, toColumnId, fromPosition, toPosition) => {
     const state = get()
     const fromCol = state.columns[fromColumnId]
     const toCol = state.columns[toColumnId]
-    logActivity(cardId, 'moved', `${fromCol?.title || 'Unknown'} → ${toCol?.title || 'Unknown'}`)
+    const profile = useAuthStore.getState().profile
+
+    const lastMove = buildLastMove(
+      { columnId: fromColumnId, position: fromPosition },
+      { columnId: toColumnId, position: toPosition },
+      { id: profile?.id ?? null, name: profile?.display_name || 'Someone', color: profile?.color ?? null, at: new Date().toISOString() },
+    )
+
+    // Optimistic local update so the mover sees their own ghost immediately;
+    // other clients receive it via the existing realtime cards subscription.
+    set((s) => (s.cards[cardId]
+      ? { cards: { ...s.cards, [cardId]: { ...s.cards[cardId], last_move: lastMove } } }
+      : {}))
+
+    // Fire-and-forget: persist to the card row (never blocks the drag).
+    supabase.from('cards').update({ last_move: lastMove }).eq('id', cardId)
+      .then(({ error }) => { if (error) logError('last_move write failed:', error) })
+
+    // Append-only structured history (powers the future full-trail tier).
+    logActivity(cardId, 'moved', `${fromCol?.title || 'Unknown'} → ${toCol?.title || 'Unknown'}`, {
+      from_column_id: fromColumnId,
+      from_position: fromPosition,
+      to_column_id: toColumnId,
+      to_position: toPosition,
+    })
   },
 
   getAllCards: () => Object.values(get().cards),

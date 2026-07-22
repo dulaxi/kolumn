@@ -86,7 +86,7 @@ export function undoableDelete(message) {
 }
 
 // Fire-and-forget activity logger — never blocks the calling action.
-export async function logActivity(cardId, action, detail) {
+export async function logActivity(cardId, action, detail, meta = null) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -98,6 +98,7 @@ export async function logActivity(cardId, action, detail) {
       actor_name: actorName,
       action,
       detail,
+      ...(meta ? { meta } : {}),
     })
   } catch (err) {
     // Activity logging should never break the main flow
