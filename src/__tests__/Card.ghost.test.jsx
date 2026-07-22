@@ -31,14 +31,14 @@ describe('Card ghost mode', () => {
     useBoardStore.setState({ cards: {}, labels: {}, cardLabels: {}, _tempIdMap: {} })
   })
 
-  test('ghost placeholder: dashed border + grayscale content + attribution line', () => {
+  test('ghost placeholder: dashed border + 50% opacity content + attribution line', () => {
     const { container } = render(
       <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
     )
     expect(container.querySelector('button').className).toContain('border-dashed')
     const contentLayer = container.querySelector('button > div')
-    expect(contentLayer.style.filter).toContain('grayscale')
-    expect(contentLayer.style.opacity).toBe('0.75')
+    expect(contentLayer.style.opacity).toBe('0.5')
+    expect(contentLayer.style.filter).toBe('')
     expect(container.textContent).toContain('Maya moved 3 hours ago')
   })
 
