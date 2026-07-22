@@ -4,6 +4,9 @@ import { Plus, X } from '@phosphor-icons/react'
 import { DndContext, DragOverlay } from '@dnd-kit/core'
 import { useBoardStore } from '../../store/boardStore'
 import { useBoardDnd } from '../../hooks/useBoardDnd'
+import { useGhostHoverStore } from '../../store/ghostHoverStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { deriveGhosts } from '../../lib/moveGhosts'
 import Column from './Column'
 import Card from './Card'
 import QuickAddBar from './QuickAddBar'
@@ -19,6 +22,28 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const boardColumns = useBoardStore(columnSelector)
   const addColumn = useBoardStore((s) => s.addColumn)
   const completeCard = useBoardStore((s) => s.completeCard)
+
+  const ghostArmed = useSettingsStore((s) => !!s.ghostBoards[boardId])
+  const hoverCardId = useGhostHoverStore((s) => s.hoverCardId)
+  // Subscribe to ONLY the hovered card (null when not hovering) — keeps this
+  // component off the full cards slice.
+  const hoverCard = useBoardStore((s) => (ghostArmed && hoverCardId) ? s.cards[hoverCardId] : null)
+
+  const ghostPlacements = useMemo(() => {
+    if (!hoverCard?.last_move) return []
+    const columnIds = boardColumns.map((c) => c.id)
+    return deriveGhosts([hoverCard.last_move], columnIds).map((p) =>
+      // Deleted origin column -> float at the top of the card's current column.
+      p.columnId ? p : { ...p, columnId: hoverCard.column_id, position: 0, floating: true }
+    )
+  }, [hoverCard, boardColumns])
+
+  const ghostInfo = hoverCard?.last_move ? {
+    title: hoverCard.title,
+    moverName: hoverCard.last_move.moved_by_name || 'Someone',
+    moverColor: hoverCard.last_move.moved_by_color || null,
+    movedAt: hoverCard.last_move.moved_at || null,
+  } : null
 
   const { dndContextProps, activeCardId, activeCard, isMobile } = useBoardDnd({ boardId, boardColumns })
 
@@ -72,6 +97,8 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             selectedCardId={selectedCardId}
             filters={filters}
             sortBy={sortBy}
+            ghosts={ghostPlacements.filter((p) => p.columnId === column.id)}
+            ghostInfo={ghostInfo}
           />
         ))}
 

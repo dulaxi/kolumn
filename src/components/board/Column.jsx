@@ -5,6 +5,8 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
+import GhostCard from './GhostCard'
+import { interleaveGhosts } from '../../lib/moveGhosts'
 import { filterCards } from '../../utils/cardFilters'
 import { showToast } from '../../utils/toast'
 import ConfirmModal from './ConfirmModal'
@@ -37,7 +39,7 @@ function sortCards(cards, sortBy) {
   })
 }
 
-export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy, dragHandleProps }) {
+export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy, dragHandleProps, ghosts = [], ghostInfo }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
@@ -246,7 +248,22 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           items={allCardIds}
           strategy={verticalListSortingStrategy}
         >
-          {filteredCards.slice(0, visibleCount).map((card) => {
+          {interleaveGhosts(filteredCards.slice(0, visibleCount).map((c) => c.id), ghosts).map((node, idx) => {
+            if (node.type === 'ghost') {
+              return ghostInfo ? (
+                <GhostCard
+                  key={`ghost-${idx}`}
+                  title={ghostInfo.title}
+                  moverName={ghostInfo.moverName}
+                  moverColor={ghostInfo.moverColor}
+                  movedAt={ghostInfo.movedAt}
+                  age={node.ghost.age}
+                  approximate={node.ghost.approximate}
+                />
+              ) : null
+            }
+            const card = filteredCards.find((c) => c.id === node.id)
+            if (!card) return null
             // Match inline card by direct ID or via temp→real ID map
             const isInline = card.id === inlineCardId || (inlineCardId && tempIdMap?.[inlineCardId] === card.id)
             return isInline ? (
