@@ -6,7 +6,7 @@ import { useBoardStore } from '../../store/boardStore'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import GhostCard from './GhostCard'
-import { interleaveGhosts } from '../../lib/moveGhosts'
+import { interleaveGhosts, resolveGhostIndex } from '../../lib/moveGhosts'
 import { filterCards } from '../../utils/cardFilters'
 import { showToast } from '../../utils/toast'
 import ConfirmModal from './ConfirmModal'
@@ -248,7 +248,16 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           items={allCardIds}
           strategy={verticalListSortingStrategy}
         >
-          {interleaveGhosts(filteredCards.slice(0, visibleCount).map((c) => c.id), ghosts).map((node, idx) => {
+          {(() => {
+            const renderList = filteredCards.slice(0, visibleCount)
+            const renderedPositions = renderList.map((c) => c.position)
+            const adjustedGhosts = ghosts.map((g) => ({
+              ...g,
+              position: resolveGhostIndex(renderedPositions, g.position),
+              approximate: g.approximate || g.floating || (sortBy && sortBy !== 'manual'),
+            }))
+            return interleaveGhosts(renderList.map((c) => c.id), adjustedGhosts)
+          })().map((node, idx) => {
             if (node.type === 'ghost') {
               return ghostInfo ? (
                 <GhostCard

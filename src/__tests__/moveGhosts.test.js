@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { buildLastMove, deriveGhosts, interleaveGhosts } from '../lib/moveGhosts'
+import { buildLastMove, deriveGhosts, interleaveGhosts, resolveGhostIndex } from '../lib/moveGhosts'
 
 describe('buildLastMove', () => {
   test('assembles the denormalized payload from origin, landing, actor', () => {
@@ -76,5 +76,23 @@ describe('interleaveGhosts', () => {
       { type: 'card', id: 'x' },
       { type: 'card', id: 'y' },
     ])
+  })
+})
+
+describe('resolveGhostIndex', () => {
+  test('manual order, no filter/sort: absolute position maps 1:1', () => {
+    expect(resolveGhostIndex([0, 1, 2, 3], 2)).toBe(2)
+  })
+
+  test('filtered/gapped positions: ghost lands before the first rendered card with a >= position', () => {
+    expect(resolveGhostIndex([0, 2, 3, 7], 5)).toBe(3)
+  })
+
+  test('position beyond the rendered slice clamps to the end', () => {
+    expect(resolveGhostIndex([0, 1, 2], 25)).toBe(3)
+  })
+
+  test('empty rendered list -> 0', () => {
+    expect(resolveGhostIndex([], 5)).toBe(0)
   })
 })

@@ -32,6 +32,18 @@ export function deriveGhosts(moves, columnIds) {
   })
 }
 
+// Translate a ghost's absolute origin position into an insertion index within
+// the currently-rendered card list (which may be filtered/sorted/sliced).
+// The ghost sits before the first rendered card whose absolute position is >=
+// the origin position.
+export function resolveGhostIndex(renderedPositions, absolutePosition) {
+  let idx = 0
+  for (const p of (renderedPositions || [])) {
+    if (p < absolutePosition) idx++
+  }
+  return idx
+}
+
 // Build a render sequence that inserts each ghost at its position among cardIds.
 export function interleaveGhosts(cardIds, ghosts) {
   const ids = cardIds || []

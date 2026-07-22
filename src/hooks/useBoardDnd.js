@@ -9,6 +9,7 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useBoardStore } from '../store/boardStore'
+import { useGhostHoverStore } from '../store/ghostHoverStore'
 import { useIsMobile } from './useMediaQuery'
 
 /**
@@ -92,6 +93,7 @@ export function useBoardDnd({ boardId, boardColumns }) {
     setActiveCardId(id)
     setDragging(true)
     affectedCardsRef.current = new Set([id])
+    useGhostHoverStore.getState().clearHoverCard()
   }, [setDragging])
 
   const handleDragOver = useCallback((event) => {
