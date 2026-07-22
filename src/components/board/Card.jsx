@@ -287,7 +287,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
       {ghost && (() => {
         const { style: moverStyle, fallbackClass: moverFallback } = resolveProfileColor(ghost.moverColor)
         return (
-          <div className="flex items-center gap-2 pt-2.5 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-secondary)]">
+          <div className="flex items-center gap-2 pt-2.5 border-t border-[var(--border-subtle)] font-mono text-[11px] text-[var(--text-secondary)]">
             {ghost.moverIcon ? (
               <span
                 className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center ring-2 ring-[var(--surface-card)] ${moverFallback}`}
