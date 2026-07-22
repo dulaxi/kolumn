@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
+import { resolveStepRedirect, STEPS } from '../lib/onboardingSteps'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Tooltip from '../components/ui/Tooltip'
@@ -52,13 +53,13 @@ import {
 } from '@phosphor-icons/react'
 import Menu from '../components/ui/Menu'
 
-const STEPS = ['terms', 'details', 'plan', 'upsell', 'disclaimer', 'name', 'role']
-
 export default function OnboardingPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const initialEmail = location.state?.email || ''
+  const user = useAuthStore((s) => s.user)
+  const profile = useAuthStore((s) => s.profile)
 
   // ?step=X lets you jump straight to a step (handy for design review).
   // Anything outside the known set falls back to the start of the flow.
@@ -74,6 +75,14 @@ export default function OnboardingPage() {
     next.set('step', step)
     setSearchParams(next, { replace: true })
   }, [step, searchParams, setSearchParams])
+
+  // Step guard — prod only, so the DEV picker and design-review deep links
+  // keep working. Pure logic lives in lib/onboardingSteps (unit-tested).
+  useEffect(() => {
+    if (import.meta.env.DEV) return
+    const redirect = resolveStepRedirect(step, { user, profile })
+    if (redirect) setStep(redirect)
+  }, [step, user, profile])
 
   // ── terms step ────────────────────────────────────────────────────
   const [agreed, setAgreed] = useState(false)
@@ -97,11 +106,22 @@ export default function OnboardingPage() {
 
   useEffect(() => () => clearTimeout(slowTimer.current), [])
 
-  const handleAcceptTerms = (e) => {
+  const handleAcceptTerms = async (e) => {
     e.preventDefault()
     setTermsError('')
     if (!agreed) {
       setTermsError('Please accept the terms to continue')
+      return
+    }
+    if (user) {
+      // OAuth path — the account already exists, so accepting terms here
+      // records acceptance directly and skips straight to plan picking.
+      try {
+        await updateProfile({ terms_accepted_at: new Date().toISOString() })
+        setStep('plan')
+      } catch (err) {
+        setTermsError(err.message)
+      }
       return
     }
     setStep('details')
@@ -127,6 +147,9 @@ export default function OnboardingPage() {
       // is_tour = true.
       const newUserId = result?.user?.id || result?.session?.user?.id
       if (newUserId) trySeedOnboardingBoard(newUserId)
+      // Fire-and-forget acceptance record; the profile row exists via the
+      // signup trigger by the time this lands.
+      updateProfile({ terms_accepted_at: new Date().toISOString() }).catch(() => {})
       setStep('plan')
     } catch (err) {
       setError(err.message)
@@ -136,6 +159,15 @@ export default function OnboardingPage() {
       setLoading(false)
       setSlow(false)
     }
+  }
+
+  // Marks onboarding complete before leaving the flow. Non-blocking: a
+  // failed write here shouldn't trap the user on /onboarding — they land
+  // in the app either way and remain onboarded_at: null until the next
+  // successful write (AppLayout will just bounce them back here again).
+  const finishOnboarding = async (to, state) => {
+    try { await updateProfile({ onboarded_at: new Date().toISOString() }) } catch { /* non-blocking */ }
+    navigate(to, { replace: true, ...(state ? { state } : {}) })
   }
 
   const handlePickPlan = async (planId) => {
@@ -152,6 +184,13 @@ export default function OnboardingPage() {
     setCommittingPlan(planId)
     try {
       await setTier(planId)
+      if (planId === 'team') {
+        // Team is a sales-assist tier — still walks the rest of the flow
+        // (disclaimer → name → role) rather than exiting straight to the
+        // dashboard.
+        setStep('disclaimer')
+        return
+      }
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.message)
@@ -169,6 +208,12 @@ export default function OnboardingPage() {
   const [displayName, setDisplayName] = useState('')
   const [nameError, setNameError] = useState('')
   const [savingName, setSavingName] = useState(false)
+  // OAuth users arrive with a profile.display_name already set (from
+  // Google) — prefill it once it shows up, but never clobber what the
+  // user is actively typing.
+  useEffect(() => {
+    if (!displayName && profile?.display_name) setDisplayName(profile.display_name)
+  }, [profile?.display_name])
   const handleSubmitName = async (e) => {
     e.preventDefault()
     setNameError('')
@@ -196,8 +241,8 @@ export default function OnboardingPage() {
   const [role, setRole] = useState(null)
   const handlePickRole = (roleId) => setRole(roleId)
   const handlePickStarter = (starterId) =>
-    navigate('/dashboard', { replace: true, state: { role, starter: starterId } })
-  const handleSkipRole = () => navigate('/dashboard', { replace: true })
+    finishOnboarding('/dashboard', { role, starter: starterId })
+  const handleSkipRole = () => finishOnboarding('/dashboard')
 
   return (
     <div className="min-h-screen bg-[var(--surface-page)] flex flex-col">

@@ -14,6 +14,12 @@ vi.mock('../store/authStore', () => ({
     signUp: mockSignUp,
     setTier: mockSetTier,
     updateProfile: mockUpdateProfile,
+    // Unauthenticated by default — the step guard is DEV-gated so this
+    // doesn't affect step navigation in tests (import.meta.env.DEV is
+    // true under Vitest), but keeps handleAcceptTerms on the
+    // pre-signup path (setStep('details')) like a real anonymous visitor.
+    user: null,
+    profile: null,
   })),
 }))
 vi.mock('react-router-dom', () => ({
@@ -31,6 +37,13 @@ beforeEach(() => {
   mockSetTier.mockReset()
   mockUpdateProfile.mockReset()
   mockNavigate.mockReset()
+  // Default resolved value so the new fire-and-forget
+  // `updateProfile(...).catch()` calls (post-signup terms acceptance,
+  // finishOnboarding's onboarded_at write) don't throw on a bare mock
+  // that otherwise returns `undefined`. Individual tests can still
+  // override with mockResolvedValueOnce/mockRejectedValueOnce for the
+  // specific call they're asserting on.
+  mockUpdateProfile.mockResolvedValue({})
 })
 
 // Terms is now the first onboarding step. Most tests target the details

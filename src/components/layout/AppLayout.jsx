@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import WorkspaceSidebar from './WorkspaceSidebar'
 import Header from './Header'
@@ -11,11 +11,13 @@ import BottomTabBar from './BottomTabBar'
 import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useAuthStore } from '../../store/authStore'
 import { applyTheme } from '../../utils/theme'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { useAppData } from '../../hooks/useAppData'
 import { useBoardStore } from '../../store/boardStore'
+import { resumeStep } from '../../lib/onboardingSteps'
 import OfflineBanner from './OfflineBanner'
 import InlineErrorBoundary from '../InlineErrorBoundary'
 
@@ -27,6 +29,7 @@ const pageTitles = {
 }
 
 export default function AppLayout() {
+  const profile = useAuthStore((s) => s.profile)
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed)
   const workspaceSidebarOpen = useSettingsStore((s) => s.workspaceSidebarOpen)
   const theme = useSettingsStore((s) => s.theme)
@@ -130,6 +133,13 @@ export default function AppLayout() {
   const title = basePath === '/boards' && activeBoardName
     ? activeBoardName
     : pageTitles[basePath] || 'Kolumn'
+
+  // Un-onboarded profiles (new OAuth signups, abandoned flows) finish
+  // onboarding before seeing the shell. Existing users are backfilled.
+  // Must come after every hook above — never between hooks.
+  if (profile && !profile.onboarded_at) {
+    return <Navigate to={`/onboarding?step=${resumeStep(profile)}`} replace />
+  }
 
   return (
     <div className="h-screen flex flex-col bg-[var(--surface-board)] overflow-hidden">
