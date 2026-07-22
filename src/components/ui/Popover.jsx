@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
-import { useClickOutside } from '../../hooks/useClickOutside'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 
 function mergeClassNames(...parts) {
   return parts.filter(Boolean).join(' ')
 }
 
+// Anchor-relative positioning for the default (inline) panel.
 const PLACEMENT = {
   'bottom-start': 'top-full left-0 mt-1.5 origin-top-left',
   'bottom-end':   'top-full right-0 mt-1.5 origin-top-right',
@@ -12,8 +13,17 @@ const PLACEMENT = {
   'top-end':      'bottom-full right-0 mb-1.5 origin-bottom-right',
 }
 
-const PANEL_BASE =
-  'absolute z-50 min-w-[200px] p-1 ' +
+// Transform-origin only — used when `portal` positions the panel via fixed
+// coordinates instead of the anchor-relative PLACEMENT classes.
+const ORIGIN = {
+  'bottom-start': 'origin-top-left',
+  'bottom-end':   'origin-top-right',
+  'top-start':    'origin-bottom-left',
+  'top-end':      'origin-bottom-right',
+}
+
+const PANEL_VISUAL =
+  'z-50 min-w-[200px] p-1 ' +
   'bg-[var(--surface-card)] border border-[var(--color-mist)] rounded-[10px] ' +
   'shadow-[0_10px_30px_rgba(27,27,24,0.10),0_2px_6px_rgba(27,27,24,0.04)]'
 
@@ -30,10 +40,17 @@ export default function Popover({
   closeOnEscape = true,
   closeOnOutsideClick = true,
   className = '',
+  // When true the panel renders in a body-level portal, positioned `fixed`
+  // from the anchor's rect. Use inside a clipping/scrolling container (e.g. a
+  // scrollable modal list) where an `absolute` panel would be cut off.
+  portal = false,
   children,
 }) {
   const [rendered, setRendered] = useState(open)
   const [exiting, setExiting] = useState(false)
+  const anchorRef = useRef(null)
+  const panelRef = useRef(null)
+  const [coords, setCoords] = useState(null)
 
   useEffect(() => {
     if (open) {
@@ -50,9 +67,19 @@ export default function Popover({
     return () => clearTimeout(t)
   }, [open, rendered])
 
-  const ref = useClickOutside(() => {
-    if (closeOnOutsideClick && open) onOpenChange?.(false)
-  })
+  // Outside-click close. A click counts as "inside" if it lands on the anchor
+  // OR the panel — the panel may live in a body-level portal, so a single
+  // wrapper.contains() wouldn't see it.
+  useEffect(() => {
+    if (!open || !closeOnOutsideClick) return
+    const onDown = (e) => {
+      if (anchorRef.current?.contains(e.target)) return
+      if (panelRef.current?.contains(e.target)) return
+      onOpenChange?.(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open, closeOnOutsideClick, onOpenChange])
 
   useEffect(() => {
     if (!open || !closeOnEscape) return
@@ -72,22 +99,58 @@ export default function Popover({
     return () => document.removeEventListener('keydown', onKey)
   }, [open, closeOnEscape, onOpenChange])
 
+  // Fixed-position the portaled panel from the anchor's rect, and keep it
+  // pinned as ancestors scroll (e.g. a scrollable modal list) or the window
+  // resizes.
+  const updatePosition = useCallback(() => {
+    const a = anchorRef.current
+    if (!a) return
+    const r = a.getBoundingClientRect()
+    const gap = 6
+    const next = {}
+    if (placement.startsWith('bottom')) next.top = Math.round(r.bottom + gap)
+    else next.bottom = Math.round(window.innerHeight - r.top + gap)
+    if (placement.endsWith('start')) next.left = Math.round(r.left)
+    else next.right = Math.round(window.innerWidth - r.right)
+    setCoords(next)
+  }, [placement])
+
+  useEffect(() => {
+    if (!open || !portal) return
+    updatePosition()
+    const onMove = () => updatePosition()
+    // Capture phase so inner scrollers (not just window) trigger a reposition.
+    window.addEventListener('scroll', onMove, true)
+    window.addEventListener('resize', onMove)
+    return () => {
+      window.removeEventListener('scroll', onMove, true)
+      window.removeEventListener('resize', onMove)
+    }
+  }, [open, portal, updatePosition])
+
+  const animClass = exiting ? 'animate-dropdown-out pointer-events-none' : 'animate-dropdown'
+
+  const panelNode = (
+    <div
+      ref={panelRef}
+      role="dialog"
+      data-menu-root
+      style={portal ? { position: 'fixed', ...coords } : undefined}
+      className={
+        portal
+          ? mergeClassNames(PANEL_VISUAL, animClass, ORIGIN[placement] || ORIGIN['bottom-start'], panelClassName)
+          : mergeClassNames('absolute', PANEL_VISUAL, animClass, PLACEMENT[placement] || PLACEMENT['bottom-start'], panelClassName)
+      }
+    >
+      {panel}
+    </div>
+  )
+
   return (
-    <div ref={ref} data-menu-root className={mergeClassNames('relative', className)}>
+    <div ref={anchorRef} data-menu-root className={mergeClassNames('relative', className)}>
       {children}
-      {rendered && (
-        <div
-          role="dialog"
-          className={mergeClassNames(
-            PANEL_BASE,
-            exiting ? 'animate-dropdown-out pointer-events-none' : 'animate-dropdown',
-            PLACEMENT[placement] || PLACEMENT['bottom-start'],
-            panelClassName,
-          )}
-        >
-          {panel}
-        </div>
-      )}
+      {!portal && rendered && panelNode}
+      {portal && rendered && coords && createPortal(panelNode, document.body)}
     </div>
   )
 }
