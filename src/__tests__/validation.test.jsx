@@ -8,17 +8,26 @@ const mockSetTier = vi.fn()
 const mockUpdateProfile = vi.fn()
 const mockNavigate = vi.fn()
 
+// vi.hoisted guarantees these exist by the time the vi.mock factories
+// below (which are hoisted above all imports) run — plain top-level
+// consts aren't reliably hoisted alongside them.
+const { mockSeedStarterBoard, mockSetActiveBoard, getMockUser, setMockUser } = vi.hoisted(() => {
+  let user = null
+  return {
+    mockSeedStarterBoard: vi.fn(),
+    mockSetActiveBoard: vi.fn(),
+    getMockUser: () => user,
+    setMockUser: (u) => { user = u },
+  }
+})
+
 vi.mock('../store/authStore', () => ({
   useAuthStore: vi.fn((sel) => sel({
     signIn: mockSignIn,
     signUp: mockSignUp,
     setTier: mockSetTier,
     updateProfile: mockUpdateProfile,
-    // Unauthenticated by default — the step guard is DEV-gated so this
-    // doesn't affect step navigation in tests (import.meta.env.DEV is
-    // true under Vitest), but keeps handleAcceptTerms on the
-    // pre-signup path (setStep('details')) like a real anonymous visitor.
-    user: null,
+    user: getMockUser(),
     profile: null,
   })),
 }))
@@ -27,6 +36,12 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => ({ state: null, pathname: '/onboarding' }),
   useSearchParams: () => [new URLSearchParams(), vi.fn()],
+}))
+vi.mock('../lib/seedStarterBoard', () => ({
+  seedStarterBoard: mockSeedStarterBoard,
+}))
+vi.mock('../store/boardStore', () => ({
+  useBoardStore: vi.fn((sel) => sel({ setActiveBoard: mockSetActiveBoard })),
 }))
 
 import OnboardingPage from '../pages/OnboardingPage'
@@ -37,6 +52,10 @@ beforeEach(() => {
   mockSetTier.mockReset()
   mockUpdateProfile.mockReset()
   mockNavigate.mockReset()
+  mockSeedStarterBoard.mockReset()
+  mockSeedStarterBoard.mockResolvedValue('board-1')
+  mockSetActiveBoard.mockReset()
+  setMockUser(null)
   // Default resolved value so the new fire-and-forget
   // `updateProfile(...).catch()` calls (post-signup terms acceptance,
   // finishOnboarding's onboarded_at write) don't throw on a bare mock
@@ -291,7 +310,7 @@ describe('OnboardingPage — role step', () => {
     expect(screen.getByRole('button', { name: /^Design$/i })).toBeInTheDocument()
   })
 
-  test('Selecting a role reveals tailored starter prompts without navigating', async () => {
+  test('Selecting a role reveals tailored starter prompts without navigating, and persists the role', async () => {
     await reachRoleStep()
     screen.getByTestId('role-selector-dropdown').click()
     const sales = await screen.findByRole('button', { name: /^Sales$/i })
@@ -302,10 +321,17 @@ describe('OnboardingPage — role step', () => {
     expect(screen.getByRole('button', { name: /Plan an outreach queue/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Prep for a discovery call/i })).toBeInTheDocument()
     expect(mockNavigate).not.toHaveBeenCalled()
+    // Role picked is persisted (non-blocking) via updateProfile.
+    expect(mockUpdateProfile).toHaveBeenCalledWith({ role: 'sales' })
   })
 
-  test('Clicking a starter prompt routes to /dashboard with role + starter state', async () => {
+  test('Clicking a starter prompt seeds a real board and routes to /boards with it active', async () => {
     await reachRoleStep()
+    // handlePickStarter needs a signed-in user (the mock authStore is
+    // unauthenticated by default so the terms/details flow above takes
+    // the pre-signup path); set it now that we're past that step.
+    setMockUser({ id: 'u1' })
+
     screen.getByTestId('role-selector-dropdown').click()
     const eng = await screen.findByRole('button', { name: /^Engineering$/i })
     eng.click()
@@ -314,11 +340,32 @@ describe('OnboardingPage — role step', () => {
     sprint.click()
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', {
-        replace: true,
-        state: { role: 'engineering', starter: 'sprint' },
-      })
+      expect(mockSeedStarterBoard).toHaveBeenCalledWith(
+        'u1',
+        expect.objectContaining({ name: 'Sprint board' }),
+      )
     })
+    expect(mockSetActiveBoard).toHaveBeenCalledWith('board-1')
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/boards', { replace: true })
+    })
+  })
+
+  test('Starter click without a signed-in user falls back to skipping to /dashboard', async () => {
+    await reachRoleStep()
+    // mockUser stays null here — handlePickStarter should fall into the
+    // handleSkipRole() branch rather than throw.
+    screen.getByTestId('role-selector-dropdown').click()
+    const eng = await screen.findByRole('button', { name: /^Engineering$/i })
+    eng.click()
+
+    const sprint = await screen.findByRole('button', { name: /Plan a sprint board/i })
+    sprint.click()
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    })
+    expect(mockSeedStarterBoard).not.toHaveBeenCalled()
   })
 
   test('Upsell "Get Pro free for 1 week": routes to /upgrade/pro with trial state', async () => {

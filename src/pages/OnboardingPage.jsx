@@ -25,33 +25,19 @@ import {
   EyeSlash,
   ArrowCounterClockwise,
   CaretDown,
-  Bug,
-  RocketLaunch,
-  PenNib,
-  SquaresFour,
-  Users,
-  Compass,
   ListChecks,
   CheckSquare,
-  Megaphone,
-  CalendarBlank,
-  PaperPlaneTilt,
-  Handshake,
-  WarningCircle,
-  Target,
-  Funnel,
-  MagnifyingGlass,
-  Bank,
-  UserPlus,
-  Books,
   GraduationCap,
-  BookOpen,
   CheckCircle,
-  BookBookmark,
-  ListBullets,
   X,
 } from '@phosphor-icons/react'
 import Menu from '../components/ui/Menu'
+import LetterWave from '../components/ui/LetterWave'
+import { ROLES, STARTER_PROMPTS } from '../data/starterPrompts'
+import { getStarterBoard } from '../data/starterBoards'
+import { seedStarterBoard } from '../lib/seedStarterBoard'
+import { useBoardStore } from '../store/boardStore'
+import { showToast } from '../utils/toast'
 
 export default function OnboardingPage() {
   const location = useLocation()
@@ -233,15 +219,31 @@ export default function OnboardingPage() {
     }
   }
 
-  // Role step. Held locally for now — wire to a profiles column when one
-  // lands, then use it to seed starter boards on first dashboard load.
-  // Picking a role no longer navigates; it reveals tailored starter
-  // prompts. The user commits by clicking a starter or "I have my own
-  // topic".
+  // Role step. Picking a role persists to profiles.role (non-blocking)
+  // and reveals tailored starter prompts. The user commits by clicking a
+  // starter — which seeds a real board from src/data/starterBoards.js and
+  // lands on /boards with it active — or "I have my own topic" to skip
+  // straight to /dashboard.
+  const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
   const [role, setRole] = useState(null)
-  const handlePickRole = (roleId) => setRole(roleId)
-  const handlePickStarter = (starterId) =>
-    finishOnboarding('/dashboard', { role, starter: starterId })
+  const [seedingStarter, setSeedingStarter] = useState(null)
+  const handlePickRole = (roleId) => {
+    setRole(roleId)
+    updateProfile({ role: roleId }).catch(() => {}) // non-blocking
+  }
+  const handlePickStarter = async (starterId) => {
+    const template = getStarterBoard(role, starterId)
+    if (!template || !user) { handleSkipRole(); return }
+    setSeedingStarter(starterId)
+    try {
+      const boardId = await seedStarterBoard(user.id, template)
+      setActiveBoard(boardId)
+      await finishOnboarding('/boards')
+    } catch (err) {
+      showToast.error(err?.message || "Couldn't create your starter board")
+      setSeedingStarter(null)
+    }
+  }
   const handleSkipRole = () => finishOnboarding('/dashboard')
 
   return (
@@ -315,6 +317,7 @@ export default function OnboardingPage() {
           onPick={handlePickRole}
           onPickStarter={handlePickStarter}
           onSkip={handleSkipRole}
+          seedingStarter={seedingStarter}
         />
       )}
 
@@ -787,70 +790,7 @@ function IntegrationsVisual() {
   )
 }
 
-const ROLES = [
-  { id: 'engineering', label: 'Engineering' },
-  { id: 'design', label: 'Design' },
-  { id: 'product', label: 'Product management' },
-  { id: 'marketing', label: 'Marketing' },
-  { id: 'operations', label: 'Operations' },
-  { id: 'sales', label: 'Sales' },
-  { id: 'founder', label: 'Founder / leadership' },
-  { id: 'student', label: 'Student' },
-  { id: 'other', label: 'Something else' },
-]
-
-// Starter prompts per role. Each one becomes a clickable card under the
-// role dropdown — selecting one routes to /dashboard with state so the
-// dashboard knows what kind of board to seed first.
-const STARTER_PROMPTS = {
-  engineering: [
-    { id: 'sprint',       title: 'Plan a sprint board',        Icon: Lightning },
-    { id: 'bug-triage',   title: 'Set up a bug triage flow',   Icon: Bug },
-    { id: 'roadmap',      title: 'Map a release roadmap',      Icon: RocketLaunch },
-  ],
-  design: [
-    { id: 'reviews',      title: 'Track design reviews',       Icon: PenNib },
-    { id: 'library',      title: 'Build a component library',  Icon: SquaresFour },
-    { id: 'research',     title: 'Run a research pipeline',    Icon: Users },
-  ],
-  product: [
-    { id: 'roadmap',      title: 'Draft a product roadmap',    Icon: Compass },
-    { id: 'backlog',      title: 'Organize a feature backlog', Icon: ListChecks },
-    { id: 'launch',       title: 'Plan a launch checklist',    Icon: CheckSquare },
-  ],
-  marketing: [
-    { id: 'campaign',     title: 'Build a campaign tracker',   Icon: Megaphone },
-    { id: 'content',      title: 'Plan a content calendar',    Icon: CalendarBlank },
-    { id: 'launch-comms', title: 'Coordinate launch comms',    Icon: PaperPlaneTilt },
-  ],
-  operations: [
-    { id: 'vendors',      title: 'Track a vendor pipeline',    Icon: Handshake },
-    { id: 'incidents',    title: 'Run an incident retro',      Icon: WarningCircle },
-    { id: 'okrs',         title: 'Set up quarterly OKRs',      Icon: Target },
-  ],
-  sales: [
-    { id: 'pipeline',     title: 'Build a deal pipeline',      Icon: Funnel },
-    { id: 'outreach',     title: 'Plan an outreach queue',     Icon: PaperPlaneTilt },
-    { id: 'discovery',    title: 'Prep for a discovery call',  Icon: MagnifyingGlass },
-  ],
-  founder: [
-    { id: 'investors',    title: 'Track an investor pipeline', Icon: Bank },
-    { id: 'hiring',       title: 'Build a hiring funnel',      Icon: UserPlus },
-    { id: 'bets',         title: 'Plan your strategic bets',   Icon: Compass },
-  ],
-  student: [
-    { id: 'coursework',   title: 'Organize coursework',        Icon: Books },
-    { id: 'thesis',       title: 'Plan a thesis project',      Icon: GraduationCap },
-    { id: 'reading',      title: 'Track a reading list',       Icon: BookOpen },
-  ],
-  other: [
-    { id: 'todos',        title: 'Set up personal todos',      Icon: CheckCircle },
-    { id: 'reading',      title: 'Track a reading queue',      Icon: BookBookmark },
-    { id: 'review',       title: 'Plan a weekly review',       Icon: ListBullets },
-  ],
-}
-
-function RoleStep({ role, onPick, onPickStarter, onSkip }) {
+function RoleStep({ role, onPick, onPickStarter, onSkip, seedingStarter }) {
   const [open, setOpen] = useState(false)
   const selected = ROLES.find((r) => r.id === role)
   const starters = role ? STARTER_PROMPTS[role] : null
@@ -920,7 +860,8 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
                   <button
                     type="button"
                     onClick={() => onPickStarter(id)}
-                    className="w-full flex items-center gap-4 px-5 py-5 rounded-xl border border-[var(--color-sand)] bg-[var(--surface-card)] text-left text-base font-normal text-[var(--text-primary)] shadow-[0_2px_8px_rgba(27,27,24,0.03)] hover:border-[var(--text-muted)] hover:shadow-[0_4px_16px_rgba(27,27,24,0.06)] focus:outline-none focus-visible:border-[var(--text-primary)] transition-all"
+                    disabled={!!seedingStarter}
+                    className="w-full flex items-center gap-4 px-5 py-5 rounded-xl border border-[var(--color-sand)] bg-[var(--surface-card)] text-left text-base font-normal text-[var(--text-primary)] shadow-[0_2px_8px_rgba(27,27,24,0.03)] hover:border-[var(--text-muted)] hover:shadow-[0_4px_16px_rgba(27,27,24,0.06)] focus:outline-none focus-visible:border-[var(--text-primary)] transition-all disabled:opacity-60 disabled:cursor-wait"
                   >
                     <span
                       aria-hidden="true"
@@ -928,7 +869,7 @@ function RoleStep({ role, onPick, onPickStarter, onSkip }) {
                     >
                       <Icon size={22} weight="duotone" />
                     </span>
-                    {title}
+                    {seedingStarter === id ? <LetterWave text="Setting up your board" /> : title}
                   </button>
                 </li>
               ))}
