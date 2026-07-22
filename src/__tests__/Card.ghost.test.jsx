@@ -27,17 +27,17 @@ describe('Card ghost mode', () => {
     useBoardStore.setState({ cards: {}, labels: {}, cardLabels: {}, _tempIdMap: {} })
   })
 
-  test('dotted border + appended mover attribution line', () => {
+  test('dashed border + appended mover attribution line', () => {
     const { container } = render(
       <Card card={card} onClick={vi.fn()} ghost={{ moverName: 'Maya', moverColor: 'bg-blue-200', when: '3 hours ago' }} />,
     )
-    expect(container.querySelector('button').className).toContain('border-dotted')
+    expect(container.querySelector('button').className).toContain('border-dashed')
     expect(container.textContent).toContain('Maya moved 3 hours ago')
   })
 
   test('without the ghost prop: solid border, no attribution line', () => {
     const { container } = render(<Card card={card} onClick={vi.fn()} />)
-    expect(container.querySelector('button').className).not.toContain('border-dotted')
+    expect(container.querySelector('button').className).not.toContain('border-dashed')
     expect(container.textContent).not.toContain('moved')
   })
 })

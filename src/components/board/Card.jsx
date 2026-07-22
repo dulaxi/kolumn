@@ -67,7 +67,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         isSelected
           ? 'bg-[var(--color-mauve-cream)] border-[var(--color-ink)]'
           : 'bg-[var(--surface-card)] border-[var(--color-mist)] hover:bg-[var(--surface-page)] hover:shadow-none hover:border-[var(--text-muted)]'
-      }${ghost ? ' border-dotted' : ''}`}
+      }${ghost ? ' border-dashed' : ''}`}
     >
       {/* Top row: icon + title + check */}
       <div className="flex items-center gap-3">
