@@ -7,6 +7,7 @@ import BoardSelector from '../components/board/BoardSelector'
 import BoardSkeleton from '../components/board/BoardSkeleton'
 import BoardView from '../components/board/BoardView'
 import CreateBoardModal from '../components/board/CreateBoardModal'
+import GhostToggle from '../components/board/GhostToggle'
 import LabelManagerModal from '../components/board/LabelManagerModal'
 import PresenceBar from '../components/board/PresenceBar'
 import Button from '../components/ui/Button'
@@ -113,6 +114,7 @@ export default function BoardsPage() {
             </h1>
           )}
           <PresenceBar />
+          <GhostToggle boardId={activeBoardId} />
         </div>
         <div className="shrink-0">
           <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
