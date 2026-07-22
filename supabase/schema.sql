@@ -15,6 +15,11 @@ create table public.profiles (
   -- Subscription tier; source of truth for AI gating + plan features.
   tier text not null default 'free' check (tier in ('free', 'pro', 'team')),
   tour_board_seeded_at timestamptz,
+  -- onboarding completeness (2026-07-22)
+  role text,
+  onboarded_at timestamptz,
+  terms_accepted_at timestamptz,
+  trial_ends_at timestamptz,
   created_at timestamptz default now()
 );
 
