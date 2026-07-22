@@ -301,8 +301,11 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
         </div>
       )}
 
+      </div>
+
       {/* Ghost attribution — one appended line so nothing overlaps: the mover's
-          avatar (left) + "<name> moved <when>". Only present on move ghosts. */}
+          avatar (left) + "<name> moved <when>". Rendered OUTSIDE the grayscale
+          layer so the mover avatar keeps its real colour. Only on move ghosts. */}
       {ghost && (() => {
         const { style: moverStyle, fallbackClass: moverFallback } = resolveProfileColor(ghost.moverColor)
         return (
@@ -321,7 +324,6 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
           </div>
         )
       })()}
-      </div>
     </button>
   )
 })
