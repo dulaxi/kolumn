@@ -34,8 +34,8 @@ export const ONBOARDING_BOARD = {
             'Kolumn is a kanban-first project tool with Claude as a teammate. ' +
             'Drag this card to "In progress" to start the tour.',
           checklist: [
-            { text: 'Read this card',         completed: true  },
-            { text: 'Drag me to In progress', completed: false },
+            { text: 'Read this card',         done: true  },
+            { text: 'Drag me to In progress', done: false },
           ],
         },
         {
@@ -48,9 +48,9 @@ export const ONBOARDING_BOARD = {
             'Labels group work across cards. Click + Labels, type ' +
             '"practice", and press Enter. Pick any color.',
           checklist: [
-            { text: 'Open this card',                 completed: false },
-            { text: 'Click + Labels',                 completed: false },
-            { text: 'Add a label called "practice"',  completed: false },
+            { text: 'Open this card',                 done: false },
+            { text: 'Click + Labels',                 done: false },
+            { text: 'Add a label called "practice"',  done: false },
           ],
         },
         {
@@ -64,8 +64,8 @@ export const ONBOARDING_BOARD = {
             'Pin work to a date. Click the date pill below and pick any ' +
             'day. Cards overdue go copper; today goes honey; future goes lime.',
           checklist: [
-            { text: 'Click the date pill', completed: false },
-            { text: 'Choose any date',     completed: false },
+            { text: 'Click the date pill', done: false },
+            { text: 'Choose any date',     done: false },
           ],
         },
         {
@@ -132,9 +132,9 @@ export const ONBOARDING_BOARD = {
             'Rename columns, drag them around, pick a new board icon. ' +
             'Boards bend to fit your work — not the other way around.',
           checklist: [
-            { text: 'Rename a column',       completed: false },
-            { text: 'Reorder the columns',   completed: false },
-            { text: 'Change the board icon', completed: false },
+            { text: 'Rename a column',       done: false },
+            { text: 'Reorder the columns',   done: false },
+            { text: 'Change the board icon', done: false },
           ],
         },
         {

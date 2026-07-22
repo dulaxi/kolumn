@@ -71,7 +71,7 @@ function CardPreview({ card, labels }) {
     : card.priority === 'low'    ? 'text-[var(--color-lime-dark)]'
     : 'text-[var(--color-honey)]'
 
-  const checklistDone = card.checklist?.filter((c) => c.completed).length || 0
+  const checklistDone = card.checklist?.filter((c) => c.done).length || 0
   const checklistTotal = card.checklist?.length || 0
   const hasChecklist = checklistTotal > 0
   const checklistComplete = hasChecklist && checklistDone === checklistTotal
