@@ -3,7 +3,7 @@ import { X, Plus, DotsThreeVertical } from '@phosphor-icons/react'
 import Modal from '../ui/Modal'
 import Menu from '../ui/Menu'
 import { useBoardStore } from '../../store/boardStore'
-import { LABEL_COLORS, COLOR_DOT_CLASSES } from '../../constants/colors'
+import { LABEL_COLORS, LABEL_COLORS_LIGHT, COLOR_DOT_CLASSES } from '../../constants/colors'
 
 export default function LabelManagerModal({ open, onClose, boardId }) {
   const [showArchived, setShowArchived] = useState(false)
@@ -66,22 +66,32 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
     setColorMenuOpen((prev) => ({ ...prev, [id]: val }))
 
   return (
-    <Modal open={open} onClose={onClose} contentClassName="flex items-center justify-center">
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[12px] shadow-[0_4px_24px_rgba(27,27,24,0.10)] w-full max-w-md mx-4">
-        <div className="p-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-[var(--text-primary)]">Labels</h2>
-            <button
-              onClick={onClose}
-              className="text-[var(--text-faint)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+    <Modal
+      open={open}
+      onClose={onClose}
+      contentClassName="grid items-center justify-items-center overflow-y-auto md:p-10 p-4"
+    >
+      <div className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center gap-4 justify-between">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] leading-6">Labels</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="h-8 w-8 shrink-0 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors -mx-2"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Label list */}
-          <div className="divide-y divide-[var(--border-subtle)]">
+        <p className="text-sm text-[var(--text-secondary)] mt-1 mb-3">
+          Organize cards with colored labels.
+        </p>
+
+        {/* Label list — scrolls internally so a long list never pushes the
+            modal (or its header/footer controls) off-screen. */}
+        <div className="divide-y divide-[var(--border-subtle)] max-h-[50vh] overflow-y-auto subtle-scrollbar">
             {allLabels.length === 0 && (
               <p className="py-4 text-xs text-[var(--text-faint)] text-center">
                 No labels yet
@@ -97,24 +107,36 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
                   open={!!colorMenuOpen[l.id]}
                   onOpenChange={(v) => toggleColorMenu(l.id, v)}
                   placement="bottom-start"
-                  panelClassName="w-36"
+                  portal
                   panel={
-                    <>
-                      {LABEL_COLORS.map((c) => (
-                        <Menu.Item
-                          key={c}
-                          onSelect={() => {
-                            updateLabelColor(l.id, c)
-                            toggleColorMenu(l.id, false)
-                          }}
-                        >
-                          <span
-                            className={`inline-block w-3 h-3 rounded-full shrink-0 ${COLOR_DOT_CLASSES[c] || ''}`}
+                    <div
+                      role="radiogroup"
+                      aria-label="Label color"
+                      className="grid grid-cols-8 gap-1.5 p-0.5"
+                    >
+                      {/* Row 1: saturated hues. Row 2: their light variants. */}
+                      {[...LABEL_COLORS, ...LABEL_COLORS_LIGHT].map((c) => {
+                        const selected = c === l.color
+                        return (
+                          <button
+                            key={c}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            aria-label={c}
+                            onClick={() => {
+                              updateLabelColor(l.id, c)
+                              toggleColorMenu(l.id, false)
+                            }}
+                            className={`w-7 h-7 rounded-md transition ${COLOR_DOT_CLASSES[c] || ''} ${
+                              selected
+                                ? 'ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--surface-card)]'
+                                : 'hover:opacity-75'
+                            }`}
                           />
-                          <span className="capitalize">{c}</span>
-                        </Menu.Item>
-                      ))}
-                    </>
+                        )
+                      })}
+                    </div>
                   }
                 >
                   <button
@@ -168,6 +190,7 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
                   open={!!dotMenuOpen[l.id]}
                   onOpenChange={(v) => toggleDotMenu(l.id, v)}
                   placement="bottom-end"
+                  portal
                   panelClassName="w-40"
                   panel={
                     <>
@@ -248,7 +271,7 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
               <button
                 type="button"
                 onClick={addNewLabel}
-                className="text-xs text-[var(--accent-lime-dark)] hover:underline shrink-0"
+                className="text-xs font-medium text-[var(--text-primary)] hover:underline shrink-0"
               >
                 Add
               </button>
@@ -273,7 +296,6 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
             />
             Show archived
           </label>
-        </div>
       </div>
 
       {/* Merge picker — nested modal */}
@@ -284,7 +306,7 @@ export default function LabelManagerModal({ open, onClose, boardId }) {
           contentClassName="flex items-center justify-center"
           zIndex={60}
         >
-          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[12px] shadow-[0_4px_24px_rgba(27,27,24,0.10)] w-full max-w-xs mx-4">
+          <div className="bg-[var(--surface-page)] border-0.5 border-[var(--border-default)] rounded-xl shadow-[var(--shadow-raised)] w-full max-w-xs mx-4">
             <div className="p-3">
               <div className="text-sm mb-2 text-[var(--text-primary)]">
                 Merge{' '}

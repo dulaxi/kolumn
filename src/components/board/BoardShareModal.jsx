@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { capture } from '../../lib/analytics'
-import { Envelope, ShareNetwork, SignOut, Trash, UserPlus, Users, X } from '@phosphor-icons/react'
+import { Envelope, SignOut, Trash, UserPlus, X } from '@phosphor-icons/react'
 import { showToast } from '../../utils/toast'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
@@ -10,7 +10,6 @@ import { useBoardSharingStore } from '../../store/boardSharingStore'
 // selector triggers a re-render every time (Object.is([], []) is false),
 // which produced "Maximum update depth exceeded" here.
 const EMPTY = []
-import { useIsMobile } from '../../hooks/useMediaQuery'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -24,7 +23,6 @@ import { getAvatarColor, getAvatarTextColor, getInitials } from '../../utils/for
 import FieldError from '../ui/FieldError'
 
 export default function BoardShareModal({ board, onClose }) {
-  const isMobile = useIsMobile()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -166,36 +164,36 @@ export default function BoardShareModal({ board, onClose }) {
   const isOwner = user?.id === board.owner_id
 
   return (
-    <Modal open onClose={onClose} contentClassName="flex items-center justify-center">
-      <div className={`bg-[var(--surface-card)] shadow-[var(--shadow-raised)] ${
-        isMobile
-          ? 'fixed inset-0'
-          : 'rounded-xl w-full max-w-md mx-4'
-      }`}>
+    <Modal
+      open
+      onClose={onClose}
+      contentClassName="grid items-center justify-items-center overflow-y-auto md:p-10 p-4"
+    >
+      <div className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-md">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
-          <div className="flex items-center gap-2">
-            {isOwner ? (
-              <ShareNetwork className="w-5 h-5 text-[var(--text-secondary)]" />
-            ) : (
-              <Users className="w-5 h-5 text-[var(--text-secondary)]" />
-            )}
-            <h2 className="font-heading text-lg font-[425] text-[var(--text-primary)]">
-              {isOwner ? `Share "${board.name}"` : `Members of "${board.name}"`}
-            </h2>
-          </div>
+        <div className="flex items-center gap-4 justify-between">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] leading-6 truncate min-w-0">
+            {isOwner ? 'Share board' : 'Board members'}
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+            aria-label="Close"
+            className="h-8 w-8 shrink-0 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors -mx-2"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
+        <p className="text-sm text-[var(--text-secondary)] mt-1 mb-3">
+          {isOwner
+            ? 'Invite people by email to collaborate on this board.'
+            : 'People with access to this board.'}
+        </p>
+
         {/* Invite form */}
         {isOwner && (
-          <form onSubmit={handleInvite} className="px-5 py-3 border-b border-[var(--border-subtle)]">
+          <form onSubmit={handleInvite} className="flex flex-col gap-1 mt-2">
             <div className="flex gap-2">
               <Input
                 type="email"
@@ -221,11 +219,11 @@ export default function BoardShareModal({ board, onClose }) {
         )}
 
         {/* Members list */}
-        <div className="px-5 py-3 max-h-64 overflow-y-auto">
-          <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+        <div className="mt-4 max-h-64 overflow-y-auto">
+          <label className="text-sm font-medium text-[var(--text-secondary)]">
             Members{members.length ? ` (${members.length})` : ''}
-          </p>
-          <div className="space-y-1">
+          </label>
+          <div className="space-y-1 mt-1">
             {/* First-open skeleton — only when there's truly no cached
                 data for this board. Two ghost rows keep the panel
                 height stable so members landing doesn't push the
@@ -306,10 +304,10 @@ export default function BoardShareModal({ board, onClose }) {
               shouldn't see other people's invited emails. */}
           {isOwner && invitations.length > 0 && (
             <>
-              <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mt-4 mb-2">
-                Pending Invitations ({invitations.length})
-              </p>
-              <div className="space-y-1">
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mt-4">
+                Pending invitations ({invitations.length})
+              </label>
+              <div className="space-y-1 mt-1">
                 {invitations.map((inv) => (
                   <div
                     key={inv.id}
