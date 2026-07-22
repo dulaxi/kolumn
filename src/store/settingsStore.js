@@ -28,6 +28,7 @@ export const useSettingsStore = create(
       iconStyle: 'boxed',
       workspaceSidebarOpen: false,
       _sidebarBeforeWorkspace: false,
+      ghostBoards: {}, // { [boardId]: true } — per-board "ghost mode" armed state
       toggleSidebar: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (val) => set({ sidebarCollapsed: val }),
@@ -78,6 +79,13 @@ export const useSettingsStore = create(
         return { labelStyle: next[s.labelStyle] || 'alt' }
       }),
       toggleIconStyle: () => set((s) => ({ iconStyle: s.iconStyle === 'plain' ? 'boxed' : 'plain' })),
+      toggleGhostMode: (boardId) => set((s) => {
+        const next = { ...s.ghostBoards }
+        if (next[boardId]) delete next[boardId]
+        else next[boardId] = true
+        return { ghostBoards: next }
+      }),
+      isGhostArmed: (boardId) => !!get().ghostBoards[boardId],
     }),
     {
       name: 'kolumn-settings',
