@@ -178,6 +178,12 @@ const STEAM1 = ['.S..', '..S.']
 const STEAM2 = ['..S.', '.S..']
 const MOON = ['.hh', 'hh.', 'hh.', '.hh']
 
+// Upsell journey: honey wall socket (slots on its left face) + copper plug.
+const SOCKET = ['hhhh', 'Khhh', 'hhhh', 'Khhh', 'hhhh']
+const PLUG = ['ccK', 'ccc', 'ccK'] // charcoal prongs face the socket
+const PLUG_IN = ['cc', 'cc', 'cc'] // prongs seated — flush with the socket
+const SPARK = ['h.h', '.h.', 'h.h']
+
 // ── Core animation library (the shipped set — extend freely) ──
 export const ANIMATIONS = {
   idle: [
@@ -439,4 +445,25 @@ export const ANIMATIONS = {
     frame(BASE, null, { 11: '...l....................', 12: '..lll...............l...', 13: '.hhhhh.............lll..', 14: '.hkhkh............ccccc.', 15: '.hhhhh............ckckc.', 16: '..................ccccc.' }, 280),
     frame(BASE, { 6: BLUSH }, { 11: '....l..............l....', 12: '...lll............lll...', 13: '..hhhhh..........ccccc..', 14: '..hkhkh..........ckckc..', 15: '..hhhhh..........ccccc..' }, 600), // rest: huddle + blush
   ],
+
+  // ── Upsell journey set ───────────────────────────────────────────────
+  // Station 3 of the onboarding upsell: Klay pushes a copper plug into a
+  // honey socket — click, spark, payoff hold. Push grammar from ship/push-card.
+  connect: [
+    frame(LEFT, { 4: LEFT_ARM }, merge(hi(PLUG, 13, 12), hi(SOCKET, 20, 11)), 650),
+    frame(LEFT_DOWN, { 5: LEFT_ARM }, merge(hi(PLUG, 15, 12), hi(SOCKET, 20, 11)), 350),
+    frame(LEFT, { 4: LEFT_ARM }, merge(hi(PLUG, 17, 12), hi(SOCKET, 20, 11)), 350),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11), hi(SPARK, 17, 8)), 320),
+    frame(LEFT_UP, { 4: LEFT_EYES.right }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 350),
+    frame(LEFT, { 5: LEFT_EYES.closed }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 1100),
+  ],
+}
+
+// Resting props for the upsell journey stations — what each card shows while
+// Klay performs elsewhere. Rendered statically by KlayStatic on the same
+// fine-grid canvas, so they sit exactly where the animated scenes put them.
+export const UPSELL_REST_PROPS = {
+  chat: hi(BUB_M, 13, 5), // quiet empty bubble
+  agentic: merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9)), // Doing/Done columns, card still in Doing
+  tools: hi(SOCKET, 20, 11), // unplugged socket
 }
