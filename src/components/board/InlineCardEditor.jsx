@@ -9,6 +9,7 @@ import { useMenuState } from '../../hooks/useMenuState'
 import { useCardEditState } from '../../hooks/useCardEditState'
 import { useBoardMembers } from '../../hooks/useBoardMemberNames'
 import { PRIORITY_OPTIONS } from '../../constants/colors'
+import CalendarPicker from '../ui/Calendar'
 import { formatDueDateLabel, dueDateBadgeClass, parseDueDate } from '../../utils/dateUtils'
 import AssigneePicker from './cardDetail/AssigneePicker'
 import LabelAutocomplete from './LabelAutocomplete'
@@ -285,28 +286,15 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
             open={openMenu === 'date'}
             onOpenChange={(next) => setOpenMenu(next ? 'date' : null)}
             placement="bottom-start"
+            portal
             panel={
-              <div className="flex flex-col gap-1 p-1">
-                <input
-                  type="date"
-                  value={dueDate ? dueDate.split('T')[0] : ''}
-                  onChange={(e) => {
-                    setDueDate(e.target.value ? `${e.target.value}T23:59:59` : '')
-                    setOpenMenu(null)
-                  }}
-                  autoFocus
-                  className="text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
-                />
-                {dueDate && (
-                  <button
-                    type="button"
-                    onClick={() => { setDueDate(''); setOpenMenu(null) }}
-                    className="text-[10px] text-[var(--text-muted)] hover:text-[var(--color-copper)] transition-colors self-start"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+              <CalendarPicker
+                value={dueDate ? dueDate.split('T')[0] : ''}
+                onChange={(iso) => {
+                  setDueDate(iso ? `${iso}T23:59:59` : '')
+                  setOpenMenu(null)
+                }}
+              />
             }
           >
             {dueDateObj ? (
