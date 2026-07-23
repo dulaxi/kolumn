@@ -4,6 +4,7 @@ import { logError } from '../utils/logger'
 import * as Sentry from '@sentry/react'
 import { identifyUser, resetUser, capture } from '../lib/analytics'
 import { emitStoreEvent } from './storeEvents'
+import { isNewAccount } from '../constants/onboarding'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -260,5 +261,25 @@ export const useAuthStore = create((set, get) => ({
     if (error) throw error
     set({ profile: data })
     return data
+  },
+
+  // Onboarding checklist step tracker. Guards make it safe to call from hot
+  // paths (addBoard/addCard/pill submit) — it no-ops for old accounts,
+  // already-set keys, and post-dismissal step writes.
+  markOnboardingStep: async (key) => {
+    const { profile } = get()
+    if (!isNewAccount(profile)) return
+    const steps = profile.onboarding_steps || {}
+    if (steps[key]) return
+    if (key !== 'dismissed' && steps.dismissed) return
+    const next = { ...steps, [key]: new Date().toISOString() }
+    set({ profile: { ...profile, onboarding_steps: next } })
+    try {
+      await get().updateProfile({ onboarding_steps: next })
+    } catch (err) {
+      // Keep the optimistic merge; a lost write only risks re-showing a
+      // completed step on another device.
+      logError('markOnboardingStep persist failed:', err)
+    }
   },
 }))
