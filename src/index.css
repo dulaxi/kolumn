@@ -322,6 +322,21 @@
   to { opacity: 1; }
 }
 
+/* Ghost cards materialize instead of popping: quick fade + short rise.
+   Ghostly = soft; anything bouncier would fight the inert, historical feel. */
+@keyframes ghostIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-ghost-in {
+  animation: ghostIn 0.22s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ghost-in { animation: none; }
+}
+
 @keyframes dropdownIn {
   from { opacity: 0; transform: scale(0.95) translateY(-4px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
