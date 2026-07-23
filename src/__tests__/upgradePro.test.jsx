@@ -32,28 +32,43 @@ beforeEach(() => {
   mockLocationState = null
 })
 
+// The agreement checkbox gates the CTA (claude.ai-style checkout).
+const agree = () => fireEvent.click(screen.getByRole('checkbox'))
+
 describe('UpgradeProPage — trial state', () => {
-  test('with trial state: shows "Start free trial" CTA and $0 due today', () => {
+  test('with trial state: shows "Start free trial" CTA and $0.00 due today', () => {
     mockLocationState = { trial: true }
     render(<UpgradeProPage />)
 
     expect(screen.getByRole('button', { name: /start free trial/i })).toBeInTheDocument()
-    expect(screen.getByText('$0')).toBeInTheDocument()
+    // $0.00 appears for both Tax and Total due today in trial mode
+    expect(screen.getAllByText('$0.00')).toHaveLength(2)
   })
 
-  test('without trial state: shows "Activate Pro" CTA', () => {
+  test('without trial state: shows "Subscribe" CTA', () => {
     mockLocationState = null
     render(<UpgradeProPage />)
 
-    expect(screen.getByRole('button', { name: /^activate pro$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^subscribe$/i })).toBeInTheDocument()
   })
 })
 
 describe('UpgradeProPage — subscribe button', () => {
+  test('CTA is disabled until the terms checkbox is checked', () => {
+    mockLocationState = null
+    render(<UpgradeProPage />)
+
+    const cta = screen.getByRole('button', { name: /^subscribe$/i })
+    expect(cta).toBeDisabled()
+    agree()
+    expect(cta).not.toBeDisabled()
+  })
+
   test('trial + from onboarding: sets Pro tier, records trial_ends_at, routes to onboarding disclaimer', async () => {
     mockLocationState = { trial: true, from: 'onboarding' }
     render(<UpgradeProPage />)
 
+    agree()
     fireEvent.click(screen.getByRole('button', { name: /start free trial/i }))
 
     await waitFor(() => expect(mockSetTier).toHaveBeenCalledWith('pro'))
@@ -67,7 +82,8 @@ describe('UpgradeProPage — subscribe button', () => {
     mockLocationState = null
     render(<UpgradeProPage />)
 
-    fireEvent.click(screen.getByRole('button', { name: /^activate pro$/i }))
+    agree()
+    fireEvent.click(screen.getByRole('button', { name: /^subscribe$/i }))
 
     await waitFor(() => expect(mockSetTier).toHaveBeenCalledWith('pro'))
     expect(mockUpdateProfile).not.toHaveBeenCalled()

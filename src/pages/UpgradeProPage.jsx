@@ -4,14 +4,15 @@ import { addDays, addMonths, addYears, format } from 'date-fns'
 
 import { useAuthStore } from '../store/authStore'
 import { showToast } from '../utils/toast'
-import { ArrowLeft, CreditCard, Info } from '@phosphor-icons/react'
+import { ArrowLeft, Check, CreditCard, Info } from '@phosphor-icons/react'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 // Pricing — matches what's on the landing + signup pricing cards.
 // Yearly = 10× monthly (≈17% saved over paying month-by-month).
 const PRICES = {
-  monthly: { amount: 8, period: 'month', label: '$8.00/month + tax' },
-  yearly:  { amount: 80, period: 'year',  label: '$80.00/year + tax' },
+  monthly: { amount: 8, period: 'month', label: '$8.00/month + tax', billed: 'Billed monthly' },
+  yearly:  { amount: 80, period: 'year',  label: '$80.00/year + tax', billed: 'Billed yearly' },
 }
 
 export default function UpgradeProPage() {
@@ -24,6 +25,7 @@ export default function UpgradeProPage() {
   const fromOnboarding = location.state?.from === 'onboarding'
 
   const [period, setPeriod] = useState('yearly') // claude.ai-style: yearly preselected (cheaper)
+  const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const renewalDate = useMemo(() => {
@@ -56,112 +58,147 @@ export default function UpgradeProPage() {
 
   return (
     <div className="min-h-screen bg-[var(--surface-page)]">
-      {/* Back button — absolute top-left, ghost styling */}
-      <header className="relative flex w-full items-center justify-center pb-5 pt-8">
+      {/* Back button — own row, top-left */}
+      <div className="px-4 pt-4">
         <Button
           variant="ghost"
           size="icon-md"
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="absolute left-4 top-8 !rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="!rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         >
           <ArrowLeft size={20} weight="bold" />
         </Button>
-      </header>
+      </div>
 
-      <div className="flex flex-col w-full max-w-lg mx-auto px-4 pt-8 pb-16">
-        <h1 className="text-[32px] font-light font-logo tracking-tight leading-[1.15] mb-6">Pro plan</h1>
+      <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-8">
+        <h1 className="text-xl font-semibold text-[var(--text-primary)] leading-6 mb-8">
+          Configure your plan
+        </h1>
 
-        <div className="grid gap-4">
-          {/* ── Period picker ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <PeriodCard
-              id="monthly"
-              label="Monthly"
-              sub="$8.00/month + tax"
-              selected={period === 'monthly'}
-              onSelect={() => setPeriod('monthly')}
-            />
-            <PeriodCard
-              id="yearly"
-              label="Yearly"
-              sub="$80.00/year + tax"
-              badge="Save 17%"
-              selected={period === 'yearly'}
-              onSelect={() => setPeriod('yearly')}
-            />
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+          {/* ── Left column: plan picker + billing + payment ── */}
+          <div className="min-w-0 flex flex-col gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <PeriodCard
+                label="Pro monthly"
+                amount="$8.00"
+                sub="Billed monthly"
+                selected={period === 'monthly'}
+                onSelect={() => setPeriod('monthly')}
+              />
+              <PeriodCard
+                label="Pro yearly"
+                amount="$80.00"
+                sub="Billed yearly"
+                badge="Save 17%"
+                selected={period === 'yearly'}
+                onSelect={() => setPeriod('yearly')}
+              />
+            </div>
+
+            {/* ── Billing information ── */}
+            <section>
+              <div className="text-[var(--text-primary)] text-base font-medium mb-4">Billing information</div>
+              <label htmlFor="invoice-name" className="block text-sm text-[var(--text-secondary)] mb-2">
+                Use a different name on invoices (optional)
+              </label>
+              <Input id="invoice-name" name="invoice-name" maxLength={255} autoComplete="off" />
+            </section>
+
+            {/* ── Payment method (Stripe Elements goes here later) ── */}
+            <section>
+              <div className="text-[var(--text-primary)] text-base font-medium mb-4">Payment method</div>
+              <div className="flex items-start gap-3 p-4 bg-[var(--surface-raised)] rounded-lg border border-[var(--color-sand)]">
+                <CreditCard size={20} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="flex-1 text-sm text-[var(--text-secondary)] leading-relaxed">
+                  <span className="font-medium text-[var(--text-primary)]">Early access — no card required yet.</span>{' '}
+                  Activate Pro now and we'll email you before any charge when billing launches. You can keep all features in the meantime.
+                </div>
+              </div>
+            </section>
           </div>
 
-          {/* ── Order summary ── */}
-          <section className="p-5 bg-[var(--surface-raised)] border border-[var(--color-sand)] rounded-xl text-sm text-[var(--text-secondary)] flex flex-col gap-4">
-            <div className="text-[var(--text-primary)] text-base font-medium">Order details</div>
+          {/* ── Right column: sticky order summary ── */}
+          <aside className="min-w-0 md:sticky md:top-8 md:self-start">
+            <div className="rounded-3xl border border-[var(--color-sand)] bg-[var(--surface-card)] p-6 sm:p-8 shadow-[0_4px_24px_rgba(27,27,24,0.10)]">
+              <h2 className="font-heading font-[425] text-[22px] text-[var(--text-primary)]">Pro plan</h2>
 
-            <div className="flex justify-between w-full">
-              <div>
-                <div className="font-medium text-[var(--text-primary)]">Pro plan</div>
-                <div className="text-[var(--text-muted)] capitalize">{period}</div>
+              <div className="flex flex-col gap-2 pt-6 text-sm text-[var(--text-secondary)]">
+                <div className="flex justify-between w-full">
+                  <span>Pro {period}</span>
+                  <span className="tabular-nums">${price.amount}.00</span>
+                </div>
+                <div className="flex justify-between w-full">
+                  <span>Subtotal</span>
+                  <span className="tabular-nums">${price.amount}.00</span>
+                </div>
+                <div className="flex justify-between w-full text-[var(--text-muted)]">
+                  <span>Tax</span>
+                  <span className="tabular-nums">$0.00</span>
+                </div>
+                {trial && (
+                  <div className="flex justify-between w-full">
+                    <span>7-day free trial</span>
+                    <span className="tabular-nums">−${price.amount}.00</span>
+                  </div>
+                )}
+                <div className="flex justify-between w-full mt-2 font-medium text-[var(--text-primary)]">
+                  <span>Total due today</span>
+                  <span className="tabular-nums">${trial ? 0 : price.amount}.00</span>
+                </div>
               </div>
-              <div className="font-medium text-[var(--text-primary)] tabular-nums">${price.amount}</div>
-            </div>
 
-            <div className="w-full border-t border-[var(--color-sand)]" />
-
-            <div className="flex justify-between w-full font-medium text-[var(--text-primary)]">
-              <span>Subtotal</span>
-              <span className="tabular-nums">${price.amount}</span>
-            </div>
-
-            {trial && (
-              <div className="flex justify-between w-full">
-                <span>7-day free trial</span>
-                <span className="tabular-nums">−${price.amount}</span>
+              {/* ── Renewal info ── */}
+              <div className="flex items-start gap-3 p-4 my-5 border border-[var(--color-sand)] bg-[var(--surface-raised)] rounded-xl text-sm text-[var(--text-secondary)]">
+                <Info size={18} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="leading-relaxed">
+                  {trial
+                    ? `Pro is free until ${trialEnd}. After that your subscription renews at ${price.label} unless you cancel — anytime, in settings.`
+                    : `Your subscription will auto renew on ${renewalDate}. You will be charged ${price.label}. You can cancel anytime in your account settings.`}
+                </p>
               </div>
-            )}
 
-            <div className="w-full border-t border-[var(--color-sand)]" />
+              {/* ── Terms agreement ── */}
+              <label className="flex items-start gap-3 mb-4 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
+                <span
+                  aria-hidden="true"
+                  className={[
+                    'shrink-0 w-4 h-4 mt-0.5 flex items-center justify-center rounded-[4px] border transition-colors',
+                    'peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--text-primary)]/30 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--surface-card)]',
+                    agreed
+                      ? 'bg-[var(--text-primary)] border-[var(--text-primary)]'
+                      : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--text-muted)]',
+                  ].join(' ')}
+                >
+                  {agreed && <Check size={12} weight="bold" className="text-[var(--surface-page)]" />}
+                </span>
+                <span className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  You agree that Kolumn may charge your card in the amount above on the renewal
+                  date once billing launches, on a recurring basis until you cancel. You can
+                  cancel anytime in your account settings.
+                </span>
+              </label>
 
-            <div className="flex justify-between w-full font-medium text-[var(--text-primary)]">
-              <span>Total due today</span>
-              <span className="tabular-nums">${trial ? 0 : price.amount}</span>
+              {/* ── Subscribe CTA ── */}
+              <Button
+                size="lg"
+                onClick={handleSubscribe}
+                disabled={!agreed}
+                loading={submitting}
+                loadingText={trial ? 'Starting trial' : 'Activating'}
+                className="w-full"
+              >
+                {trial ? 'Start free trial' : 'Subscribe'}
+              </Button>
             </div>
-          </section>
-
-          {/* ── Renewal info banner ── */}
-          <div className="flex items-start gap-4 p-5 border border-[var(--color-sand)] rounded-xl text-sm text-[var(--text-secondary)]">
-            <Info size={18} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />
-            <p className="leading-relaxed">
-              {trial
-                ? `Pro is free until ${trialEnd}. After that your subscription renews at ${price.label} unless you cancel — anytime, in settings.`
-                : `Your subscription will auto renew on ${renewalDate}. You will be charged ${price.label}. You can cancel anytime in your account settings.`}
-            </p>
-          </div>
-
-          {/* ── Payment placeholder (Stripe Elements goes here later) ── */}
-          <section className="p-5 bg-[var(--surface-card)] border border-[var(--color-sand)] rounded-xl">
-            <div className="text-[var(--text-primary)] text-base font-medium mb-4">Payment method</div>
-            <div className="flex items-start gap-3 p-4 bg-[var(--surface-raised)] rounded-lg border border-[var(--color-sand)]">
-              <CreditCard size={20} weight="regular" className="text-[var(--text-muted)] shrink-0 mt-0.5" aria-hidden="true" />
-              <div className="flex-1 text-sm text-[var(--text-secondary)] leading-relaxed">
-                <span className="font-medium text-[var(--text-primary)]">Early access — no card required yet.</span>{' '}
-                Activate Pro now and we'll email you before any charge when billing launches. You can keep all features in the meantime.
-              </div>
-            </div>
-          </section>
-
-          {/* ── Subscribe CTA ── */}
-          <Button
-            size="lg"
-            onClick={handleSubscribe}
-            loading={submitting}
-            loadingText={trial ? 'Starting trial' : 'Activating'}
-            className="mt-2 w-full"
-          >
-            {trial ? 'Start free trial' : 'Activate Pro'}
-          </Button>
-
-          <p className="text-center text-xs text-[var(--text-muted)] mt-1 max-w-md mx-auto">
-            By activating, you agree that Kolumn may charge your card on the renewal date once billing launches. Cancel anytime in settings.
-          </p>
+          </aside>
         </div>
       </div>
     </div>
@@ -169,7 +206,7 @@ export default function UpgradeProPage() {
 }
 
 // Internal: one period option in the Monthly/Yearly picker.
-function PeriodCard({ label, sub, badge, selected, onSelect }) {
+function PeriodCard({ label, amount, sub, badge, selected, onSelect }) {
   return (
     <button
       type="button"
@@ -177,14 +214,14 @@ function PeriodCard({ label, sub, badge, selected, onSelect }) {
       aria-pressed={selected}
       aria-label={`Select ${label} billing`}
       className={[
-        'relative flex flex-col rounded-xl p-4 items-start text-left transition-colors cursor-pointer',
+        'relative flex flex-col gap-1 rounded-2xl px-5 py-4 items-start text-left transition-colors cursor-pointer',
         'border focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]',
         selected
-          ? 'bg-[var(--accent-lime-wash)] border-[var(--color-lime-dark)]'
+          ? 'bg-[var(--color-mauve-wash)] border-[var(--color-mauve)]'
           : 'bg-[var(--surface-card)] border-[var(--color-sand)] hover:border-[var(--text-muted)]',
       ].join(' ')}
     >
-      <div className="mb-3 flex w-full items-center justify-between">
+      <div className="mb-2 flex w-full items-center justify-between gap-2">
         {/* Custom radio circle — fills with ink when selected */}
         <span
           aria-hidden="true"
@@ -197,12 +234,13 @@ function PeriodCard({ label, sub, badge, selected, onSelect }) {
         </span>
 
         {badge && (
-          <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-[var(--color-lime-dark)] text-[var(--surface-page)]">
+          <span className="px-2 py-0.5 text-xs font-medium rounded-md bg-[var(--text-primary)] text-[var(--surface-page)]">
             {badge}
           </span>
         )}
       </div>
       <span className="text-[var(--text-primary)] font-medium text-base leading-6">{label}</span>
+      <span className="text-[var(--text-primary)] tabular-nums mt-2">{amount}</span>
       <span className="text-[var(--text-muted)] text-sm">{sub}</span>
     </button>
   )

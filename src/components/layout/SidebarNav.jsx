@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { Blueprint, ChatsCircle, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
+import { useAuthStore } from '../../store/authStore'
 import WorkspaceDropdown from './WorkspaceDropdown'
 import Tooltip from '../ui/Tooltip'
 
@@ -24,9 +25,9 @@ function IconSlot({ children, badge }) {
   )
 }
 
-function NavLinkRow({ to, end, icon: Icon, label, collapsed, onNavigate, badge, badgeCollapsed }) {
+function NavLinkRow({ to, end, icon: Icon, label, collapsed, onNavigate, badge, badgeCollapsed, dimmed, tooltip }) {
   return (
-    <Tooltip content={collapsed ? label : undefined} placement="right">
+    <Tooltip content={collapsed ? (tooltip || label) : undefined} placement="right">
       <NavLink
         to={to}
         end={end}
@@ -36,11 +37,11 @@ function NavLinkRow({ to, end, icon: Icon, label, collapsed, onNavigate, badge, 
         {({ isActive }) => (
           <>
             <IconSlot badge={collapsed ? badgeCollapsed : null}>
-              <Icon className="w-5 h-5 shrink-0" weight={isActive ? 'fill' : 'light'} />
+              <Icon className={`w-5 h-5 shrink-0 ${dimmed ? 'opacity-40' : ''}`} weight={isActive ? 'fill' : 'light'} />
             </IconSlot>
             {!collapsed && (
               <>
-                <span className="truncate flex-1">{label}</span>
+                <span className={`truncate flex-1 ${dimmed ? 'opacity-40' : ''}`}>{label}</span>
                 {badge}
               </>
             )}
@@ -66,6 +67,16 @@ export default function SidebarNav({
     </span>
   ) : null
 
+  // Builder is a paid surface — free tier sees a dimmed row that routes to
+  // the plan picker with an Upgrade pill (claude.ai-style locked nav item).
+  const tier = useAuthStore((s) => s.profile?.tier)
+  const builderLocked = tier === 'free'
+  const upgradeBadge = (
+    <span className="shrink-0 px-1.5 py-px rounded-full border border-[var(--border-default)] font-mono text-[11px] leading-4 text-[var(--label-blue-text)]">
+      Upgrade
+    </span>
+  )
+
   return (
     <div className="flex flex-col gap-px">
       {/* Search — fires global event, no route */}
@@ -83,7 +94,16 @@ export default function SidebarNav({
       </Tooltip>
 
       <NavLinkRow to="/chat" end icon={ChatsCircle} label="Chats" collapsed={collapsed} onNavigate={closeMobileMenu} />
-      <NavLinkRow to="/build" icon={Blueprint} label="Builder" collapsed={collapsed} onNavigate={closeMobileMenu} />
+      <NavLinkRow
+        to={builderLocked ? '/plans' : '/build'}
+        icon={Blueprint}
+        label="Builder"
+        collapsed={collapsed}
+        onNavigate={closeMobileMenu}
+        dimmed={builderLocked}
+        badge={builderLocked ? upgradeBadge : null}
+        tooltip={builderLocked ? 'Builder — upgrade to unlock' : undefined}
+      />
       {/* Calendar + Notes removed — see App.jsx note. */}
 
       {/* Workspace — desktop becomes a dropdown filter; mobile keeps a plain NavLink */}

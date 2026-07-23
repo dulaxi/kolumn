@@ -75,6 +75,9 @@ export default function App() {
           {import.meta.env.DEV && (
             <Route path="/sandbox/board-skeleton" element={<ErrorBoundary><BoardSkeletonSandbox /></ErrorBoundary>} />
           )}
+          {import.meta.env.DEV && (
+            <Route path="/sandbox/upgrade-pro" element={<ErrorBoundary><UpgradeProPage /></ErrorBoundary>} />
+          )}
           <Route path="/onboarding" element={<ErrorBoundary><OnboardingPage /></ErrorBoundary>} />
           <Route path="/terms" element={<ErrorBoundary><TermsPage /></ErrorBoundary>} />
           <Route path="/privacy" element={<ErrorBoundary><PrivacyPage /></ErrorBoundary>} />
