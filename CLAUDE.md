@@ -46,7 +46,7 @@ the active surface. Don't touch AI files except in passing.
   a two-line block (replaces the prior single-line name + caret). The
   `profile.tier` field is the source of truth (`'free' | 'pro' | 'team'`).
 
-UI coherency rules (claude.ai-style: restrained, lime accent, Mona Sans + serif,
+UI coherency rules (claude.ai-style: restrained, lime accent, General Sans + serif,
 1px borders, 8–12px radius) still apply. If Builder introduces new icons,
 prefer extending the existing Phosphor vocabulary already in use over importing
 new symbols.
@@ -363,7 +363,7 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 
 | Token            | Font                  | Use                                |
 |------------------|-----------------------|------------------------------------|
-| `--font-sans`    | Mona Sans Variable    | Main app text                      |
+| `--font-sans`    | General Sans          | Main app text (+0.008em body tracking) |
 | `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark + pre-auth display (300) |
 | `--font-heading` | Clash Grotesk         | Page titles (weight 425)           |
 | `--font-mono`    | IBM Plex Mono         | Code, IDs, paths                   |
