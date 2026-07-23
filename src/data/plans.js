@@ -56,7 +56,7 @@ export const PLANS = [
     inheritsFrom: 'Free',
     bullets: [
       'Unlimited AI messages',
-      'Claude can move, update, and reorganize cards across your boards',
+      'The AI can move, update, and reorganize cards across your boards',
       'Priority support',
     ],
   },

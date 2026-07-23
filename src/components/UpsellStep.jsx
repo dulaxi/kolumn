@@ -56,7 +56,7 @@ export default function UpsellStep({ onTryPro, onSkip }) {
           Get more out of Kolumn with Pro
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          Claude on every board, automations, and your tools — connected.
+          AI on every board, automations, and your tools — connected.
         </p>
       </header>
 

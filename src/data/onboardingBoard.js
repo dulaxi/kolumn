@@ -32,7 +32,7 @@ export const ONBOARDING_BOARD = {
           priority: 'medium',
           labels: ['welcome'],
           description:
-            'Kolumn is a kanban-first project tool with Claude as a teammate. ' +
+            'Kolumn is a kanban-first project tool with AI as a teammate. ' +
             'This board is a sandbox — drag, click, and edit anything; every ' +
             'card teaches one thing. Delete the board from its menu when ' +
             'you’re done. Start by dragging this card to "In progress".',
@@ -85,11 +85,11 @@ export const ONBOARDING_BOARD = {
         {
           id: 'chat',
           icon: 'chat-circle-dots',
-          title: 'Ask Claude for help',
+          title: 'Ask AI for help',
           priority: 'high',
           labels: ['pro'],
           description:
-            'Two ways to work with Claude: type into the pill at the bottom of ' +
+            'Two ways to work with the AI: type into the pill at the bottom of ' +
             'any board ("add a card for tomorrow’s standup") and it happens, or ' +
             'open Chat from the sidebar to ask questions about your boards.',
         },

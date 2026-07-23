@@ -14,7 +14,7 @@ export const TIERS = {
   },
   pro: {
     label: 'Pro',
-    includes: 'Unlimited AI messages · Claude can move, update, and reorganize cards · priority support',
+    includes: 'Unlimited AI messages · The AI can move, update, and reorganize cards · priority support',
   },
   team: {
     label: 'Team',

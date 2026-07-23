@@ -685,7 +685,7 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
           What&rsquo;s your name?
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          So Claude knows what to call you.
+          So the AI knows what to call you.
         </p>
       </header>
 
@@ -774,7 +774,7 @@ function DisclaimerStep({ onContinue }) {
             <p className="text-[var(--text-primary)] text-sm leading-relaxed">
               <span className="font-semibold">Deletes are undoable.</span>{' '}
               <span className="text-[var(--text-secondary)]">
-                Anything Claude deletes comes with a one-click undo, and destructive
+                Anything the AI deletes comes with a one-click undo, and destructive
                 actions ask for your approval before they run.
               </span>
             </p>
