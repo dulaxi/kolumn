@@ -322,15 +322,17 @@
   to { opacity: 1; }
 }
 
-/* Ghost cards materialize instead of popping: quick fade + short rise.
-   Ghostly = soft; anything bouncier would fight the inert, historical feel. */
+/* Ghost cards settle in from above — the ghost marks where the card USED
+   to live, so it drifts down into its old slot (decision: ghost-anim
+   picker, "Settle"). Soft and quick; it plays on every hover in ghost
+   mode, so it has to survive repetition. */
 @keyframes ghostIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-ghost-in {
-  animation: ghostIn 0.22s ease-out both;
+  animation: ghostIn 0.26s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
