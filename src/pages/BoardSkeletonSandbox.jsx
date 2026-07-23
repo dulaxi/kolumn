@@ -71,7 +71,7 @@ export default function BoardSkeletonSandbox() {
 
       {/* Klay specimens (real PixelKlay component) */}
       <div className="flex flex-wrap items-end gap-6 shrink-0">
-        {['idle', 'tap', 'hop', 'grow', 'wilt', 'converse', 'blueprint', 'duo'].map((name) => (
+        {['idle', 'tap', 'hop', 'grow', 'wilt', 'converse', 'blueprint', 'duo', 'connect'].map((name) => (
           <div key={name} className="flex flex-col items-center gap-1">
             <PixelKlay animation={name} scale={7} label={`Klay ${name}`} />
             <span className="font-mono text-[10px] text-[var(--text-faint)]">{name}</span>
