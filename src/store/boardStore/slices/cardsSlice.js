@@ -73,6 +73,7 @@ export const createCardsSlice = (set, get) => ({
       cards: { ...s.cards, [tempId]: optimisticCard },
       boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: localTaskNumber + 1 } },
     }))
+    useAuthStore.getState().markOnboardingStep('card')
 
     // Persist in background
     ;(async () => {

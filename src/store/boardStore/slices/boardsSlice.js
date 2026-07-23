@@ -270,6 +270,7 @@ export const createBoardsSlice = (set, get) => ({
 
     showToast.success(`Board "${name}" created`)
     capture('board_created', { template: customColumns ? 'custom' : 'default' })
+    useAuthStore.getState().markOnboardingStep('board')
     return board.id
   },
 

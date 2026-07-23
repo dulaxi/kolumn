@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ArrowUp, Check, Plus, Sparkle, Waveform, X } from '@phosphor-icons/react'
 
 import { useBoardStore } from '../../store/boardStore'
+import { useAuthStore } from '../../store/authStore'
 import { executeTool } from '../../lib/toolExecutor'
 import { runPillLoop } from '../../lib/pillAgentLoop'
 import { logError } from '../../utils/logger'
@@ -88,6 +89,9 @@ export default function QuickAddBar({ boardId }) {
           year: 'numeric', month: '2-digit', day: '2-digit',
         }).format(new Date())
 
+        // "Asked the AI" = submitted an intent to the LLM path (the comma/
+        // newline fast-path never talks to the model, so it doesn't count).
+        useAuthStore.getState().markOnboardingStep('ai')
         const { finalText, rows, error } = await runPillLoop(
           { text, boardId, boardName, today },
           { onProgress: (r) => setProgress(r) },
