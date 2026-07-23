@@ -10,7 +10,7 @@ import WorkspaceCreateModal from '../workspace/WorkspaceCreateModal'
 // Panel exit animation duration (matches @keyframes dropdownOut in index.css)
 const EXIT_MS = 120
 
-const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
+const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm font-[450] transition-colors duration-75 overflow-hidden'
 
 // All workspaces render with the Cube glyph; identity is via color.
 // resolveWorkspaceColor handles both new (color-name) and legacy
@@ -148,12 +148,12 @@ export default function WorkspaceDropdown({
       ? 'Personal'
       : activeWorkspace?.name || 'All workspaces'
   const triggerGlyph = isAll
-    ? <CubeFocus className="w-5 h-5" weight="light" />
+    ? <CubeFocus className="w-5 h-5" weight="regular" />
     : isPersonal
-      ? <Cube className="w-5 h-5" weight="light" />
+      ? <Cube className="w-5 h-5" weight="regular" />
       : activeWorkspace
         ? <WorkspaceGlyph workspace={activeWorkspace} />
-        : <CubeFocus className="w-5 h-5" weight="light" />
+        : <CubeFocus className="w-5 h-5" weight="regular" />
 
   // ── Panel content ──────────────────────────────────────────────
   const panel = (
@@ -161,7 +161,7 @@ export default function WorkspaceDropdown({
       {/* Search */}
       <div className="shrink-0 p-1.5">
         <div className="flex items-center gap-2 h-8 px-2 rounded-md bg-[var(--surface-raised)]">
-          <MagnifyingGlass className="w-4 h-4 text-[var(--text-muted)] shrink-0" weight="light" />
+          <MagnifyingGlass className="w-4 h-4 text-[var(--text-muted)] shrink-0" weight="regular" />
           <input
             ref={inputRef}
             value={search}
@@ -187,7 +187,7 @@ export default function WorkspaceDropdown({
             }`}
           >
             <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-              <CubeFocus className="w-5 h-5" weight="light" />
+              <CubeFocus className="w-5 h-5" weight="regular" />
             </span>
             <span className="truncate flex-1">All workspaces</span>
             {isAll && (
@@ -208,7 +208,7 @@ export default function WorkspaceDropdown({
             }`}
           >
             <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-              <Cube className="w-5 h-5" weight="light" />
+              <Cube className="w-5 h-5" weight="regular" />
             </span>
             <span className="truncate flex-1">Personal</span>
             {isPersonal && (
@@ -260,7 +260,7 @@ export default function WorkspaceDropdown({
           className={`${ROW_BASE} w-full px-2 gap-2 text-left text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]`}
         >
           <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-            <UsersThree className="w-5 h-5" weight="light" />
+            <UsersThree className="w-5 h-5" weight="regular" />
           </span>
           <span className="truncate flex-1">Manage workspaces</span>
           {invitationCount > 0 && (
@@ -278,7 +278,7 @@ export default function WorkspaceDropdown({
           className={`${ROW_BASE} w-full px-2 gap-2 text-left text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]`}
         >
           <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
-            <Plus className="w-5 h-5" weight="light" />
+            <Plus className="w-5 h-5" weight="regular" />
           </span>
           <span className="truncate flex-1">Create workspace</span>
         </button>

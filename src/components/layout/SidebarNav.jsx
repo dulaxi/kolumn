@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore'
 import WorkspaceDropdown from './WorkspaceDropdown'
 import Tooltip from '../ui/Tooltip'
 
-const ROW_BASE = 'flex w-full items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
+const ROW_BASE = 'flex w-full items-center h-8 rounded-lg text-sm font-[450] transition-colors duration-75 overflow-hidden'
 
 function activeClasses(isActive) {
   return isActive
@@ -37,7 +37,7 @@ function NavLinkRow({ to, end, icon: Icon, label, collapsed, onNavigate, badge, 
         {({ isActive }) => (
           <>
             <IconSlot badge={collapsed ? badgeCollapsed : null}>
-              <Icon className={`w-5 h-5 shrink-0 ${dimmed ? 'opacity-40' : ''}`} weight={isActive ? 'fill' : 'light'} />
+              <Icon className={`w-5 h-5 shrink-0 ${dimmed ? 'opacity-40' : ''}`} weight={isActive ? 'fill' : 'regular'} />
             </IconSlot>
             {!collapsed && (
               <>
@@ -87,7 +87,7 @@ export default function SidebarNav({
           className={`${ROW_BASE} ${activeClasses(false)} ${layoutClasses(collapsed)}`}
         >
           <IconSlot>
-            <MagnifyingGlass size={20} weight="light" className="shrink-0" />
+            <MagnifyingGlass size={20} weight="regular" className="shrink-0" />
           </IconSlot>
           {!collapsed && <span className="truncate flex-1 text-left">Search</span>}
         </button>

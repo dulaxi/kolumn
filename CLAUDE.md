@@ -46,7 +46,7 @@ the active surface. Don't touch AI files except in passing.
   a two-line block (replaces the prior single-line name + caret). The
   `profile.tier` field is the source of truth (`'free' | 'pro' | 'team'`).
 
-UI coherency rules (claude.ai-style: restrained, lime accent, General Sans + serif,
+UI coherency rules (claude.ai-style: restrained, lime accent, Inter + serif,
 1px borders, 8–12px radius) still apply. If Builder introduces new icons,
 prefer extending the existing Phosphor vocabulary already in use over importing
 new symbols.
@@ -363,7 +363,7 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 
 | Token            | Font                  | Use                                |
 |------------------|-----------------------|------------------------------------|
-| `--font-sans`    | General Sans          | Main app text (+0.008em body tracking) |
+| `--font-sans`    | Inter Variable        | Main app text                      |
 | `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark + pre-auth display (300) |
 | `--font-heading` | Clash Grotesk         | Page titles (weight 425)           |
 | `--font-mono`    | IBM Plex Mono         | Code, IDs, paths                   |
@@ -413,8 +413,8 @@ without a deliberate reason discussed with the user.
 - **Shadows: minimal.** Default raised shadow is `0 4px 24px rgba(27,27,24,0.10)` (matches toasts).
 - **Card field names are snake_case** (DB columns). See Key Data Shapes.
 - **Workspace icon vocabulary.** The workspace dropdown uses a tight three-icon typology — re-use it for any future workspace-adjacent surface so the visual language stays consistent:
-  - `CubeFocus` (weight=light) → aggregate / "all workspaces" view (the `null` sentinel, default)
-  - `Cube` (weight=light) → virtual / "Personal" (the `'personal'` sentinel; user's private boards + shared-with-me)
+  - `CubeFocus` (weight=regular) → aggregate / "all workspaces" view (the `null` sentinel, default)
+  - `Cube` (weight=regular) → virtual / "Personal" (the `'personal'` sentinel; user's private boards + shared-with-me)
   - `Cube` (weight=fill, color via `resolveWorkspaceColor`) → a specific real workspace (UUID). Color comes from `WORKSPACE_COLORS` in `src/constants/colors.js`.
 - **`activeWorkspaceId` sentinel encoding.** Three states: `null` = All (default, every section renders in Sidebar), `'personal'` = Personal only (personal + shared, no Spaces), UUID = that specific workspace. Anywhere you read this value as "is a real workspace" must explicitly check `value && value !== 'personal' && workspaces[value]` — naive `if (activeWorkspaceId)` will misread `'personal'` as a UUID.
 

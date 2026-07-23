@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'General Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-heading: 'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', SFMono-Regular, Menlo, monospace;
   --font-logo: 'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -59,13 +59,6 @@
   html, body {
     overflow-x: clip;
   }
-}
-
-/* General Sans is fitted for display sizes; a hair of tracking restores
-   letterfit at UI sizes (decision: font trial 2026-07-23, "Gen+1").
-   Elements with their own tracking-* utility (headings) override this. */
-body {
-  letter-spacing: 0.008em;
 }
 
 /* ── Semantic theme tokens ── */

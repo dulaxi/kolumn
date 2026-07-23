@@ -30,9 +30,9 @@ export default function GeneralSection() {
           value={font}
           onChange={setFont}
           options={[
-            // 'mona-sans' is the persisted enum for "default sans" — kept
-            // for stored prefs even though the default is now General Sans
-            { value: 'mona-sans', label: 'General Sans' },
+            // 'mona-sans' is the persisted enum for "default sans" (now Inter) — kept
+            // for stored prefs across two font migrations
+            { value: 'mona-sans', label: 'Inter' },
             { value: 'sf-mono', label: 'SF Mono' },
           ]}
         />

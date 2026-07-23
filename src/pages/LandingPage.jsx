@@ -1684,7 +1684,7 @@ export default function LandingPage() {
                 visible on phones/tablets without cards getting cut on the
                 edges. font-sans is set inside ScaledHero to escape the page's
                 landing-font (Plus Jakarta Sans) and restore the app sans
-                (General Sans). */}
+                (Inter). */}
             <div className="flex justify-center items-center w-full mt-8 xl:mt-0">
               <ScaledHero />
             </div>
