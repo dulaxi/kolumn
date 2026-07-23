@@ -15,8 +15,9 @@ board → card → AI — then gets out of the way.
 - Rendered by `Sidebar.jsx` directly above `<SidebarBottom>`, desktop +
   expanded sidebar only (hidden on the collapsed rail and mobile drawer).
 - Visible only when **all** of:
-  - `profile.created_at` ≥ `SHIP_DATE` (constant in the component; set to the
-    deploy date so existing users never see it)
+  - `profile.created_at` ≥ `SHIP_DATE` (single shared constant in
+    `src/constants/onboarding.js`, imported by both the component and
+    `authStore`; set to the deploy date so existing users never see it)
   - `onboarding_steps.dismissed` is unset
   - at least one of the three steps is incomplete
 - Disappears automatically the moment the third step completes (no
@@ -40,8 +41,10 @@ empty circle, text muted. No strikethrough.
 - Shape: `{ board?: iso, card?: iso, ai?: iso, dismissed?: iso }` —
   timestamps, not booleans, for later funnel analysis.
 - `authStore.markOnboardingStep(key)`:
-  - no-op if the step is already set, if `dismissed` is set, or if
-    `profile.created_at` < SHIP_DATE (old accounts never write)
+  - no-op if the key is already set, or if `profile.created_at` < SHIP_DATE
+    (old accounts never write)
+  - for the three step keys only: also no-op when `dismissed` is set
+    (writing `dismissed` itself is always allowed and naturally idempotent)
   - optimistic local merge + `updateProfile` persist.
 - Dismiss = `markOnboardingStep('dismissed')` via the X button (permanent).
 
