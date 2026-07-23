@@ -59,6 +59,7 @@ export default function SidebarChecklist() {
                 <button
                   type="button"
                   onClick={() => !done && go(step.key)}
+                  disabled={done}
                   className={`flex w-full items-start gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors ${
                     done ? 'cursor-default' : 'hover:bg-[var(--surface-raised)] cursor-pointer'
                   }`}
@@ -71,6 +72,7 @@ export default function SidebarChecklist() {
                   <span className="flex flex-col min-w-0 leading-[1.4]">
                     <span className={`text-[13px] ${done ? 'text-[var(--text-muted)]' : 'text-[var(--text-primary)]'}`}>
                       {step.title}
+                      {done && <span className="sr-only"> (done)</span>}
                     </span>
                     {!done && (
                       <span className="text-xs text-[var(--text-secondary)]">{step.subtitle}</span>
