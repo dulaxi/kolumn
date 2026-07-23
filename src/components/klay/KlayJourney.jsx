@@ -3,6 +3,11 @@ import PixelKlay from './PixelKlay'
 import { COARSE_COLS } from './klayAnimations'
 import { TRAVEL_MS } from './useKlayJourney'
 
+// Duration of the sprite's opacity fade (see the `transition` style below).
+// Shared with the stacked-layout travel snap so the reposition can't race
+// ahead of (or lag behind) the fade-out.
+const FADE_MS = 400
+
 /**
  * KlayJourney — the traveling upsell sprite. Absolutely positioned inside
  * `containerRef`'s element (must be position: relative); walks between the
@@ -49,10 +54,20 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
   useEffect(() => {
     if (!layout) return undefined
     const target = layout.targets[station]
-    // Stacked layout or standing still: snap (arrivals fade in via opacity).
-    if (!layout.row || !traveling) {
+    // Standing still: snap immediately (arrivals fade in via opacity).
+    if (!traveling) {
       setPos({ ...target, transition: 'none' })
       return undefined
+    }
+    if (!layout.row) {
+      // Stacked layout: the sprite is already fading out in place (the
+      // `hidden` opacity transition below just started). Hold position
+      // until that fade completes, then snap to the destination while
+      // invisible — so it never visibly teleports mid-fade.
+      const fade = setTimeout(() => {
+        setPos({ ...target, transition: 'none' })
+      }, FADE_MS)
+      return () => clearTimeout(fade)
     }
     if (!isWrap) {
       setPos({ ...target, transition: `left ${TRAVEL_MS}ms steps(14)` })
@@ -75,7 +90,7 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
 
   const hidden = layout ? traveling && !layout.row : false
   const animation = reduced ? scenes[0] : traveling ? 'walk' : scenes[station]
-  const transition = [pos.transition, 'opacity 400ms ease'].filter((t) => t && t !== 'none').join(', ')
+  const transition = [pos.transition, `opacity ${FADE_MS}ms ease`].filter((t) => t && t !== 'none').join(', ')
 
   return (
     <div

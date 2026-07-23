@@ -56,4 +56,20 @@ describe('UPSELL_REST_PROPS', () => {
       }
     }
   })
+
+  it('resting props sit exactly where their scenes draw them', () => {
+    // Static (KlayStatic, resting) and animated (PixelKlay, mid-journey)
+    // renders share the same fine-grid canvas — the crossfade between them
+    // is only pixel-invisible if the rest prop matches the scene frame the
+    // sprite settles on. Pin the coordinates so a future edit to either side
+    // can't drift them apart unnoticed.
+    // chat rests on converse's "quiet empty bubble" beat (frame index 2).
+    expect(UPSELL_REST_PROPS.chat).toEqual(ANIMATIONS.converse[2].hi)
+    // agentic rests on last-move's opening beat — card still in Doing (frame index 0).
+    expect(UPSELL_REST_PROPS.agentic).toEqual(ANIMATIONS['last-move'][0].hi)
+    // tools: no equality check — every `connect` frame merges the socket art
+    // with the plug on top of it, so there's no single frame whose `.hi`
+    // equals the bare unplugged-socket rest prop without reimplementing the
+    // merge logic here.
+  })
 })
