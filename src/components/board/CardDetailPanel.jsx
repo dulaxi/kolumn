@@ -25,7 +25,7 @@ import { useTemplateStore } from '../../store/templateStore'
 import { selectCardLabels } from '../../store/selectors'
 import { usePresenceStore } from '../../store/presenceStore'
 import { othersOnCard } from '../../store/presence'
-import { resolveProfileColor } from '../../constants/colors'
+import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
 
 export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
@@ -200,62 +200,20 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
       <div
         className="flex flex-col text-left shadow-[var(--shadow-raised)] border border-[var(--color-mist)] rounded-2xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-3xl min-h-[50vh] max-h-[90vh] overflow-hidden"
       >
-        {/* Top bar — back + labels + actions. Labels sit between the
-            back button and the right-aligned action buttons so they live
-            in the same horizontal slab as calendar/attach/menu, left of
-            those — semantic grouping with the rest of the metadata. */}
+        {/* Top bar — icon-only back on the left; actions on the right in
+            three groups split by hairlines: card properties (due,
+            priority) · content (attach) · card management (⋯, delete). */}
         <div className="flex items-center justify-between gap-3 mb-4">
-          <button
-            type="button"
-            onClick={handleSaveAndClose}
-            className="shrink-0 flex items-center gap-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            All cards
-          </button>
-          {/* Labels — moved out of the title row so the heading stays
-              clean and labels live next to the other metadata. */}
-          <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
-            {labels.map((l) => (
-              <span
-                key={l.id}
-                className="relative inline-flex items-center align-middle leading-tight flex-shrink-0 bg-[var(--surface-hover)] text-[var(--text-secondary)] h-6 px-2 rounded-lg text-xs lowercase group/label"
-              >
-                /{l.text}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeLabelFromCard(cardId, l.id) }}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--surface-card)] border-0.5 border-[var(--border-default)] flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] opacity-0 group-hover/label:opacity-100 transition-all"
-                >
-                  <X className="w-2.5 h-2.5" />
-                </button>
-              </span>
-            ))}
-            {showLabelForm ? (
-              <LabelAutocomplete
-                boardId={card.board_id}
-                excludeIds={labels.map((l) => l.id)}
-                onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
-                onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
-                onManage={() => {
-                  setShowLabelForm(false)
-                  window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
-                }}
-                onClose={() => setShowLabelForm(false)}
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowLabelForm(true)}
-                className={`inline-flex items-center flex-shrink-0 h-6 rounded-lg text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors ${
-                  labels.length === 0 ? 'gap-1 px-2 text-xs' : 'justify-center w-6'
-                }`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {labels.length === 0 && <span>Labels</span>}
-              </button>
-            )}
-          </div>
+          <Tooltip content="Back to board" placement="bottom">
+            <button
+              type="button"
+              onClick={handleSaveAndClose}
+              aria-label="Back to board"
+              className="shrink-0 h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </Tooltip>
           <div className="shrink-0 flex items-center gap-1">
             {/* Due date */}
             <div className="relative" data-menu-root>
@@ -307,6 +265,23 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 )
               })()}
             </div>
+            {/* Priority flag — grouped with due date (card properties) */}
+            <PriorityMenu
+              open={openMenu === 'priority'}
+              onOpenChange={(next) => setOpenMenu(next ? 'priority' : null)}
+              value={priority}
+              onChange={(value) => { setPriority(value); setOpenMenu(null); scheduleSave() }}
+            >
+              <button
+                type="button"
+                onClick={() => toggleMenu('priority')}
+                aria-label="Set priority"
+                className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+              >
+                <Flag className="w-4 h-4" fill={priColor} style={{ color: priColor }} />
+              </button>
+            </PriorityMenu>
+            <span aria-hidden="true" className="w-px h-5 bg-[var(--border-subtle)] mx-1" />
             {/* Attach file */}
             <Tooltip content="Attach files" placement="bottom">
             <label
@@ -332,6 +307,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               />
             </label>
             </Tooltip>
+            <span aria-hidden="true" className="w-px h-5 bg-[var(--border-subtle)] mx-1" />
             {/* 3-dot menu — Delete pulled out so it's directly clickable.
                 Duplicate + Template stay here as secondary actions. */}
             <Menu
@@ -394,22 +370,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                 <Trash className="w-4 h-4" />
               </button>
             </Tooltip>
-            {/* Priority flag */}
-            <PriorityMenu
-              open={openMenu === 'priority'}
-              onOpenChange={(next) => setOpenMenu(next ? 'priority' : null)}
-              value={priority}
-              onChange={(value) => { setPriority(value); setOpenMenu(null); scheduleSave() }}
-            >
-              <button
-                type="button"
-                onClick={() => toggleMenu('priority')}
-                aria-label="Set priority"
-                className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-              >
-                <Flag className="w-4 h-4" fill={priColor} style={{ color: priColor }} />
-              </button>
-            </PriorityMenu>
           </div>
         </div>
 
@@ -425,8 +385,8 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           )
         })()}
 
-        {/* Icon + Title + Labels + Assignee */}
-        <div className="flex items-start justify-between gap-4 mb-4">
+        {/* Icon + Title + Assignee */}
+        <div className="flex items-start justify-between gap-4 mb-2">
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className="relative" data-menu-root>
               <button
@@ -471,6 +431,53 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             open={openMenu === 'assignee'}
             onOpenChange={(next) => setOpenMenu(next === 'assignee' ? 'assignee' : null)}
           />
+        </div>
+
+        {/* Labels — dedicated row under the title, aligned with the title
+            text (icon 40px + gap 12px). Quiet bordered chips with the
+            label's color dot; X reveals inside the chip on hover. */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-4 pl-[52px]">
+          {labels.map((l) => (
+            <span
+              key={l.id}
+              className="group/label inline-flex items-center gap-1.5 h-6 pl-2 pr-1.5 rounded-full border border-[var(--color-sand)] text-xs lowercase text-[var(--text-secondary)]"
+            >
+              <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || 'bg-[var(--text-faint)]'}`} />
+              /{l.text}
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); removeLabelFromCard(cardId, l.id) }}
+                aria-label={`Remove label ${l.text}`}
+                className="w-0 overflow-hidden group-hover/label:w-3 flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-all"
+              >
+                <X className="w-3 h-3 shrink-0" />
+              </button>
+            </span>
+          ))}
+          {showLabelForm ? (
+            <LabelAutocomplete
+              boardId={card.board_id}
+              excludeIds={labels.map((l) => l.id)}
+              onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
+              onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
+              onManage={() => {
+                setShowLabelForm(false)
+                window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
+              }}
+              onClose={() => setShowLabelForm(false)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowLabelForm(true)}
+              className={`inline-flex items-center justify-center h-6 rounded-full border border-dashed border-[var(--border-default)] text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:border-[var(--text-muted)] transition-colors cursor-pointer ${
+                labels.length === 0 ? 'gap-1 px-2 text-xs' : 'w-6'
+              }`}
+            >
+              <Plus className="w-3 h-3" />
+              {labels.length === 0 && <span>Label</span>}
+            </button>
+          )}
         </div>
 
         {/* Content */}
