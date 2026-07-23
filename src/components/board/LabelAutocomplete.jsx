@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useState, useMemo, useRef, forwardRef, useImperativeHandle, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Tag } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { selectBoardLabels } from '../../store/selectors'
@@ -23,6 +24,47 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
   const [newColor, setNewColor] = useState('blue')
   const allLabels = useBoardStore(selectBoardLabels(boardId))
   const inputRef = useRef(null)
+
+  // The dropdown portals to body (fixed) so the column's scroll container
+  // can't clip it and it never runs off the viewport: left is clamped to
+  // the screen, and it flips above the input when out of room below.
+  const wrapRef = useRef(null)
+  const panelRef = useRef(null)
+  const [coords, setCoords] = useState(null)
+  const PANEL_W = 220
+
+  const updatePosition = useCallback(() => {
+    const a = wrapRef.current
+    if (!a) return
+    const r = a.getBoundingClientRect()
+    const gap = 6
+    const panelH = panelRef.current?.offsetHeight || 0
+    const left = Math.round(Math.min(Math.max(r.left, 8), window.innerWidth - PANEL_W - 8))
+    const spaceBelow = window.innerHeight - r.bottom - gap
+    const openBottom = panelH <= spaceBelow || spaceBelow >= r.top - gap
+    const next = openBottom
+      ? { top: Math.round(r.bottom + gap), left }
+      : { bottom: Math.round(window.innerHeight - r.top + gap), left }
+    // Identity-stable so the every-render re-measure below can't loop.
+    setCoords((prev) =>
+      prev && prev.top === next.top && prev.bottom === next.bottom && prev.left === next.left ? prev : next
+    )
+  }, [])
+
+  useEffect(() => {
+    const onMove = () => updatePosition()
+    window.addEventListener('scroll', onMove, true)
+    window.addEventListener('resize', onMove)
+    return () => {
+      window.removeEventListener('scroll', onMove, true)
+      window.removeEventListener('resize', onMove)
+    }
+  }, [updatePosition])
+
+  // Re-measure on every render: typing changes the list, which changes the
+  // panel height, which can change the flip decision. Identity-stable
+  // setCoords makes this settle instead of looping.
+  useEffect(() => { updatePosition() })
 
   const filtered = useMemo(() => {
     const ex = new Set(excludeIds)
@@ -80,7 +122,7 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
   }), [filtered, highlight, query, newColor, exactMatch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="relative" data-menu-root>
+    <div ref={wrapRef} className="relative" data-menu-root>
       <input
         ref={inputRef}
         value={query}
@@ -99,8 +141,15 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
       {/* Standard dropdown surface (PANEL_BASE in ui/Popover) — kept outside
           Popover because this combobox is "open while mounted" and its
           blur/commit wiring owns the close lifecycle. Anatomy mirrors
-          WorkspaceDropdown: inset rounded rows, sectioned footer action. */}
-      <div className="absolute z-50 top-full left-0 mt-1.5 w-[220px] bg-[var(--surface-card)] border border-[var(--color-mist)] rounded-[10px] shadow-[0_10px_30px_rgba(27,27,24,0.10),0_2px_6px_rgba(27,27,24,0.04)] animate-dropdown overflow-hidden">
+          WorkspaceDropdown: inset rounded rows, sectioned footer action.
+          Portaled to body: mounted off-screen until first measure so the
+          flip/clamp math always sees a real panel height. */}
+      {createPortal(
+      <div
+        ref={panelRef}
+        data-menu-root
+        style={{ position: 'fixed', ...(coords || { top: -9999, left: -9999 }) }}
+        className="z-50 w-[220px] bg-[var(--surface-card)] border border-[var(--color-mist)] rounded-[10px] shadow-[0_10px_30px_rgba(27,27,24,0.10),0_2px_6px_rgba(27,27,24,0.04)] animate-dropdown overflow-hidden">
         {filtered.length > 0 && (
           <div className="max-h-[224px] overflow-y-auto p-1">
             {filtered.map((l, i) => (
@@ -163,7 +212,9 @@ const LabelAutocomplete = forwardRef(function LabelAutocomplete(
             <span className="truncate">Manage labels</span>
           </button>
         </div>
-      </div>
+      </div>,
+      document.body,
+      )}
     </div>
   )
 })
