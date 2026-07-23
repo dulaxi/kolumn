@@ -121,7 +121,7 @@ export default function AssigneePicker({
             key={`ext-${ref.id || ref.name}`}
             role="menuitem"
             onClick={() => removeRef(ref)}
-            className="min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm bg-[var(--surface-hover)] font-medium"
+            className="min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm font-medium"
           >
             <div className="flex items-center gap-2 w-full">
               <Avatar name={ref.name} />
@@ -139,7 +139,7 @@ export default function AssigneePicker({
               key={member.id}
               role="menuitem"
               onClick={() => toggleMember(member)}
-              className={`min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm ${checked ? 'bg-[var(--surface-hover)] font-medium' : ''}`}
+              className={`min-h-8 px-2 rounded-lg cursor-pointer whitespace-nowrap grid grid-cols-[minmax(0,_1fr)_auto] gap-1.5 items-center select-none hover:bg-[var(--surface-hover)] text-sm ${checked ? 'font-medium' : ''}`}
             >
               <div className="flex items-center gap-2 w-full">
                 <Avatar name={member.display_name} />
