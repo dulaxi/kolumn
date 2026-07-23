@@ -10,6 +10,8 @@ import { deriveGhosts } from '../../lib/moveGhosts'
 import Column from './Column'
 import Card from './Card'
 import QuickAddBar from './QuickAddBar'
+import PixelKlay from '../klay/PixelKlay'
+import LetterWave from '../ui/LetterWave'
 
 export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy }) {
   const [isAddingColumn, setIsAddingColumn] = useState(false)
@@ -87,6 +89,18 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   return (
     <DndContext {...dndContextProps}>
       <QuickAddBar boardId={boardId} />
+      {/* Cards lazy-loading (first visit to this board this session): columns
+          are real, cards are in flight — Klay grows over the empty card area
+          instead of a false empty-board state. Same composition as the route
+          loader (RouteLoadingShell) so loading-Klay reads as one gesture. */}
+      {cardsLoading && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+          <PixelKlay animation="grow" scale={6} label="Klay loading cards" />
+          <span className="font-mono text-xs text-[var(--text-muted)]">
+            <LetterWave text="Kanbanning…" tone="typing" />
+          </span>
+        </div>
+      )}
       <div data-board-scroll className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
         {boardColumns.map((column) => (
           <Column
@@ -103,7 +117,6 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             sortBy={sortBy}
             ghosts={ghostPlacements.filter((p) => p.columnId === column.id)}
             ghostInfo={ghostInfo}
-            cardsLoading={cardsLoading}
           />
         ))}
 

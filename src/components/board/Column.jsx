@@ -14,7 +14,6 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Menu from '../ui/Menu'
-import Skeleton from '../ui/Skeleton'
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
@@ -40,7 +39,7 @@ function sortCards(cards, sortBy) {
   })
 }
 
-export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy, dragHandleProps, ghosts = [], ghostInfo, cardsLoading = false }) {
+export default function Column({ column, boardId, onCardClick, onCreateCard, onCompleteCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy, dragHandleProps, ghosts = [], ghostInfo }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
@@ -245,22 +244,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
         ref={setDroppableRef}
         className="flex-1 overflow-y-auto pb-2 space-y-2 min-h-[80px]"
       >
-        {/* Card skeletons while this board's cards are still being fetched —
-            column position staggers the count so the shimmer reads organic,
-            not like a repeated template. */}
-        {cardsLoading && filteredCards.length === 0 && (
-          <div aria-hidden="true" className="flex flex-col gap-2">
-            {Array.from({ length: 2 + ((column.position ?? 0) % 2) }, (_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-[var(--color-mist)] bg-[var(--surface-card)] p-4 flex flex-col gap-2.5"
-              >
-                <Skeleton variant="line" width={i % 2 ? '55%' : '75%'} />
-                <Skeleton variant="line" width="35%" height={10} />
-              </div>
-            ))}
-          </div>
-        )}
         <SortableContext
           items={allCardIds}
           strategy={verticalListSortingStrategy}
