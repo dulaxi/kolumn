@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-export const DWELL_MS = 7000 // ≈ 2 loops of a station scene
-export const TRAVEL_MS = 2000 // one walk between adjacent stations
+// Kept tight: a full circuit is 3×(dwell+travel) ≈ 16s — the upsell step is a
+// decision screen, so the whole story should land before the user clicks a CTA.
+export const DWELL_MS = 4200 // one full loop of the longest scene (converse, 4.0s) + a beat
+export const TRAVEL_MS = 1200 // one scurry between adjacent stations (8 × 150ms steps)
 
 /**
  * useKlayJourney — the journey clock for the upsell step. Cycles

@@ -183,6 +183,13 @@ const SOCKET = ['hhhh', 'Khhh', 'hhhh', 'Khhh', 'hhhh']
 const PLUG = ['ccK', 'ccc', 'ccK'] // charcoal prongs face the socket
 const PLUG_IN = ['cc', 'cc', 'cc'] // prongs seated — flush with the socket
 const SPARK = ['h.h', '.h.', 'h.h']
+// Picked journey candidates (design record: klay-upsell-candidates.html):
+// tick-sweep's card stack, handshake's tool nodes, a blush row for LEFT poses.
+const TODO = ['SSSSSS', 'SwwwwS', 'SwwwwS', 'SSSSSS']
+const DONE = ['SSSSSS', 'ShhhhS', 'ShhhhS', 'SSSSSS'] // honey-lit: completed
+const NODE_H = ['hhh', 'hKh', 'hhh'] // honey tool node
+const NODE_C = ['ccc', 'cKc', 'ccc'] // copper tool node
+const LEFT_BLUSH = 'mommom......' // blush row for LEFT poses (below the eyes)
 
 // ── Core animation library (the shipped set — extend freely) ──
 export const ANIMATIONS = {
@@ -447,8 +454,13 @@ export const ANIMATIONS = {
   ],
 
   // ── Upsell journey set ───────────────────────────────────────────────
-  // Station 3 of the onboarding upsell: Klay pushes a copper plug into a
-  // honey socket — click, spark, payoff hold. Push grammar from ship/push-card.
+  // Scenes for the onboarding upsell's traveling Klay. Picked from the
+  // candidate sheet (klay-upsell-candidates.html): converse (chat, reused
+  // from the empty-state set), tick-sweep (agentic), handshake (tools),
+  // scurry (travel). `connect` stays in the library as an alternate.
+
+  // Alternate station-3 scene: Klay pushes a copper plug into a honey
+  // socket — click, spark, payoff hold. Push grammar from ship/push-card.
   connect: [
     frame(LEFT, { 4: LEFT_ARM }, merge(hi(PLUG, 13, 12), hi(SOCKET, 20, 11)), 650),
     frame(LEFT_DOWN, { 5: LEFT_ARM }, merge(hi(PLUG, 15, 12), hi(SOCKET, 20, 11)), 350),
@@ -457,13 +469,45 @@ export const ANIMATIONS = {
     frame(LEFT_UP, { 4: LEFT_EYES.right }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 350),
     frame(LEFT, { 5: LEFT_EYES.closed }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 1100),
   ],
+
+  // Station 2 · Agentic moves: a stack of cards completes itself bottom-to-top
+  // — bam, bam, bam — while Klay watches. The agent does the work, not Klay.
+  'tick-sweep': [
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(TODO, 16, 12), hi(TODO, 16, 7), hi(TODO, 16, 2)), 650),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(hi(DONE, 16, 12), hi(TODO, 16, 7), hi(TODO, 16, 2)), 250),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(TODO, 16, 2)), 250),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2)), 250),
+    frame(LEFT_UP, { 4: LEFT_EYES.right }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2), hi(SPARK, 13, 3)), 320),
+    frame(LEFT, { 5: LEFT_EYES.closed, 6: LEFT_BLUSH }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2)), 1200),
+  ],
+
+  // Station 3 · Connect your tools: two tool nodes; a charcoal cable draws
+  // itself between them and sparks on contact. Hold the linked payoff.
+  handshake: [
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9)), 650),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KK'], 16, 10)), 250),
+    frame(LEFT_DOWN, { 6: LEFT_EYES.right }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKK'], 16, 10)), 250),
+    frame(LEFT_UP, { 4: LEFT_EYES.right }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10), hi(SPARK, 17, 5)), 320),
+    frame(LEFT, { 5: LEFT_EYES.right }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10)), 400),
+    frame(LEFT, { 5: LEFT_EYES.closed, 6: LEFT_BLUSH }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10)), 1100),
+  ],
+
+  // Travel: quick tiny steps, eyes locked on the destination (right), sprout
+  // wobbling. No vertical bob — a bob fights the horizontal glide. Cadence:
+  // 150ms/frame; pair with a steps() count whose step ≈ 150ms (see KlayJourney).
+  scurry: [
+    frame(BASE, { 5: EYES.right, 1: '......l.....', 7: '....m.m.....' }, null, 150),
+    frame(BASE, { 5: EYES.right, 1: '.......l....', 7: '.....m.m....' }, null, 150),
+  ],
 }
 
 // Resting props for the upsell journey stations — what each card shows while
 // Klay performs elsewhere. Rendered statically by KlayStatic on the same
 // fine-grid canvas, so they sit exactly where the animated scenes put them.
+// Contract: each layer equals its scene's stable prop frame (see
+// klayAnimations.test.js), keeping the static↔animated crossfade invisible.
 export const UPSELL_REST_PROPS = {
-  chat: hi(BUB_M, 13, 5), // quiet empty bubble
-  agentic: merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9)), // Doing/Done columns, card still in Doing
-  tools: hi(SOCKET, 20, 11), // unplugged socket
+  chat: hi(BUB_M, 13, 5), // converse's mid bubble, quiet
+  agentic: merge(hi(TODO, 16, 12), hi(TODO, 16, 7), hi(TODO, 16, 2)), // tick-sweep's stack, all to-do
+  tools: merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9)), // handshake's nodes, not yet linked
 }

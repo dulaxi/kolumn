@@ -1,5 +1,4 @@
 import { createRef, useRef } from 'react'
-import { Lightning, ArrowRight } from '@phosphor-icons/react'
 import { addDays, format } from 'date-fns'
 import Button from './ui/Button'
 import KlayStatic from './klay/KlayStatic'
@@ -33,7 +32,7 @@ const FEATURES = [
   },
 ]
 
-const SCENES = ['converse', 'last-move', 'connect']
+const SCENES = ['converse', 'tick-sweep', 'handshake']
 
 /**
  * The onboarding Pro upsell. One Klay walks a continuous floor across the
@@ -139,9 +138,7 @@ export default function UpsellStep({ onTryPro, onSkip }) {
 
       <div className="mx-auto flex w-full max-w-[450px] flex-col items-center gap-3">
         <Button type="button" size="xl" onClick={onTryPro} className="w-full">
-          <Lightning size={16} weight="fill" className="mr-2 shrink-0" />
           Get Pro free for 1 week
-          <ArrowRight size={16} className="ml-2 shrink-0" />
         </Button>
         <p className="text-xs text-[var(--text-muted)]">Free until {trialEnd}. Cancel anytime.</p>
         <Button type="button" variant="ghost" size="xl" onClick={onSkip} className="w-full">

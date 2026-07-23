@@ -8,15 +8,19 @@ import {
   FINE_COLS,
 } from '../components/klay/klayAnimations'
 
-describe('connect animation', () => {
-  it('exists with 4-8 frames', () => {
-    expect(ANIMATIONS.connect).toBeDefined()
-    expect(ANIMATIONS.connect.length).toBeGreaterThanOrEqual(4)
-    expect(ANIMATIONS.connect.length).toBeLessThanOrEqual(8)
+// The journey's station scenes + travel walk, plus `connect` (kept as an
+// alternate station-3 scene in the library).
+const UPSELL_ANIMATIONS = ['tick-sweep', 'handshake', 'scurry', 'connect']
+
+describe('upsell journey animations', () => {
+  it.each(UPSELL_ANIMATIONS)('%s exists with 2-8 frames', (name) => {
+    expect(ANIMATIONS[name]).toBeDefined()
+    expect(ANIMATIONS[name].length).toBeGreaterThanOrEqual(2)
+    expect(ANIMATIONS[name].length).toBeLessThanOrEqual(8)
   })
 
-  it('every frame is a valid coarse grid with sane timing', () => {
-    for (const f of ANIMATIONS.connect) {
+  it.each(UPSELL_ANIMATIONS)('%s: every frame is a valid coarse grid with sane timing', (name) => {
+    for (const f of ANIMATIONS[name]) {
       expect(f.map).toHaveLength(COARSE_ROWS)
       for (const row of f.map) expect(row.length).toBeLessThanOrEqual(COARSE_COLS)
       expect(f.ms).toBeGreaterThanOrEqual(150)
@@ -65,11 +69,9 @@ describe('UPSELL_REST_PROPS', () => {
     // can't drift them apart unnoticed.
     // chat rests on converse's "quiet empty bubble" beat (frame index 2).
     expect(UPSELL_REST_PROPS.chat).toEqual(ANIMATIONS.converse[2].hi)
-    // agentic rests on last-move's opening beat — card still in Doing (frame index 0).
-    expect(UPSELL_REST_PROPS.agentic).toEqual(ANIMATIONS['last-move'][0].hi)
-    // tools: no equality check — every `connect` frame merges the socket art
-    // with the plug on top of it, so there's no single frame whose `.hi`
-    // equals the bare unplugged-socket rest prop without reimplementing the
-    // merge logic here.
+    // agentic rests on tick-sweep's opening beat — the stack all to-do (frame 0).
+    expect(UPSELL_REST_PROPS.agentic).toEqual(ANIMATIONS['tick-sweep'][0].hi)
+    // tools rests on handshake's opening beat — two nodes, no cable yet (frame 0).
+    expect(UPSELL_REST_PROPS.tools).toEqual(ANIMATIONS.handshake[0].hi)
   })
 })

@@ -17,7 +17,7 @@ const FADE_MS = 400
  * props align pixel-for-pixel.
  *
  * `journey`: state from useKlayJourney ({ station, phase, reduced }).
- * `scenes`: ANIMATIONS key per station, e.g. ['converse', 'last-move', 'connect'].
+ * `scenes`: ANIMATIONS key per station, e.g. ['converse', 'tick-sweep', 'handshake'].
  */
 export default function KlayJourney({ journey, containerRef, stationRefs, scenes, scale = 7, label = 'Klay' }) {
   const spriteW = COARSE_COLS * scale
@@ -70,17 +70,21 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
       return () => clearTimeout(fade)
     }
     if (!isWrap) {
-      setPos({ ...target, transition: `left ${TRAVEL_MS}ms steps(14)` })
+      // steps(8) over TRAVEL_MS (1200ms) = exactly 150ms/step — locked to
+      // scurry's 150ms frame cadence so footfalls land on glide steps
+      // instead of fighting them.
+      setPos({ ...target, transition: `left ${TRAVEL_MS}ms steps(8)` })
       return undefined
     }
     // Wrap: slide off the right edge, snap to just left of the container,
     // then walk in — always left→right, so no mirrored sprites needed.
+    // Each half is 600ms → steps(4) keeps the same 150ms step cadence.
     const half = TRAVEL_MS / 2
-    setPos({ x: layout.width + 8, y: target.y, transition: `left ${half}ms steps(8)` })
+    setPos({ x: layout.width + 8, y: target.y, transition: `left ${half}ms steps(4)` })
     const snap = setTimeout(() => {
       setPos({ x: -spriteW - 8, y: target.y, transition: 'none' })
       requestAnimationFrame(() =>
-        requestAnimationFrame(() => setPos({ ...target, transition: `left ${half}ms steps(8)` }))
+        requestAnimationFrame(() => setPos({ ...target, transition: `left ${half}ms steps(4)` }))
       )
     }, half)
     return () => clearTimeout(snap)
@@ -89,7 +93,7 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
   if (!layout || !pos) return null
 
   const hidden = layout ? traveling && !layout.row : false
-  const animation = reduced ? scenes[0] : traveling ? 'walk' : scenes[station]
+  const animation = reduced ? scenes[0] : traveling ? 'scurry' : scenes[station]
   const transition = [pos.transition, `opacity ${FADE_MS}ms ease`].filter((t) => t && t !== 'none').join(', ')
 
   return (

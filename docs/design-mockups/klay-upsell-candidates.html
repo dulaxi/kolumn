@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay — upsell journey candidates · Kolumn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF; --surface-raised: #F2EDE8;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624; --surface-raised: #2E2E2B;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Mona Sans Variable', 'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 32px 120px; }
+      h1 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 760px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; position: sticky; top: 10px; z-index: 5; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+      svg { shape-rendering: crispEdges; display: block; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 12px; padding: 10px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 134px; display: grid; place-items: center; }
+      .card .nm { font-size: 12px; font-weight: 600; margin-top: 8px; }
+      .card .why { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+      .card.current-ref .nm::after { content: ' · current'; color: var(--text-faint); font-weight: 400; }
+      h2 { font-family: 'Sentient', Georgia, serif; font-weight: 400; font-size: 23px; margin: 40px 0 0; }
+      .sect-note { color: var(--text-secondary); font-size: 12px; margin: 4px 0 0; max-width: 720px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
+      <i class="ph ph-moon"></i> Toggle theme
+    </button>
+    <div class="wrap">
+      <header class="page">
+        <h1>Upsell journey — new scene candidates</h1>
+        <p>Three <strong>new</strong> animations per station (the shipped one is shown first, faint-labelled <em>current</em>, for comparison) plus three replacements for the travel walk, which reads awkward mid-glide — mostly because its vertical bob fights the horizontal slide. All candidates use the LEFT pose so props sit on Klay's right, matching the journey's left→right flow.</p>
+        <p>Pick one per station. Each candidate opens on (or quickly reaches) a stable prop arrangement — that opening layer becomes the station's <code>UPSELL_REST_PROPS</code> entry so the static→animated crossfade stays pixel-invisible.</p>
+        <p class="meta-line">2026-07-22 · picks port into src/components/klay/klayAnimations.js · sibling of klay-detailed-props.html · authoring skill: .claude/skills/klay/</p>
+      </header>
+      <div class="hero">
+        <div class="hero-stage"><div id="hero-anim"></div></div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+      <div id="sections"></div>
+      <p class="meta-line" style="margin-top:28px">Klay stays 4-color (olive, lime, mauve, ink); props use honey/copper/sand/mist/charcoal/cream/ink + rare lime accents. Mauve is Klay's alone. Fine layer draws in front.</p>
+      <p class="meta-line">Travel tip: whichever walk wins, match its loop to the glide — steps(N) count on the CSS transition should be a multiple of the walk's frames so footfalls land on glide steps.</p>
+    </div>
+
+    <script>
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5', K:'#5C5C57', S:'#C4BFB8' };
+      const E = '............';
+      const FINE = 24;
+
+      // ── Poses (coarse 12×11) ──
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E];
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E];
+      const UP1  = ['......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E,E];
+      const LEFT = [E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E];
+      const LEFT_DOWN = [E,E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E];
+      const LEFT_UP = ['...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E,E];
+      // Eye + face rows
+      const LC = 'mkmmkm......', LR = 'mmkmmk......', LX = 'mmmmmm......'; // left-pose center / right / closed
+      const LBLUSH = 'mommom......';
+      const LEFT_ARM = 'mmmmmmm.....';
+      const ER = '...mmkmmk...'; // BASE-pose eyes right (travel direction)
+
+      function F(base, mod, hi, ms) { const c = base.slice(); if (mod) for (const y in mod) c[+y] = mod[y]; return { map: c, hi: hi || null, ms: ms || 300 }; }
+      const A = (cat, name, why, frames) => ({ cat, name, why, frames });
+
+      // hi(art, x, y): place an art block on the fine grid → sparse {row: '24-char string'}.
+      function hi(art, x, y) {
+        const rows = {};
+        art.forEach((line, i) => {
+          const row = '.'.repeat(x) + line;
+          rows[y + i] = row + '.'.repeat(Math.max(0, FINE - row.length));
+        });
+        return rows;
+      }
+      // merge(...layers): overlay sparse layers, later wins per non-dot pixel.
+      function merge(...layers) {
+        const out = {};
+        for (const layer of layers) {
+          for (const y in layer) {
+            if (!out[y]) { out[y] = layer[y]; continue; }
+            const a = out[y], b = layer[y];
+            out[y] = Array.from({ length: FINE }, (_, i) => (b[i] && b[i] !== '.' ? b[i] : a[i] || '.')).join('');
+          }
+        }
+        return out;
+      }
+      // bar(x, h): sand column, 3 fine px wide, bottom on the floor line (fine y15).
+      function bar(x, h) {
+        const rows = {};
+        for (let i = 0; i < h; i++) rows[15 - i] = '.'.repeat(x) + 'sss' + '.'.repeat(FINE - x - 3);
+        return rows;
+      }
+
+      // ── Shared art ──
+      const CARD = ['SSSS', 'SwwS', 'SSSS'];
+      const SPARK = ['h.h', '.h.', 'h.h'];
+      const BUB_S = ['SS', 'SS'];
+      const BUB_M = ['.SSSS.', 'SwwwwS', 'SwwwwS', '.SSSS.', '.S....'];
+      const BUB_BIG = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwkwkwkwwS', 'SwwwwwwwwS', '.SSSSSSSS.', '.S........'];
+      const BUB_IN = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwwkwkwkwS', 'SwwwwwwwwS', '.SSSSSSSS.', '........S.'];
+      const SOCKET = ['hhhh', 'Khhh', 'hhhh', 'Khhh', 'hhhh'];
+      const PLUG = ['ccK', 'ccc', 'ccK'];
+      const PLUG_IN = ['cc', 'cc', 'cc'];
+
+      // Station 1 candidates
+      const ASK = ['.SSSS.', 'SwwwwS', '.SSSS.', 'S.....'];
+      const R_SHELL = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwwwwwwwwS', '.SSSSSSSS.', '.S........'];
+      const R_D1 = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwkwwwwwwS', '.SSSSSSSS.', '.S........'];
+      const R_D2 = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwkwkwwwwS', '.SSSSSSSS.', '.S........'];
+      const R_D3 = ['.SSSSSSSS.', 'SwwwwwwwwS', 'SwkwkwkwwS', '.SSSSSSSS.', '.S........'];
+      const R_TXT = ['.SSSSSSSS.', 'SwkkkkkwwS', 'SwkkkwwwwS', '.SSSSSSSS.', '.S........'];
+      const GOAL = ['SSSSSSSS', 'SwwhhwwS', 'SwwwwwwS', 'SSSSSSSS'];
+      const QMARK = ['.kk.', 'k..k', '...k', '..k.', '..k.', '....', '..k.'];
+      const BULB = ['.hh.', 'hhhh', 'hhhh', '.KK.'];
+
+      // Station 2 candidates
+      const TODO = ['SSSSSS', 'SwwwwS', 'SwwwwS', 'SSSSSS'];
+      const DONE = ['SSSSSS', 'ShhhhS', 'ShhhhS', 'SSSSSS'];
+
+      // Station 3 candidates
+      const NODE_H = ['hhh', 'hKh', 'hhh'];
+      const NODE_C = ['ccc', 'cKc', 'ccc'];
+      const TRAY = ['S..S..S..S', 'S..S..S..S', 'SSSSSSSSSS'];
+      const BH = ['hh', 'hh'], BC = ['cc', 'cc'], BL = ['ll', 'll'];
+      const RING = ['.hh.', 'h..h', 'h..h', '.hh.'];
+      const px = (ch, x, y) => hi([ch], x, y);
+
+      const S1 = 'Station 1 · Chat with your boards';
+      const S2 = 'Station 2 · Agentic moves';
+      const S3 = 'Station 3 · Connect your tools';
+      const ST = 'Travel · the walk between stations';
+
+      const ANIMS = [
+
+      // ═══════════ STATION 1 · CHAT ═══════════
+      A(S1, 'converse', 'shipped scene — bubble exchange', [
+        F(LEFT, null, null, 700),
+        F(LEFT, { 5: LR }, hi(BUB_S, 14, 8), 200),
+        F(LEFT, { 5: LR }, hi(BUB_M, 13, 5), 200),
+        F(LEFT, { 5: LR }, hi(BUB_BIG, 13, 2), 950),
+        F(LEFT, { 5: LC }, null, 350),
+        F(LEFT, { 5: LR }, hi(BUB_S, 14, 10), 200),
+        F(LEFT, { 5: LR }, hi(BUB_IN, 13, 8), 950),
+        F(LEFT, { 5: LC }, null, 450),
+      ]),
+      A(S1, 'typing-reply', 'Klay asks; the reply types in — dot, dot, dot — then resolves to text', [
+        F(LEFT, { 5: LR }, hi(ASK, 14, 7), 450),
+        F(LEFT, { 5: LC }, hi(R_SHELL, 13, 2), 300),
+        F(LEFT_DOWN, { 6: LC }, hi(R_D1, 13, 2), 200),
+        F(LEFT, { 5: LC }, hi(R_D2, 13, 2), 200),
+        F(LEFT_DOWN, { 6: LC }, hi(R_D3, 13, 2), 350),
+        F(LEFT, { 5: LR }, hi(R_TXT, 13, 2), 500),
+        F(LEFT_UP, { 4: LR }, hi(R_TXT, 13, 2), 300),
+        F(LEFT, { 5: LX, 6: LBLUSH }, hi(R_TXT, 13, 2), 1100),
+      ]),
+      A(S1, 'goal-split', 'one big goal card deals itself into three small cards — "break goals into checklists"', [
+        F(LEFT, { 5: LR }, hi(GOAL, 14, 3), 650),
+        F(LEFT, { 4: LEFT_ARM }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 7)), 250),
+        F(LEFT, { 5: LR }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 9)), 250),
+        F(LEFT, { 5: LR }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 9), hi(CARD, 16, 11)), 250),
+        F(LEFT, { 5: LR }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 9), hi(CARD, 16, 11), hi(CARD, 19, 13)), 250),
+        F(LEFT_UP, { 4: LR }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 9), hi(CARD, 16, 11), hi(CARD, 19, 13)), 300),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(GOAL, 14, 3), hi(CARD, 13, 9), hi(CARD, 16, 11), hi(CARD, 19, 13)), 1200),
+      ]),
+      A(S1, 'bright-idea', 'a hovering ? flashes into a lit bulb, and a drafted card drops out of it', [
+        F(LEFT, { 5: LR }, hi(QMARK, 17, 1), 650),
+        F(LEFT_DOWN, { 6: LR }, hi(QMARK, 17, 2), 350),
+        F(LEFT, { 5: LR }, hi(SPARK, 17, 2), 200),
+        F(LEFT, { 5: LR }, hi(BULB, 17, 1), 400),
+        F(LEFT, { 5: LR }, merge(hi(BULB, 17, 1), hi(CARD, 16, 10)), 350),
+        F(LEFT_UP, { 4: LR }, merge(hi(BULB, 17, 1), hi(CARD, 16, 10)), 300),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(BULB, 17, 1), hi(CARD, 16, 10)), 1100),
+      ]),
+
+      // ═══════════ STATION 2 · AGENTIC ═══════════
+      A(S2, 'last-move', 'shipped scene — one card hops Doing → Done', [
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9)), 700),
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 16, 7)), 350),
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 450),
+        F(LEFT_UP, { 4: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 350),
+        F(LEFT, { 5: LX }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9)), 1100),
+      ]),
+      A(S2, 'batch-move', 'Klay says the word (tiny bubble) and THREE cards fly over on their own — one sentence, many moves', [
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9), hi(CARD, 13, 6), hi(CARD, 13, 3)), 650),
+        F(LEFT_UP, { 4: LR }, merge(hi(BUB_S, 12, 5), bar(13, 5), bar(20, 5), hi(CARD, 13, 9), hi(CARD, 13, 6), hi(CARD, 13, 3)), 400),
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9), hi(CARD, 13, 6), hi(CARD, 17, 3)), 220),
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 13, 9), hi(CARD, 17, 4), hi(CARD, 20, 9)), 220),
+        F(LEFT, { 5: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 17, 5), hi(CARD, 20, 9), hi(CARD, 20, 6)), 220),
+        F(LEFT_UP, { 4: LR }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9), hi(CARD, 20, 6), hi(CARD, 20, 3)), 320),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(bar(13, 5), bar(20, 5), hi(CARD, 20, 9), hi(CARD, 20, 6), hi(CARD, 20, 3)), 1200),
+      ]),
+      A(S2, 'tick-sweep', 'a stack of cards completes itself bottom-to-top — bam, bam, bam', [
+        F(LEFT, { 5: LR }, merge(hi(TODO, 16, 12), hi(TODO, 16, 7), hi(TODO, 16, 2)), 650),
+        F(LEFT_DOWN, { 6: LR }, merge(hi(DONE, 16, 12), hi(TODO, 16, 7), hi(TODO, 16, 2)), 250),
+        F(LEFT, { 5: LR }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(TODO, 16, 2)), 250),
+        F(LEFT_DOWN, { 6: LR }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2)), 250),
+        F(LEFT_UP, { 4: LR }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2), hi(SPARK, 13, 3)), 320),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(DONE, 16, 12), hi(DONE, 16, 7), hi(DONE, 16, 2)), 1200),
+      ]),
+      A(S2, 'tidy-up', 'scattered cards snap into one neat column at a gesture — "update columns in one sentence"', [
+        F(LEFT, { 5: LR }, merge(hi(CARD, 14, 2), hi(CARD, 19, 6), hi(CARD, 13, 11)), 650),
+        F(LEFT, { 4: LEFT_ARM }, merge(hi(CARD, 14, 2), hi(CARD, 19, 6), hi(CARD, 13, 11)), 300),
+        F(LEFT, { 5: LR }, merge(hi(CARD, 15, 2), hi(CARD, 18, 7), hi(CARD, 15, 11)), 220),
+        F(LEFT, { 5: LR }, merge(hi(CARD, 17, 2), hi(CARD, 17, 7), hi(CARD, 17, 12)), 400),
+        F(LEFT_UP, { 4: LR }, merge(hi(CARD, 17, 2), hi(CARD, 17, 7), hi(CARD, 17, 12)), 300),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(CARD, 17, 2), hi(CARD, 17, 7), hi(CARD, 17, 12)), 1150),
+      ]),
+
+      // ═══════════ STATION 3 · CONNECT ═══════════
+      A(S3, 'connect', 'shipped scene — plug pushed into a socket', [
+        F(LEFT, { 4: LEFT_ARM }, merge(hi(PLUG, 13, 12), hi(SOCKET, 20, 11)), 650),
+        F(LEFT_DOWN, { 5: LEFT_ARM }, merge(hi(PLUG, 15, 12), hi(SOCKET, 20, 11)), 350),
+        F(LEFT, { 4: LEFT_ARM }, merge(hi(PLUG, 17, 12), hi(SOCKET, 20, 11)), 350),
+        F(LEFT, { 5: LR }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11), hi(SPARK, 17, 8)), 320),
+        F(LEFT_UP, { 4: LR }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 350),
+        F(LEFT, { 5: LX }, merge(hi(PLUG_IN, 18, 12), hi(SOCKET, 20, 11)), 1100),
+      ]),
+      A(S3, 'handshake', 'two tool nodes; a cable draws itself between them and sparks on contact', [
+        F(LEFT, { 5: LR }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9)), 650),
+        F(LEFT, { 5: LR }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KK'], 16, 10)), 250),
+        F(LEFT_DOWN, { 6: LR }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKK'], 16, 10)), 250),
+        F(LEFT_UP, { 4: LR }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10), hi(SPARK, 17, 5)), 320),
+        F(LEFT, { 5: LR }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10)), 400),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(NODE_H, 13, 9), hi(NODE_C, 21, 9), hi(['KKKKK'], 16, 10)), 1100),
+      ]),
+      A(S3, 'dock-in', 'three tool blocks drop into a dock, one per slot, click click click', [
+        F(LEFT, { 5: LR }, hi(TRAY, 13, 13), 600),
+        F(LEFT, { 5: LR }, merge(hi(TRAY, 13, 13), hi(BH, 14, 8)), 250),
+        F(LEFT_DOWN, { 6: LR }, merge(hi(TRAY, 13, 13), hi(BH, 14, 13), hi(BC, 17, 8)), 250),
+        F(LEFT, { 5: LR }, merge(hi(TRAY, 13, 13), hi(BH, 14, 13), hi(BC, 17, 13), hi(BL, 20, 8)), 250),
+        F(LEFT_UP, { 4: LR }, merge(hi(TRAY, 13, 13), hi(BH, 14, 13), hi(BC, 17, 13), hi(BL, 20, 13), hi(SPARK, 16, 4)), 320),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(TRAY, 13, 13), hi(BH, 14, 13), hi(BC, 17, 13), hi(BL, 20, 13)), 1200),
+      ]),
+      A(S3, 'orbit', 'satellites circle a hub, then lock on — the integration ecosystem, abstract', [
+        F(LEFT, { 5: LR }, merge(hi(RING, 17, 7), px('c', 14, 6), px('S', 23, 10)), 300),
+        F(LEFT, { 5: LR }, merge(hi(RING, 17, 7), px('c', 18, 3), px('S', 19, 13)), 300),
+        F(LEFT_DOWN, { 6: LR }, merge(hi(RING, 17, 7), px('c', 22, 6), px('S', 15, 12)), 300),
+        F(LEFT_UP, { 4: LR }, merge(hi(RING, 17, 7), px('c', 18, 6), px('S', 19, 11), hi(SPARK, 21, 4)), 320),
+        F(LEFT, { 5: LR }, merge(hi(RING, 17, 7), px('c', 18, 6), px('S', 19, 11)), 400),
+        F(LEFT, { 5: LX, 6: LBLUSH }, merge(hi(RING, 17, 7), px('c', 18, 6), px('S', 19, 11)), 1100),
+      ]),
+
+      // ═══════════ TRAVEL ═══════════
+      A(ST, 'walk', 'shipped — feet alternate + full-body bob; the bob fights the horizontal glide', [
+        F(BASE, { 7: '....m...m...' }, null, 190),
+        F(DOWN, null, null, 190),
+        F(BASE, { 7: '...m...m....' }, null, 190),
+        F(DOWN, null, null, 190),
+      ]),
+      A(ST, 'stride', 'level-headed stride: no vertical bob, sprout tip trails, clear footfalls — smoothest glide', [
+        F(BASE, { 1: '.....l......', 7: '...m....m...' }, null, 170),
+        F(BASE, { 1: '.....l......', 7: '.....mm.....' }, null, 170),
+        F(BASE, { 1: '.....l......', 7: '....m..m....' }, null, 170),
+        F(BASE, { 1: '.....l......', 7: '.....mm.....' }, null, 170),
+      ]),
+      A(ST, 'scurry', 'quick tiny steps, eyes locked on the destination, sprout wobbling — busy and purposeful', [
+        F(BASE, { 5: ER, 1: '......l.....', 7: '....m.m.....' }, null, 150),
+        F(BASE, { 5: ER, 1: '.......l....', 7: '.....m.m....' }, null, 150),
+      ]),
+      A(ST, 'bound', 'travel hops: squash, tuck airborne, land wide — bouncy, matches the hop vocabulary', [
+        F(DOWN, { 8: '.....mm.....' }, null, 220),
+        F(UP1, { 6: '.....mm.....' }, null, 280),
+        F(BASE, { 7: '...m....m...' }, null, 260),
+      ]),
+
+      ];
+
+      const SECT_NOTES = {
+        [S1]: 'Card copy: "Plan sprints, draft cards, break goals into checklists." Resting prop for the pick: its stable bubble/card layer.',
+        [S2]: 'Card copy: "Move, complete, and update columns in one sentence." The story to sell is delegation — Klay commands, the board does the work.',
+        [S3]: 'Card copy: "Google Calendar, Slack, Notion, and your code." Resting prop: the pick\'s opening props (nodes / empty tray / hub).',
+        [ST]: 'Plays while the sprite container slides with steps() easing. The current walk\'s DOWN-frame bob is the awkwardness — stride removes it, scurry doubles the cadence, bound leans into it.',
+      };
+
+      function render(frame, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 12 * scale); svg.setAttribute('height', 11 * scale);
+        frame.map.forEach((row, y) => {
+          [...row].slice(0, 12).forEach((ch, x) => {
+            const color = P[ch]; if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale); r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale); r.setAttribute('height', scale);
+            r.setAttribute('fill', color); svg.appendChild(r);
+          });
+        });
+        if (frame.hi) {
+          const half = scale / 2;
+          for (const yStr in frame.hi) {
+            const row = frame.hi[yStr]; if (typeof row !== 'string') continue;
+            const y = +yStr;
+            [...row].slice(0, 24).forEach((ch, x) => {
+              const color = P[ch]; if (!color) return;
+              const r = document.createElementNS(ns, 'rect');
+              r.setAttribute('x', x * half); r.setAttribute('y', y * half);
+              r.setAttribute('width', half); r.setAttribute('height', half);
+              r.setAttribute('fill', color); svg.appendChild(r);
+            });
+          }
+        }
+        return svg;
+      }
+      function play(mount, anim, scale) {
+        let idx = 0, timer;
+        function tick() {
+          mount.textContent = '';
+          mount.appendChild(render(anim.frames[idx], scale));
+          timer = setTimeout(() => { idx = (idx + 1) % anim.frames.length; tick(); }, anim.frames[idx].ms);
+        }
+        tick();
+        return () => clearTimeout(timer);
+      }
+
+      const heroMount = document.getElementById('hero-anim');
+      const heroName = document.getElementById('hero-name');
+      let stopHero = null, activeCard = null;
+      function setHero(anim) {
+        if (stopHero) stopHero();
+        stopHero = play(heroMount, anim, 15);
+        heroName.textContent = anim.cat + ' · ' + anim.name;
+      }
+      const sections = document.getElementById('sections');
+      const cats = [...new Set(ANIMS.map(a => a.cat))];
+      cats.forEach((cat) => {
+        const h = document.createElement('h2'); h.textContent = cat; sections.appendChild(h);
+        if (SECT_NOTES[cat]) {
+          const p = document.createElement('p'); p.className = 'sect-note'; p.textContent = SECT_NOTES[cat]; sections.appendChild(p);
+        }
+        const grid = document.createElement('div'); grid.className = 'grid'; sections.appendChild(grid);
+        ANIMS.filter(a => a.cat === cat).forEach((anim, i) => {
+          const card = document.createElement('div');
+          card.className = 'card' + (i === 0 ? ' current-ref' : '');
+          const stage = document.createElement('div'); stage.className = 'stage';
+          const holder = document.createElement('div');
+          play(holder, anim, 9);
+          stage.appendChild(holder); card.appendChild(stage);
+          const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = anim.name; card.appendChild(nm);
+          const why = document.createElement('div'); why.className = 'why'; why.textContent = anim.why; card.appendChild(why);
+          card.addEventListener('click', () => {
+            if (activeCard) activeCard.classList.remove('active');
+            card.classList.add('active'); activeCard = card;
+            setHero(anim);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          grid.appendChild(card);
+        });
+      });
+      setHero(ANIMS[1]); // open on the first new candidate, not the current one
+    </script>
+  </body>
+</html>
