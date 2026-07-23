@@ -44,9 +44,9 @@ export default function SidebarChecklist() {
           <span className="sr-only">{doneCount} of {ONBOARDING_STEPS.length} steps complete</span>
         </div>
 
-        <div aria-hidden="true" className="mt-2 mb-1 h-1 rounded-full bg-[var(--surface-raised)] overflow-hidden">
+        <div aria-hidden="true" className="mt-2 mb-1 p-0.5 rounded-full bg-[var(--surface-raised)] w-full">
           <div
-            className="h-full rounded-full bg-[var(--accent-lime-dark)] transition-[width] duration-300 ease-out"
+            className="h-1 min-w-1 rounded-full bg-[var(--label-blue-text)] transition-[width] duration-300 ease-out"
             style={{ width: `${(doneCount / ONBOARDING_STEPS.length) * 100}%` }}
           />
         </div>
@@ -61,18 +61,18 @@ export default function SidebarChecklist() {
                   onClick={() => !done && go(step.key)}
                   disabled={done}
                   className={`flex w-full items-start gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors ${
-                    done ? 'cursor-default' : 'hover:bg-[var(--surface-raised)] cursor-pointer'
+                    done ? 'cursor-default' : 'hover:bg-[var(--surface-raised)]/50 cursor-pointer'
                   }`}
                 >
                   {done ? (
-                    <CheckCircle size={16} weight="fill" className="shrink-0 mt-px text-[var(--accent-lime-dark)]" />
+                    <CheckCircle size={16} weight="fill" className="shrink-0 mt-px text-[var(--label-blue-text)]" />
                   ) : (
                     <span aria-hidden="true" className="shrink-0 mt-px w-4 h-4 rounded-full border border-[var(--border-default)]" />
                   )}
                   <span className="flex flex-col min-w-0 leading-[1.4]">
-                    <span className={`text-[13px] ${done ? 'text-[var(--text-muted)]' : 'text-[var(--text-primary)]'}`}>
+                    <span className={`text-[13px] ${done ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}>
+                      {done && <span className="sr-only">Completed: </span>}
                       {step.title}
-                      {done && <span className="sr-only"> (done)</span>}
                     </span>
                     {!done && (
                       <span className="text-xs text-[var(--text-secondary)]">{step.subtitle}</span>
