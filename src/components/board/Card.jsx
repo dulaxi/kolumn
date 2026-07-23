@@ -178,7 +178,7 @@ export default memo(function Card({ card, onClick, onComplete, isSelected, iconO
 
       {/* Description */}
       {hasDescription && (
-        <p className="line-clamp-2 text-xs text-[var(--text-muted)] leading-relaxed break-words">
+        <p className="line-clamp-2 text-xs text-[var(--text-secondary)] leading-relaxed break-words">
           {description}
         </p>
       )}
