@@ -31,4 +31,25 @@ describe('PixelKlay paused', () => {
     })
     expect(container.querySelector('svg').innerHTML).toBe(before)
   })
+
+  it('does not crash when animation switches to a shorter sequence mid-loop', () => {
+    vi.useFakeTimers()
+    const { container, rerender } = render(<PixelKlay animation="converse" />)
+    // converse frame durations: 700, 200, 200, 950, 350, 200, 950, 450ms.
+    // Each advance must be its own act() so the passive-effect flush (which
+    // schedules the *next* setTimeout) lands before the next advance — a
+    // single big advanceTimersByTime only fires the timer that already
+    // existed when the act() call started. Four transitions land idx at 4,
+    // past walk's 4-frame array (indices 0-3).
+    for (let i = 0; i < 4; i++) {
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+    }
+    rerender(<PixelKlay animation="walk" />)
+    act(() => {
+      vi.advanceTimersByTime(2000)
+    })
+    expect(container.querySelector('svg')).toBeInTheDocument()
+  })
 })

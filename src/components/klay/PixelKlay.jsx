@@ -26,7 +26,11 @@ export default function PixelKlay({ animation = 'idle', scale = 8, playOnce = fa
   useEffect(() => {
     if (paused) return undefined // freeze on the current frame
     if (playOnce && idx >= frames.length - 1) return undefined // rest on the last frame
-    const timer = setTimeout(() => setIdx((i) => (i + 1) % frames.length), frames[idx].ms)
+    // idx can be stale here — animation may have just switched to a shorter
+    // sequence and the [animation] reset effect (above) hasn't landed yet.
+    // Fall back to frame 0 just like the render path does.
+    const f = frames[idx] || frames[0]
+    const timer = setTimeout(() => setIdx((i) => (i + 1) % frames.length), f.ms)
     return () => clearTimeout(timer)
   }, [idx, frames, playOnce, paused])
 
