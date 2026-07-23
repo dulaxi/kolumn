@@ -12,6 +12,7 @@ import ConfirmModal from '../board/ConfirmModal'
 import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
 import SidebarBottom from './SidebarBottom'
+import SidebarChecklist from './SidebarChecklist'
 import DynamicIcon from '../board/DynamicIcon'
 import Tooltip from '../ui/Tooltip'
 import KolumnLogo from './KolumnLogo'
@@ -357,6 +358,8 @@ export default function Sidebar() {
             )
           })()}
         </nav>
+
+        {isDesktop && !showCollapsed && <SidebarChecklist />}
 
         {isDesktop && (
           <SidebarBottom

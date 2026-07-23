@@ -7,9 +7,11 @@ import { useAuthStore } from '../store/authStore'
 import { useBoardStore } from '../store/boardStore'
 import { useChatStore } from '../store/chatStore'
 import ChatInput from '../components/chat/ChatInput'
+import FreePlanPill from '../components/layout/FreePlanPill'
 import PixelKlay from '../components/klay/PixelKlay'
 import { getGreetingSlot, pickGreeting, pickKlay } from '../utils/greeting'
 import Button from '../components/ui/Button'
+import { triggerCreateBoard } from '../utils/createBoardEvent'
 
 const ACTIONS = [
   { label: 'Create a card', icon: Plus, prompt: 'Create a card: ' },
@@ -38,19 +40,6 @@ const TEMPLATES = [
     columns: ['Backlog', 'To Do', 'In Progress', 'Review', 'Done'],
   },
 ]
-
-function triggerCreateBoard() {
-  let attempts = 0
-  let handled = false
-  const onHandled = () => { handled = true }
-  window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
-  const dispatch = () => {
-    if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
-    window.dispatchEvent(new CustomEvent('kolumn:create-board'))
-    if (++attempts < 10) setTimeout(dispatch, 100)
-  }
-  setTimeout(dispatch, 50)
-}
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -93,6 +82,7 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full h-full flex flex-col items-center gap-7 pt-[10vh] md:pt-[18vh] px-4 md:px-8">
+      <FreePlanPill />
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6">
 
         {/* Greeting */}
