@@ -251,7 +251,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       {/* Cards list */}
       <div
         ref={setDroppableRef}
-        className="flex-1 overflow-y-auto pb-2 space-y-2 min-h-[80px]"
+        className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pb-2 space-y-2 min-h-[80px]"
       >
         <SortableContext
           items={allCardIds}
