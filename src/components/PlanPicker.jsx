@@ -17,7 +17,7 @@ export default function PlanPicker({
   return (
     <div className="flex w-full flex-1 flex-col items-center gap-10 px-4 py-12 max-w-[90rem] mx-auto">
       <header className="w-full max-w-md text-center mb-1">
-        <h1 className="text-[40px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.1] tracking-tight">
+        <h1 className="text-[40px] font-[425] text-[var(--text-primary)] font-logo mb-2 leading-[1.1] tracking-tight">
           {title}
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">{subtitle}</p>

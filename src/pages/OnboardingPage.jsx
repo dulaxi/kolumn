@@ -382,7 +382,7 @@ function TermsStep({ email, agreed, setAgreed, error, onSubmit }) {
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="flex w-full max-w-[450px] flex-col items-center gap-5">
           <header className="w-full max-w-md text-center mb-1">
-            <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
+            <h1 className="text-[32px] font-[425] text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
               Let&rsquo;s create your account
             </h1>
             <p className="text-sm text-[var(--text-secondary)]">A few things for you to review</p>
@@ -491,7 +491,7 @@ function DetailsStep({
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="flex w-full max-w-[450px] flex-col items-center gap-5">
           <header className="w-full max-w-md text-center mb-1">
-            <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
+            <h1 className="text-[32px] font-[425] text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight">
               Set up your account
             </h1>
             <p className="text-sm text-[var(--text-secondary)]">Just a few details to get started</p>
@@ -615,7 +615,7 @@ function UpsellStep({ onTryPro, onSkip }) {
     <>
       <div className="flex w-full flex-1 flex-col items-center gap-9 px-4 py-10">
         <header className="flex flex-col gap-2 text-center max-w-2xl">
-          <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
+          <h1 className="text-[32px] font-[425] text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
             Get more out of Kolumn with Pro
           </h1>
           <p className="text-sm text-[var(--text-secondary)]">
@@ -803,7 +803,7 @@ function RoleStep({ role, onPick, onPickStarter, onSkip, seedingStarter }) {
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 text-center">
-        <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
+        <h1 className="text-[32px] font-[425] text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
           What kind of work do you do?
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
@@ -902,7 +902,7 @@ function NameStep({ displayName, setDisplayName, error, loading, onSubmit }) {
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 text-center">
-        <h1 className="text-[32px] font-light text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
+        <h1 className="text-[32px] font-[425] text-[var(--text-primary)] font-logo leading-[1.15] tracking-tight">
           What&rsquo;s your name?
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
@@ -957,7 +957,7 @@ function DisclaimerStep({ onContinue }) {
         <header className="text-center">
           <h1
             id="disclaimer-heading"
-            className="text-[32px] font-light text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight"
+            className="text-[32px] font-[425] text-[var(--text-primary)] font-logo mb-2 leading-[1.15] tracking-tight"
           >
             Before your first board
           </h1>
