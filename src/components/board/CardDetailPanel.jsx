@@ -10,6 +10,8 @@ import { useBoardMembers } from '../../hooks/useBoardMemberNames'
 import IconPicker from './IconPicker'
 import LabelAutocomplete from './LabelAutocomplete'
 import PriorityMenu from './PriorityMenu'
+// Aliased: `Calendar` in this file is the Phosphor icon above.
+import CalendarPicker from '../ui/Calendar'
 import { formatDueDateLabel, parseDueDate } from '../../utils/dateUtils'
 import Modal from '../ui/Modal'
 import Popover from '../ui/Popover'
@@ -276,16 +278,13 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                     onOpenChange={(next) => setOpenMenu(next ? 'due' : null)}
                     placement="bottom-end"
                     panel={
-                      <input
-                        type="date"
+                      <CalendarPicker
                         value={dueDate ? dueDate.split('T')[0] : ''}
-                        onChange={(e) => {
-                          setDueDate(e.target.value ? `${e.target.value}T23:59:59` : '')
+                        onChange={(iso) => {
+                          setDueDate(iso ? `${iso}T23:59:59` : '')
                           setOpenMenu(null)
                           scheduleSave()
                         }}
-                        autoFocus
-                        className="w-full text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
                       />
                     }
                   >
