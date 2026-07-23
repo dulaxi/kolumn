@@ -20,6 +20,8 @@ create table public.profiles (
   onboarded_at timestamptz,
   terms_accepted_at timestamptz,
   trial_ends_at timestamptz,
+  -- onboarding checklist step timestamps (2026-07-23): { board, card, ai, dismissed }
+  onboarding_steps jsonb not null default '{}'::jsonb,
   created_at timestamptz default now()
 );
 
