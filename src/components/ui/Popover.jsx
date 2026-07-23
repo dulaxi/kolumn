@@ -126,7 +126,10 @@ export default function Popover({
   }, [placement])
 
   useEffect(() => {
-    if (!open || !portal) return
+    // Wait for `rendered` (the panel mounts one commit after `open` flips) —
+    // positioning earlier measures a null panel, so the flip-when-cut-off
+    // check reads height 0 and never flips on first open.
+    if (!open || !portal || !rendered) return
     updatePosition()
     const onMove = () => updatePosition()
     // Capture phase so inner scrollers (not just window) trigger a reposition.
@@ -136,7 +139,7 @@ export default function Popover({
       window.removeEventListener('scroll', onMove, true)
       window.removeEventListener('resize', onMove)
     }
-  }, [open, portal, updatePosition])
+  }, [open, portal, rendered, updatePosition])
 
   const animClass = exiting ? 'animate-dropdown-out pointer-events-none' : 'animate-dropdown'
 
