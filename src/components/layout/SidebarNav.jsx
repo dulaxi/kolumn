@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore'
 import WorkspaceDropdown from './WorkspaceDropdown'
 import Tooltip from '../ui/Tooltip'
 
-const ROW_BASE = 'flex w-full items-center h-8 rounded-lg text-sm font-[450] transition-colors duration-75 overflow-hidden'
+const ROW_BASE = 'flex w-full items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
 
 function activeClasses(isActive) {
   return isActive

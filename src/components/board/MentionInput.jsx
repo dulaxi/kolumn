@@ -95,7 +95,7 @@ export default function MentionInput({ value, onChange, onSubmit, members, place
               type="button"
               onClick={() => insertMention(m)}
               className={`flex items-center gap-2 w-full px-3 py-2 text-left text-sm transition-colors ${
-                i === selectedIdx ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
+                i === selectedIdx ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
               }`}
             >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${m.color || 'bg-[var(--color-sand)]'}`}>

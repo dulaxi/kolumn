@@ -116,7 +116,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 onClick={() => setShowFilters(!showFilters)}
                 className={`${TOOLBAR_ICON_BTN} ${
                   showFilters || activeFilterCount > 0
-                    ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]'
+                    ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
                     : TOOLBAR_BTN_FILL
                 }`}
               >

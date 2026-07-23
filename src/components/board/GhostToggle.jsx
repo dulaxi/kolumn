@@ -21,7 +21,7 @@ export default function GhostToggle({ boardId }) {
         aria-pressed={armed}
         onClick={() => toggleGhostMode(boardId)}
         className={`shrink-0 ${TOOLBAR_ICON_BTN} ${
-          armed ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
+          armed ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
         }`}
       >
         <Ghost className="w-4 h-4" weight={armed ? 'fill' : 'regular'} />

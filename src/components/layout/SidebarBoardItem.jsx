@@ -43,7 +43,7 @@ export default function SidebarBoardItem({
   return (
     <div
       onClick={() => onSelect?.(board.id)}
-      className={`flex items-center justify-between w-full h-8 py-1.5 px-2 rounded-lg text-sm font-[450] transition-colors duration-75 group cursor-pointer overflow-hidden relative ${
+      className={`flex items-center justify-between w-full h-8 py-1.5 px-2 rounded-lg text-sm transition-colors duration-75 group cursor-pointer overflow-hidden relative ${
         active
           ? 'text-[var(--text-primary)] bg-[var(--color-mauve-cream)]'
           : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]'

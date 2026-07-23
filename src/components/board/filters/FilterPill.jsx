@@ -10,7 +10,7 @@ import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../../consta
 export default function FilterPill({ label, icon, tooltip, active, children }) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const fill = active ? 'bg-[var(--accent-lime-soft)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
+  const fill = active ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
 
   const button = icon ? (
     <button

@@ -4,7 +4,7 @@
 // secondary header control reads identically. Compose:
 //   `${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`          → text button
 //   `${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`     → icon-only square
-// Active/state variants swap the fill (e.g. accent-lime-soft) in place of
+// Active/state variants swap the fill (e.g. color-mauve-cream) in place of
 // TOOLBAR_BTN_FILL.
 
 // Shape only (layout + shadow) — pair with a fill class.

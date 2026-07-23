@@ -19,7 +19,6 @@
     "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@fontsource/google-sans": "^5.2.1",
     "@fontsource/ibm-plex-mono": "^5.2.7",
-    "@fontsource/spectral": "^5.2.8",
     "@phosphor-icons/core": "^2.1.1",
     "@phosphor-icons/react": "^2.1.10",
     "@sentry/react": "^10.47.0",

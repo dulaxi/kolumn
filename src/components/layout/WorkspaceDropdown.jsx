@@ -10,7 +10,7 @@ import WorkspaceCreateModal from '../workspace/WorkspaceCreateModal'
 // Panel exit animation duration (matches @keyframes dropdownOut in index.css)
 const EXIT_MS = 120
 
-const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm font-[450] transition-colors duration-75 overflow-hidden'
+const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
 
 // All workspaces render with the Cube glyph; identity is via color.
 // resolveWorkspaceColor handles both new (color-name) and legacy
