@@ -13,8 +13,12 @@ export default function GhostCard({ card, moverName, moverColor, moverIcon, move
   const when = movedAt ? formatDistanceToNowStrict(new Date(movedAt), { addSuffix: true }) : ''
 
   return (
-    <div aria-hidden="true" style={{ pointerEvents: 'none' }} className="select-none animate-ghost-in">
-      <Card card={card} onClick={noop} onComplete={noop} ghost={{ moverName, moverColor, moverIcon, when }} />
+    <div aria-hidden="true" style={{ pointerEvents: 'none' }} className="select-none ghost-slot">
+      <div>
+        <div className="animate-ghost-in">
+          <Card card={card} onClick={noop} onComplete={noop} ghost={{ moverName, moverColor, moverIcon, when }} />
+        </div>
+      </div>
     </div>
   )
 }

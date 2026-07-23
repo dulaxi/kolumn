@@ -335,8 +335,23 @@
   animation: ghostIn 0.26s ease-out both;
 }
 
+/* The ghost's SLOT grows 0fr→1fr so cards below glide down (same
+   make-room feel as dnd-kit drag) instead of jumping when the ghost is
+   interleaved. Animating the slot, not the neighbours, keeps dnd-kit's
+   own drag transforms untouched. */
+@keyframes ghostSlot {
+  from { grid-template-rows: 0fr; }
+  to { grid-template-rows: 1fr; }
+}
+
+.ghost-slot {
+  display: grid;
+  animation: ghostSlot 0.26s ease-out both;
+}
+.ghost-slot > * { overflow: hidden; }
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-ghost-in { animation: none; }
+  .animate-ghost-in, .ghost-slot { animation: none; }
 }
 
 @keyframes dropdownIn {
