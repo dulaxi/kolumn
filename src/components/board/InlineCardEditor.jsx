@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { CalendarDot, CheckCircle, CheckSquare, FileText, Plus, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
@@ -63,7 +63,15 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     checklist,
   } = useCardEditState(card, { treatUntitledAsEmpty: true })
 
-  const [showDescription, setShowDescription] = useState(() => !!card?.description)
+  // Description is always present as a one-line field that grows with
+  // content — no reveal toggle, so nothing jumps on click.
+  const descRef = useRef(null)
+  useEffect(() => {
+    const el = descRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [description])
   const members = useBoardMembers(card)
   // useMenuState fires onClose synchronously before unmount, so we can
   // hand control to LabelAutocomplete here to flush its typed text
@@ -264,25 +272,15 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
         </div>
       </div>
 
-      {/* Description — expanded textarea or hint */}
-      {showDescription ? (
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add a description..."
-          rows={2}
-          autoFocus
-          className="w-full text-xs text-[var(--text-secondary)] leading-relaxed bg-transparent border-none focus:outline-none resize-none placeholder-[var(--text-faint)]"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowDescription(true)}
-          className="text-xs text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors text-left"
-        >
-          + Add description
-        </button>
-      )}
+      {/* Description — always one line, auto-grows with content */}
+      <textarea
+        ref={descRef}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Add a description…"
+        rows={1}
+        className="w-full text-xs text-[var(--text-secondary)] leading-relaxed bg-transparent border-none focus:outline-none resize-none overflow-hidden placeholder-[var(--text-faint)]"
+      />
 
       {/* Bottom row: date pill / checklist / assignee */}
       <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
