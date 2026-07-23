@@ -13,15 +13,15 @@ const SIZES = {
     overflowText: 'text-[9px]',
     spacing: '-space-x-1.5',
     avatarSize: 'sm',
-    avatarTextClass: 'text-[8px]',
   },
   lg: {
-    avatar: 'w-7 h-7',
-    glyph: 'w-3.5 h-3.5',
+    // 32px everywhere — must equal Avatar's `lg` so members, the
+    // profile-icon avatar, and the +N bubble are all the same circle.
+    avatar: 'w-8 h-8',
+    glyph: 'w-4 h-4',
     overflowText: 'text-[10px]',
     spacing: '-space-x-2',
     avatarSize: 'lg',
-    avatarTextClass: 'text-[11px]',
   },
 }
 
@@ -207,7 +207,7 @@ export default function AssigneePicker({
               <User className={sz.glyph} />
             </span>
           ) : (
-            <span className={`flex ${sz.spacing}`}>
+            <span className={`flex items-center ${sz.spacing}`}>
               {visible.map((ref) => {
                 if (isMeRef(ref) && profile?.icon) {
                   return (
@@ -220,7 +220,7 @@ export default function AssigneePicker({
                     </span>
                   )
                 }
-                return <Avatar key={ref.id || ref.name} name={ref.name} size={sz.avatarSize} ringed className={`ring-[var(--surface-page)] ${sz.avatar} ${sz.avatarTextClass}`} />
+                return <Avatar key={ref.id || ref.name} name={ref.name} size={sz.avatarSize} ringed ringColor="ring-[var(--surface-page)]" />
               })}
               {overflow > 0 && (
                 <span className={`${sz.avatar} rounded-full flex items-center justify-center ring-2 ring-[var(--surface-page)] bg-[var(--surface-hover)] ${sz.overflowText} font-medium text-[var(--text-secondary)]`}>

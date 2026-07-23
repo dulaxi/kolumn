@@ -7,9 +7,11 @@ const SIZE_CLASSES = {
   lg: 'w-8 h-8 text-xs',
 }
 
-export default function Avatar({ name, size = 'sm', className = '', children, ringed = false }) {
+export default function Avatar({ name, size = 'sm', className = '', children, ringed = false, ringColor = 'ring-[var(--surface-card)]' }) {
   const sizeClass = SIZE_CLASSES[size] || SIZE_CLASSES.sm
-  const ring = ringed ? 'ring-2 ring-[var(--surface-card)]' : ''
+  // ringColor is a full class so callers on other surfaces can match their
+  // background without stacking two conflicting ring-color utilities.
+  const ring = ringed ? `ring-2 ${ringColor}` : ''
   return (
     <span
       className={`rounded-full shrink-0 flex items-center justify-center font-heading ${sizeClass} ${avatarColorClasses(name)} ${ring} ${className}`}
