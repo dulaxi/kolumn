@@ -15,6 +15,7 @@ export const createBoardsSlice = (set, get) => ({
   loading: true,
   error: null,
   _loadedBoardCards: new Set(),
+  _loadingBoardCards: new Set(),
   _allCardsLoaded: false,
 
   clearError: () => set({ error: null }),
@@ -143,9 +144,16 @@ export const createBoardsSlice = (set, get) => ({
 
   // Lazy-load one board's cards (+ their card_labels), merging without touching
   // already-loaded boards. Idempotent — a board loaded once is skipped.
+  // While in flight the id sits in _loadingBoardCards so BoardView can show
+  // card skeletons instead of a false "empty board" flash.
   fetchBoardCards: async (boardId) => {
     if (!boardId || boardId === '__all__') return
     if (get()._loadedBoardCards?.has(boardId)) return
+    set((state) => {
+      const loadingNext = new Set(state._loadingBoardCards || [])
+      loadingNext.add(boardId)
+      return { _loadingBoardCards: loadingNext }
+    })
     try {
       const cardsRes = await supabase.from('cards').select('*').eq('board_id', boardId).order('position')
       if (cardsRes.error) { logError('Failed to fetch board cards:', cardsRes.error); return }
@@ -169,6 +177,12 @@ export const createBoardsSlice = (set, get) => ({
       })
     } catch (err) {
       logError('fetchBoardCards failed:', err)
+    } finally {
+      set((state) => {
+        const loadingNext = new Set(state._loadingBoardCards || [])
+        loadingNext.delete(boardId)
+        return { _loadingBoardCards: loadingNext }
+      })
     }
   },
 

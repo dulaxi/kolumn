@@ -18,6 +18,9 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const inputRef = useRef(null)
 
   const board = useBoardStore((s) => s.boards[boardId])
+  // True while this board's cards are being lazy-loaded (first visit this
+  // session) — columns render skeleton cards instead of a false empty state.
+  const cardsLoading = useBoardStore((s) => !!s._loadingBoardCards?.has(boardId))
   const columnSelector = useMemo(() => selectBoardColumns(boardId), [boardId])
   const boardColumns = useBoardStore(columnSelector)
   const addColumn = useBoardStore((s) => s.addColumn)
@@ -100,6 +103,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
             sortBy={sortBy}
             ghosts={ghostPlacements.filter((p) => p.columnId === column.id)}
             ghostInfo={ghostInfo}
+            cardsLoading={cardsLoading}
           />
         ))}
 

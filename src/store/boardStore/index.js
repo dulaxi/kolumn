@@ -25,7 +25,7 @@ export const useBoardStore = create((set, get) => ({
     // Tear down realtime (channels + reconnect timer) via the realtime slice,
     // then reset every slice's state to its initial value.
     get().unsubscribeAll()
-    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, _loadedBoardCards: new Set(), _allCardsLoaded: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
+    set({ boards: {}, columns: {}, cards: {}, labels: {}, cardLabels: {}, activeBoardId: null, loading: false, error: null, subscriptions: [], _isDragging: false, _tempIdMap: {}, _loadedBoardCards: new Set(), _loadingBoardCards: new Set(), _allCardsLoaded: false, comments: {}, activity: {}, attachments: {}, _completingCards: new Set() })
   },
 }))
 
