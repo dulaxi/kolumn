@@ -60,6 +60,10 @@ export default function PlanCard({
 
       <h3
         className="text-3xl font-normal tracking-tight text-[var(--text-primary)] font-logo"
+        // Inline: .landing-font h3 (Sentient serif) outranks the font-logo
+        // utility on the landing page; the card title should be Clash
+        // Grotesk on every surface.
+        style={{ fontFamily: 'var(--font-logo)' }}
       >
         {plan.name}
       </h3>

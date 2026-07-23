@@ -27,7 +27,7 @@ export default function PlanPicker({
         <InlineNotice variant="error" className="max-w-md w-full">{error}</InlineNotice>
       )}
 
-      <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid w-full grid-cols-1 lg:grid-cols-3 gap-4 justify-items-center max-w-[74rem]">
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}
@@ -36,6 +36,7 @@ export default function PlanPicker({
             onSelect={onPick}
             loading={committingPlan === plan.id}
             disabled={isCommitting && committingPlan !== plan.id}
+            className="w-full max-w-sm"
           />
         ))}
       </div>

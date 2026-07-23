@@ -1683,7 +1683,8 @@ export default function LandingPage() {
                 size and CSS-scales it to fit any container width — so it stays
                 visible on phones/tablets without cards getting cut on the
                 edges. font-sans is set inside ScaledHero to escape the page's
-                landing-font (Plus Jakarta Sans) and restore Mona Sans. */}
+                landing-font (Plus Jakarta Sans) and restore the app sans
+                (General Sans). */}
             <div className="flex justify-center items-center w-full mt-8 xl:mt-0">
               <ScaledHero />
             </div>
@@ -1724,9 +1725,9 @@ export default function LandingPage() {
             Free for solo and small teams. Pro when you want unlimited AI.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-[90rem] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 justify-items-center max-w-[74rem] mx-auto">
           {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} mode="landing" />
+            <PlanCard key={plan.id} plan={plan} mode="landing" className="w-full max-w-sm" />
           ))}
         </div>
       </section>
