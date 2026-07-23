@@ -170,7 +170,14 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
               {column.title}
             </h3>
           )}
-          <span className={`text-xs ${overWip ? 'text-[var(--notice-warn-text)] font-medium' : 'text-[var(--text-muted)]'}`}>
+          {/* Over WIP: same badge recipe as the sidebar Upgrade pill, in red */}
+          <span
+            className={
+              overWip
+                ? 'shrink-0 px-1.5 py-px rounded-full border border-[var(--border-default)] font-mono text-[11px] leading-4 text-[var(--label-red-text)]'
+                : 'text-xs text-[var(--text-muted)]'
+            }
+          >
             {columnCards.length}{wipLimit ? `/${wipLimit}` : ''}
           </span>
         </div>
