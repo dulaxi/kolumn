@@ -141,7 +141,9 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   }
 
   return (
-    <div className={`flex flex-col w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] shrink-0 snap-start ${overWip ? 'bg-[var(--color-honey-wash)] rounded-xl px-2.5 py-2' : ''}`}>
+    {/* Over-WIP signals stay layout-neutral: the count chip turns honey
+        (below) but the column never changes size, padding, or position. */}
+    <div className="flex flex-col w-[calc(100vw-3.5rem)] sm:w-[260px] lg:w-[290px] shrink-0 snap-start">
       {/* Header */}
       <div className="flex items-center justify-between px-0.5 pb-3">
         <div className="flex items-baseline gap-2">
