@@ -40,6 +40,10 @@ export const createCardsSlice = (set, get) => ({
     const localGlobalNumber = Object.values(state.cards).reduce((max, c) => Math.max(max, c.global_task_number || 0), 0) + 1
     const localTaskNumber = board.next_task_number || 1
 
+    // Existing label ids to attach (duplicate flow). Optimistically shown on
+    // the temp card; join rows are inserted once the real card id exists.
+    const labelIds = Array.isArray(cardData.labelIds) ? cardData.labelIds.filter(Boolean) : []
+
     // Build optimistic card with temp ID
     const tempId = `temp-${crypto.randomUUID()}`
     const now = new Date().toISOString()
@@ -72,6 +76,7 @@ export const createCardsSlice = (set, get) => ({
     set((s) => ({
       cards: { ...s.cards, [tempId]: optimisticCard },
       boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: localTaskNumber + 1 } },
+      ...(labelIds.length ? { cardLabels: { ...s.cardLabels, [tempId]: new Set(labelIds) } } : null),
     }))
     useAuthStore.getState().markOnboardingStep('card')
 
@@ -141,12 +146,23 @@ export const createCardsSlice = (set, get) => ({
             if (JSON.stringify(tempCurrent.checklist) !== JSON.stringify(optimisticCard.checklist)) merged.checklist = tempCurrent.checklist
           }
           const { [tempId]: _, ...restCards } = s.cards
+          // Move optimistic labels from the temp key to the real id
+          const { [tempId]: tempLabels, ...restCardLabels } = s.cardLabels || {}
           return {
             cards: { ...restCards, [realCard.id]: merged },
             boards: { ...s.boards, [boardId]: { ...s.boards[boardId], next_task_number: taskNumber + 1 } },
             _tempIdMap: pruneTempIdMap({ ...(s._tempIdMap || {}), [tempId]: realCard.id }),
+            ...(tempLabels ? { cardLabels: { ...restCardLabels, [realCard.id]: tempLabels } } : null),
           }
         })
+
+        // Persist the label attachments now that the real id exists.
+        if (labelIds.length) {
+          const { error: clErr } = await supabase
+            .from('card_labels')
+            .insert(labelIds.map((label_id) => ({ card_id: realCard.id, label_id })))
+          if (clErr) logError('Failed to persist labels on new card:', clErr)
+        }
 
         logActivity(realCard.id, 'created', null)
       } catch (err) {
@@ -181,6 +197,9 @@ export const createCardsSlice = (set, get) => ({
       icon: card.icon || null,
       completed: false,
       checklist: card.checklist ? card.checklist.map((item) => ({ text: item.text, done: false })) : [],
+      // Labels live in the card_labels join table, not on the card row —
+      // without this they were silently dropped on duplicate.
+      labelIds: [...(get().cardLabels[cardId] || [])],
     })
   },
 
