@@ -108,7 +108,17 @@ export default function Popover({
     const r = a.getBoundingClientRect()
     const gap = 6
     const next = {}
-    if (placement.startsWith('bottom')) next.top = Math.round(r.bottom + gap)
+    // Vertical flip: honor the requested side unless the panel would run off
+    // the viewport there AND the opposite side has more room (tall panels
+    // like the calendar near the bottom of the screen).
+    const panelH = panelRef.current?.offsetHeight || 0
+    const spaceBelow = window.innerHeight - r.bottom - gap
+    const spaceAbove = r.top - gap
+    const wantBottom = placement.startsWith('bottom')
+    const fitsPreferred = wantBottom ? panelH <= spaceBelow : panelH <= spaceAbove
+    const preferredIsRoomier = wantBottom ? spaceBelow >= spaceAbove : spaceAbove >= spaceBelow
+    const openBottom = wantBottom === (fitsPreferred || preferredIsRoomier)
+    if (openBottom) next.top = Math.round(r.bottom + gap)
     else next.bottom = Math.round(window.innerHeight - r.top + gap)
     if (placement.endsWith('start')) next.left = Math.round(r.left)
     else next.right = Math.round(window.innerWidth - r.right)
