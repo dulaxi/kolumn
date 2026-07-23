@@ -285,7 +285,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                           scheduleSave()
                         }}
                         autoFocus
-                        className="text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
+                        className="w-full text-sm text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-lg px-2 py-1.5 focus:border-[var(--border-focus)] focus:outline-none"
                       />
                     }
                   >
