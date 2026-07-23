@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import PixelKlay from './PixelKlay'
 import { COARSE_COLS } from './klayAnimations'
 import { TRAVEL_MS } from './useKlayJourney'
@@ -21,9 +21,16 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
   const isWrap = traveling && station === 0
 
   const [layout, setLayout] = useState(null) // { targets: [{x, y}], row, width }
-  const [pos, setPos] = useState({ x: 0, y: 0, transition: 'none' }) // { x, y, transition }
+  const [pos, setPos] = useState(null) // { x, y, transition }
 
-  useLayoutEffect(() => {
+  // Passive, not layout: `containerRef` is an ancestor DOM node whose ref
+  // attaches after this component's own commit step (React attaches refs
+  // bottom-up), so reading it in a useLayoutEffect on first mount would
+  // always see `null`. useEffect fires only once the *whole* tree's layout
+  // phase — including the ancestor's ref — has completed. The render guard
+  // above keeps the sprite unrendered until `layout`/`pos` land, so this
+  // stays flash-free either way.
+  useEffect(() => {
     const measure = () => {
       const c = containerRef.current
       if (!c) return
@@ -63,6 +70,8 @@ export default function KlayJourney({ journey, containerRef, stationRefs, scenes
     }, half)
     return () => clearTimeout(snap)
   }, [layout, station, traveling, isWrap, spriteW])
+
+  if (!layout || !pos) return null
 
   const hidden = layout ? traveling && !layout.row : false
   const animation = reduced ? scenes[0] : traveling ? 'walk' : scenes[station]
