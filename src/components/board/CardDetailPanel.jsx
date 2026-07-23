@@ -277,6 +277,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                     open={openMenu === 'due'}
                     onOpenChange={(next) => setOpenMenu(next ? 'due' : null)}
                     placement="bottom-end"
+                    portal
                     panel={
                       <CalendarPicker
                         value={dueDate ? dueDate.split('T')[0] : ''}
