@@ -16,6 +16,7 @@ import LabelAutocomplete from './LabelAutocomplete'
 import PriorityMenu from './PriorityMenu'
 import Popover from '../ui/Popover'
 import Tooltip from '../ui/Tooltip'
+import Button from '../ui/Button'
 import { selectCardLabels } from '../../store/selectors'
 import { usePresenceStore } from '../../store/presenceStore'
 
@@ -148,7 +149,10 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
     <div
       ref={rootRef}
       onKeyDown={handleKeyDown}
-      className="w-full flex flex-col gap-3 rounded-2xl border border-[var(--text-muted)] p-4 text-left bg-[var(--surface-page)] transition-all"
+      // Chrome matches Card.jsx (surface-card + mist border + 16px radius);
+      // the raised shadow is the "editing" affordance. No transition-all —
+      // animating our own size changes is what made the editor feel wonky.
+      className="w-full flex flex-col gap-3 rounded-2xl border border-[var(--color-mist)] p-4 text-left bg-[var(--surface-card)] shadow-[0_4px_24px_rgba(27,27,24,0.10)]"
     >
       {/* Top row: icon + title + check (priority) */}
       <div className="flex items-center gap-3">
@@ -207,7 +211,9 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
           </div>
 
           {/* Labels inline — chips + LabelAutocomplete */}
-          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] flex-wrap">
+          {/* min-h reserves the autocomplete input's line so opening it
+              doesn't grow the card */}
+          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] flex-wrap min-h-5">
             {displayedLabels.map((d) => (
               <span key={d.key} className="relative inline-flex items-center group/label">
                 <span className="font-medium text-[var(--text-secondary)] lowercase">/{d.text}</span>
@@ -266,7 +272,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
           placeholder="Add a description..."
           rows={2}
           autoFocus
-          className="w-full text-xs text-[var(--text-muted)] leading-relaxed bg-transparent border-none focus:outline-none resize-none placeholder-[var(--text-faint)]"
+          className="w-full text-xs text-[var(--text-secondary)] leading-relaxed bg-transparent border-none focus:outline-none resize-none placeholder-[var(--text-faint)]"
         />
       ) : (
         <button
@@ -297,11 +303,13 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               />
             }
           >
+            {/* Both date states share identical box metrics so picking or
+                clearing a date never shifts the row */}
             {dueDateObj ? (
               <button
                 type="button"
                 onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
-                className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${dueDateBadgeClass(dueDateObj)}`}
+                className={`font-semibold flex items-center gap-1 h-[22px] px-2 rounded-full text-[10px] cursor-pointer ${dueDateBadgeClass(dueDateObj)}`}
               >
                 <CalendarDot size={12} weight="bold" />
                 {formatDueDateLabel(dueDateObj)}
@@ -310,7 +318,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               <button
                 type="button"
                 onClick={() => setOpenMenu(openMenu === 'date' ? null : 'date')}
-                className="flex items-center gap-1 text-[var(--text-faint)] hover:text-[var(--text-muted)] transition-colors text-[10px]"
+                className="flex items-center gap-1 h-[22px] px-2 rounded-full text-[10px] text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:bg-[var(--surface-raised)]/50 transition-colors cursor-pointer"
               >
                 <CalendarDot size={12} weight="bold" />
                 Date
@@ -320,7 +328,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
 
           {/* Checklist counter — only show if items */}
           {hasChecklist && (
-            <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--surface-hover)] text-[var(--text-muted)]">
+            <span className="font-semibold flex items-center gap-1 h-[22px] px-2 rounded-full text-[10px] bg-[var(--surface-hover)] text-[var(--text-muted)]">
               <CheckSquare size={12} weight="bold" />
               {checklist.filter((i) => i.done).length}/{checklist.length}
             </span>
@@ -339,22 +347,14 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
         />
       </div>
 
-      {/* Actions */}
+      {/* Actions — design-system Button primitives */}
       <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-[var(--border-subtle)]">
-        <button
-          type="button"
-          onClick={() => { deleteCard(resolvedId); onDone() }}
-          className="text-[11px] text-[var(--text-muted)] hover:text-[var(--color-copper)] px-2 py-1 rounded-lg transition-colors"
-        >
+        <Button variant="ghost" size="sm" onClick={() => { deleteCard(resolvedId); onDone() }}>
           Discard
-        </button>
-        <button
-          type="button"
-          onClick={handleSave}
-          className="text-[11px] font-medium text-[var(--btn-primary-text)] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] px-3 py-1 rounded-lg transition-colors"
-        >
+        </Button>
+        <Button variant="primary" size="sm" onClick={handleSave}>
           Save
-        </button>
+        </Button>
       </div>
     </div>
   )
