@@ -122,8 +122,20 @@ export default function Popover({
     else next.bottom = Math.round(window.innerHeight - r.top + gap)
     if (placement.endsWith('start')) next.left = Math.round(r.left)
     else next.right = Math.round(window.innerWidth - r.right)
-    setCoords(next)
+    // Identity-stable when unchanged so the re-measure effect below can key
+    // on coords without looping.
+    setCoords((prev) =>
+      prev && prev.top === next.top && prev.bottom === next.bottom &&
+      prev.left === next.left && prev.right === next.right ? prev : next
+    )
   }, [placement])
+
+  // The portal panel mounts only once coords exist, so the first positioning
+  // pass measures a null panel (height 0 → never flips). Re-run once the
+  // panel is real; identity-stable coords stop this from looping.
+  useEffect(() => {
+    if (open && portal && rendered && coords) updatePosition()
+  }, [open, portal, rendered, coords, updatePosition])
 
   useEffect(() => {
     // Wait for `rendered` (the panel mounts one commit after `open` flips) —
