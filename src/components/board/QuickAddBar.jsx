@@ -11,7 +11,9 @@ import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
 import LetterWave from '../ui/LetterWave'
 
-export default function QuickAddBar({ boardId }) {
+// `hidden` fades the pill out (e.g. while the inline card editor is open —
+// two competing input surfaces at once is noise).
+export default function QuickAddBar({ boardId, hidden = false }) {
   const [expanded, setExpanded] = useState(false)
   const [collapsing, setCollapsing] = useState(false)
   const [input, setInput] = useState('')
@@ -134,7 +136,7 @@ export default function QuickAddBar({ boardId }) {
 
   if (!expanded) {
     return (
-      <div className={`fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-20 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-20 transition-opacity duration-300 ${visible && !hidden ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="flex items-center gap-1 h-12 px-2 rounded-[14px] bg-[var(--surface-card)] border border-[var(--color-mist)] transition-all hover:border-[var(--text-muted)]">
           <button
             type="button"

@@ -88,7 +88,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
 
   return (
     <DndContext {...dndContextProps}>
-      <QuickAddBar boardId={boardId} />
+      <QuickAddBar boardId={boardId} hidden={!!inlineCardId} />
       {/* Cards lazy-loading (first visit to this board this session): columns
           are real, cards are in flight — Klay grows over the empty card area
           instead of a false empty-board state. Same composition as the route
