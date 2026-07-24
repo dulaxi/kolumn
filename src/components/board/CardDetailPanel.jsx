@@ -326,7 +326,9 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                         title: card.title,
                         description: card.description || '',
                         priority: card.priority || 'medium',
-                        labels: card.labels || [],
+                        // Store-managed labels — card.labels (legacy jsonb) is
+                        // empty for them; capture text+color specs instead.
+                        labels: labels.map((l) => ({ text: l.text, color: l.color })),
                         checklist: (card.checklist || []).map((item) => ({ text: item.text, done: false })),
                       })
                       showToast.success('Saved as template')

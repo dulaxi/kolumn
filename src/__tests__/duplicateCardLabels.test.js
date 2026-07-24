@@ -55,4 +55,21 @@ describe('duplicating a card copies its labels', () => {
     const tempId = await useBoardStore.getState().addCard('b1', 'col1', { title: 'Plain' })
     expect(useBoardStore.getState().cardLabels[tempId]).toBeUndefined()
   })
+
+  test('addCard attaches template labelSpecs via addLabelToCard after persist', async () => {
+    const addLabelToCard = vi.fn().mockResolvedValue(undefined)
+    useBoardStore.setState({ addLabelToCard })
+    await useBoardStore.getState().addCard('b1', 'col1', {
+      title: 'From template',
+      labelSpecs: [{ text: 'urgent', color: 'red' }, 'frontend'],
+    })
+    // Attachment happens in the background persist — flush microtasks.
+    await new Promise((r) => setTimeout(r, 0))
+    // The shared supabase mock returns no real row, so the card id arg is
+    // undefined here — assert the spec args, which are what this test owns.
+    expect(addLabelToCard.mock.calls.map((c) => [c[1], c[2]])).toEqual([
+      ['urgent', 'red'],
+      ['frontend', null],
+    ])
+  })
 })

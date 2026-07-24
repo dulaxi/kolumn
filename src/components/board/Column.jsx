@@ -111,7 +111,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           title: template.title || 'Untitled task',
           description: template.description || '',
           priority: template.priority || 'medium',
-          labels: template.labels || [],
+          labelSpecs: template.labels || [],
           checklist: (template.checklist || []).map((item) => ({ text: item.text, done: false })),
         }
       : { title: 'Untitled task' }

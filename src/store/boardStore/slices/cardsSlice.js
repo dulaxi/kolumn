@@ -43,6 +43,13 @@ export const createCardsSlice = (set, get) => ({
     // Existing label ids to attach (duplicate flow). Optimistically shown on
     // the temp card; join rows are inserted once the real card id exists.
     const labelIds = Array.isArray(cardData.labelIds) ? cardData.labelIds.filter(Boolean) : []
+    // {text, color} label specs (template flow — board-independent). Resolved
+    // to real board labels via addLabelToCard once the card id exists.
+    const labelSpecs = Array.isArray(cardData.labelSpecs)
+      ? cardData.labelSpecs
+          .map((s) => (typeof s === 'string' ? { text: s, color: null } : s))
+          .filter((s) => s?.text)
+      : []
 
     // Build optimistic card with temp ID
     const tempId = `temp-${crypto.randomUUID()}`
@@ -162,6 +169,12 @@ export const createCardsSlice = (set, get) => ({
             .from('card_labels')
             .insert(labelIds.map((label_id) => ({ card_id: realCard.id, label_id })))
           if (clErr) logError('Failed to persist labels on new card:', clErr)
+        }
+        // Template label specs: resolve/create the board label by text and
+        // attach + merge store state. Sequential so same-text specs can't
+        // race the label-creation RPC.
+        for (const spec of labelSpecs) {
+          await get().addLabelToCard(realCard.id, spec.text, spec.color)
         }
 
         logActivity(realCard.id, 'created', null)
