@@ -49,6 +49,10 @@ export default function BoardActivityModal({ boardId, onClose }) {
   const rowsForBoard = useBoardStore((s) => s.boardActivity[boardId])
   const rows = useMemo(() => rowsForBoard || [], [rowsForBoard])
   const fetchBoardActivity = useBoardStore((s) => s.fetchBoardActivity)
+  // Pre-feature rows (before the meta snapshot convention) have no
+  // card_title — resolve live cards from the store so only rows whose
+  // card is BOTH pre-feature AND deleted fall back to "a card".
+  const storeCards = useBoardStore((s) => s.cards)
   const [activeGroups, setActiveGroups] = useState(() => new Set())
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -165,7 +169,9 @@ export default function BoardActivityModal({ boardId, onClose }) {
               </div>
               {g.rows.map((row) => {
                 const dead = !row.card_id
-                const title = row.meta?.card_title || 'a card'
+                const liveCard = row.card_id ? storeCards[row.card_id] : null
+                const title = row.meta?.card_title || liveCard?.title || 'a card'
+                const cardIcon = row.meta?.card_icon || liveCard?.icon || null
                 const [ActionIcon] = ACTION_VISUALS[row.action] || [PencilSimple]
                 return (
                   <div key={row.id} className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-[var(--surface-raised)]/50 transition-colors">
@@ -186,8 +192,8 @@ export default function BoardActivityModal({ boardId, onClose }) {
                         }`}
                       >
                         <span className="shrink-0 inline-flex">
-                          {row.meta?.card_icon
-                            ? <DynamicIcon name={row.meta.card_icon} className="w-3.5 h-3.5" />
+                          {cardIcon
+                            ? <DynamicIcon name={cardIcon} className="w-3.5 h-3.5" />
                             : <FileText size={14} weight="regular" />}
                         </span>
                         <span className="truncate">{title}</span>
