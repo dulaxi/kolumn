@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 
-import { ArrowLeft, Bookmark, CalendarDot, Copy, DotsThreeVertical, FileText, Flag, Paperclip, Plus, Trash, X } from '@phosphor-icons/react'
+import { ArrowLeft, Bookmark, CalendarDot, ClockCounterClockwise, Copy, DotsThreeVertical, FileText, Flag, Paperclip, Plus, Trash, X } from '@phosphor-icons/react'
 import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
@@ -12,6 +12,7 @@ import LabelAutocomplete from './LabelAutocomplete'
 import PriorityMenu from './PriorityMenu'
 // Aliased: `Calendar` in this file is the Phosphor icon above.
 import CalendarPicker from '../ui/Calendar'
+import BoardActivityModal from './BoardActivityModal'
 import { formatDueDateLabel, parseDueDate, dueDateOutlineClass } from '../../utils/dateUtils'
 import Modal from '../ui/Modal'
 import Popover from '../ui/Popover'
@@ -88,6 +89,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const titleRef = useRef(null)
   const descriptionRef = useRef(null)
   const [showLabelForm, setShowLabelForm] = useState(false)
+  const [showActivity, setShowActivity] = useState(false)
   // Legacy assignee fallback preserved — formDataRef initialization below still needs this local
   const initialAssignees = cardAssigneeRefs(card)
   const members = useBoardMembers(card)
@@ -337,6 +339,12 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   >
                     Template
                   </Menu.Item>
+                  <Menu.Item
+                    icon={<ClockCounterClockwise size={16} />}
+                    onSelect={() => { setShowActivity(true); setOpenMenu(null) }}
+                  >
+                    Activity
+                  </Menu.Item>
                 </>
               }
             >
@@ -535,6 +543,16 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
           />
         </div>
       </div>
+
+      {/* Per-card activity feed — stacks above this modal (Modal primitive
+          is stacked-aware; only the topmost responds to Escape). */}
+      {showActivity && (
+        <BoardActivityModal
+          boardId={card.board_id}
+          cardId={cardId}
+          onClose={() => setShowActivity(false)}
+        />
+      )}
     </Modal>
   )
 })

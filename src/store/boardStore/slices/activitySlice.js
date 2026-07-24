@@ -34,4 +34,34 @@ export const createActivitySlice = (set) => ({
       return 0
     }
   },
+
+  // Per-card feed — same contract as fetchBoardActivity, scoped by card_id.
+  // Temp ids are skipped (never persisted, so no activity can exist yet).
+  cardActivityFeed: {},
+
+  fetchCardActivity: async (cardId, { before } = {}) => {
+    if (!cardId || String(cardId).startsWith('temp-')) return 0
+    try {
+      let q = supabase
+        .from('card_activity')
+        .select('*')
+        .eq('card_id', cardId)
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+      if (before) q = q.lt('created_at', before)
+      const { data, error } = await q
+      if (error) { logError('fetchCardActivity failed:', error); return 0 }
+      const rows = data || []
+      set((s) => ({
+        cardActivityFeed: {
+          ...s.cardActivityFeed,
+          [cardId]: before ? [...(s.cardActivityFeed[cardId] || []), ...rows] : rows,
+        },
+      }))
+      return rows.length
+    } catch (err) {
+      logError('fetchCardActivity failed:', err)
+      return 0
+    }
+  },
 })

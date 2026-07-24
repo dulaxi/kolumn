@@ -21,6 +21,27 @@ describe('activity constants', () => {
   })
 })
 
+describe('fetchCardActivity', () => {
+  beforeEach(() => useBoardStore.setState({ cardActivityFeed: {} }))
+
+  test('replaces the card list on a fresh fetch', async () => {
+    await useBoardStore.getState().fetchCardActivity('c1')
+    expect(useBoardStore.getState().cardActivityFeed.c1).toEqual([])
+  })
+
+  test('skips falsy and temp ids', async () => {
+    await useBoardStore.getState().fetchCardActivity(null)
+    await useBoardStore.getState().fetchCardActivity('temp-abc')
+    expect(Object.keys(useBoardStore.getState().cardActivityFeed)).toHaveLength(0)
+  })
+
+  test('appends when paging with before', async () => {
+    useBoardStore.setState({ cardActivityFeed: { c1: [{ id: 'x' }] } })
+    await useBoardStore.getState().fetchCardActivity('c1', { before: '2026-01-01' })
+    expect(useBoardStore.getState().cardActivityFeed.c1[0]).toEqual({ id: 'x' })
+  })
+})
+
 describe('fetchBoardActivity', () => {
   beforeEach(() => useBoardStore.setState({ boardActivity: {} }))
 

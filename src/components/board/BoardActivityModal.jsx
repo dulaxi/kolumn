@@ -41,14 +41,21 @@ function dayLabel(iso) {
   return d.getFullYear() === new Date().getFullYear() ? label : `${label}, ${d.getFullYear()}`
 }
 
-// Board-wide activity feed. Anatomy matches WorkspaceCreateModal (header +
-// X, panel styling on an inner wrapper — Modal's contentClassName only
-// controls the outer backdrop's centering/positioning, not the panel look);
+// Activity feed — board-wide by default; pass `cardId` for the per-card
+// scope (opened from the card detail's ⋯ menu). Card scope hides the card
+// chip (every row is this card) and trims trailing prepositions from
+// verbs ("changed icon of" → "changed icon"). Anatomy matches
+// WorkspaceCreateModal (header + X, panel styling on an inner wrapper);
 // rows are grouped by day; chips multi-select filter by action group.
-export default function BoardActivityModal({ boardId, onClose }) {
-  const rowsForBoard = useBoardStore((s) => s.boardActivity[boardId])
+export default function BoardActivityModal({ boardId, cardId = null, onClose }) {
+  const cardScope = !!cardId
+  const rowsForBoard = useBoardStore((s) => (cardScope ? s.cardActivityFeed[cardId] : s.boardActivity[boardId]))
   const rows = useMemo(() => rowsForBoard || [], [rowsForBoard])
   const fetchBoardActivity = useBoardStore((s) => s.fetchBoardActivity)
+  const fetchCardActivity = useBoardStore((s) => s.fetchCardActivity)
+  const fetchScoped = cardScope
+    ? (opts) => fetchCardActivity(cardId, opts)
+    : (opts) => fetchBoardActivity(boardId, opts)
   // Pre-feature rows (before the meta snapshot convention) have no
   // card_title — resolve live cards from the store so only rows whose
   // card is BOTH pre-feature AND deleted fall back to "a card".
@@ -58,8 +65,9 @@ export default function BoardActivityModal({ boardId, onClose }) {
   const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
-    fetchBoardActivity(boardId).then((n) => setHasMore(n === PAGE_SIZE))
-  }, [boardId, fetchBoardActivity])
+    fetchScoped().then((n) => setHasMore(n === PAGE_SIZE))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId, cardId, fetchBoardActivity, fetchCardActivity])
 
   const toggleGroup = (key) => {
     setActiveGroups((prev) => {
@@ -109,7 +117,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
     if (!rows.length) return
     setLoadingMore(true)
     const oldest = rows[rows.length - 1].created_at
-    const n = await fetchBoardActivity(boardId, { before: oldest })
+    const n = await fetchScoped({ before: oldest })
     setHasMore(n === PAGE_SIZE)
     setLoadingMore(false)
   }
@@ -123,7 +131,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
       <div className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-lg">
         <div className="flex items-start justify-between">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] flex w-full min-w-0 items-center leading-6 break-words">
-            Activity
+            {cardScope ? 'Card activity' : 'Activity'}
           </h2>
           <button
             type="button"
@@ -180,8 +188,11 @@ export default function BoardActivityModal({ boardId, onClose }) {
                     </span>
                     <div className="flex-1 min-w-0 text-[13px] leading-relaxed text-[var(--text-secondary)]">
                       <span className="font-medium text-[var(--text-primary)]">{row.actor_name}</span>{' '}
-                      {VERB_PHRASES[row.action] || row.action}{' '}
-                      <button
+                      {cardScope
+                        ? (VERB_PHRASES[row.action] || row.action).replace(/ (of|to|on)$/, '')
+                        : (VERB_PHRASES[row.action] || row.action)}
+                      {!cardScope && ' '}
+                      {!cardScope && <button
                         type="button"
                         onClick={() => openCard(row)}
                         disabled={dead}
@@ -197,7 +208,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
                             : <FileText size={14} weight="regular" />}
                         </span>
                         <span className="truncate group-hover/chip:underline">{title}</span>
-                      </button>
+                      </button>}
                       {row.detail && (
                         <span className="text-[var(--text-muted)]"> {row.detail}</span>
                       )}
