@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { nanoid } from 'nanoid'
 import { DotsSixVertical, DotsThree, Gauge, Pencil, Plus, Trash } from '@phosphor-icons/react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -112,7 +113,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           description: template.description || '',
           priority: template.priority || 'medium',
           labelSpecs: template.labels || [],
-          checklist: (template.checklist || []).map((item) => ({ text: item.text, done: false })),
+          checklist: (template.checklist || []).map((item) => ({ id: nanoid(), text: item.text, done: false })),
         }
       : { title: 'Untitled task' }
     try {

@@ -7,11 +7,16 @@ import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { ACTIVITY_GROUPS, VERB_PHRASES, PAGE_SIZE } from '../../constants/activity'
 
+function dayKey(iso) {
+  return format(parseISO(iso), 'yyyy-MM-dd')
+}
+
 function dayLabel(iso) {
   const d = parseISO(iso)
   if (isToday(d)) return 'Today'
   if (isYesterday(d)) return 'Yesterday'
-  return format(d, 'MMM d')
+  const label = format(d, 'MMM d')
+  return d.getFullYear() === new Date().getFullYear() ? label : `${label}, ${d.getFullYear()}`
 }
 
 // Board-wide activity feed. Anatomy matches WorkspaceCreateModal (header +
@@ -50,14 +55,17 @@ export default function BoardActivityModal({ boardId, onClose }) {
     return rows.filter((r) => activeGroups.has(actionToGroup[r.action]))
   }, [rows, activeGroups, actionToGroup])
 
-  // Group by day label, preserving desc order
+  // Group by calendar day (yyyy-MM-dd), preserving desc order. Keying by the
+  // raw date (not the display label) keeps distinct years from colliding —
+  // two different Jan 5ths would otherwise share both a React key and a
+  // visually ambiguous "Jan 5" header.
   const groups = useMemo(() => {
     const out = []
     let current = null
     visible.forEach((r) => {
-      const label = dayLabel(r.created_at)
-      if (!current || current.label !== label) {
-        current = { label, rows: [] }
+      const key = dayKey(r.created_at)
+      if (!current || current.key !== key) {
+        current = { key, label: dayLabel(r.created_at), rows: [] }
         out.push(current)
       }
       current.rows.push(r)
@@ -129,7 +137,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
             </p>
           )}
           {groups.map((g) => (
-            <div key={g.label}>
+            <div key={g.key}>
               <div className="pt-3 pb-1 font-mono text-[11px] uppercase tracking-wide text-[var(--text-faint)]">
                 {g.label}
               </div>

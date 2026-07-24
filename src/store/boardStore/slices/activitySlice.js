@@ -3,7 +3,7 @@ import { logError } from '../../../utils/logger'
 import { PAGE_SIZE } from '../../../constants/activity'
 
 // Board-level activity feed. Fetched on modal open (no realtime in v1).
-export const createActivitySlice = (set, get) => ({
+export const createActivitySlice = (set) => ({
   boardActivity: {},
 
   // Fresh fetch replaces the board's list; { before } pages older rows and

@@ -37,7 +37,7 @@ describe('BoardActivityModal', () => {
 
   test('renders actor, verb, card title and detail', () => {
     renderModal()
-    expect(screen.getAllByText('Sarah', { exact: false }).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Sarah', { exact: false })).toHaveLength(2)
     expect(screen.getByText('Redo hero')).toBeInTheDocument()
     expect(screen.getByText('Backlog → Done')).toBeInTheDocument()
   })

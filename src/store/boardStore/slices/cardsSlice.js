@@ -1,5 +1,6 @@
 import { capture } from '../../../lib/analytics'
 import { format } from 'date-fns'
+import { nanoid } from 'nanoid'
 import { showToast } from '../../../utils/toast'
 import { supabase } from '../../../lib/supabase'
 import { useAuthStore } from '../../authStore'
@@ -196,7 +197,7 @@ export const createCardsSlice = (set, get) => ({
     // user can rename via update_card if they want. Identical titles will
     // trigger the executor's ambiguity error on the next title-based
     // operation, which is an acceptable trade for clean titles by default.
-    logActivity(cardId, 'duplicated', card.title)
+    logActivity(cardId, 'duplicated', null)
     return get().addCard(card.board_id, card.column_id, {
       title: card.title,
       description: card.description || '',
@@ -210,7 +211,7 @@ export const createCardsSlice = (set, get) => ({
       priority: card.priority || 'medium',
       icon: card.icon || null,
       completed: false,
-      checklist: card.checklist ? card.checklist.map((item) => ({ text: item.text, done: false })) : [],
+      checklist: card.checklist ? card.checklist.map((item) => ({ id: nanoid(), text: item.text, done: false })) : [],
       // Labels live in the card_labels join table, not on the card row —
       // without this they were silently dropped on duplicate.
       labelIds: [...(get().cardLabels[cardId] || [])],
@@ -421,14 +422,14 @@ export const createCardsSlice = (set, get) => ({
         supabase.storage.from('attachments').remove(paths).catch(() => {})
       }
 
-      logActivity(cardId, 'deleted', null,
-        { card_title: prevCard.title, card_icon: prevCard.icon || null },
-        prevCard.board_id)
-
       const { error } = await supabase.from('cards').delete().eq('id', cardId)
       if (error) {
         set((state) => ({ cards: { ...state.cards, [cardId]: prevCard } }))
         showToast.error('Failed to delete task')
+      } else {
+        logActivity(null, 'deleted', null,
+          { card_title: prevCard.title, card_icon: prevCard.icon || null },
+          prevCard.board_id)
       }
     } else {
       // Verify card still exists in DB before restoring (prevents ghost cards after concurrent remote delete)

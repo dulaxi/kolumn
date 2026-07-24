@@ -46,10 +46,11 @@ describe('logActivity v2', () => {
     expect(inserts[0].meta).toMatchObject({ card_title: 'Redo hero', card_icon: 'rocket' })
   })
 
-  test('boardIdOverride + explicit meta serve the deleted flow (card gone from store)', async () => {
+  test('boardIdOverride + explicit meta serve the deleted flow (post-delete, null card_id)', async () => {
     useBoardStore.setState({ cards: {} })
-    await logActivity('c1', 'deleted', null, { card_title: 'Redo hero', card_icon: 'rocket' }, 'b1')
+    await logActivity(null, 'deleted', null, { card_title: 'Redo hero', card_icon: 'rocket' }, 'b1')
     expect(inserts).toHaveLength(1)
+    expect(inserts[0].card_id).toBe(null)
     expect(inserts[0].board_id).toBe('b1')
     expect(inserts[0].meta.card_title).toBe('Redo hero')
   })
