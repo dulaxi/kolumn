@@ -134,7 +134,10 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 // no shadow) — the caret is a handle, not a tool.
                 className="relative flex items-center justify-center h-8 w-8 rounded-lg transition-colors duration-75 cursor-pointer active:scale-[0.995] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               >
-                <CaretRight className={`w-4 h-4 transition-transform duration-300 ${toolsOpen ? 'rotate-180' : ''}`} />
+                {/* Toolbar is right-anchored, so expansion unfolds leftward:
+                    closed points left (where tools will appear), open points
+                    right (where they tuck back in). */}
+                <CaretRight className={`w-4 h-4 transition-transform duration-300 ${toolsOpen ? '' : 'rotate-180'}`} />
               </button>
             </Tooltip>
           )}
