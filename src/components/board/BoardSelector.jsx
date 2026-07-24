@@ -35,6 +35,8 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const cards = useBoardStore((s) => s.cards)
   const columns = useBoardStore((s) => s.columns)
+  const storeLabels = useBoardStore((s) => s.labels)
+  const cardLabels = useBoardStore((s) => s.cardLabels)
   const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
   const user = useAuthStore((s) => s.user)
@@ -68,16 +70,19 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   }, [boardCards])
 
   const uniqueLabels = useMemo(() => {
+    // Labels live in the normalized store (labels map + cardLabels join) —
+    // the legacy c.labels jsonb column is empty for store-managed labels,
+    // which left this filter with no options. Same source the matcher uses
+    // (Column enriches _labelTexts from cardLabels).
     const labelMap = new Map()
     boardCards.forEach((c) => {
-      if (c.labels && Array.isArray(c.labels)) {
-        c.labels.forEach((lbl) => {
-          if (lbl.text && !labelMap.has(lbl.text)) labelMap.set(lbl.text, lbl)
-        })
-      }
+      ;[...(cardLabels[c.id] || [])].forEach((lid) => {
+        const l = storeLabels[lid]
+        if (l?.text && !labelMap.has(l.text)) labelMap.set(l.text, l)
+      })
     })
     return Array.from(labelMap.values()).sort((a, b) => a.text.localeCompare(b.text))
-  }, [boardCards])
+  }, [boardCards, cardLabels, storeLabels])
 
   const activeFilterCount =
     (filters?.priority?.length || 0) +
