@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, Funnel, Tag, X } from '@phosphor-icons/react'
+import { Archive, CaretRight, Funnel, Tag, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -16,6 +16,18 @@ const BoardShareModal = lazy(() => import('./BoardShareModal'))
 export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, onManageLabels }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  // Collapsible tool cluster (Labels / Sort / Filter / Archived) — hidden by
+  // default behind the rotating caret so the board header starts quiet.
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const [toolsOverflowVisible, setToolsOverflowVisible] = useState(false)
+
+  useEffect(() => {
+    if (toolsOpen) {
+      const t = setTimeout(() => setToolsOverflowVisible(true), 320)
+      return () => clearTimeout(t)
+    }
+    setToolsOverflowVisible(false)
+  }, [toolsOpen])
   const [showArchived, setShowArchived] = useState(false)
   // The drawer keeps overflow hidden during the open/close animation so the
   // pills don't spill out, then unhides it once the drawer is fully open so
@@ -104,6 +116,43 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             height + push the divider down). flex-wrap permits graceful
             wrapping only when truly out of room. */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Rotating caret — the toolbar's single handle. Points right when
+              the tools are tucked away, flips to point left when open. */}
+          {isRealBoard && (
+            <Tooltip content={toolsOpen ? 'Hide board tools' : 'Show board tools'}>
+              <button
+                type="button"
+                aria-label={toolsOpen ? 'Hide board tools' : 'Show board tools'}
+                aria-expanded={toolsOpen}
+                onClick={() => {
+                  const next = !toolsOpen
+                  setToolsOpen(next)
+                  if (!next) setShowFilters(false)
+                }}
+                className={`${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`}
+              >
+                <CaretRight className={`w-4 h-4 transition-transform duration-300 ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </Tooltip>
+          )}
+
+          {/* Tool cluster — glides open exactly like the filter drawer:
+              max-width animates, overflow unhides after the transition so
+              the tools' own popovers can drop below. */}
+          {isRealBoard && (
+          <div
+            inert={!toolsOpen ? '' : undefined}
+            aria-hidden={!toolsOpen || undefined}
+            className={`inline-flex items-center gap-2 ${
+              toolsOverflowVisible ? 'overflow-visible' : 'overflow-hidden'
+            }`}
+            style={{
+              maxWidth: toolsOpen ? '1100px' : 0,
+              opacity: toolsOpen ? 1 : 0,
+              transition:
+                'max-width 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out 80ms',
+            }}
+          >
           {isRealBoard && onManageLabels && (
             <Tooltip content="Labels">
               <button
@@ -203,6 +252,8 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               <Archive className="w-4 h-4 -ml-0.5" />
               Archived ({archivedCards.length})
             </button>
+          )}
+          </div>
           )}
 
           {/* Share sits at the far right of the toolbar, text-only. Owner: full
