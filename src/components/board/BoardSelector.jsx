@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, CaretRight, Funnel, Tag, X } from '@phosphor-icons/react'
+import { Archive, CaretRight, ClockCounterClockwise, Funnel, Tag, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -9,6 +9,7 @@ import DueFilter from './filters/DueFilter'
 import SortFilter from './filters/SortFilter'
 import ArchivedCardsPanel from './ArchivedCardsPanel'
 import GhostToggle from './GhostToggle'
+import BoardActivityModal from './BoardActivityModal'
 import Tooltip from '../ui/Tooltip'
 import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
@@ -17,6 +18,7 @@ const BoardShareModal = lazy(() => import('./BoardShareModal'))
 export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, onManageLabels }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [showActivity, setShowActivity] = useState(false)
   // Collapsible tool cluster (Labels / Sort / Filter / Archived) — hidden by
   // default behind the rotating caret so the board header starts quiet.
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -162,6 +164,16 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
           {/* Ghost — first of the four tools (moved here from BoardsPage
               so it collapses with the rest of the cluster) */}
           <GhostToggle boardId={activeBoardId} />
+          <Tooltip content="Activity">
+            <button
+              type="button"
+              aria-label="Board activity"
+              onClick={() => setShowActivity(true)}
+              className={`${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`}
+            >
+              <ClockCounterClockwise className="w-4 h-4" />
+            </button>
+          </Tooltip>
           {isRealBoard && onManageLabels && (
             <Tooltip content="Labels">
               <button
@@ -298,6 +310,10 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             onClose={() => setShowShareModal(false)}
           />
         </Suspense>
+      )}
+
+      {showActivity && isRealBoard && (
+        <BoardActivityModal boardId={activeBoardId} onClose={() => setShowActivity(false)} />
       )}
     </>
   )
