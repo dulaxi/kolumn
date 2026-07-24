@@ -107,7 +107,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 onClick={onManageLabels}
                 className={`${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`}
               >
-                <Tag className="w-4 h-4" />
+                <Tag className="w-5 h-5" />
               </button>
             </Tooltip>
           )}
@@ -126,7 +126,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                     : TOOLBAR_BTN_FILL
                 }`}
               >
-                <Funnel className="w-4 h-4" />
+                <Funnel className="w-5 h-5" />
                 {activeFilterCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-semibold text-[var(--btn-primary-text)] bg-[var(--btn-primary-bg)] rounded-full">
                     {activeFilterCount}

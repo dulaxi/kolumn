@@ -14,7 +14,7 @@ export default function SortFilter({ sortBy, setSortBy }) {
   const current = SORT_OPTIONS.find((o) => o.value === sortBy)
   return (
     <FilterPill
-      icon={<ArrowsDownUp className="w-4 h-4" />}
+      icon={<ArrowsDownUp className="w-5 h-5" />}
       tooltip={sortBy === 'manual' ? 'Sort' : `Sorted by ${current?.label}`}
       active={sortBy !== 'manual'}
     >
