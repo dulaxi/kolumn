@@ -8,6 +8,7 @@ import LabelFilter from './filters/LabelFilter'
 import DueFilter from './filters/DueFilter'
 import SortFilter from './filters/SortFilter'
 import ArchivedCardsPanel from './ArchivedCardsPanel'
+import GhostToggle from './GhostToggle'
 import Tooltip from '../ui/Tooltip'
 import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
@@ -153,6 +154,9 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 'max-width 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out 80ms',
             }}
           >
+          {/* Ghost — first of the four tools (moved here from BoardsPage
+              so it collapses with the rest of the cluster) */}
+          <GhostToggle boardId={activeBoardId} />
           {isRealBoard && onManageLabels && (
             <Tooltip content="Labels">
               <button
