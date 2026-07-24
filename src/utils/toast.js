@@ -103,7 +103,7 @@ function offlineToast(message) {
       ),
     {
       duration: Infinity,
-      style: { ...BASE, background: '#D4A843', color: '#1B1B18' },
+      style: { ...BASE, background: TOAST_AMBER, color: '#1B1B18' },
     },
   )
 }
@@ -117,6 +117,11 @@ function offlineToast(message) {
 // react-hot-toast's inline styles.
 const PALE = { border: '1px solid var(--toast-pale-border)' }
 
+// Toast warning fill: amber, deliberately brighter than the app-wide
+// --color-honey (#D4A843) — the mustard read as muddy at toast size
+// (user call, 2026-07-24). Honey remains the warning hue everywhere else.
+const TOAST_AMBER = '#F2B33D'
+
 export const showToast = {
   success: make('check-circle', '#C2D64A', '#1B1B18', 3000),
   error:   make('warning-circle', '#C27A4A', '#FAF8F6', 4000),
@@ -124,8 +129,8 @@ export const showToast = {
   archive: make('archive', 'var(--toast-archive-bg)', 'var(--toast-archive-text)', 3000, PALE),
   restore: make('arrow-counter-clockwise', '#C2D64A', '#1B1B18', 3000),
   info:    make('info', 'var(--toast-info-bg)', 'var(--toast-info-text)', 3000, PALE),
-  warn:    make('warning',         '#D4A843', '#1B1B18', 4000),
-  overdue: make('alarm',           '#D4A843', '#1B1B18', 5000),
+  warn:    make('warning',         TOAST_AMBER, '#1B1B18', 4000),
+  overdue: make('alarm',           TOAST_AMBER, '#1B1B18', 5000),
   offline: offlineToast,
   dismiss: (id) => toast.dismiss(id),
 }
