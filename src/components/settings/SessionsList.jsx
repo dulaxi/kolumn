@@ -115,6 +115,7 @@ export default function SessionsList() {
                     open={openMenuId === s.id}
                     onOpenChange={(open) => setOpenMenuId(open ? s.id : null)}
                     placement="bottom-end"
+                    portal
                     panel={
                       <Menu.Item destructive onSelect={() => handleRevoke(s.id)}>
                         Revoke session
