@@ -128,7 +128,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
           ))}
         </div>
 
-        <div className="max-h-[65vh] overflow-y-auto -mx-1 px-1">
+        <div className="h-[65vh] overflow-y-auto -mx-1 px-1">
           {groups.length === 0 && (
             <p className="py-10 text-center text-sm text-[var(--text-muted)]">
               {rows.length === 0
