@@ -24,7 +24,7 @@ export default function GhostToggle({ boardId }) {
           armed ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
         }`}
       >
-        <Ghost className="w-5 h-5" weight={armed ? 'fill' : 'regular'} />
+        <Ghost className="w-4 h-4" weight={armed ? 'fill' : 'bold'} />
       </button>
     </Tooltip>
   )
