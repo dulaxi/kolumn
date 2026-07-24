@@ -1,6 +1,7 @@
 import { showToast } from '../../../utils/toast'
 import { supabase } from '../../../lib/supabase'
 import { logError } from '../../../utils/logger'
+import { logActivity } from '../helpers'
 
 export const createLabelsSlice = (set, get) => ({
   labels: {},
@@ -36,6 +37,7 @@ export const createLabelsSlice = (set, get) => ({
         labels: label ? { ...s.labels, [labelId]: label } : s.labels,
       }
     })
+    logActivity(cardId, 'label_added', text)
   },
 
   // Create a board label without attaching it to a card (used by the label
@@ -61,6 +63,7 @@ export const createLabelsSlice = (set, get) => ({
   },
 
   removeLabelFromCard: async (cardId, labelId) => {
+    const labelText = get().labels[labelId]?.text
     set((s) => {
       const cur = s.cardLabels[cardId]
       if (!cur) return s
@@ -76,6 +79,8 @@ export const createLabelsSlice = (set, get) => ({
     if (error) {
       logError('Failed to remove label:', error)
       showToast.error('Couldn\'t remove label — try again')
+    } else {
+      logActivity(cardId, 'label_removed', labelText || 'label')
     }
   },
 

@@ -86,19 +86,31 @@ export function undoableDelete(message) {
 }
 
 // Fire-and-forget activity logger — never blocks the calling action.
-export async function logActivity(cardId, action, detail, meta = null) {
+// v2: resolves board_id (required by RLS + the board feed) and snapshots
+// the card's identity into meta so rows can render their card chip after
+// the card is deleted (card_id nulls out on delete).
+export async function logActivity(cardId, action, detail, meta = null, boardIdOverride = null) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const profile = useAuthStore.getState().profile
     const actorName = profile?.display_name || user.email || 'Unknown'
+    // Dynamic import: helpers.js is imported by the slices that compose the
+    // store, so a static import of '../index' here would be circular.
+    const { useBoardStore } = await import('./index')
+    const card = cardId ? useBoardStore.getState().cards[cardId] : null
+    const boardId = boardIdOverride || card?.board_id
+    if (!boardId) return
+    const snapshot = card ? { card_title: card.title, card_icon: card.icon || null } : {}
+    const mergedMeta = { ...snapshot, ...(meta || {}) }
     await supabase.from('card_activity').insert({
       card_id: cardId,
+      board_id: boardId,
       user_id: user.id,
       actor_name: actorName,
       action,
       detail,
-      ...(meta ? { meta } : {}),
+      ...(Object.keys(mergedMeta).length ? { meta: mergedMeta } : {}),
     })
   } catch (err) {
     // Activity logging should never break the main flow

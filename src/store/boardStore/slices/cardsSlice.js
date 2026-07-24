@@ -196,6 +196,7 @@ export const createCardsSlice = (set, get) => ({
     // user can rename via update_card if they want. Identical titles will
     // trigger the executor's ambiguity error on the next title-based
     // operation, which is an acceptable trade for clean titles by default.
+    logActivity(cardId, 'duplicated', card.title)
     return get().addCard(card.board_id, card.column_id, {
       title: card.title,
       description: card.description || '',
@@ -326,6 +327,24 @@ export const createCardsSlice = (set, get) => ({
       if ('title' in dbUpdates && dbUpdates.title !== prevCard.title) {
         logActivity(cardId, 'renamed', `${prevCard.title} → ${dbUpdates.title}`)
       }
+      if ('icon' in dbUpdates && dbUpdates.icon !== prevCard.icon) {
+        logActivity(cardId, 'icon_changed', dbUpdates.icon || 'removed')
+      }
+      if ('description' in dbUpdates && (dbUpdates.description || '') !== (prevCard.description || '')) {
+        logActivity(cardId, 'description_edited', null)
+      }
+      if ('checklist' in dbUpdates) {
+        const prevItems = prevCard.checklist || []
+        const nextItems = dbUpdates.checklist || []
+        const prevTexts = new Set(prevItems.map((i) => i.text))
+        nextItems
+          .filter((i) => i.text && !prevTexts.has(i.text))
+          .forEach((i) => logActivity(cardId, 'checklist_added', i.text))
+        const prevDone = new Set(prevItems.filter((i) => i.done).map((i) => i.text))
+        nextItems
+          .filter((i) => i.done && !prevDone.has(i.text))
+          .forEach((i) => logActivity(cardId, 'checklist_completed', i.text))
+      }
     }
   },
 
@@ -395,6 +414,10 @@ export const createCardsSlice = (set, get) => ({
         const paths = attachments.map((a) => a.storage_path)
         supabase.storage.from('attachments').remove(paths).catch(() => {})
       }
+
+      logActivity(cardId, 'deleted', null,
+        { card_title: prevCard.title, card_icon: prevCard.icon || null },
+        prevCard.board_id)
 
       const { error } = await supabase.from('cards').delete().eq('id', cardId)
       if (error) {
