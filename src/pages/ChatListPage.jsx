@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { CaretDown, ChatsCircle, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
+import { CaretDown, ChatsCircle, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
 import EmptyState from '../components/ui/EmptyState'
@@ -94,10 +94,13 @@ export default function ChatListPage() {
           title="Looking to start a chat?"
           body="Ask questions about your boards, get summaries, or work through your project with Claude."
           action={
-            <Button size="sm" onClick={() => navigate('/dashboard')}>
-              <Plus className="w-4 h-4" />
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL_PRIMARY}`}
+            >
               New chat
-            </Button>
+            </button>
           }
         />
       )}
