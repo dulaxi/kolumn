@@ -991,7 +991,8 @@ alter table public.cards add column recurrence_next_due date;
 -- ============================================================
 create table public.card_activity (
   id uuid primary key default gen_random_uuid(),
-  card_id uuid not null references public.cards(id) on delete cascade,
+  card_id uuid references public.cards(id) on delete set null,
+  board_id uuid not null references public.boards(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   actor_name text not null default '',
   action text not null,
@@ -1001,20 +1002,21 @@ create table public.card_activity (
 );
 
 create index idx_card_activity_card_id on public.card_activity(card_id);
+create index idx_card_activity_board_created on public.card_activity(board_id, created_at desc);
 
 alter table public.card_activity enable row level security;
 
 create policy "Members can view card activity"
   on public.card_activity for select
   to authenticated
-  using (card_id in (select get_my_card_ids()));
+  using (board_id in (select get_my_board_ids()));
 
 create policy "Members can create card activity"
   on public.card_activity for insert
   to authenticated
   with check (
     user_id = auth.uid()
-    and card_id in (select get_my_card_ids())
+    and board_id in (select get_my_board_ids())
   );
 
 -- ============================================================
