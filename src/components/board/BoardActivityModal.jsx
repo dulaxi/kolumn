@@ -2,34 +2,31 @@ import { useEffect, useMemo, useState } from 'react'
 import { format, isToday, isYesterday, parseISO } from 'date-fns'
 import { Archive, ArrowCounterClockwise, ArrowsLeftRight, CalendarDot, CheckCircle, CheckSquare, Copy, FileText, Flag, ListChecks, Paperclip, PencilSimple, Plus, Tag, Trash, User, X } from '@phosphor-icons/react'
 import Modal from '../ui/Modal'
-import { LABEL_BG } from '../../utils/formatting'
 import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { ACTIVITY_GROUPS, VERB_PHRASES, PAGE_SIZE } from '../../constants/activity'
 
-// Per-action icon + label-token color pair: hue = activity family so the
-// feed scans by color (created=blue, moved=orange, edits=yellow,
-// done=green, destructive=red, archive=gray, labels=purple, files=pink).
+// Per-action icon (neutral color — the glyph alone carries the type).
 const ACTION_VISUALS = {
-  created: [Plus, 'blue'],
-  duplicated: [Copy, 'blue'],
-  moved: [ArrowsLeftRight, 'orange'],
-  renamed: [PencilSimple, 'yellow'],
-  updated_priority: [Flag, 'yellow'],
-  updated_assignee: [User, 'yellow'],
-  updated_due_date: [CalendarDot, 'yellow'],
-  icon_changed: [PencilSimple, 'yellow'],
-  description_edited: [PencilSimple, 'yellow'],
-  checklist_added: [ListChecks, 'yellow'],
-  completed: [CheckCircle, 'green'],
-  reopened: [ArrowCounterClockwise, 'green'],
-  checklist_completed: [CheckSquare, 'green'],
-  deleted: [Trash, 'red'],
-  archived: [Archive, 'gray'],
-  unarchived: [ArrowCounterClockwise, 'gray'],
-  label_added: [Tag, 'purple'],
-  label_removed: [Tag, 'purple'],
-  attached: [Paperclip, 'pink'],
+  created: [Plus],
+  duplicated: [Copy],
+  moved: [ArrowsLeftRight],
+  renamed: [PencilSimple],
+  updated_priority: [Flag],
+  updated_assignee: [User],
+  updated_due_date: [CalendarDot],
+  icon_changed: [PencilSimple],
+  description_edited: [PencilSimple],
+  checklist_added: [ListChecks],
+  completed: [CheckCircle],
+  reopened: [ArrowCounterClockwise],
+  checklist_completed: [CheckSquare],
+  deleted: [Trash],
+  archived: [Archive],
+  unarchived: [ArrowCounterClockwise],
+  label_added: [Tag],
+  label_removed: [Tag],
+  attached: [Paperclip],
 }
 
 function dayKey(iso) {
@@ -169,11 +166,11 @@ export default function BoardActivityModal({ boardId, onClose }) {
               {g.rows.map((row) => {
                 const dead = !row.card_id
                 const title = row.meta?.card_title || 'a card'
-                const [ActionIcon, hue] = ACTION_VISUALS[row.action] || [PencilSimple, 'gray']
+                const [ActionIcon] = ACTION_VISUALS[row.action] || [PencilSimple]
                 return (
                   <div key={row.id} className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-[var(--surface-raised)]/50 transition-colors">
-                    <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${LABEL_BG[hue] || LABEL_BG.gray}`}>
-                      <ActionIcon size={15} weight="regular" />
+                    <span className="shrink-0 w-7 flex items-center justify-center text-[var(--text-muted)]">
+                      <ActionIcon size={16} weight="regular" />
                     </span>
                     <div className="flex-1 min-w-0 text-[13px] leading-relaxed text-[var(--text-secondary)]">
                       <span className="font-medium text-[var(--text-primary)]">{row.actor_name}</span>{' '}
