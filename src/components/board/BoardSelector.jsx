@@ -130,7 +130,9 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                   setToolsOpen(next)
                   if (!next) setShowFilters(false)
                 }}
-                className={`${TOOLBAR_ICON_BTN} ${TOOLBAR_BTN_FILL}`}
+                // Ghost styling on purpose: blends with the page bg (no fill,
+                // no shadow) — the caret is a handle, not a tool.
+                className="relative flex items-center justify-center h-8 w-8 rounded-lg transition-colors duration-75 cursor-pointer active:scale-[0.995] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
               >
                 <CaretRight className={`w-4 h-4 transition-transform duration-300 ${toolsOpen ? 'rotate-180' : ''}`} />
               </button>
