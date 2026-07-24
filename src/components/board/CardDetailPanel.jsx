@@ -476,7 +476,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         {/* Footer — mirrors the board card's bottom row: deadline pill
             bottom-left, assignee avatars bottom-right. Pinned below the
             scrolling content; pickers open upward. */}
-        <div className="shrink-0 flex items-center justify-between pt-3 mt-3 border-t border-[var(--border-subtle)]">
+        <div className="shrink-0 flex items-center justify-between pt-3 mt-3">
           <Popover
             open={openMenu === 'due'}
             onOpenChange={(next) => setOpenMenu(next ? 'due' : null)}
