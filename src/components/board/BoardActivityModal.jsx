@@ -188,7 +188,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
                         className={`inline-flex items-center gap-1 align-middle max-w-[220px] ${
                           dead
                             ? 'text-[var(--text-muted)] cursor-default'
-                            : 'text-[var(--text-primary)] hover:underline cursor-pointer'
+                            : 'group/chip text-[var(--text-primary)] cursor-pointer'
                         }`}
                       >
                         <span className="shrink-0 inline-flex">
@@ -196,7 +196,7 @@ export default function BoardActivityModal({ boardId, onClose }) {
                             ? <DynamicIcon name={cardIcon} className="w-3.5 h-3.5" />
                             : <FileText size={14} weight="regular" />}
                         </span>
-                        <span className="truncate">{title}</span>
+                        <span className="truncate group-hover/chip:underline">{title}</span>
                       </button>
                       {row.detail && (
                         <span className="text-[var(--text-muted)]"> {row.detail}</span>
