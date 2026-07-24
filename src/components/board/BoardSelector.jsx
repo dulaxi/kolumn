@@ -56,7 +56,13 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const uniqueAssignees = useMemo(() => {
     const names = new Set()
     boardCards.forEach((c) => {
-      if (c.assignee_name && c.assignee_name.trim()) names.add(c.assignee_name.trim())
+      // Full multi-assignee list, same fallback as cardFilters' matcher —
+      // assignee_name alone is only the FIRST assignee's mirror and drops
+      // everyone else (members and free-text alike) from the options.
+      const list = (c.assignees && c.assignees.length)
+        ? c.assignees
+        : (c.assignee_name ? [c.assignee_name] : [])
+      list.forEach((n) => { if (n && n.trim()) names.add(n.trim()) })
     })
     return Array.from(names).sort()
   }, [boardCards])
