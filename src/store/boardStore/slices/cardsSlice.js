@@ -336,14 +336,20 @@ export const createCardsSlice = (set, get) => ({
       if ('checklist' in dbUpdates) {
         const prevItems = prevCard.checklist || []
         const nextItems = dbUpdates.checklist || []
-        const prevTexts = new Set(prevItems.map((i) => i.text))
-        nextItems
-          .filter((i) => i.text && !prevTexts.has(i.text))
-          .forEach((i) => logActivity(cardId, 'checklist_added', i.text))
-        const prevDone = new Set(prevItems.filter((i) => i.done).map((i) => i.text))
-        nextItems
-          .filter((i) => i.done && !prevDone.has(i.text))
-          .forEach((i) => logActivity(cardId, 'checklist_completed', i.text))
+        // Key by stable item id (nanoid); legacy items without ids fall back
+        // to text. Renames (same id, new text) log nothing in v1.
+        const keyOf = (i) => i.id || `t:${i.text}`
+        const prevByKey = new Map(prevItems.map((i) => [keyOf(i), i]))
+        nextItems.forEach((i) => {
+          if (!i.text) return
+          const prev = prevByKey.get(keyOf(i))
+          if (!prev) {
+            logActivity(cardId, 'checklist_added', i.text)
+            if (i.done) logActivity(cardId, 'checklist_completed', i.text)
+          } else if (i.done && !prev.done) {
+            logActivity(cardId, 'checklist_completed', i.text)
+          }
+        })
       }
     }
   },
