@@ -214,6 +214,51 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
               <ArrowLeft className="w-4 h-4" />
             </button>
           </Tooltip>
+          {/* Labels — beside the back button; bordered chips with the
+              label's color dot, X reveals inside the chip on hover. */}
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+            {labels.map((l) => (
+              <span
+                key={l.id}
+                className="group/label inline-flex items-center gap-1.5 h-6 pl-2 pr-1.5 rounded-full border border-[var(--color-sand)] text-xs lowercase text-[var(--text-secondary)]"
+              >
+                <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || 'bg-[var(--text-faint)]'}`} />
+                /{l.text}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); removeLabelFromCard(cardId, l.id) }}
+                  aria-label={`Remove label ${l.text}`}
+                  className="w-0 overflow-hidden group-hover/label:w-3 flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-all"
+                >
+                  <X className="w-3 h-3 shrink-0" />
+                </button>
+              </span>
+            ))}
+            {showLabelForm ? (
+              <LabelAutocomplete
+                boardId={card.board_id}
+                excludeIds={labels.map((l) => l.id)}
+                onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
+                onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
+                onManage={() => {
+                  setShowLabelForm(false)
+                  window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
+                }}
+                onClose={() => setShowLabelForm(false)}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowLabelForm(true)}
+                className={`inline-flex items-center justify-center h-6 rounded-full border border-dashed border-[var(--border-default)] text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:border-[var(--text-muted)] transition-colors cursor-pointer ${
+                  labels.length === 0 ? 'gap-1 px-2 text-xs' : 'w-6'
+                }`}
+              >
+                <Plus className="w-3 h-3" />
+                {labels.length === 0 && <span>Label</span>}
+              </button>
+            )}
+          </div>
           <div className="shrink-0 flex items-center gap-1">
             {/* Due date */}
             <div className="relative" data-menu-root>
@@ -386,7 +431,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         })()}
 
         {/* Icon + Title + Assignee */}
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className="relative" data-menu-root>
               <button
@@ -431,53 +476,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             open={openMenu === 'assignee'}
             onOpenChange={(next) => setOpenMenu(next === 'assignee' ? 'assignee' : null)}
           />
-        </div>
-
-        {/* Labels — dedicated row under the title, aligned with the title
-            text (icon 40px + gap 12px). Quiet bordered chips with the
-            label's color dot; X reveals inside the chip on hover. */}
-        <div className="flex items-center gap-1.5 flex-wrap mb-4 pl-[52px]">
-          {labels.map((l) => (
-            <span
-              key={l.id}
-              className="group/label inline-flex items-center gap-1.5 h-6 pl-2 pr-1.5 rounded-full border border-[var(--color-sand)] text-xs lowercase text-[var(--text-secondary)]"
-            >
-              <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${COLOR_DOT_CLASSES[l.color] || 'bg-[var(--text-faint)]'}`} />
-              /{l.text}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); removeLabelFromCard(cardId, l.id) }}
-                aria-label={`Remove label ${l.text}`}
-                className="w-0 overflow-hidden group-hover/label:w-3 flex items-center justify-center text-[var(--text-faint)] hover:text-[var(--label-red-text)] transition-all"
-              >
-                <X className="w-3 h-3 shrink-0" />
-              </button>
-            </span>
-          ))}
-          {showLabelForm ? (
-            <LabelAutocomplete
-              boardId={card.board_id}
-              excludeIds={labels.map((l) => l.id)}
-              onPick={(l) => { addLabelToCard(cardId, l.text, l.color); setShowLabelForm(false) }}
-              onCreate={(text, color) => { addLabelToCard(cardId, text, color); setShowLabelForm(false) }}
-              onManage={() => {
-                setShowLabelForm(false)
-                window.dispatchEvent(new CustomEvent('kolumn:open-label-manager'))
-              }}
-              onClose={() => setShowLabelForm(false)}
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowLabelForm(true)}
-              className={`inline-flex items-center justify-center h-6 rounded-full border border-dashed border-[var(--border-default)] text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:border-[var(--text-muted)] transition-colors cursor-pointer ${
-                labels.length === 0 ? 'gap-1 px-2 text-xs' : 'w-6'
-              }`}
-            >
-              <Plus className="w-3 h-3" />
-              {labels.length === 0 && <span>Label</span>}
-            </button>
-          )}
         </div>
 
         {/* Content */}
