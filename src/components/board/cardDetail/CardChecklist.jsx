@@ -1,32 +1,59 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { nanoid } from 'nanoid'
 import { CheckCircle, Plus, X } from '@phosphor-icons/react'
 
 function ChecklistItem({ item, onToggle, onEdit, onDelete }) {
   const [editing, setEditing] = useState(false)
-  const [text, setText] = useState(item.text)
+  const spanRef = useRef(null)
+
+  // Same pattern as the panel's description: contentEditable on the same
+  // element, text set via ref (not children) so React can't clobber typing
+  // mid-edit. No border, no size change — edit mode looks like view mode
+  // with a caret.
+  useEffect(() => {
+    if (!editing || !spanRef.current) return
+    const el = spanRef.current
+    el.innerText = item.text
+    const range = document.createRange()
+    const sel = window.getSelection()
+    range.selectNodeContents(el)
+    range.collapse(false)
+    sel.removeAllRanges()
+    sel.addRange(range)
+    el.focus()
+  }, [editing]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const textClasses = `text-sm cursor-text focus:outline-none break-words min-w-0 ${
+    item.done ? 'line-through text-[var(--text-faint)]' : 'text-[var(--text-secondary)]'
+  }`
+
   return (
     <div className="flex items-center gap-2 py-1 group/check">
       <button type="button" onClick={onToggle} className="shrink-0">
         <CheckCircle className={`w-4 h-4 transition-colors ${item.done ? 'text-[var(--accent-lime-dark)]' : 'text-[var(--text-faint)] hover:text-[var(--text-muted)]'}`} />
       </button>
       {editing ? (
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+        <span
+          ref={spanRef}
+          contentEditable
+          suppressContentEditableWarning
           onKeyDown={(e) => {
-            if (e.key === 'Enter') { onEdit(text.trim() || item.text); setEditing(false) }
-            else if (e.key === 'Escape') { setText(item.text); setEditing(false) }
+            if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+            else if (e.key === 'Escape') {
+              e.preventDefault()
+              e.currentTarget.innerText = item.text
+              e.currentTarget.blur()
+            }
           }}
-          onBlur={() => { onEdit(text.trim() || item.text); setEditing(false) }}
-          autoFocus
-          className="text-sm text-[var(--text-secondary)] bg-transparent focus:outline-none border border-[var(--border-default)] rounded-xl px-1 -mx-1"
+          onBlur={(e) => {
+            const t = e.currentTarget.innerText.trim()
+            setEditing(false)
+            if (t && t !== item.text) onEdit(t)
+          }}
+          className={textClasses}
         />
       ) : (
-        <span
-          className={`text-sm cursor-pointer ${item.done ? 'line-through text-[var(--text-faint)]' : 'text-[var(--text-secondary)]'}`}
-          onClick={() => setEditing(true)}
-        >
+        <span className={textClasses} onClick={() => setEditing(true)}>
           {item.text}
         </span>
       )}
