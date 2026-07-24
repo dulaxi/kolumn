@@ -1,15 +1,6 @@
 import Menu from '../../ui/Menu'
 import FilterPill from './FilterPill'
-
-const LABEL_COLOR_CLASSES = {
-  red: 'bg-[var(--color-copper-wash)] text-[var(--label-red-text)]',
-  blue: 'bg-[var(--label-blue-bg)] text-[var(--label-blue-text)]',
-  green: 'bg-[var(--color-lime-wash)] text-[var(--label-green-text)]',
-  yellow: 'bg-[var(--color-honey-wash)] text-[var(--label-yellow-text)]',
-  purple: 'bg-[var(--color-mauve-wash)] text-[var(--label-purple-text)]',
-  pink: 'bg-[var(--color-bark-wash)] text-[var(--color-bark)]',
-  gray: 'bg-[var(--surface-hover)] text-[var(--text-secondary)]',
-}
+import { LABEL_OUTLINE } from '../../../utils/formatting'
 
 export default function LabelFilter({ filters, setFilters, labels }) {
   const selected = filters?.label || []
@@ -29,11 +20,11 @@ export default function LabelFilter({ filters, setFilters, labels }) {
         labels.map((lbl) => (
           <Menu.Item
             key={lbl.text}
-            checkbox
             selected={selected.includes(lbl.text)}
             onSelect={() => toggle(lbl.text)}
           >
-            <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${LABEL_COLOR_CLASSES[lbl.color] || LABEL_COLOR_CLASSES.gray}`}>
+            {/* Same outline chip the card renders (LABEL_OUTLINE style) */}
+            <span className={`inline-flex text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize ${LABEL_OUTLINE[lbl.color] || LABEL_OUTLINE.gray}`}>
               {lbl.text}
             </span>
           </Menu.Item>

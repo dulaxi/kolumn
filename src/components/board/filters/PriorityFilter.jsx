@@ -18,7 +18,6 @@ export default function PriorityFilter({ filters, setFilters }) {
       {priorities.map((p) => (
         <Menu.Item
           key={p.value}
-          checkbox
           selected={selected.includes(p.value)}
           onSelect={() => toggle(p.value)}
         >
