@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest'
 
 import {
   LABEL_COLORS,
+  LABEL_COLORS_LIGHT,
   COLOR_DOT_CLASSES,
   PRIORITY_OPTIONS,
   PROFILE_COLORS,
@@ -35,8 +36,10 @@ describe('COLOR_DOT_CLASSES', () => {
     }
   })
 
-  test('has no extra keys beyond label colors', () => {
-    expect(Object.keys(COLOR_DOT_CLASSES).sort()).toEqual([...LABEL_COLORS].sort())
+  test('has no extra keys beyond label colors and their light variants', () => {
+    expect(Object.keys(COLOR_DOT_CLASSES).sort()).toEqual(
+      [...LABEL_COLORS, ...LABEL_COLORS_LIGHT].sort()
+    )
   })
 })
 
