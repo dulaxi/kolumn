@@ -338,17 +338,17 @@ export default function Sidebar() {
                 <NavLink
                   to="/boards"
                   className={({ isActive }) =>
-                    `flex w-full items-center justify-center h-8 px-2 rounded-lg text-sm font-medium transition-colors ${
+                    `flex w-full items-center justify-center h-8 px-2 rounded-lg text-sm transition-colors duration-75 overflow-hidden ${
                       isActive
                         ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]'
-                        : 'text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]'
+                        : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <DynamicIcon
                       name={activeBoard?.icon || 'cards-three'}
-                      weight={isActive ? 'fill' : 'light'}
+                      weight={isActive ? 'fill' : 'regular'}
                       className="w-5 h-5 shrink-0"
                     />
                   )}
