@@ -1,5 +1,6 @@
 import Menu from '../../ui/Menu'
 import FilterPill from './FilterPill'
+import Avatar from '../../ui/Avatar'
 
 export default function AssigneeFilter({ filters, setFilters, assignees }) {
   const selected = filters?.assignee || null
@@ -18,11 +19,7 @@ export default function AssigneeFilter({ filters, setFilters, assignees }) {
             key={name}
             selected={selected === name}
             onSelect={() => select(name)}
-            icon={
-              <span className="w-4 h-4 rounded-full bg-[var(--color-sand)] flex items-center justify-center text-[9px] font-medium text-[var(--text-secondary)]">
-                {name.charAt(0).toUpperCase()}
-              </span>
-            }
+            icon={<Avatar name={name} size="xs" />}
           >
             {name}
           </Menu.Item>
