@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 
-import { ArrowLeft, Bookmark, Calendar, Copy, DotsThreeVertical, FileText, Flag, Paperclip, Plus, Trash, X } from '@phosphor-icons/react'
+import { ArrowLeft, Bookmark, CalendarDot, Copy, DotsThreeVertical, FileText, Flag, Paperclip, Plus, Trash, X } from '@phosphor-icons/react'
 import DynamicIcon from './DynamicIcon'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
@@ -12,7 +12,7 @@ import LabelAutocomplete from './LabelAutocomplete'
 import PriorityMenu from './PriorityMenu'
 // Aliased: `Calendar` in this file is the Phosphor icon above.
 import CalendarPicker from '../ui/Calendar'
-import { formatDueDateLabel, parseDueDate } from '../../utils/dateUtils'
+import { formatDueDateLabel, parseDueDate, dueDateOutlineClass } from '../../utils/dateUtils'
 import Modal from '../ui/Modal'
 import Popover from '../ui/Popover'
 import Menu from '../ui/Menu'
@@ -260,57 +260,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             )}
           </div>
           <div className="shrink-0 flex items-center gap-1">
-            {/* Due date */}
-            <div className="relative" data-menu-root>
-              {(() => {
-                let dateLabel = null
-                let dateColor = 'text-[var(--text-muted)]'
-                if (dueDate) {
-                  const d = parseDueDate(dueDate)
-                  const today = new Date()
-                  dateLabel = formatDueDateLabel(d)
-                  if (dateLabel === 'Today') dateColor = 'text-[var(--color-honey)]'
-                  else if (dateLabel === 'Tomorrow') dateColor = 'text-[var(--color-lime-dark)]'
-                  else if (dateLabel === 'Yesterday') dateColor = 'text-[var(--color-copper)]'
-                  else if (d < today) dateColor = 'text-[var(--color-copper)]'
-                  else dateColor = 'text-[var(--text-secondary)]'
-                }
-                return (
-                  <Popover
-                    open={openMenu === 'due'}
-                    onOpenChange={(next) => setOpenMenu(next ? 'due' : null)}
-                    placement="bottom-end"
-                    portal
-                    panel={
-                      <CalendarPicker
-                        value={dueDate ? dueDate.split('T')[0] : ''}
-                        onChange={(iso) => {
-                          setDueDate(iso ? `${iso}T23:59:59` : '')
-                          setOpenMenu(null)
-                          scheduleSave()
-                        }}
-                      />
-                    }
-                  >
-                    <Tooltip
-                      content={dueDate ? `Due: ${parseDueDate(dueDate).toLocaleDateString()}` : 'Set due date'}
-                      placement="bottom"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleMenu('due')}
-                        aria-label={dueDate ? 'Change due date' : 'Set due date'}
-                        className={`h-8 rounded-md flex items-center gap-1.5 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer ${dueDate ? 'px-2' : 'w-8 justify-center'} ${dateColor}`}
-                      >
-                        <Calendar className="w-4 h-4" />
-                        {dateLabel && <span className="text-xs font-medium">{dateLabel}</span>}
-                      </button>
-                    </Tooltip>
-                  </Popover>
-                )
-              })()}
-            </div>
-            {/* Priority flag — grouped with due date (card properties) */}
+            {/* Priority flag */}
             <PriorityMenu
               open={openMenu === 'priority'}
               onOpenChange={(next) => setOpenMenu(next ? 'priority' : null)}
@@ -467,15 +417,6 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
                   stays clean and uncrowded. */}
             </div>
           </div>
-          <AssigneePicker
-            assignees={assignees}
-            setAssignees={setAssignees}
-            members={members}
-            profile={profile}
-            scheduleSave={scheduleSave}
-            open={openMenu === 'assignee'}
-            onOpenChange={(next) => setOpenMenu(next === 'assignee' ? 'assignee' : null)}
-          />
         </div>
 
         {/* Content */}
@@ -529,6 +470,66 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
             attachmentItems={attachmentItems}
             getAttachmentUrl={getAttachmentUrl}
             deleteAttachment={deleteAttachment}
+          />
+        </div>
+
+        {/* Footer — mirrors the board card's bottom row: deadline pill
+            bottom-left, assignee avatars bottom-right. Pinned below the
+            scrolling content; pickers open upward. */}
+        <div className="shrink-0 flex items-center justify-between pt-3 mt-3 border-t border-[var(--border-subtle)]">
+          <Popover
+            open={openMenu === 'due'}
+            onOpenChange={(next) => setOpenMenu(next ? 'due' : null)}
+            placement="top-start"
+            portal
+            panel={
+              <CalendarPicker
+                value={dueDate ? dueDate.split('T')[0] : ''}
+                onChange={(iso) => {
+                  setDueDate(iso ? `${iso}T23:59:59` : '')
+                  setOpenMenu(null)
+                  scheduleSave()
+                }}
+              />
+            }
+          >
+            {dueDate ? (() => {
+              const d = parseDueDate(dueDate)
+              return (
+                <Tooltip content={`Due: ${d.toLocaleDateString()}`} placement="top">
+                  <button
+                    type="button"
+                    onClick={() => toggleMenu('due')}
+                    aria-label="Change due date"
+                    className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 cursor-pointer ${dueDateOutlineClass(d)}`}
+                  >
+                    <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
+                    {formatDueDateLabel(d)}
+                  </button>
+                </Tooltip>
+              )
+            })() : (
+              <button
+                type="button"
+                onClick={() => toggleMenu('due')}
+                aria-label="Set due date"
+                className="flex items-center gap-1 h-6 px-2 rounded-full border border-dashed border-[var(--border-default)] text-xs text-[var(--text-faint)] hover:text-[var(--text-muted)] hover:border-[var(--text-muted)] transition-colors cursor-pointer"
+              >
+                <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
+                Deadline
+              </button>
+            )}
+          </Popover>
+
+          <AssigneePicker
+            assignees={assignees}
+            setAssignees={setAssignees}
+            members={members}
+            profile={profile}
+            scheduleSave={scheduleSave}
+            open={openMenu === 'assignee'}
+            onOpenChange={(next) => setOpenMenu(next === 'assignee' ? 'assignee' : null)}
+            placement="top-end"
           />
         </div>
       </div>
