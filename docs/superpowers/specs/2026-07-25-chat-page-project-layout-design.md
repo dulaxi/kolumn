@@ -100,6 +100,15 @@ reads both fields.) User messages are scanned too, at `addMessage` time from
 ChatPage's `handleSend`. Mentions persist with the conversation
 (localStorage).
 
+Post-review revisions (final whole-branch review, 2026-07-25): user-message
+stamping was centralized into `chatStore.addMessage` (auto-stamps `role:
+'user'` messages when no explicit `mentionedCardIds` is passed) so the
+dashboard composer entry point is covered too; ChatPage mounts
+`ensureAllCardsLoaded()` so the resolver and rail see every board's cards,
+not just the active board's; errored streams stamp mentions from the partial
+text; and manual renames set `titleEdited`, which `generateTitle` respects so
+auto-titling can't clobber a rename.
+
 ## Store changes (`chatStore.js`)
 
 - `renameConversation(id, title)` — trims, ignores empty.
