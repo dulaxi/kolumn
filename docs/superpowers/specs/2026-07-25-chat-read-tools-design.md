@@ -48,11 +48,13 @@ of read tools is deferred to the tier redesign. Pill branch untouched.
   `const isContinuation = isContinuationMessage(body.message)` — chat
   tool_result rounds must not bill against the daily limit. (History block
   passthrough at index.ts:173-176 already supports multi-round; no change.)
-- Where the system prompt is assembled, append a short **chat-mode-only**
-  suffix (volatile tail, after the cached prefix): the model has read-only
-  tools `search_cards` and `summarize_board`, should use them to ground
-  answers about the user's boards, and should refer to cards by their exact
-  titles. Pill mode prompt unchanged.
+- Prompt (planning revision): the original "short chat-mode suffix" idea was
+  wrong — `context.ts` already has a dedicated `chatRulesSection` that
+  hard-codes "You have no tools" with anti-tool coaching, which would
+  suppress tool calls outright. That section is **rewritten** instead:
+  describes the two read-only tools and when to use each, keeps the
+  never-claim-write-actions rules verbatim in spirit, keeps the pill-pointer
+  coaching. Pill mode prompt unchanged.
 
 ### Deploy & verify
 `deno check supabase/functions/chat/index.ts` before deploy; deploy with
@@ -67,8 +69,10 @@ Replace the no-op placeholder (`if (action === 'search_cards' || …) return
 
 - **search_cards({ query, board, include_completed })** — case-insensitive
   substring match over card `title`, `description`, and assignee names,
-  across all loaded boards. If `board` given, fuzzy-resolve it with the
-  executor's existing board resolver and filter to it; unresolvable board →
+  across all loaded boards. If `board` given, resolve it with the executor's
+  existing `findBoardByName` (case-insensitive exact match — "fuzzy" in the
+  brainstorm was optimistic; that's what exists) and filter to it;
+  unresolvable board →
   `{ ok: false, error }` (goes back to the model as an error tool_result).
   `completed` cards excluded unless `include_completed`. Ranking: title
   matches before description/assignee matches, then `updated_at` desc. Cap
