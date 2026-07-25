@@ -22,7 +22,7 @@ export default function ChatMessage({ message }) {
     return (
       <div className="flex justify-end mb-5">
         <div
-          className="max-w-[75%] px-3.5 py-2.5 rounded-[18px] rounded-br-[4px] text-[14px] leading-relaxed text-[var(--text-primary)] bg-[var(--color-mauve-wash)]"
+          className="max-w-[75%] px-3.5 py-2.5 rounded-[18px] rounded-br-[4px] text-[15px] leading-relaxed text-[var(--text-primary)] bg-[var(--color-mauve-wash)]"
         >
           {message.text}
         </div>
@@ -36,7 +36,7 @@ export default function ChatMessage({ message }) {
   return (
     <div className="mb-5 pl-1">
       <div
-        className="text-[15px] leading-[1.7] text-[var(--text-secondary)]"
+        className="text-[16px] leading-[1.7] text-[var(--text-secondary)]"
         style={{ fontFamily: 'var(--font-logo)', fontWeight: 400 }}
       >
         <MarkdownRenderer content={message.text} />
