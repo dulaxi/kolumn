@@ -16,7 +16,9 @@ export default function ChatListPage() {
   const [search, setSearch] = useState('')
 
   const sorted = useMemo(() => {
-    const all = Object.values(conversations).sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    const all = Object.values(conversations).sort(
+      (a, b) => (b.starred === true) - (a.starred === true) || b.updated_at.localeCompare(a.updated_at)
+    )
     if (!search.trim()) return all
     const q = search.trim().toLowerCase()
     return all.filter((c) => c.title.toLowerCase().includes(q))
