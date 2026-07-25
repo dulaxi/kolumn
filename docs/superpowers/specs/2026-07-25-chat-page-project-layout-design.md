@@ -92,10 +92,13 @@ findMentionedCardIds(text, cards) -> string[]
 
 Wiring: in `chatStore.sendMessage`'s `onDone`, run the resolver over the
 finished assistant text against `useBoardStore.getState().cards` and stamp
-the result onto the message's existing (currently unused) `cardIds` field.
-User messages are scanned too, at `addMessage` time from ChatPage's
-`handleSend`. The rail derives from `messages[id].flatMap(m => m.cardIds)`,
-so mentions persist with the conversation (localStorage).
+the result onto a **new `mentionedCardIds` field** on the message. (Planning
+revision: the spec originally reused the existing `cardIds` field, but
+`ChatMessage` already renders inline embedded cards from `cardIds` — reusing
+it would double-render every mention. `cardIds` stays untouched; the rail
+reads both fields.) User messages are scanned too, at `addMessage` time from
+ChatPage's `handleSend`. Mentions persist with the conversation
+(localStorage).
 
 ## Store changes (`chatStore.js`)
 
