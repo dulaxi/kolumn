@@ -92,6 +92,38 @@ describe('chatStore', () => {
     const msgs = useChatStore.getState().messages[convId]
     expect(msgs.map((m) => m.text)).toEqual(['First', 'Second', 'Third'])
   })
+
+  test('renameConversation trims and updates the title', () => {
+    const id = useChatStore.getState().createConversation('Old')
+    useChatStore.getState().renameConversation(id, '  New name  ')
+    expect(useChatStore.getState().conversations[id].title).toBe('New name')
+  })
+
+  test('renameConversation ignores empty titles and unknown ids', () => {
+    const id = useChatStore.getState().createConversation('Keep me')
+    useChatStore.getState().renameConversation(id, '   ')
+    expect(useChatStore.getState().conversations[id].title).toBe('Keep me')
+    useChatStore.getState().renameConversation('nope', 'x')
+    expect(useChatStore.getState().conversations.nope).toBeUndefined()
+  })
+
+  test('toggleStarred flips the flag', () => {
+    const id = useChatStore.getState().createConversation('Chat')
+    expect(useChatStore.getState().conversations[id].starred).toBeFalsy()
+    useChatStore.getState().toggleStarred(id)
+    expect(useChatStore.getState().conversations[id].starred).toBe(true)
+    useChatStore.getState().toggleStarred(id)
+    expect(useChatStore.getState().conversations[id].starred).toBe(false)
+  })
+
+  test('addMessage stores mentionedCardIds, defaulting to []', () => {
+    const id = useChatStore.getState().createConversation('Chat')
+    useChatStore.getState().addMessage(id, { role: 'user', text: 'hi', mentionedCardIds: ['c9'] })
+    useChatStore.getState().addMessage(id, { role: 'user', text: 'again' })
+    const msgs = useChatStore.getState().messages[id]
+    expect(msgs[0].mentionedCardIds).toEqual(['c9'])
+    expect(msgs[1].mentionedCardIds).toEqual([])
+  })
 })
 
 describe('friendlyChatError', () => {

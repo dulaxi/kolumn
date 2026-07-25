@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { streamChat } from '../lib/aiClient'
 import { logError } from '../utils/logger'
+import { useBoardStore } from './boardStore'
+import { findMentionedCardIds } from '../lib/cardMentions'
 
 /**
  * Maps a raw stream/HTTP error string to user-facing copy.
@@ -43,12 +45,13 @@ export const useChatStore = create(persist((set, get) => ({
     return id
   },
 
-  addMessage: (conversationId, { role, text, cardIds }) => {
+  addMessage: (conversationId, { role, text, cardIds, mentionedCardIds }) => {
     const msg = {
       id: crypto.randomUUID(),
       role,
       text,
       cardIds: cardIds || [],
+      mentionedCardIds: mentionedCardIds || [],
       created_at: new Date().toISOString(),
     }
     set((s) => ({
@@ -97,6 +100,30 @@ export const useChatStore = create(persist((set, get) => ({
     }
   }),
 
+  renameConversation: (id, title) => {
+    const trimmed = (title || '').trim()
+    if (!trimmed) return
+    set((s) => {
+      if (!s.conversations[id]) return s
+      return {
+        conversations: {
+          ...s.conversations,
+          [id]: { ...s.conversations[id], title: trimmed },
+        },
+      }
+    })
+  },
+
+  toggleStarred: (id) => set((s) => {
+    if (!s.conversations[id]) return s
+    return {
+      conversations: {
+        ...s.conversations,
+        [id]: { ...s.conversations[id], starred: !s.conversations[id].starred },
+      },
+    }
+  }),
+
   setActiveConversation: (id) => set({ activeConversationId: id }),
   setStreaming: (conversationId) => set({ streamingConversationId: conversationId }),
   clearStreaming: () => set({ streamingConversationId: null }),
@@ -128,7 +155,16 @@ export const useChatStore = create(persist((set, get) => ({
           }))
         },
         onDone: () => {
-          set({ streamingConversationId: null })
+          const mentionedCardIds = findMentionedCardIds(fullText, useBoardStore.getState().cards)
+          set((s) => ({
+            streamingConversationId: null,
+            messages: {
+              ...s.messages,
+              [conversationId]: s.messages[conversationId].map((m) =>
+                m.id === msgId ? { ...m, mentionedCardIds } : m
+              ),
+            },
+          }))
           get().generateTitle(conversationId)
         },
         onTier: (info) => {
