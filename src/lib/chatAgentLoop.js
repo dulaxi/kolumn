@@ -68,6 +68,10 @@ export async function runChatLoop({ text, history = [], today }, { onText, onAct
 
     if (stopReason !== 'tool_use' || toolCalls.length === 0) break
 
+    // No round left to consume tool results — executing would burn work and
+    // emit chips for lookups that can never inform the reply.
+    if (round === MAX_ROUNDS - 1) break
+
     // Execute sequentially; ALL results go back in ONE user message.
     const results = []
     for (let i = 0; i < toolCalls.length; i++) {

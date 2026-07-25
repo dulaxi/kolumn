@@ -15,7 +15,7 @@ beforeEach(() => {
 describe('sendMessage via runChatLoop', () => {
   test('streams text, records activities at round boundaries, unions mentions', async () => {
     useBoardStore.setState({ cards: { c2: { id: 'c2', title: 'Landing page', board_id: 'b1' } } })
-    runChatLoop.mockImplementation(async ({ text }, { onText, onActivity }) => {
+    runChatLoop.mockImplementation(async (_args, { onText, onActivity }) => {
       onText('Looking… ')
       onActivity({ icon: 'search', label: 'Searched cards · 1 result' })
       onText('Landing page is in To do.')

@@ -161,8 +161,12 @@ export const useChatStore = create(persist((set, get) => ({
       },
     }))
 
+    const today = new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date())
+
     const { toolCardIds, error, errorCode } = await runChatLoop(
-      { text: userText, history },
+      { text: userText, history, today },
       {
         onText: (chunk) => {
           fullText += chunk

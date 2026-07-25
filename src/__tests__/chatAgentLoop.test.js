@@ -89,6 +89,16 @@ describe('runChatLoop', () => {
     expect(streamChat.mock.calls[1][0].message[0].content).not.toContain('round limit approaching')
   })
 
+  test('final-round guard: skips executing the last round\'s tool calls', async () => {
+    streamChat.mockImplementation(round({ text: 'again ', tools: [{ id: 't', action: 'search_cards', params: { query: 'x' } }], stopReason: 'tool_use' }))
+    executeTool.mockResolvedValue({ ok: true, count: 0, total: 0, cards: [] })
+    const activities = []
+    await runChatLoop({ text: 'go' }, { onActivity: (a) => activities.push(a) })
+    expect(executeTool).toHaveBeenCalledTimes(2)
+    expect(activities).toHaveLength(2)
+    expect(streamChat).toHaveBeenCalledTimes(3)
+  })
+
   test('stream error surfaces error + code', async () => {
     streamChat.mockImplementationOnce(async (_req, h) => { h.onError('boom', 'rate_limit') })
     const r = await runChatLoop({ text: 'x' })
