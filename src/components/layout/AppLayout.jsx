@@ -129,6 +129,9 @@ export default function AppLayout() {
 
   // Match the base path for title — on /boards, show the active board name
   const basePath = '/' + (location.pathname.split('/')[1] || '')
+  // /chat/:id uses the wide project-page layout (conversation + card rail);
+  // the /chat list keeps the narrow reading column.
+  const isChatDetail = basePath === '/chat' && location.pathname.split('/').length > 2
   const activeBoardName = useBoardStore((s) => s.boards[s.activeBoardId]?.name)
   const title = basePath === '/boards' && activeBoardName
     ? activeBoardName
@@ -181,7 +184,7 @@ export default function AppLayout() {
             </header>
           </div>
         )}
-        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : 'px-4 sm:px-8 pb-12 max-w-4xl mx-auto overflow-y-auto w-full subtle-scrollbar'} ${isDesktop && basePath === '/boards' ? 'pt-[18px]' : ''} ${!isDesktop ? 'pb-20' : ''}`}>
+        <main className={`flex-1 min-h-0 flex flex-col ${basePath === '/boards' ? 'px-4 sm:px-8' : `px-4 sm:px-8 pb-12 ${isChatDetail ? 'max-w-7xl' : 'max-w-4xl'} mx-auto overflow-y-auto w-full subtle-scrollbar`} ${isDesktop && basePath === '/boards' ? 'pt-[18px]' : ''} ${!isDesktop ? 'pb-20' : ''}`}>
           {/* Migration banner */}
           {showMigration && (
             <InlineNotice variant="success" className="mb-4 justify-between font-sans">
