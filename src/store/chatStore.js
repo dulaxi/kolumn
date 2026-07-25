@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { streamChat } from '../lib/aiClient'
+import { runChatLoop } from '../lib/chatAgentLoop'
 import { logError } from '../utils/logger'
 import { useBoardStore } from './boardStore'
 import { findMentionedCardIds } from '../lib/cardMentions'
@@ -60,6 +60,7 @@ export const useChatStore = create(persist((set, get) => ({
       text,
       cardIds: cardIds || [],
       mentionedCardIds: resolvedMentions,
+      activities: [],
       created_at: new Date().toISOString(),
     }
     set((s) => ({
@@ -151,55 +152,45 @@ export const useChatStore = create(persist((set, get) => ({
 
     const msgId = get().addMessage(conversationId, { role: 'assistant', text: '' })
     let fullText = ''
+    const patchMsg = (patch) => set((s) => ({
+      messages: {
+        ...s.messages,
+        [conversationId]: s.messages[conversationId].map((m) =>
+          m.id === msgId ? { ...m, ...(typeof patch === 'function' ? patch(m) : patch) } : m
+        ),
+      },
+    }))
 
-    await streamChat(
-      { message: userText, history, mode: 'chat' },
+    const { toolCardIds, error, errorCode } = await runChatLoop(
+      { text: userText, history },
       {
         onText: (chunk) => {
           fullText += chunk
-          set((s) => ({
-            messages: {
-              ...s.messages,
-              [conversationId]: s.messages[conversationId].map((m) =>
-                m.id === msgId ? { ...m, text: fullText } : m
-              ),
-            },
-          }))
+          patchMsg({ text: fullText })
         },
-        onDone: () => {
-          const mentionedCardIds = findMentionedCardIds(fullText, useBoardStore.getState().cards)
-          set((s) => ({
-            streamingConversationId: null,
-            messages: {
-              ...s.messages,
-              [conversationId]: s.messages[conversationId].map((m) =>
-                m.id === msgId ? { ...m, mentionedCardIds } : m
-              ),
-            },
-          }))
-          get().generateTitle(conversationId)
+        onActivity: ({ icon, label }) => {
+          patchMsg((m) => ({ activities: [...(m.activities || []), { atChar: fullText.length, icon, label }] }))
         },
-        onTier: (info) => {
-          set({ tierInfo: info })
-        },
-        onError: (error, code) => {
-          logError('[chatStore] stream error:', error, code)
-          const friendly = code
-            ? { message: String(error), isLimit: code === 'rate_limit' }
-            : friendlyChatError(error)
-          const mentionedCardIds = findMentionedCardIds(fullText, useBoardStore.getState().cards)
-          set((s) => ({
-            streamingConversationId: null,
-            messages: {
-              ...s.messages,
-              [conversationId]: s.messages[conversationId].map((m) =>
-                m.id === msgId ? { ...m, error: friendly, mentionedCardIds } : m
-              ),
-            },
-          }))
-        },
+        onTier: (info) => set({ tierInfo: info }),
       },
     )
+
+    const scanned = findMentionedCardIds(fullText, useBoardStore.getState().cards)
+    const mentionedCardIds = [...new Set([...(toolCardIds || []), ...scanned])]
+
+    if (error) {
+      logError('[chatStore] stream error:', error, errorCode)
+      const friendly = errorCode
+        ? { message: String(error), isLimit: errorCode === 'rate_limit' }
+        : friendlyChatError(error)
+      patchMsg({ error: friendly, mentionedCardIds })
+      set({ streamingConversationId: null })
+      return
+    }
+
+    patchMsg({ mentionedCardIds })
+    set({ streamingConversationId: null })
+    get().generateTitle(conversationId)
   },
 }), {
   name: 'kolumn-chat',

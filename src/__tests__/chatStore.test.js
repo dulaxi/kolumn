@@ -131,6 +131,7 @@ describe('chatStore', () => {
     const msgs = useChatStore.getState().messages[id]
     expect(msgs[0].mentionedCardIds).toEqual(['c9'])
     expect(msgs[1].mentionedCardIds).toEqual([])
+    expect(msgs[0].activities).toEqual([])
   })
 })
 
