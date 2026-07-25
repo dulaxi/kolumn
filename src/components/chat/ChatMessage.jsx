@@ -3,6 +3,21 @@ import { useBoardStore } from '../../store/boardStore'
 import Card from '../board/Card'
 import MarkdownRenderer from './MarkdownRenderer'
 import InlineNotice from '../ui/InlineNotice'
+import { Kanban, MagnifyingGlass } from '@phosphor-icons/react'
+
+// Split assistant text at each activity's atChar. atChar always lands on a
+// round boundary (complete markdown), so segments render safely.
+function segmentText(text, activities) {
+  const segments = []
+  let prev = 0
+  for (const activity of activities) {
+    const at = Math.min(Math.max(activity.atChar ?? 0, prev), text.length)
+    segments.push({ text: text.slice(prev, at), activity })
+    prev = at
+  }
+  segments.push({ text: text.slice(prev), activity: null })
+  return segments
+}
 
 export default function ChatMessage({ message }) {
   const navigate = useNavigate()
@@ -33,13 +48,31 @@ export default function ChatMessage({ message }) {
   const resolvedIds = (message.cardIds || []).map((id) => tempIdMap[id] || id)
   const embeddedCards = resolvedIds.map((id) => cards[id]).filter(Boolean)
 
+  const activities = message.activities || []
+
   return (
     <div className="mb-5 pl-1">
       <div
         className="text-[16px] leading-[1.7] text-[var(--text-secondary)]"
         style={{ fontFamily: 'var(--font-logo)', fontWeight: 400 }}
       >
-        <MarkdownRenderer content={message.text} />
+        {activities.length === 0 ? (
+          <MarkdownRenderer content={message.text} />
+        ) : (
+          segmentText(message.text, activities).map((seg, i) => (
+            <div key={i}>
+              {seg.text && <MarkdownRenderer content={seg.text} />}
+              {seg.activity && (
+                <div className="my-2 flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)]">
+                  {seg.activity.icon === 'board'
+                    ? <Kanban size={14} weight="regular" />
+                    : <MagnifyingGlass size={14} weight="regular" />}
+                  {seg.activity.label}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {message.error && (
