@@ -176,8 +176,11 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Right rail: mentioned cards. Stacks below the conversation until xl. */}
-      <div className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2">
+      {/* Right rail: mentioned cards. Stacks below the conversation until xl.
+          On xl it pins in place (sticky against the page scroller — needs
+          self-start so the grid doesn't stretch it) and scrolls internally
+          if the card stack outgrows the viewport. */}
+      <div className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto subtle-scrollbar">
         <CardRail messages={messages} />
       </div>
 
