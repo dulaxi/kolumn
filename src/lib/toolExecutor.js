@@ -3,6 +3,7 @@ import { useWorkspacesStore } from '../store/workspacesStore'
 import { LEGACY_ICON_REMAP } from '../components/board/DynamicIcon'
 import { supabase } from './supabase'
 import { logWarn } from '../utils/logger'
+import { parseDueDate } from '../utils/dateUtils'
 
 // Resolves an array of label text strings into label IDs (via the upsert_label
 // RPC) and syncs the card_labels join table for a given card.
@@ -1184,8 +1185,82 @@ export async function executeTool(action, params) {
     }
   }
 
-  if (action === 'search_cards' || action === 'summarize_board') {
-    return { ok: true, readOnly: true }
+  if (action === 'search_cards') {
+    const query = String(params.query || '').trim().toLowerCase()
+    if (!query) return { ok: false, error: 'query is required' }
+    let boardFilter = null
+    if (params.board) {
+      boardFilter = findBoardByName(params.board)
+      if (!boardFilter) return { ok: false, error: `Board "${params.board}" not found` }
+    }
+    const matches = []
+    for (const card of Object.values(store.cards)) {
+      if (boardFilter && card.board_id !== boardFilter.id) continue
+      if (card.completed && !params.include_completed) continue
+      const inTitle = (card.title || '').toLowerCase().includes(query)
+      const inBody = (card.description || '').toLowerCase().includes(query)
+        || (card.assignees || []).join(' ').toLowerCase().includes(query)
+      if (!inTitle && !inBody) continue
+      matches.push({ card, inTitle })
+    }
+    matches.sort((a, b) =>
+      (b.inTitle === true) - (a.inTitle === true)
+      || String(b.card.updated_at || '').localeCompare(String(a.card.updated_at || ''))
+    )
+    const cards = matches.slice(0, 20).map(({ card }) => ({
+      id: card.id,
+      title: card.title,
+      board: store.boards[card.board_id]?.name || null,
+      column: store.columns[card.column_id]?.title || null,
+      priority: card.priority || null,
+      due_date: card.due_date || null,
+      completed: !!card.completed,
+      task_number: card.task_number ?? null,
+    }))
+    return { ok: true, count: cards.length, total: matches.length, cards }
+  }
+
+  if (action === 'summarize_board') {
+    if (!params.board) return { ok: false, error: 'board is required' }
+    const board = findBoardByName(params.board)
+    if (!board) return { ok: false, error: `Board "${params.board}" not found` }
+    const PER_COLUMN_CAP = 15
+    const boardCards = Object.values(store.cards).filter((c) => c.board_id === board.id)
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    let completed = 0
+    let overdue = 0
+    for (const c of boardCards) {
+      if (c.completed) { completed++; continue }
+      const due = c.due_date ? parseDueDate(c.due_date) : null
+      if (due && due < todayStart) overdue++
+    }
+    const columns = Object.values(store.columns)
+      .filter((c) => c.board_id === board.id)
+      .sort((a, b) => a.position - b.position)
+      .map((col) => {
+        const colCards = boardCards
+          .filter((c) => c.column_id === col.id)
+          .sort((a, b) => a.position - b.position)
+        return {
+          title: col.title,
+          count: colCards.length,
+          ...(colCards.length > PER_COLUMN_CAP ? { truncated: true } : {}),
+          cards: colCards.slice(0, PER_COLUMN_CAP).map((c) => ({
+            id: c.id,
+            title: c.title,
+            priority: c.priority || null,
+            due_date: c.due_date || null,
+            completed: !!c.completed,
+          })),
+        }
+      })
+    return {
+      ok: true,
+      board: board.name,
+      columns,
+      totals: { cards: boardCards.length, completed, overdue },
+    }
   }
 
   return { ok: false, error: `Unknown tool: ${action}` }
