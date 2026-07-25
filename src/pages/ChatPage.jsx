@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { DotsThree, PencilSimple, Star, Trash } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
@@ -50,6 +50,28 @@ export default function ChatPage() {
 
   const exchanges = useMemo(() => groupExchanges(messages), [messages])
   const firstUserText = useMemo(() => messages.find((m) => m.role === 'user')?.text, [messages])
+
+  // Sticky offset for the rail. While the rail fits the scrollport it pins
+  // 16px from the top; once taller, the offset goes negative so the rail
+  // scrolls with the conversation until its bottom is in view, then locks.
+  const railRef = useRef(null)
+  const [railTop, setRailTop] = useState(16)
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+    const update = () => {
+      const scroller = el.closest('main') || document.documentElement
+      setRailTop(Math.min(16, scroller.clientHeight - el.offsetHeight - 16))
+    }
+    update()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    ro?.observe(el)
+    window.addEventListener('resize', update)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [])
 
   if (!conversation) {
     return (
@@ -177,10 +199,14 @@ export default function ChatPage() {
       </div>
 
       {/* Right rail: mentioned cards. Stacks below the conversation until xl.
-          On xl it pins in place (sticky against the page scroller — needs
-          self-start so the grid doesn't stretch it) and scrolls internally
-          if the card stack outgrows the viewport. */}
-      <div className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto subtle-scrollbar">
+          On xl it's sticky against the page scroller (self-start so the grid
+          doesn't stretch it); the measured `top` lets a tall rail scroll in
+          sync with the conversation until its bottom is visible, then lock. */}
+      <div
+        ref={railRef}
+        style={{ top: railTop }}
+        className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:self-start"
+      >
         <CardRail messages={messages} />
       </div>
 
