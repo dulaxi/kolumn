@@ -3,7 +3,7 @@ import { useBoardStore } from '../../store/boardStore'
 import Card from '../board/Card'
 import MarkdownRenderer from './MarkdownRenderer'
 import InlineNotice from '../ui/InlineNotice'
-import { Kanban, MagnifyingGlass } from '@phosphor-icons/react'
+import { MagnifyingGlass } from '@phosphor-icons/react'
 
 // Split assistant text at each activity's atChar. atChar always lands on a
 // round boundary (complete markdown), so segments render safely.
@@ -64,9 +64,8 @@ export default function ChatMessage({ message }) {
               {seg.text && <MarkdownRenderer content={seg.text} />}
               {seg.activity && (
                 <div className="my-2 flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)]">
-                  {seg.activity.icon === 'board'
-                    ? <Kanban size={14} weight="regular" />
-                    : <MagnifyingGlass size={14} weight="regular" />}
+                  {/* Board-summary chips are text-only; search keeps its glass. */}
+                  {seg.activity.icon !== 'board' && <MagnifyingGlass size={14} weight="regular" />}
                   {seg.activity.label}
                 </div>
               )}
