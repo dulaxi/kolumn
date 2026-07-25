@@ -55,7 +55,7 @@ export default function CardRail({ messages }) {
         ) : (
           // Cards render at the board column's true width (290px desktop,
           // Column.jsx), not stretched to the panel width.
-          <div className="flex w-full max-w-[290px] flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-[290px] flex-col gap-3">
             {visible.map((card) => (
               <Card key={card.id} card={card} onClick={() => openCard(card)} />
             ))}
