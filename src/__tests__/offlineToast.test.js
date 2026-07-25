@@ -34,7 +34,7 @@ describe('toast hue semantics (error-style-decisions-3, 1B + 2B)', () => {
   it('overdue is honey with ink text (time warning), no longer copper', () => {
     showToast.overdue('Card is overdue')
     const opts = toast.mock.calls.at(-1)[1]
-    expect(opts.style.background).toBe('#D4A843')
+    expect(opts.style.background).toBe('#F2B33D')
     expect(opts.style.color).toBe('#1B1B18')
   })
 
