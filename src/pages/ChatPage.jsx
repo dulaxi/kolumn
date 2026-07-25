@@ -51,26 +51,22 @@ export default function ChatPage() {
   const exchanges = useMemo(() => groupExchanges(messages), [messages])
   const firstUserText = useMemo(() => messages.find((m) => m.role === 'user')?.text, [messages])
 
-  // Sticky offset for the rail. While the rail fits the scrollport it pins
-  // 16px from the top; once taller, the offset goes negative so the rail
-  // scrolls with the conversation until its bottom is in view, then locks.
+  // The rail is its own scroll area (wheel over it scrolls just the cards).
+  // Mirroring the page scroller's deltas into it keeps the two in sync when
+  // the conversation is scrolled: the rail follows until its end, then holds.
   const railRef = useRef(null)
-  const [railTop, setRailTop] = useState(16)
   useEffect(() => {
     const el = railRef.current
-    if (!el) return
-    const update = () => {
-      const scroller = el.closest('main') || document.documentElement
-      setRailTop(Math.min(16, scroller.clientHeight - el.offsetHeight - 16))
+    const scroller = el?.closest('main')
+    if (!scroller) return
+    let last = scroller.scrollTop
+    const onScroll = () => {
+      const delta = scroller.scrollTop - last
+      last = scroller.scrollTop
+      el.scrollTop += delta
     }
-    update()
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
-    ro?.observe(el)
-    window.addEventListener('resize', update)
-    return () => {
-      ro?.disconnect()
-      window.removeEventListener('resize', update)
-    }
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    return () => scroller.removeEventListener('scroll', onScroll)
   }, [])
 
   if (!conversation) {
@@ -199,13 +195,12 @@ export default function ChatPage() {
       </div>
 
       {/* Right rail: mentioned cards. Stacks below the conversation until xl.
-          On xl it's sticky against the page scroller (self-start so the grid
-          doesn't stretch it); the measured `top` lets a tall rail scroll in
-          sync with the conversation until its bottom is visible, then lock. */}
+          On xl it pins (sticky, self-start so the grid doesn't stretch it)
+          and scrolls internally — directly under the pointer, or in sync
+          with the conversation via the delta-mirror effect above. */}
       <div
         ref={railRef}
-        style={{ top: railTop }}
-        className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:self-start"
+        className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto overscroll-contain subtle-scrollbar"
       >
         <CardRail messages={messages} />
       </div>
