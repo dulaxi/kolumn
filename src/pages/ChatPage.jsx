@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { DotsThree, PencilSimple, Star, Trash } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { useBoardStore } from '../store/boardStore'
-import { findMentionedCardIds } from '../lib/cardMentions'
 import { groupExchanges } from '../lib/chatExchanges'
 import ChatMessage from '../components/chat/ChatMessage'
 import ChatInput from '../components/chat/ChatInput'
@@ -42,6 +41,13 @@ export default function ChatPage() {
     return () => window.removeEventListener('kolumn:ai-navigate-board', handler)
   }, [navigate])
 
+  // Mention resolution + the card rail need every board's cards, not just
+  // the active board's (boot only loads the active board) — mirrors the
+  // same call in AllBoardsView.jsx.
+  useEffect(() => {
+    useBoardStore.getState().ensureAllCardsLoaded()
+  }, [])
+
   const exchanges = useMemo(() => groupExchanges(messages), [messages])
   const firstUserText = useMemo(() => messages.find((m) => m.role === 'user')?.text, [messages])
 
@@ -58,8 +64,7 @@ export default function ChatPage() {
   }
 
   const handleSend = (text) => {
-    const mentionedCardIds = findMentionedCardIds(text, useBoardStore.getState().cards)
-    addMessage(id, { role: 'user', text, mentionedCardIds })
+    addMessage(id, { role: 'user', text })
     sendMessage(id, text)
   }
 

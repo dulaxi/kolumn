@@ -46,12 +46,20 @@ export const useChatStore = create(persist((set, get) => ({
   },
 
   addMessage: (conversationId, { role, text, cardIds, mentionedCardIds }) => {
+    // Centralized mention stamping: any caller that adds a user message
+    // (ChatPage, DashboardPage, ...) gets mentions computed here so no
+    // call site can forget it. An explicit mentionedCardIds arg still wins.
+    const resolvedMentions = mentionedCardIds !== undefined
+      ? mentionedCardIds
+      : role === 'user'
+        ? findMentionedCardIds(text, useBoardStore.getState().cards)
+        : []
     const msg = {
       id: crypto.randomUUID(),
       role,
       text,
       cardIds: cardIds || [],
-      mentionedCardIds: mentionedCardIds || [],
+      mentionedCardIds: resolvedMentions,
       created_at: new Date().toISOString(),
     }
     set((s) => ({
@@ -71,6 +79,10 @@ export const useChatStore = create(persist((set, get) => ({
   },
 
   generateTitle: (conversationId) => {
+    const conv = get().conversations[conversationId]
+    // A manual rename (renameConversation) is sticky — auto-titling from the
+    // first user message would otherwise clobber it on every completed reply.
+    if (conv?.titleEdited) return
     const msgs = get().messages[conversationId] || []
     const firstUser = msgs.find((m) => m.role === 'user')
     if (!firstUser) return
@@ -108,7 +120,7 @@ export const useChatStore = create(persist((set, get) => ({
       return {
         conversations: {
           ...s.conversations,
-          [id]: { ...s.conversations[id], title: trimmed },
+          [id]: { ...s.conversations[id], title: trimmed, titleEdited: true },
         },
       }
     })
@@ -175,12 +187,13 @@ export const useChatStore = create(persist((set, get) => ({
           const friendly = code
             ? { message: String(error), isLimit: code === 'rate_limit' }
             : friendlyChatError(error)
+          const mentionedCardIds = findMentionedCardIds(fullText, useBoardStore.getState().cards)
           set((s) => ({
             streamingConversationId: null,
             messages: {
               ...s.messages,
               [conversationId]: s.messages[conversationId].map((m) =>
-                m.id === msgId ? { ...m, error: friendly } : m
+                m.id === msgId ? { ...m, error: friendly, mentionedCardIds } : m
               ),
             },
           }))

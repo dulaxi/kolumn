@@ -116,6 +116,14 @@ describe('chatStore', () => {
     expect(useChatStore.getState().conversations[id].starred).toBe(false)
   })
 
+  test('generateTitle does not revert a manual rename', () => {
+    const id = useChatStore.getState().createConversation('Untitled')
+    useChatStore.getState().addMessage(id, { role: 'user', text: 'Create three cards for the new landing page redesign project' })
+    useChatStore.getState().renameConversation(id, 'My name')
+    useChatStore.getState().generateTitle(id)
+    expect(useChatStore.getState().conversations[id].title).toBe('My name')
+  })
+
   test('addMessage stores mentionedCardIds, defaulting to []', () => {
     const id = useChatStore.getState().createConversation('Chat')
     useChatStore.getState().addMessage(id, { role: 'user', text: 'hi', mentionedCardIds: ['c9'] })

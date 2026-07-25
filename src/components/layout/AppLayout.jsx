@@ -130,8 +130,9 @@ export default function AppLayout() {
   // Match the base path for title — on /boards, show the active board name
   const basePath = '/' + (location.pathname.split('/')[1] || '')
   // /chat/:id uses the wide project-page layout (conversation + card rail);
-  // the /chat list keeps the narrow reading column.
-  const isChatDetail = basePath === '/chat' && location.pathname.split('/').length > 2
+  // the /chat list keeps the narrow reading column. Filter(Boolean) so a
+  // trailing slash on the bare list route (/chat/) doesn't misclassify as detail.
+  const isChatDetail = basePath === '/chat' && location.pathname.split('/').filter(Boolean).length > 1
   const activeBoardName = useBoardStore((s) => s.boards[s.activeBoardId]?.name)
   const title = basePath === '/boards' && activeBoardName
     ? activeBoardName
