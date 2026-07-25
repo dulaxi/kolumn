@@ -239,4 +239,31 @@ export const TOOLS = [
       required: ["display_name"],
     },
   },
+  {
+    name: "search_cards",
+    description: "Read-only: search the user's cards across all their boards by text. Matches card titles, descriptions, and assignee names. Returns matching cards with their ids, board, column, priority, and due date. Never modifies anything.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Text to search for (case-insensitive)" },
+        board: { type: "string", description: "Optional: restrict the search to this board (by name)" },
+        include_completed: { type: "boolean", description: "Optional: include completed cards (default false)" },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "summarize_board",
+    description: "Read-only: get a structured snapshot of one board — its columns in order, the cards in each, and totals (cards, completed, overdue). Never modifies anything.",
+    input_schema: {
+      type: "object",
+      properties: {
+        board: { type: "string", description: "Board name to summarize" },
+      },
+      required: ["board"],
+    },
+  },
 ] as const
+
+// The chat surface's read-only allowlist — consumed by tier.filterToolsForMode.
+export const CHAT_READ_TOOLS = ["search_cards", "summarize_board"]

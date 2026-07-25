@@ -128,7 +128,9 @@ Deno.serve(async (req) => {
     body.boardId = undefined
   }
 
-  const isContinuation = mode === "pill" && isContinuationMessage(body.message)
+  // Continuations (tool_result rounds) are unbilled on BOTH surfaces — chat
+  // read-tool rounds must not consume the daily message limit.
+  const isContinuation = isContinuationMessage(body.message)
 
   // Tier check + rate limit
   let tierInfo

@@ -1,4 +1,5 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { CHAT_READ_TOOLS } from "./tools.ts"
 
 export type Mode = "pill" | "chat"
 
@@ -81,14 +82,16 @@ export async function checkTier(
   return { tier, allowed: true, remaining: -1, model: classifyModel("") }
 }
 
-// Effective tool list from (mode × tier). Chat is conversation-only this
-// phase — read tools (search_cards, summarize_board) are a later phase.
+// Effective tool list from (mode × tier). Chat gets the read-only lookup tools — ALL tiers for now; the paid-only
+// gate from the (mode × tier) matrix is deferred to the tier redesign.
 export function filterToolsForMode(
   tools: readonly any[],
   tier: "free" | "pro",
   mode: Mode,
 ): any[] {
-  if (mode === "chat") return []
+  // Chat gets the read-only lookup tools — ALL tiers for now; the paid-only
+  // gate from the (mode × tier) matrix is deferred to the tier redesign.
+  if (mode === "chat") return tools.filter((t: any) => CHAT_READ_TOOLS.includes(t.name))
   const byTier = tier === "pro" ? [...tools] : tools.filter((t: any) => !PRO_ONLY_TOOLS.includes(t.name))
   return byTier.filter((t: any) => !PILL_DISALLOWED_TOOLS.includes(t.name))
 }

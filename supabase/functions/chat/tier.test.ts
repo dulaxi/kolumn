@@ -11,9 +11,12 @@ const FAKE_TOOLS = [
   { name: "invite_member" }, { name: "remove_member" },
 ]
 
-Deno.test("chat mode gets zero tools regardless of tier", () => {
-  assertEquals(filterToolsForMode(FAKE_TOOLS, "free", "chat"), [])
-  assertEquals(filterToolsForMode(FAKE_TOOLS, "pro", "chat"), [])
+Deno.test("chat mode gets exactly the read tools, all tiers", () => {
+  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }]
+  const freeNames = filterToolsForMode(withRead, "free", "chat").map((t) => t.name)
+  const proNames = filterToolsForMode(withRead, "pro", "chat").map((t) => t.name)
+  assertEquals(freeNames, ["search_cards", "summarize_board"])
+  assertEquals(proNames, ["search_cards", "summarize_board"])
 })
 
 Deno.test("free pill gets create_card only", () => {
