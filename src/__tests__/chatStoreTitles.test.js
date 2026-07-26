@@ -77,7 +77,7 @@ describe('AI titles', () => {
 describe('cleanTitle', () => {
   test('strips quotes and trailing punctuation, collapses whitespace, clamps', () => {
     expect(cleanTitle('"Kolumn  Launch Plan."')).toBe('Kolumn Launch Plan')
-    expect(cleanTitle('"Launch"')).toBe('Launch')
+    expect(cleanTitle('“Launch”')).toBe('Launch')
     expect(cleanTitle('Plan…')).toBe('Plan')
     expect(cleanTitle('  ')).toBe('')
     expect(cleanTitle('x'.repeat(80)).length).toBeLessThanOrEqual(60)

@@ -29,7 +29,7 @@ export function friendlyChatError(raw) {
 // quotes and trailing punctuation, clamp. Empty result = "unusable".
 export function cleanTitle(raw) {
   let t = String(raw || '').replace(/\s+/g, ' ').trim()
-  t = t.replace(/^["'"']+/, '').replace(/["'"']+$/, '')
+  t = t.replace(/^["'“‘]+/, '').replace(/["'”’]+$/, '')
   t = t.replace(/[.…]+$/, '').trim()
   if (t.length > 60) t = t.slice(0, 60).trimEnd()
   return t
