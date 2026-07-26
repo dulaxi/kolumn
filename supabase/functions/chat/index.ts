@@ -125,10 +125,14 @@ Deno.serve(async (req) => {
   const mode = body.mode as Mode
 
   // Title mode: one-shot conversation naming. Authenticated but unbilled
-  // (housekeeping, not a user message — the 32-token cap bounds abuse), no
-  // context build, no tools; history is ignored.
+  // (housekeeping, not a user message — max_tokens caps output and the
+  // length clamp bounds input), no context build, no tools; history is
+  // ignored.
   if (mode === "title") {
     if (typeof body.message !== "string") {
+      return json(400, { error: "invalid_message", message: "Invalid request." })
+    }
+    if (body.message.length > 2000) {
       return json(400, { error: "invalid_message", message: "Invalid request." })
     }
     let tierInfo

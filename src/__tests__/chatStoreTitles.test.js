@@ -72,6 +72,23 @@ describe('AI titles', () => {
     expect(streamChat).not.toHaveBeenCalled()
     expect(useChatStore.getState().conversations[id].title.endsWith('…')).toBe(true)
   })
+
+  test('concurrent calls dedup to a single streamChat invocation', async () => {
+    let release
+    streamChat.mockImplementation((_req, h) => new Promise((r) => {
+      release = () => {
+        h.onText('Name')
+        h.onDone({})
+        r()
+      }
+    }))
+    const id = seedConvo()
+    const p1 = useChatStore.getState().generateTitle(id)
+    const p2 = useChatStore.getState().generateTitle(id)
+    release()
+    await Promise.all([p1, p2])
+    expect(streamChat).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('cleanTitle', () => {
@@ -81,5 +98,9 @@ describe('cleanTitle', () => {
     expect(cleanTitle('Plan…')).toBe('Plan')
     expect(cleanTitle('  ')).toBe('')
     expect(cleanTitle('x'.repeat(80)).length).toBeLessThanOrEqual(60)
+  })
+
+  test('clamp is codepoint-safe: never splits a surrogate pair', () => {
+    expect(cleanTitle('🎯'.repeat(40))).not.toMatch(/[\uD800-\uDBFF]$/)
   })
 })

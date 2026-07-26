@@ -31,9 +31,13 @@ export function cleanTitle(raw) {
   let t = String(raw || '').replace(/\s+/g, ' ').trim()
   t = t.replace(/^["'“‘]+/, '').replace(/["'”’]+$/, '')
   t = t.replace(/[.…]+$/, '').trim()
-  if (t.length > 60) t = t.slice(0, 60).trimEnd()
+  if (t.length > 60) t = [...t].slice(0, 60).join('').trimEnd()
   return t
 }
+
+// Guards concurrent generateTitle() calls for the same conversation from
+// firing streamChat more than once (e.g. a rapid double sendMessage).
+const titlingInFlight = new Set()
 
 export const useChatStore = create(persist((set, get) => ({
   conversations: {},
@@ -96,6 +100,7 @@ export const useChatStore = create(persist((set, get) => ({
     // Guards + truncation fallback run synchronously (no await above them) —
     // callers and existing tests rely on the fallback landing immediately.
     if (!conv || conv.titleEdited || conv.aiTitled) return
+    if (titlingInFlight.has(conversationId)) return
     const msgs = get().messages[conversationId] || []
     const firstUser = msgs.find((m) => m.role === 'user')
     if (!firstUser) return
@@ -114,37 +119,42 @@ export const useChatStore = create(persist((set, get) => ({
     if (!firstAssistant) return
 
     let raw = ''
-    await streamChat(
-      {
-        mode: 'title',
-        history: [],
-        message: `User: ${firstUser.text.slice(0, 500)}\nAssistant: ${firstAssistant.text.slice(0, 500)}`,
-      },
-      {
-        onText: (chunk) => { raw += chunk },
-        onToolCall: () => {},
-        onTier: () => {},
-        onDone: () => {},
-        onError: (err) => {
-          logError('[chatStore] title error:', err)
-          raw = ''
+    titlingInFlight.add(conversationId)
+    try {
+      await streamChat(
+        {
+          mode: 'title',
+          history: [],
+          message: `User: ${firstUser.text.slice(0, 500)}\nAssistant: ${firstAssistant.text.slice(0, 500)}`,
         },
-      },
-    )
+        {
+          onText: (chunk) => { raw += chunk },
+          onToolCall: () => {},
+          onTier: () => {},
+          onDone: () => {},
+          onError: (err) => {
+            logError('[chatStore] title error:', err)
+            raw = ''
+          },
+        },
+      )
 
-    const title = cleanTitle(raw)
-    if (!title) return
-    set((s) => {
-      const current = s.conversations[conversationId]
-      // Deleted, or manually renamed while the call was in flight → discard.
-      if (!current || current.titleEdited) return s
-      return {
-        conversations: {
-          ...s.conversations,
-          [conversationId]: { ...current, title, aiTitled: true },
-        },
-      }
-    })
+      const title = cleanTitle(raw)
+      if (!title) return
+      set((s) => {
+        const current = s.conversations[conversationId]
+        // Deleted, or manually renamed while the call was in flight → discard.
+        if (!current || current.titleEdited) return s
+        return {
+          conversations: {
+            ...s.conversations,
+            [conversationId]: { ...current, title, aiTitled: true },
+          },
+        }
+      })
+    } finally {
+      titlingInFlight.delete(conversationId)
+    }
   },
 
   getConversationsSorted: () => {
@@ -243,7 +253,7 @@ export const useChatStore = create(persist((set, get) => ({
 
     patchMsg({ mentionedCardIds })
     set({ streamingConversationId: null })
-    get().generateTitle(conversationId)
+    get().generateTitle(conversationId).catch(() => {})
   },
 }), {
   name: 'kolumn-chat',
