@@ -13,9 +13,11 @@ brainstorming: a lightweight `title` mode on the existing chat edge function
 - Mode validation widens to `"pill" | "chat" | "title"`.
 - The title branch: authenticated like the others, then **short-circuits
   the heavy path** — no `buildContext` (no boards/notes queries), no tools,
-  no usage increment (**unbilled**: housekeeping, not a user message; abuse
-  ceiling is the 32-token cap), no continuation logic. `boardId` forced
-  undefined.
+  no usage increment (**unbilled**: housekeeping, not a user message), no
+  continuation logic. `boardId` forced undefined. Abuse bounding (final-
+  review revision): `max_tokens: 32` caps *output* only, so the branch also
+  rejects messages over 2,000 chars — without that clamp this would be the
+  app's only unmetered Anthropic call with uncapped user-controlled input.
 - Anthropic call: model from the existing `classifyModel("")` path (no new
   hardcoded model string — T2-#5/#8 still owns centralizing), fixed system
   prompt (below), `max_tokens: 32`, no tools, no cache_control (the prompt
