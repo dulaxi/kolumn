@@ -5,6 +5,8 @@ import { SSEWriter, sseHeaders } from "./stream.ts"
 import { checkTier, filterToolsForMode, isContinuationMessage, Mode, UsageCheckError } from "./tier.ts"
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
+const TITLE_SYSTEM_PROMPT =
+  "You name chat conversations. Given the first exchange of a conversation, reply with ONLY a short title for it: 2-5 words, no quotes, no trailing punctuation, no emojis. Capture the topic, not the greeting."
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -117,10 +119,65 @@ Deno.serve(async (req) => {
 
   // The client identifies its surface; the server enforces. Never infer
   // mode from the presence of boardId.
-  if (body.mode !== "pill" && body.mode !== "chat") {
+  if (body.mode !== "pill" && body.mode !== "chat" && body.mode !== "title") {
     return json(400, { error: "invalid_mode", message: "Invalid request." })
   }
   const mode = body.mode as Mode
+
+  // Title mode: one-shot conversation naming. Authenticated but unbilled
+  // (housekeeping, not a user message — the 32-token cap bounds abuse), no
+  // context build, no tools; history is ignored.
+  if (mode === "title") {
+    if (typeof body.message !== "string") {
+      return json(400, { error: "invalid_message", message: "Invalid request." })
+    }
+    let tierInfo
+    try {
+      tierInfo = await checkTier(supabase, user.id, { unbilled: true })
+    } catch (err) {
+      console.error("[chat] title tier check threw:", err)
+      return json(500, { error: "tier_check_failed", message: "Something went wrong — try again." })
+    }
+
+    const sse = new SSEWriter()
+    const streamTitle = async () => {
+      try {
+        const response = await fetch(ANTHROPIC_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": anthropicKey,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: tierInfo.model,
+            max_tokens: 32,
+            system: TITLE_SYSTEM_PROMPT,
+            messages: [{ role: "user", content: body.message }],
+          }),
+        })
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error("[chat] title anthropic error:", response.status, errorText)
+          sse.error(`Claude API error: ${response.status}`)
+          return
+        }
+        const data = await response.json()
+        const text = (data.content || [])
+          .filter((b: { type?: string }) => b.type === "text")
+          .map((b: { text?: string }) => b.text || "")
+          .join("")
+        if (text) sse.write({ type: "text", content: text })
+        sse.close(data.stop_reason ?? null)
+      } catch (err) {
+        console.error("[chat] title error:", err)
+        sse.error("Title generation failed")
+      }
+    }
+    streamTitle()
+    return new Response(sse.stream, { headers: sseHeaders() })
+  }
+
   if (mode === "pill" && !body.boardId) {
     return json(400, { error: "board_required", message: "Invalid request." })
   }
@@ -135,7 +192,7 @@ Deno.serve(async (req) => {
   // Tier check + rate limit
   let tierInfo
   try {
-    tierInfo = await checkTier(supabase, user.id, { isContinuation })
+    tierInfo = await checkTier(supabase, user.id, { unbilled: isContinuation })
   } catch (err) {
     if (err instanceof UsageCheckError) {
       return json(503, { error: "usage_check_failed", message: "Could not verify your usage — try again in a moment." })

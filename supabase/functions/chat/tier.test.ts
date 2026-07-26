@@ -31,6 +31,11 @@ Deno.test("pro pill gets all write tools except create_board", () => {
   assertEquals(names.includes("delete_card"), true)
 })
 
+Deno.test("title mode gets zero tools", () => {
+  assertEquals(filterToolsForMode(FAKE_TOOLS, "free", "title"), [])
+  assertEquals(filterToolsForMode(FAKE_TOOLS, "pro", "title"), [])
+})
+
 Deno.test("isContinuationMessage detects tool_result blocks", () => {
   assertEquals(isContinuationMessage("create 5 cards"), false)
   assertEquals(isContinuationMessage([{ type: "text", text: "hi" }]), false)

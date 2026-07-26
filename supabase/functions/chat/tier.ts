@@ -1,7 +1,7 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { CHAT_READ_TOOLS } from "./tools.ts"
 
-export type Mode = "pill" | "chat"
+export type Mode = "pill" | "chat" | "title"
 
 export class UsageCheckError extends Error {
   constructor() { super("usage check failed") }
@@ -42,7 +42,7 @@ export function isContinuationMessage(message: unknown): boolean {
 export async function checkTier(
   supabase: SupabaseClient,
   userId: string,
-  opts: { isContinuation?: boolean } = {},
+  opts: { unbilled?: boolean } = {},
 ): Promise<TierInfo> {
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -54,9 +54,9 @@ export async function checkTier(
   const tier = (profile?.tier || "free") as "free" | "pro"
   const model = "claude-haiku-4-5-20251001"
 
-  // Continuation rounds ride on the user-initiated message that started the
-  // loop — skip the usage increment entirely.
-  if (opts.isContinuation) {
+  // Unbilled calls — tool-result continuation rounds and title housekeeping —
+  // skip the usage increment entirely.
+  if (opts.unbilled) {
     return { tier, allowed: true, remaining: -1, model }
   }
 
@@ -89,6 +89,7 @@ export function filterToolsForMode(
   tier: "free" | "pro",
   mode: Mode,
 ): any[] {
+  if (mode === "title") return []
   // Chat gets the read-only lookup tools — ALL tiers for now; the paid-only
   // gate from the (mode × tier) matrix is deferred to the tier redesign.
   if (mode === "chat") return tools.filter((t: any) => CHAT_READ_TOOLS.includes(t.name))
