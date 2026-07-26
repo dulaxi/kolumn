@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { runChatLoop } from '../lib/chatAgentLoop'
+import { streamChat } from '../lib/aiClient'
 import { logError } from '../utils/logger'
 import { useBoardStore } from './boardStore'
 import { findMentionedCardIds } from '../lib/cardMentions'
@@ -22,6 +23,16 @@ export function friendlyChatError(raw) {
     return { message: "Couldn't reach the server — check your connection and try again.", isLimit: false }
   }
   return { message: 'Claude hit a snag — try sending that again.', isLimit: false }
+}
+
+// Normalizes a model-emitted title: collapse whitespace, strip wrapping
+// quotes and trailing punctuation, clamp. Empty result = "unusable".
+export function cleanTitle(raw) {
+  let t = String(raw || '').replace(/\s+/g, ' ').trim()
+  t = t.replace(/^["'"']+/, '').replace(/["'"']+$/, '')
+  t = t.replace(/[.…]+$/, '').trim()
+  if (t.length > 60) t = t.slice(0, 60).trimEnd()
+  return t
 }
 
 export const useChatStore = create(persist((set, get) => ({
@@ -79,23 +90,61 @@ export const useChatStore = create(persist((set, get) => ({
     return msg.id
   },
 
-  generateTitle: (conversationId) => {
+  generateTitle: async (conversationId) => {
     const conv = get().conversations[conversationId]
-    // A manual rename (renameConversation) is sticky — auto-titling from the
-    // first user message would otherwise clobber it on every completed reply.
-    if (conv?.titleEdited) return
+    // Manual renames are sticky; AI naming runs once per conversation.
+    // Guards + truncation fallback run synchronously (no await above them) —
+    // callers and existing tests rely on the fallback landing immediately.
+    if (!conv || conv.titleEdited || conv.aiTitled) return
     const msgs = get().messages[conversationId] || []
     const firstUser = msgs.find((m) => m.role === 'user')
     if (!firstUser) return
-    const title = firstUser.text.length > 39
-      ? firstUser.text.slice(0, 39).trimEnd() + '\u2026'
+
+    const fallback = firstUser.text.length > 39
+      ? firstUser.text.slice(0, 39).trimEnd() + '…'
       : firstUser.text
     set((s) => ({
       conversations: {
         ...s.conversations,
-        [conversationId]: { ...s.conversations[conversationId], title },
+        [conversationId]: { ...s.conversations[conversationId], title: fallback },
       },
     }))
+
+    const firstAssistant = msgs.find((m) => m.role === 'assistant' && m.text && m.text.trim())
+    if (!firstAssistant) return
+
+    let raw = ''
+    await streamChat(
+      {
+        mode: 'title',
+        history: [],
+        message: `User: ${firstUser.text.slice(0, 500)}\nAssistant: ${firstAssistant.text.slice(0, 500)}`,
+      },
+      {
+        onText: (chunk) => { raw += chunk },
+        onToolCall: () => {},
+        onTier: () => {},
+        onDone: () => {},
+        onError: (err) => {
+          logError('[chatStore] title error:', err)
+          raw = ''
+        },
+      },
+    )
+
+    const title = cleanTitle(raw)
+    if (!title) return
+    set((s) => {
+      const current = s.conversations[conversationId]
+      // Deleted, or manually renamed while the call was in flight → discard.
+      if (!current || current.titleEdited) return s
+      return {
+        conversations: {
+          ...s.conversations,
+          [conversationId]: { ...current, title, aiTitled: true },
+        },
+      }
+    })
   },
 
   getConversationsSorted: () => {
