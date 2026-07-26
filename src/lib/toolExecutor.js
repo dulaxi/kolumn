@@ -81,6 +81,19 @@ function findBoardByName(name) {
   return Object.values(boards).find((b) => b.name.toLowerCase() === lower)
 }
 
+// Label texts for a card from the two label maps. `cardLabels` values are
+// Sets of label ids; archived labels are invisible to the AI surface.
+function getCardLabelTexts(store, cardId) {
+  const ids = store.cardLabels?.[cardId]
+  if (!ids || ids.size === 0) return []
+  const out = []
+  for (const id of ids) {
+    const l = store.labels?.[id]
+    if (l && !l.archived_at) out.push(l.text)
+  }
+  return out
+}
+
 function findColumnByName(boardId, name) {
   const columns = useBoardStore.getState().columns
   const lower = name.toLowerCase()
@@ -1195,19 +1208,24 @@ export async function executeTool(action, params) {
     }
     const matches = []
     for (const card of Object.values(store.cards)) {
+      if (card.archived) continue
       if (boardFilter && card.board_id !== boardFilter.id) continue
       if (card.completed && !params.include_completed) continue
-      const inTitle = (card.title || '').toLowerCase().includes(query)
-      const inBody = (card.description || '').toLowerCase().includes(query)
+      const labels = getCardLabelTexts(store, card.id)
+      // Tier 1: title or label (a label query is exact intent, not an
+      // incidental text hit). Tier 2: description / assignee names.
+      const primary = (card.title || '').toLowerCase().includes(query)
+        || labels.some((t) => t.toLowerCase().includes(query))
+      const secondary = (card.description || '').toLowerCase().includes(query)
         || (card.assignees || []).join(' ').toLowerCase().includes(query)
-      if (!inTitle && !inBody) continue
-      matches.push({ card, inTitle })
+      if (!primary && !secondary) continue
+      matches.push({ card, labels, primary })
     }
     matches.sort((a, b) =>
-      (b.inTitle === true) - (a.inTitle === true)
+      (b.primary === true) - (a.primary === true)
       || String(b.card.updated_at || '').localeCompare(String(a.card.updated_at || ''))
     )
-    const cards = matches.slice(0, 20).map(({ card }) => ({
+    const cards = matches.slice(0, 20).map(({ card, labels }) => ({
       id: card.id,
       title: card.title,
       board: store.boards[card.board_id]?.name || null,
@@ -1216,6 +1234,14 @@ export async function executeTool(action, params) {
       due_date: card.due_date || null,
       completed: !!card.completed,
       task_number: card.task_number ?? null,
+      labels,
+      assignees: card.assignees || [],
+      ...(Array.isArray(card.checklist) && card.checklist.length > 0
+        ? { checklist: { done: card.checklist.filter((i) => i.done).length, total: card.checklist.length } }
+        : {}),
+      ...((card.description || '').trim()
+        ? { description: card.description.trim().slice(0, 160) }
+        : {}),
     }))
     return { ok: true, count: cards.length, total: matches.length, cards }
   }
@@ -1225,7 +1251,7 @@ export async function executeTool(action, params) {
     const board = findBoardByName(params.board)
     if (!board) return { ok: false, error: `Board "${params.board}" not found` }
     const PER_COLUMN_CAP = 15
-    const boardCards = Object.values(store.cards).filter((c) => c.board_id === board.id)
+    const boardCards = Object.values(store.cards).filter((c) => c.board_id === board.id && !c.archived)
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
     let completed = 0
@@ -1252,6 +1278,11 @@ export async function executeTool(action, params) {
             priority: c.priority || null,
             due_date: c.due_date || null,
             completed: !!c.completed,
+            labels: getCardLabelTexts(store, c.id),
+            assignees: c.assignees || [],
+            ...(Array.isArray(c.checklist) && c.checklist.length > 0
+              ? { checklist: { done: c.checklist.filter((i) => i.done).length, total: c.checklist.length } }
+              : {}),
           })),
         }
       })
