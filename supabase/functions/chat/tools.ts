@@ -241,7 +241,7 @@ export const TOOLS = [
   },
   {
     name: "search_cards",
-    description: "Read-only: search the user's cards across all their boards by text. Matches card titles, descriptions, and assignee names. Returns matching cards with their ids, board, column, priority, and due date. Never modifies anything.",
+    description: "Read-only: search the user's cards across all their boards by text. Matches card titles, descriptions, assignee names, and label text. Archived cards are never returned. Returns matching cards with their ids, board, column, priority, due date, labels, assignees, and checklist progress. Never modifies anything.",
     input_schema: {
       type: "object",
       properties: {
@@ -254,7 +254,7 @@ export const TOOLS = [
   },
   {
     name: "summarize_board",
-    description: "Read-only: get a structured snapshot of one board — its columns in order, the cards in each, and totals (cards, completed, overdue). Never modifies anything.",
+    description: "Read-only: get a structured snapshot of one board — its columns in order, the cards in each (with labels, assignees, and checklist progress), and totals (cards, completed, overdue). Archived cards are excluded. Never modifies anything.",
     input_schema: {
       type: "object",
       properties: {

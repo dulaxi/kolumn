@@ -15,7 +15,9 @@ export async function buildContext(
 
   const allBoards = boardsRes.data || []
   const allColumns = columnsRes.data || []
-  const allCards = cardsRes.data || []
+  // Archived cards are invisible to the AI surface — filtered here so every
+  // consumer below (snapshot, alerts, activity counts) inherits it.
+  const allCards = (cardsRes.data || []).filter((c: any) => !c.archived)
   const notes = notesRes.data || []
   const profile = profileRes.data || { display_name: "User" }
 
@@ -30,6 +32,31 @@ export async function buildContext(
       .in("board_id", allBoardIds)
       .is("archived_at", null)
     allLabels = labelsData || []
+  }
+
+  // cardId → label texts, for the snapshot's inline /label markers.
+  const cardLabelTexts = new Map<string, string[]>()
+  if (allCards.length > 0 && allLabels.length > 0) {
+    const { data: clRows } = await supabase
+      .from("card_labels")
+      .select("card_id, label_id")
+      .in("card_id", allCards.map((c: any) => c.id))
+    const labelById = new Map(allLabels.map((l) => [l.id, l.text]))
+    for (const row of (clRows || [])) {
+      const text = labelById.get((row as any).label_id)
+      if (!text) continue
+      const list = cardLabelTexts.get((row as any).card_id) || []
+      list.push(text)
+      cardLabelTexts.set((row as any).card_id, list)
+    }
+  }
+
+  // Compact only-when-present markers: " /label" per label, " @Name" per
+  // assignee. Most cards have neither, so the snapshot stays cheap.
+  const cardMarkers = (c: any) => {
+    const labels = (cardLabelTexts.get(c.id) || []).map((t) => ` /${t}`).join("")
+    const assignees = (c.assignees || []).map((a: string) => ` @${a}`).join("")
+    return `${labels}${assignees}`
   }
 
   // Pill scoping requires BOTH mode === "pill" AND a resolvable board — the
@@ -97,14 +124,14 @@ export async function buildContext(
       // the DB so we strip to YYYY-MM-DD for stable date-comparison prose.
       const openTitles = openCards.slice(0, 10).map((c: any) => {
         const due = c.due_date ? ` due ${String(c.due_date).slice(0, 10)}` : ""
-        return `"${c.title}"${due}`
+        return `"${c.title}"${due}${cardMarkers(c)}`
       })
       // Include completed cards too (capped lower than open) so the model
       // can find them when the user says "unmark X as done" or "delete
       // completed cards". Without this they're invisible to the snapshot.
       const doneTitles = doneCards.slice(0, 5).map((c: any) => {
         const due = c.due_date ? ` due ${String(c.due_date).slice(0, 10)}` : ""
-        return `"${c.title}"${due} ✓done`
+        return `"${c.title}"${due}${cardMarkers(c)} ✓done`
       })
       const titles = [...openTitles, ...doneTitles]
       const openExtra = openCards.length > 10 ? ` +${openCards.length - 10} more open` : ""
