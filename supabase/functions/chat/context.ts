@@ -37,12 +37,17 @@ export async function buildContext(
   // cardId → label texts, for the snapshot's inline /label markers.
   const cardLabelTexts = new Map<string, string[]>()
   if (allCards.length > 0 && allLabels.length > 0) {
-    const { data: clRows } = await supabase
+    // Scope by label ids (few) instead of card ids (many) — bounded query,
+    // same rows: we only care about assignments of the labels we can show.
+    const { data: clRows, error: clError } = await supabase
       .from("card_labels")
       .select("card_id, label_id")
-      .in("card_id", allCards.map((c: any) => c.id))
+      .in("label_id", allLabels.map((l) => l.id))
+    if (clError) console.error("[chat] card_labels fetch failed — snapshot label markers degraded:", clError)
+    const visibleCardIds = new Set(allCards.map((c: any) => c.id))
     const labelById = new Map(allLabels.map((l) => [l.id, l.text]))
     for (const row of (clRows || [])) {
+      if (!visibleCardIds.has((row as any).card_id)) continue
       const text = labelById.get((row as any).label_id)
       if (!text) continue
       const list = cardLabelTexts.get((row as any).card_id) || []
