@@ -156,11 +156,19 @@ create policy "Members can read workspace membership"
   on public.workspace_members for select
   using (workspace_id in (select get_my_workspace_ids()));
 
+-- Owner-add, or invitation-gated member-only self-join. A bare
+-- `or user_id = auth.uid()` branch here would let any user self-insert into any
+-- workspace as owner (2026-07-27 fix). Invite-accept goes through the
+-- SECURITY DEFINER accept_workspace_invitation RPC.
 create policy "Owners can add members, users can self-join on accept"
   on public.workspace_members for insert
   with check (
     workspace_id in (select id from public.workspaces where owner_id = auth.uid())
-    or user_id = auth.uid()
+    or (
+      user_id = auth.uid()
+      and role = 'member'
+      and workspace_id in (select get_my_invited_workspace_ids())
+    )
   );
 
 create policy "Owners can remove, members can leave"
@@ -447,12 +455,14 @@ create policy "Members can view board_members"
     board_id in (select get_my_board_ids())
   );
 
+-- Owner-add only. Self-join is handled by the invitation-gated
+-- "Invited users can join boards" policy below; a bare `or user_id = auth.uid()`
+-- branch here would let any user self-insert into any board (2026-07-27 fix).
 create policy "Board owners can manage members"
   on public.board_members for insert
   to authenticated
   with check (
     board_id in (select id from public.boards where owner_id = auth.uid())
-    or user_id = auth.uid()
   );
 
 create policy "Board owners can remove members"
