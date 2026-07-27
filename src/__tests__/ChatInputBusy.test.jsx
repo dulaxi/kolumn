@@ -34,4 +34,18 @@ describe('ChatInput', () => {
     expect(onSend).toHaveBeenCalledWith('hello')
     expect(box).toHaveValue('')
   })
+
+  test('busy with onStop swaps the send button for Stop', () => {
+    const onStop = vi.fn()
+    render(<ChatInput onSend={vi.fn()} busy onStop={onStop} />)
+    expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Stop generating' }))
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  test('busy without onStop keeps the disabled send button', () => {
+    render(<ChatInput onSend={vi.fn()} busy />)
+    expect(screen.getByRole('button', { name: 'Send message' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Stop generating' })).not.toBeInTheDocument()
+  })
 })

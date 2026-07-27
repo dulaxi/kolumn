@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp } from '@phosphor-icons/react'
+import { ArrowUp, Stop } from '@phosphor-icons/react'
 import Button from '../ui/Button'
 
 // `busy`: the current conversation is streaming a reply. Typing stays
 // enabled so the user can draft their next message, but sends are
 // blocked (Enter + button) until the stream finishes.
-export default function ChatInput({ onSend, autoFocus = false, docked = true, busy = false }) {
+export default function ChatInput({ onSend, onStop, autoFocus = false, docked = true, busy = false }) {
   const [input, setInput] = useState('')
   const [blockedHint, setBlockedHint] = useState(false)
   const textareaRef = useRef(null)
@@ -64,9 +64,15 @@ export default function ChatInput({ onSend, autoFocus = false, docked = true, bu
             </span>
           )}
           <div className="flex-1" />
-          <Button size="icon-sm" onClick={handleSubmit} disabled={!input.trim() || busy} aria-label="Send message">
-            <ArrowUp className="w-4 h-4" weight="bold" />
-          </Button>
+          {busy && onStop ? (
+            <Button size="icon-sm" onClick={onStop} aria-label="Stop generating">
+              <Stop size={14} weight="fill" />
+            </Button>
+          ) : (
+            <Button size="icon-sm" onClick={handleSubmit} disabled={!input.trim() || busy} aria-label="Send message">
+              <ArrowUp className="w-4 h-4" weight="bold" />
+            </Button>
+          )}
         </div>
       </div>
     </div>

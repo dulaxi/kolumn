@@ -26,6 +26,7 @@ export default function ChatPage() {
   const deleteConversation = useChatStore((s) => s.deleteConversation)
   const setRailGroupBy = useChatStore((s) => s.setRailGroupBy)
   const retryMessage = useChatStore((s) => s.retryMessage)
+  const stopStreaming = useChatStore((s) => s.stopStreaming)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -180,7 +181,7 @@ export default function ChatPage() {
         </div>
 
         {/* Composer */}
-        <ChatInput onSend={handleSend} autoFocus docked={false} busy={streaming} />
+        <ChatInput onSend={handleSend} onStop={() => stopStreaming(id)} autoFocus docked={false} busy={streaming} />
 
         {/* Conversation — newest exchange first */}
         <div className="mt-6 flex flex-col pb-8">
@@ -191,6 +192,7 @@ export default function ChatPage() {
                 <ChatMessage
                   key={msg.id}
                   message={msg}
+                  busy={i === 0 && streaming}
                   onRetry={msg.error && !msg.error.isLimit ? () => retryMessage(id, msg.id) : undefined}
                 />
               ))}

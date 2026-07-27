@@ -19,7 +19,7 @@ function segmentText(text, activities) {
   return segments
 }
 
-export default function ChatMessage({ message, onRetry }) {
+export default function ChatMessage({ message, onRetry, busy }) {
   const navigate = useNavigate()
   const cards = useBoardStore((s) => s.cards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
@@ -73,6 +73,10 @@ export default function ChatMessage({ message, onRetry }) {
           ))
         )}
       </div>
+
+      {message.stopped && (
+        <div className="mt-2 font-mono text-xs text-[var(--text-muted)]">Stopped</div>
+      )}
 
       {message.error && (
         <InlineNotice
