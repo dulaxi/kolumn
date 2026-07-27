@@ -41,3 +41,28 @@ describe('cache trimming', () => {
     expect(useChatStore.getState().messages.t1).toHaveLength(101)
   })
 })
+
+describe('localOnly message exemption', () => {
+  test('localOnly threads keep every message and dropped threads leak none', () => {
+    const msgs = []
+    for (let i = 1; i <= 150; i++) {
+      msgs.push({ id: `lm${i}`, role: 'user', text: `m${i}`, created_at: String(i) })
+    }
+    const conversations = {
+      legacy: { id: 'legacy', title: 'Old', localOnly: true, created_at: '1', updated_at: '000' },
+    }
+    const messages = { legacy: msgs }
+    for (let i = 1; i <= 31; i++) {
+      const id = `t${i}`
+      conversations[id] = { id, title: `T${i}`, created_at: '1', updated_at: String(i).padStart(3, '0') }
+      messages[id] = [{ id: `${id}-m`, role: 'user', text: 'x', created_at: '1' }]
+    }
+    useChatStore.setState({ conversations, messages })
+    const cached = partialize()
+    // The server can never restore a legacy thread — all 150 messages stay.
+    expect(cached.messages.legacy).toHaveLength(150)
+    // The dropped thread's messages must not leak into the cache either.
+    expect(cached.conversations.t1).toBeUndefined()
+    expect(cached.messages.t1).toBeUndefined()
+  })
+})

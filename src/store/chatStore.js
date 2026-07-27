@@ -111,8 +111,9 @@ if (typeof window !== 'undefined') {
 }
 
 // The cache is a boot accelerant, not an archive — the server holds full
-// history. Trim before writing: 30 most-recent threads (localOnly exempt —
-// the server cannot restore those) and the last 100 messages per thread.
+// history. Trim before writing: 30 most-recent threads and the last 100
+// messages per thread. localOnly (legacy) conversations are exempt from
+// BOTH caps: the server cannot restore anything of theirs.
 const CACHE_THREAD_CAP = 30
 const CACHE_MESSAGES_PER_THREAD = 100
 
@@ -121,7 +122,7 @@ function trimForCache(s) {
   const keep = new Set(
     all
       .filter((c) => !c.localOnly)
-      .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
+      .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
       .slice(0, CACHE_THREAD_CAP)
       .map((c) => c.id),
   )
@@ -131,7 +132,7 @@ function trimForCache(s) {
   for (const id of keep) {
     conversations[id] = s.conversations[id]
     const msgs = s.messages[id] || []
-    messages[id] = msgs.length > CACHE_MESSAGES_PER_THREAD
+    messages[id] = !s.conversations[id]?.localOnly && msgs.length > CACHE_MESSAGES_PER_THREAD
       ? msgs.slice(-CACHE_MESSAGES_PER_THREAD)
       : msgs
   }
