@@ -110,6 +110,34 @@ if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', flushPersist)
 }
 
+// The cache is a boot accelerant, not an archive — the server holds full
+// history. Trim before writing: 30 most-recent threads (localOnly exempt —
+// the server cannot restore those) and the last 100 messages per thread.
+const CACHE_THREAD_CAP = 30
+const CACHE_MESSAGES_PER_THREAD = 100
+
+function trimForCache(s) {
+  const all = Object.values(s.conversations)
+  const keep = new Set(
+    all
+      .filter((c) => !c.localOnly)
+      .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
+      .slice(0, CACHE_THREAD_CAP)
+      .map((c) => c.id),
+  )
+  for (const c of all) if (c.localOnly) keep.add(c.id)
+  const conversations = {}
+  const messages = {}
+  for (const id of keep) {
+    conversations[id] = s.conversations[id]
+    const msgs = s.messages[id] || []
+    messages[id] = msgs.length > CACHE_MESSAGES_PER_THREAD
+      ? msgs.slice(-CACHE_MESSAGES_PER_THREAD)
+      : msgs
+  }
+  return { conversations, messages }
+}
+
 export const useChatStore = create(persist((set, get) => ({
   conversations: {},
   messages: {},
@@ -473,5 +501,5 @@ export const useChatStore = create(persist((set, get) => ({
 }), {
   name: 'kolumn-chat',
   storage: createJSONStorage(() => debouncedStorage),
-  partialize: (s) => ({ conversations: s.conversations, messages: s.messages }),
+  partialize: (s) => trimForCache(s),
 }))
