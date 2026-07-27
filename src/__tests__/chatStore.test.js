@@ -6,7 +6,7 @@ beforeEach(() => {
     conversations: {},
     messages: {},
     activeConversationId: null,
-    streamingConversationId: null,
+    streaming: {},
   })
 })
 

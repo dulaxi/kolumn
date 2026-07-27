@@ -43,7 +43,7 @@ export const useChatStore = create(persist((set, get) => ({
   conversations: {},
   messages: {},
   activeConversationId: null,
-  streamingConversationId: null,
+  streaming: {},
   tierInfo: null,
 
   createConversation: (title = 'New chat') => {
@@ -165,9 +165,11 @@ export const useChatStore = create(persist((set, get) => ({
   deleteConversation: (id) => set((s) => {
     const { [id]: _, ...restConvs } = s.conversations
     const { [id]: __, ...restMsgs } = s.messages
+    const { [id]: ___, ...restStreaming } = s.streaming
     return {
       conversations: restConvs,
       messages: restMsgs,
+      streaming: restStreaming,
       activeConversationId: s.activeConversationId === id ? null : s.activeConversationId,
     }
   }),
@@ -210,11 +212,16 @@ export const useChatStore = create(persist((set, get) => ({
   }),
 
   setActiveConversation: (id) => set({ activeConversationId: id }),
-  setStreaming: (conversationId) => set({ streamingConversationId: conversationId }),
-  clearStreaming: () => set({ streamingConversationId: null }),
+  setStreaming: (conversationId) => set((s) => ({
+    streaming: { ...s.streaming, [conversationId]: true },
+  })),
+  clearStreaming: (conversationId) => set((s) => {
+    const { [conversationId]: _, ...rest } = s.streaming
+    return { streaming: rest }
+  }),
 
   sendMessage: async (conversationId, userText) => {
-    set({ streamingConversationId: conversationId })
+    get().setStreaming(conversationId)
 
     const allMsgs = (get().messages[conversationId] || []).filter((m) => m.id && m.text)
     const history = allMsgs
@@ -224,14 +231,19 @@ export const useChatStore = create(persist((set, get) => ({
 
     const msgId = get().addMessage(conversationId, { role: 'assistant', text: '' })
     let fullText = ''
-    const patchMsg = (patch) => set((s) => ({
-      messages: {
-        ...s.messages,
-        [conversationId]: s.messages[conversationId].map((m) =>
-          m.id === msgId ? { ...m, ...(typeof patch === 'function' ? patch(m) : patch) } : m
-        ),
-      },
-    }))
+    const patchMsg = (patch) => set((s) => {
+      const msgs = s.messages[conversationId]
+      // Conversation deleted mid-stream — drop the patch, don't throw.
+      if (!msgs) return s
+      return {
+        messages: {
+          ...s.messages,
+          [conversationId]: msgs.map((m) =>
+            m.id === msgId ? { ...m, ...(typeof patch === 'function' ? patch(m) : patch) } : m
+          ),
+        },
+      }
+    })
 
     const today = new Intl.DateTimeFormat('en-CA', {
       year: 'numeric', month: '2-digit', day: '2-digit',
@@ -260,12 +272,12 @@ export const useChatStore = create(persist((set, get) => ({
         ? { message: String(error), isLimit: errorCode === 'rate_limit' }
         : friendlyChatError(error)
       patchMsg({ error: friendly, mentionedCardIds })
-      set({ streamingConversationId: null })
+      get().clearStreaming(conversationId)
       return
     }
 
     patchMsg({ mentionedCardIds })
-    set({ streamingConversationId: null })
+    get().clearStreaming(conversationId)
     get().generateTitle(conversationId).catch(() => {})
   },
 }), {

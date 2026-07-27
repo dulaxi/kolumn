@@ -13,7 +13,7 @@ const seedConvo = (withAssistant = true) => {
 }
 
 beforeEach(() => {
-  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streamingConversationId: null })
+  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streaming: {} })
   streamChat.mockReset()
 })
 

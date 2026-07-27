@@ -7,7 +7,7 @@ import { useChatStore } from '../store/chatStore'
 import { useBoardStore } from '../store/boardStore'
 
 beforeEach(() => {
-  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streamingConversationId: null })
+  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streaming: {} })
   useBoardStore.setState({ cards: {} })
   streamChat.mockReset()
 })

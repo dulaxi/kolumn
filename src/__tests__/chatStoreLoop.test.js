@@ -7,7 +7,7 @@ import { useChatStore } from '../store/chatStore'
 import { useBoardStore } from '../store/boardStore'
 
 beforeEach(() => {
-  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streamingConversationId: null })
+  useChatStore.setState({ conversations: {}, messages: {}, activeConversationId: null, streaming: {} })
   useBoardStore.setState({ cards: {} })
   runChatLoop.mockReset()
 })
@@ -29,7 +29,7 @@ describe('sendMessage via runChatLoop', () => {
     expect(assistant.text).toBe('Looking… Landing page is in To do.')
     expect(assistant.activities).toEqual([{ atChar: 'Looking… '.length, icon: 'search', label: 'Searched cards · 1 result' }])
     expect(assistant.mentionedCardIds.sort()).toEqual(['c2', 'c7'])
-    expect(useChatStore.getState().streamingConversationId).toBeNull()
+    expect(useChatStore.getState().streaming[id]).toBeUndefined()
   })
 
   test('loop error maps through friendlyChatError path and keeps partial mentions', async () => {
