@@ -102,7 +102,13 @@ export async function runPillLoop({ text, boardId, boardName, today }, { onProgr
       }
       rows.push(describeResult(tc.action, tc.params, result))
       onProgress?.([...rows])
-      const block = { type: 'tool_result', tool_use_id: tc.id, content: JSON.stringify(result) }
+      const resultJson = JSON.stringify(result)
+      // Clamp per-block so a huge board summary can't trip the server's
+      // continuation/history size caps (4 blocks/round must fit a 50k item).
+      const content = resultJson.length > 10000
+        ? resultJson.slice(0, 10000) + '…[truncated — result too large]'
+        : resultJson
+      const block = { type: 'tool_result', tool_use_id: tc.id, content }
       if (!result?.ok) block.is_error = true
       results.push(block)
     }

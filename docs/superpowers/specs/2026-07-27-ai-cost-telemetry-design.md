@@ -74,14 +74,16 @@ size-checked at the same cap via JSON length). Violations → 400
 `invalid_history`.
 
 Array-form `body.message` (continuations): ≤ 8 blocks; every block must be
-`{ type: "tool_result", tool_use_id: string, content: string ≤ 20,000 }`;
+`{ type: "tool_result", tool_use_id: string, content: string ≤ 50,000 }`;
 AND every `tool_use_id` must appear as a `tool_use` id inside a prior
 assistant message in `body.history` (a stateless consistency check — still
 forgeable with a fabricated history, but it blocks accidental misuse and
 raises abuse effort; true anti-forgery needs server-side turn state, out of
 scope). Violations → 400 `invalid_message`. The unbilled flag is unchanged
 for payloads that pass. The usage log line (`continuation: true`) makes
-whatever remains observable.
+whatever remains observable. Client loops clamp each tool_result to 10,000
+chars with a truncation marker so aggregated rounds always fit the
+history-item cap.
 
 ## Out of scope
 

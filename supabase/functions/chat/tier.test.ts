@@ -87,3 +87,12 @@ Deno.test("validateContinuation enforces shape, caps, and history linkage", () =
   assertEquals(validateContinuation([{ type: "tool_result", tool_use_id: "toolu_1", content: "z".repeat(50001) }], history) !== null, true)
   assertEquals(validateContinuation(Array.from({ length: 9 }, () => ({ type: "tool_result", tool_use_id: "toolu_1", content: "{}" })), history) !== null, true)
 })
+
+Deno.test("validateContinuation rejects non-string tool_result content", () => {
+  const history = [
+    { role: "user", content: "q" },
+    { role: "assistant", content: [{ type: "tool_use", id: "toolu_1", name: "search_cards", input: {} }] },
+  ]
+  const arrayContent = [{ type: "tool_result", tool_use_id: "toolu_1", content: [{ type: "text", text: "x" }] }]
+  assertEquals(validateContinuation(arrayContent, history) !== null, true)
+})

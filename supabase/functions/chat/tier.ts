@@ -130,7 +130,8 @@ export function validateContinuation(message: unknown[], history: unknown[]): st
     if (block.type !== "tool_result") return "only tool_result blocks allowed"
     if (typeof block.tool_use_id !== "string" || !block.tool_use_id) return "missing tool_use_id"
     if (!knownIds.has(block.tool_use_id)) return "tool_use_id not in history"
-    if (typeof block.content === "string" && block.content.length > TOOL_RESULT_MAX_CONTENT) return "tool_result too large"
+    if (typeof block.content !== "string") return "tool_result content must be a string"
+    if (block.content.length > TOOL_RESULT_MAX_CONTENT) return "tool_result too large"
   }
   return null
 }

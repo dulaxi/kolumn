@@ -207,6 +207,10 @@ Deno.serve(async (req) => {
     body.boardId = undefined
   }
 
+  if (typeof body.message === "string" && body.message.length > 50000) {
+    return json(400, { error: "invalid_message", message: "That message is too long." })
+  }
+
   const historyErr = validateHistory(body.history)
   if (historyErr) {
     return json(400, { error: "invalid_history", message: "History is too large or malformed." })
