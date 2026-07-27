@@ -231,6 +231,7 @@ Deno.serve(async (req) => {
     boardId: body.boardId,
     today: body.today,
     mode,
+    tier: tierInfo.tier,
   })
 
   const messages: Array<{ role: string; content: unknown }> = [
@@ -330,6 +331,13 @@ Deno.serve(async (req) => {
               }
             } else if (event.type === "message_delta") {
               if (event.delta?.stop_reason) stopReason = event.delta.stop_reason
+            } else if (event.type === "error") {
+              // Anthropic mid-stream failure (e.g. overloaded_error). Without
+              // this branch the stream ends as a clean "done" with partial
+              // text and the client gets no error and no retry path.
+              console.error("[chat] anthropic mid-stream error:", JSON.stringify(event.error))
+              sse.error(event.error?.message || "Claude stream error")
+              return
             }
           } catch {
             // Skip unparseable lines

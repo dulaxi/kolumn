@@ -1,9 +1,12 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+const ICON_SECTION = `## Available icons (use ONLY these exact names, kebab-case)
+house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildings, user, users, users-three, graduation-cap, code, terminal, bug, cpu, monitor, device-mobile, laptop, database, gear, file-text, folder, clipboard, note, notepad, article, envelope, chat-circle, megaphone, bell, phone, calendar-blank, clock, hourglass, timer, camera, image, credit-card, currency-dollar, money, receipt, shopping-cart, airplane, car, rocket, truck, sun, moon, cloud, lightning, fire, leaf, tree, coffee, fork-knife, cake, pencil-simple, paint-brush, wrench, hammer, toolbox, key, lock, shield, check-circle, warning, sparkle, kanban, list, table, chart-bar, chart-pie, squares-four, columns, presentation, broom, person, hand-grabbing, magnifying-glass, paper-plane-tilt, robot, brain, lightbulb`
+
 export async function buildContext(
   supabase: SupabaseClient,
   userId: string,
-  opts: { boardId?: string; today?: string; mode?: "pill" | "chat" } = {},
+  opts: { boardId?: string; today?: string; mode?: "pill" | "chat"; tier?: "free" | "pro" } = {},
 ): Promise<{ systemPrompt: string }> {
   const [boardsRes, columnsRes, cardsRes, notesRes, profileRes] = await Promise.all([
     supabase.from("boards").select("id, name, icon"),
@@ -81,6 +84,7 @@ export async function buildContext(
   const cards = allCards.filter((c: any) => boardIdSet.has(c.board_id))
   const pillMode = !!scopedBoard
   const chatMode = opts.mode === "chat"
+  const tier = opts.tier || "pro"
 
   const boardIds = boards.map((b: any) => b.id)
   let members: Array<{ display_name: string }> = []
@@ -201,6 +205,71 @@ You are operating **exclusively on the board "${scopedBoard!.name}"**. You canno
   const toolConductRules = `\n- When you call tools, do not describe their outcomes yet — say at most a brief acknowledgment like "On it…". After tool results arrive, report what actually happened, including anything that failed.
 - If the user asks for something your tools here cannot do (for example, creating a new board from the quick-add pill), say so plainly and tell them where they can do it. Never pretend an action happened.`
 
+  // Free pill: create_card is the only tool. The pro rulebook's move/update/
+  // batch/board/member coaching is dead weight AND teaches the model to
+  // roleplay actions it cannot perform — this compact set replaces it.
+  const freePillRules = `${ICON_SECTION}
+
+## Always
+- Act on clear intent. "Add X and Y" = create both.
+- Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
+- Use create_card immediately when the user asks to add or create tasks. Text alone does nothing.${toolConductRules}
+- For card creation: always include title, priority, and icon (from the list above). The card's board is set automatically by the surface you're called from — do not include a "board" field. Add description, labels, checklist, assignee, due_date only when they add value. Do not include an assignee unless the user explicitly names a person — leave cards unassigned by default. Capitalize the first letter of titles.
+- Labels are per-board entities. The current labels on each board are listed above under "Labels:". When attaching a label that already exists on a board, pass its exact text — the server matches case-insensitively, so don't worry about casing. Only invent a new label name when none of the existing labels fit the user's intent. Never invent stylistic variants (e.g. /front-end when /frontend exists).
+- When you create a new label by passing a previously-unseen text, the server assigns its color deterministically. The labels field in your tool schemas is an array of label text strings.
+- Only create the specific card(s) the user mentions.
+- Parse natural language dates relative to Today.
+- Infer priority from language: "urgent"/"ASAP" = high, "whenever"/"low priority" = low, default = medium.
+- Infer labels from content: prefer existing board labels (listed above) over inventing new ones. For boards with no labels yet, infer from content — technical terms suggest /frontend, /backend, /design, /bug, etc.
+- Always respond with text alongside tool calls.
+- Use markdown: **bold** for names, lists for multiple items.
+
+## Never
+- Ask clarifying questions when conversation context makes the answer obvious.
+- Use tools for read queries ("show me", "what's on", "how many", "list", "summarize") — answer from context.
+- Use emojis.
+- Include workspace/board names in card titles when they're just contextual references.
+- Claim to move, update, complete, or delete anything, or walk the user through it as if you could — creating cards is the only action available from this surface on the current plan. For those requests, say so plainly in one sentence.`
+
+  // Pro pill: the full write rulebook (all 16 tools). Extracted verbatim from
+  // the original inline template — must stay byte-identical to preserve the
+  // existing pro pill prompt.
+  const proPillRules = `${ICON_SECTION}
+
+## Always
+- Act on clear intent. "Move all to Done" = move them.${boardActiveTrackingRule}
+- Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
+- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing.${toolConductRules}
+- For card creation: always include title, priority, and icon (from the list above). The card's board is set automatically by the surface you're called from — do not include a "board" field. Add description, labels, checklist, assignee, due_date only when they add value. Do not include an assignee unless the user explicitly names a person — leave cards unassigned by default. Capitalize the first letter of titles.
+${moveCardRule}
+- **Never combine move_card with create_card in the same response.** When the user says "move X to Y", call **only** move_card. If the card "X" does not appear in the board snapshot, respond in text saying you can't find it — do **not** call create_card to bring it into existence. Same rule for "transfer", "shift", "relocate", "push to" — these all mean move, never create.
+- For update_card: only include fields in 'updates' that the user wants changed; omit fields to leave them alone. To **clear** a field (e.g. "remove the due date", "unassign", "clear the icon"), set that field to **null** explicitly — never use create_card to recreate a card just to drop a field. Verbs like "change", "update", "edit", "rename", "set", "remove", "clear", and "mark X as done/complete" all mean update_card on an existing card — never create_card. To mark a card complete, send completed=true in updates; the card stays in its current column. To **unmark** a card complete ("undo done", "mark X as not done", "uncomplete X", "reopen X"), send completed=**false** in updates. Cards rendered with the **✓done** marker in the snapshot are completed and can be targeted just like any other card — never say "I can't find that card" when it appears with ✓done.
+- **One update_card call per card per response, total.** When updating a card's labels, send the FULL final label set in a single call — never call update_card multiple times for the same card to "add one more label" each time (labels REPLACES the array, it does not append). Same rule for checklist.
+- Labels are per-board entities. The current labels on each board are listed above under "Labels:". When attaching a label that already exists on a board, pass its exact text — the server matches case-insensitively, so don't worry about casing. Only invent a new label name when none of the existing labels fit the user's intent. Never invent stylistic variants (e.g. /front-end when /frontend exists).
+- When you create a new label by passing a previously-unseen text, the server assigns its color deterministically. The labels field in your tool schemas is an array of label text strings.
+- **For "all cards", "every card", "each card" intents: use the batch tool (update_cards), NOT multiple update_card calls.** A request like "add labels to all cards" is exactly ONE update_cards call with no card_titles filter — never N update_card calls.
+- For batch operations: use batch tools (move_cards, update_cards, complete_cards) instead of calling single-card tools repeatedly. Filters (column, card_titles) are optional — omit them to mean "all cards on the current board". The board is implicit.
+- For complete_cards / update_cards with completed:true: the card stays in its current column. Completion is a flag, not a position. Do not move cards as part of completing them.
+- For board-level tools (update_board, delete_board, add_column, delete_column): the target board is the pill's host. Do not include a "board" identifier — these tools always operate on the current board.
+- For invite_member / remove_member: the workspace is the current board's workspace. Do not include a "workspace" identifier — it is inferred from the pill's host board.${createBoardRule}
+- Only modify the specific card(s) the user mentions.
+- When the user asks to change or update a card you just created, use update_card — do NOT create a new card. Match by the card title you used when creating it.
+- Parse natural language dates relative to Today.
+- Infer priority from language: "urgent"/"ASAP" = high, "whenever"/"low priority" = low, default = medium.
+- Infer labels from content: prefer existing board labels (listed above) over inventing new ones. For boards with no labels yet, infer from content — technical terms suggest /frontend, /backend, /design, /bug, etc.
+- Always respond with text alongside tool calls.
+- Use markdown: **bold** for names, lists for multiple items.
+
+## Never
+- Ask clarifying questions when conversation context makes the answer obvious.
+- Use tools for read queries ("show me", "what's on", "how many", "list", "summarize") — answer from context.
+- Use emojis.
+- Create empty boards.
+- Include workspace/board names in card titles when they're just contextual references.
+- Execute remove_member without first asking the user to confirm in text. This action is **irreversible** — no undo flow. Always require an explicit "yes" before calling.
+- Ask "are you sure?" in text before calling **delete_card**, **delete_column**, or **delete_board**. Each of these shows a 5-second undo toast in the UI which IS the user-facing confirmation — never ask for textual approval. When the user explicitly names something to delete (a card, the current column, the current board) and uses a delete/remove verb, call the matching tool immediately; do not add a "I'd like to confirm…" turn.
+- Ask the user to confirm batch delete intents ("delete all cards", "delete all overdue", "remove every task in column X"). There is no batch-delete tool — call delete_card once per matching card. Each card gets its own undo toast; the user can undo any individual one within 5 seconds.`
+
   const workspacesLine = pillMode
     ? ""
     : `\nWorkspaces: ${workspaceList.length > 0 ? workspaceList.join(", ") : "None"}`
@@ -253,42 +322,7 @@ ${alertsSummary}
 ## Notes
 ${notesSummary}
 
-${chatMode ? chatRulesSection : `## Available icons (use ONLY these exact names, kebab-case)
-house, star, heart, bookmark, tag, flag, target, trophy, gift, briefcase, buildings, user, users, users-three, graduation-cap, code, terminal, bug, cpu, monitor, device-mobile, laptop, database, gear, file-text, folder, clipboard, note, notepad, article, envelope, chat-circle, megaphone, bell, phone, calendar-blank, clock, hourglass, timer, camera, image, credit-card, currency-dollar, money, receipt, shopping-cart, airplane, car, rocket, truck, sun, moon, cloud, lightning, fire, leaf, tree, coffee, fork-knife, cake, pencil-simple, paint-brush, wrench, hammer, toolbox, key, lock, shield, check-circle, warning, sparkle, kanban, list, table, chart-bar, chart-pie, squares-four, columns, presentation, broom, person, hand-grabbing, magnifying-glass, paper-plane-tilt, robot, brain, lightbulb
-
-## Always
-- Act on clear intent. "Move all to Done" = move them.${boardActiveTrackingRule}
-- Answer questions about boards, cards, tasks, and notes from the context above. You already have all the data.
-- Use tools immediately when the user asks to create, move, update, or delete. Text alone does nothing.${toolConductRules}
-- For card creation: always include title, priority, and icon (from the list above). The card's board is set automatically by the surface you're called from — do not include a "board" field. Add description, labels, checklist, assignee, due_date only when they add value. Do not include an assignee unless the user explicitly names a person — leave cards unassigned by default. Capitalize the first letter of titles.
-${moveCardRule}
-- **Never combine move_card with create_card in the same response.** When the user says "move X to Y", call **only** move_card. If the card "X" does not appear in the board snapshot, respond in text saying you can't find it — do **not** call create_card to bring it into existence. Same rule for "transfer", "shift", "relocate", "push to" — these all mean move, never create.
-- For update_card: only include fields in 'updates' that the user wants changed; omit fields to leave them alone. To **clear** a field (e.g. "remove the due date", "unassign", "clear the icon"), set that field to **null** explicitly — never use create_card to recreate a card just to drop a field. Verbs like "change", "update", "edit", "rename", "set", "remove", "clear", and "mark X as done/complete" all mean update_card on an existing card — never create_card. To mark a card complete, send completed=true in updates; the card stays in its current column. To **unmark** a card complete ("undo done", "mark X as not done", "uncomplete X", "reopen X"), send completed=**false** in updates. Cards rendered with the **✓done** marker in the snapshot are completed and can be targeted just like any other card — never say "I can't find that card" when it appears with ✓done.
-- **One update_card call per card per response, total.** When updating a card's labels, send the FULL final label set in a single call — never call update_card multiple times for the same card to "add one more label" each time (labels REPLACES the array, it does not append). Same rule for checklist.
-- Labels are per-board entities. The current labels on each board are listed above under "Labels:". When attaching a label that already exists on a board, pass its exact text — the server matches case-insensitively, so don't worry about casing. Only invent a new label name when none of the existing labels fit the user's intent. Never invent stylistic variants (e.g. /front-end when /frontend exists).
-- When you create a new label by passing a previously-unseen text, the server assigns its color deterministically. The labels field in your tool schemas is an array of label text strings.
-- **For "all cards", "every card", "each card" intents: use the batch tool (update_cards), NOT multiple update_card calls.** A request like "add labels to all cards" is exactly ONE update_cards call with no card_titles filter — never N update_card calls.
-- For batch operations: use batch tools (move_cards, update_cards, complete_cards) instead of calling single-card tools repeatedly. Filters (column, card_titles) are optional — omit them to mean "all cards on the current board". The board is implicit.
-- For complete_cards / update_cards with completed:true: the card stays in its current column. Completion is a flag, not a position. Do not move cards as part of completing them.
-- For board-level tools (update_board, delete_board, add_column, delete_column): the target board is the pill's host. Do not include a "board" identifier — these tools always operate on the current board.
-- For invite_member / remove_member: the workspace is the current board's workspace. Do not include a "workspace" identifier — it is inferred from the pill's host board.${createBoardRule}
-- Only modify the specific card(s) the user mentions.
-- When the user asks to change or update a card you just created, use update_card — do NOT create a new card. Match by the card title you used when creating it.
-- Parse natural language dates relative to Today.
-- Infer priority from language: "urgent"/"ASAP" = high, "whenever"/"low priority" = low, default = medium.
-- Infer labels from content: prefer existing board labels (listed above) over inventing new ones. For boards with no labels yet, infer from content — technical terms suggest /frontend, /backend, /design, /bug, etc.
-- Always respond with text alongside tool calls.
-- Use markdown: **bold** for names, lists for multiple items.
-
-## Never
-- Ask clarifying questions when conversation context makes the answer obvious.
-- Use tools for read queries ("show me", "what's on", "how many", "list", "summarize") — answer from context.
-- Use emojis.
-- Create empty boards.
-- Include workspace/board names in card titles when they're just contextual references.
-- Execute remove_member without first asking the user to confirm in text. This action is **irreversible** — no undo flow. Always require an explicit "yes" before calling.
-- Ask "are you sure?" in text before calling **delete_card**, **delete_column**, or **delete_board**. Each of these shows a 5-second undo toast in the UI which IS the user-facing confirmation — never ask for textual approval. When the user explicitly names something to delete (a card, the current column, the current board) and uses a delete/remove verb, call the matching tool immediately; do not add a "I'd like to confirm…" turn.
-- Ask the user to confirm batch delete intents ("delete all cards", "delete all overdue", "remove every task in column X"). There is no batch-delete tool — call delete_card once per matching card. Each card gets its own undo toast; the user can undo any individual one within 5 seconds.`}`
+${chatMode ? chatRulesSection : tier === "free" ? freePillRules : proPillRules}`
 
   return { systemPrompt }
 }

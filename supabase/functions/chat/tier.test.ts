@@ -45,3 +45,13 @@ Deno.test("isContinuationMessage detects tool_result blocks", () => {
   )
   assertEquals(isContinuationMessage(undefined), false)
 })
+
+Deno.test("pill mode excludes the chat read tools for every tier", () => {
+  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }]
+  for (const tier of ["free", "pro"] as const) {
+    const names = filterToolsForMode(withRead, tier, "pill").map((t: any) => t.name)
+    if (names.includes("search_cards") || names.includes("summarize_board")) {
+      throw new Error(`pill/${tier} leaked read tools: ${names}`)
+    }
+  }
+})

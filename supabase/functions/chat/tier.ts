@@ -22,6 +22,11 @@ const PRO_ONLY_TOOLS = [
 // new top-level board doesn't fit that mental model.
 const PILL_DISALLOWED_TOOLS = [
   "create_board",
+  // Chat's read tools: their schemas say "across all their boards", which
+  // contradicts the pill's locked single-board scope, and the pill prompt
+  // never coaches them — the board snapshot already covers reads.
+  "search_cards",
+  "summarize_board",
 ]
 
 export interface TierInfo {
