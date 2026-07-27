@@ -39,6 +39,9 @@ export function cleanTitle(raw) {
 // firing streamChat more than once (e.g. a rapid double sendMessage).
 const titlingInFlight = new Set()
 
+// One in-flight stream per conversation; Stop and delete abort through here.
+const abortControllers = new Map()
+
 // Streaming patches the store on every SSE chunk; without a debounce each
 // chunk re-serializes the ENTIRE chat history into localStorage
 // synchronously. Trailing 400ms debounce + quota guard + pagehide flush.
@@ -203,17 +206,20 @@ export const useChatStore = create(persist((set, get) => ({
       .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
   },
 
-  deleteConversation: (id) => set((s) => {
-    const { [id]: _, ...restConvs } = s.conversations
-    const { [id]: __, ...restMsgs } = s.messages
-    const { [id]: ___, ...restStreaming } = s.streaming
-    return {
-      conversations: restConvs,
-      messages: restMsgs,
-      streaming: restStreaming,
-      activeConversationId: s.activeConversationId === id ? null : s.activeConversationId,
-    }
-  }),
+  deleteConversation: (id) => {
+    abortControllers.get(id)?.abort()
+    set((s) => {
+      const { [id]: _, ...restConvs } = s.conversations
+      const { [id]: __, ...restMsgs } = s.messages
+      const { [id]: ___, ...restStreaming } = s.streaming
+      return {
+        conversations: restConvs,
+        messages: restMsgs,
+        streaming: restStreaming,
+        activeConversationId: s.activeConversationId === id ? null : s.activeConversationId,
+      }
+    })
+  },
 
   renameConversation: (id, title) => {
     const trimmed = (title || '').trim()
@@ -261,8 +267,18 @@ export const useChatStore = create(persist((set, get) => ({
     return { streaming: rest }
   }),
 
+  // Abort the conversation's in-flight stream (no-op when idle). The loop
+  // resolves `aborted: true`; sendMessage keeps the partial text and stamps
+  // the message `stopped`.
+  stopStreaming: (conversationId) => {
+    abortControllers.get(conversationId)?.abort()
+  },
+
   sendMessage: async (conversationId, userText) => {
     get().setStreaming(conversationId)
+
+    const controller = new AbortController()
+    abortControllers.set(conversationId, controller)
 
     const allMsgs = (get().messages[conversationId] || []).filter((m) => m.id && m.text)
     const history = allMsgs
@@ -290,7 +306,7 @@ export const useChatStore = create(persist((set, get) => ({
       year: 'numeric', month: '2-digit', day: '2-digit',
     }).format(new Date())
 
-    const { toolCardIds, error, errorCode } = await runChatLoop(
+    const { toolCardIds, error, errorCode, aborted } = await runChatLoop(
       { text: userText, history, today },
       {
         onText: (chunk) => {
@@ -302,10 +318,20 @@ export const useChatStore = create(persist((set, get) => ({
         },
         onTier: (info) => set({ tierInfo: info }),
       },
+      { signal: controller.signal },
     )
+    abortControllers.delete(conversationId)
 
     const scanned = findMentionedCardIds(fullText, useBoardStore.getState().cards)
     const mentionedCardIds = [...new Set([...(toolCardIds || []), ...scanned])]
+
+    if (aborted) {
+      // User-initiated stop: keep everything that streamed, no error state.
+      patchMsg({ stopped: true, mentionedCardIds })
+      get().clearStreaming(conversationId)
+      if (fullText.trim()) get().generateTitle(conversationId).catch(() => {})
+      return
+    }
 
     if (error) {
       logError('[chatStore] stream error:', error, errorCode)
