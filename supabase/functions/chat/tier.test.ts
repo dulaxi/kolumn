@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
-import { filterToolsForMode, isContinuationMessage, validateContinuation, validateHistory } from "./tier.ts"
+import { filterToolsForMode, isContinuationMessage, toolResultIds, validateContinuation, validateHistory } from "./tier.ts"
 import { MODEL } from "./model.ts"
 
 const FAKE_TOOLS = [
@@ -45,6 +45,23 @@ Deno.test("isContinuationMessage detects tool_result blocks", () => {
     true,
   )
   assertEquals(isContinuationMessage(undefined), false)
+})
+
+Deno.test("toolResultIds extracts only string tool_use_ids from tool_result blocks", () => {
+  assertEquals(toolResultIds("hello"), [])
+  assertEquals(toolResultIds(undefined), [])
+  assertEquals(toolResultIds([{ type: "text", text: "x" }]), [])
+  assertEquals(
+    toolResultIds([
+      { type: "tool_result", tool_use_id: "toolu_1", content: "{}" },
+      { type: "text", text: "x" },
+      { type: "tool_result", tool_use_id: "toolu_2", content: "{}" },
+    ]),
+    ["toolu_1", "toolu_2"],
+  )
+  // Malformed / missing ids are dropped, not returned as undefined.
+  assertEquals(toolResultIds([{ type: "tool_result", content: "{}" }]), [])
+  assertEquals(toolResultIds([{ type: "tool_result", tool_use_id: 42, content: "{}" }]), [])
 })
 
 Deno.test("pill mode excludes the chat read tools for every tier", () => {

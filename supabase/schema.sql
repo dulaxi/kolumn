@@ -1300,3 +1300,22 @@ create policy "chat_messages_owner" on public.chat_messages
     user_id = auth.uid()
     and thread_id in (select id from public.chat_threads where user_id = auth.uid())
   );
+
+-- Single-use grants for unbilled continuation rounds (2026-07-27). The chat
+-- edge function records every tool_use id it emits here; a tool_result
+-- continuation is only unbilled if it consumes an unconsumed, recent grant
+-- owned by the caller. Forged continuations (fabricated history) can't mint
+-- grants, so they fall through to being billed. Service-role only: RLS on with
+-- NO policies denies anon/authenticated (a client-writable grant would be
+-- forgeable, defeating the purpose).
+create table public.chat_tool_grants (
+  tool_use_id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  consumed_at timestamptz
+);
+
+create index if not exists chat_tool_grants_user_created
+  on public.chat_tool_grants (user_id, created_at desc);
+
+alter table public.chat_tool_grants enable row level security;

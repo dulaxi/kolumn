@@ -2,7 +2,7 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { buildContext } from "./context.ts"
 import { TOOLS } from "./tools.ts"
 import { SSEWriter, sseHeaders } from "./stream.ts"
-import { checkTier, filterToolsForMode, isContinuationMessage, Mode, UsageCheckError, validateContinuation, validateHistory } from "./tier.ts"
+import { checkTier, filterToolsForMode, isContinuationMessage, Mode, toolResultIds, UsageCheckError, validateContinuation, validateHistory } from "./tier.ts"
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 const TITLE_SYSTEM_PROMPT =
@@ -76,6 +76,51 @@ async function resolveAndSyncLabels(
   }
 }
 
+// Grants live long enough for a client to execute a tool and continue; a pill
+// loop finishes in seconds, so an hour is generous.
+const GRANT_TTL_MS = 60 * 60 * 1000
+
+// Record every tool_use id the server just emitted as a single-use grant. Best
+// effort: a failed insert only means the matching continuation gets billed.
+async function issueToolGrants(client: SupabaseClient, userId: string, ids: string[]): Promise<void> {
+  try {
+    await client.from("chat_tool_grants").upsert(
+      ids.map((tool_use_id) => ({ tool_use_id, user_id: userId })),
+      { onConflict: "tool_use_id", ignoreDuplicates: true },
+    )
+    // Opportunistic per-user cleanup so the table doesn't grow unbounded.
+    await client.from("chat_tool_grants")
+      .delete()
+      .eq("user_id", userId)
+      .lt("created_at", new Date(Date.now() - 24 * GRANT_TTL_MS).toISOString())
+  } catch (err) {
+    console.error("[chat] issueToolGrants failed:", err)
+  }
+}
+
+// Atomically consume grants. Returns true ONLY if every id was an unconsumed,
+// recent grant owned by userId (this call marks them consumed). The row-level
+// `consumed_at is null` filter is the double-spend guard: two concurrent
+// continuations reusing the same id — only one wins, the other gets billed.
+async function consumeToolGrants(client: SupabaseClient, userId: string, ids: string[]): Promise<boolean> {
+  if (ids.length === 0) return false
+  const cutoff = new Date(Date.now() - GRANT_TTL_MS).toISOString()
+  const { data, error } = await client
+    .from("chat_tool_grants")
+    .update({ consumed_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("consumed_at", null)
+    .gt("created_at", cutoff)
+    .in("tool_use_id", ids)
+    .select("tool_use_id")
+  if (error) {
+    console.error("[chat] consumeToolGrants failed:", error)
+    return false // fail safe: bill it
+  }
+  const consumed = new Set((data ?? []).map((r: { tool_use_id: string }) => r.tool_use_id))
+  return ids.every((id) => consumed.has(id))
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: CORS_HEADERS })
@@ -105,6 +150,19 @@ Deno.serve(async (req) => {
   if (authError || !user) {
     return json(401, { error: "unauthorized", message: "Sign in to use chat." })
   }
+
+  // Service-role client for server-only bookkeeping the caller must not be able
+  // to forge: single-use tool grants (unbilled-continuation anti-forgery) and
+  // the per-user title rate-limit bucket. RLS-bypassing, so it only ever acts
+  // on user.id from the verified JWT — never a client-supplied id. Null if the
+  // secret is unset, in which case both features degrade safely (continuations
+  // get billed; title cap is skipped).
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+  const serviceClient = serviceRoleKey
+    ? createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+    : null
 
   let body: {
     conversation_id?: string
@@ -144,6 +202,17 @@ Deno.serve(async (req) => {
     }
     if (body.message.length > 2000) {
       return json(400, { error: "invalid_message", message: "Invalid request." })
+    }
+    // Title generation is authenticated but unbilled housekeeping. Cap it
+    // per-user so it can't be abused as a free unmetered model endpoint
+    // (one title per new conversation is the legitimate rate; 40/hr is slack).
+    if (serviceClient) {
+      const { data: withinCap, error: rlErr } = await serviceClient.rpc("check_rate_limit", {
+        p_bucket: `chat_title:${user.id}`, p_max: 40, p_window_seconds: 3600,
+      })
+      if (!rlErr && withinCap === false) {
+        return json(429, { error: "rate_limit", message: "Too many title requests — try again shortly." })
+      }
     }
     let tierInfo
     try {
@@ -223,13 +292,25 @@ Deno.serve(async (req) => {
   }
 
   // Continuations (tool_result rounds) are unbilled on BOTH surfaces — chat
-  // read-tool rounds must not consume the daily message limit.
+  // read-tool rounds must not consume the daily message limit. But "is a
+  // continuation" is not enough: a fabricated history can pass
+  // validateContinuation, so the daily limit would be trivially bypassable by
+  // wrapping any prompt as a fake tool_result. A round is unbilled ONLY when
+  // every tool_result consumes an unconsumed, recent, server-issued grant for
+  // this user. Forged/expired/replayed continuations get billed like a normal
+  // message, so the bypass costs the attacker their quota instead of dodging it.
   const isContinuation = isContinuationMessage(body.message)
+  let unbilled = false
+  if (isContinuation) {
+    unbilled = serviceClient
+      ? await consumeToolGrants(serviceClient, user.id, toolResultIds(body.message))
+      : false
+  }
 
   // Tier check + rate limit
   let tierInfo
   try {
-    tierInfo = await checkTier(supabase, user.id, { unbilled: isContinuation })
+    tierInfo = await checkTier(supabase, user.id, { unbilled })
   } catch (err) {
     if (err instanceof UsageCheckError) {
       return json(503, { error: "usage_check_failed", message: "Could not verify your usage — try again in a moment." })
@@ -324,6 +405,9 @@ Deno.serve(async (req) => {
       let currentToolId = ""
       let currentToolInput = ""
       let stopReason: string | null = null
+      // tool_use ids emitted this turn — recorded as single-use grants so the
+      // client's follow-up tool_result round can be verified as unbilled.
+      const emittedToolIds: string[] = []
       let usage: Record<string, number | null> = {
         input_tokens: null,
         cache_creation_input_tokens: null,
@@ -368,6 +452,7 @@ Deno.serve(async (req) => {
               }
             } else if (event.type === "content_block_stop") {
               if (currentToolName) {
+                if (currentToolId) emittedToolIds.push(currentToolId)
                 try {
                   const params = JSON.parse(currentToolInput)
                   sse.write({ type: "tool_call", id: currentToolId, action: currentToolName, params })
@@ -395,9 +480,15 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Issue grants for the tools we just emitted BEFORE signalling done, so
+      // the row is committed by the time the client sends its continuation.
+      if (serviceClient && emittedToolIds.length > 0) {
+        await issueToolGrants(serviceClient, user.id, emittedToolIds)
+      }
+
       console.log("[chat] usage", JSON.stringify({
         mode, tier: tierInfo.tier, model: tierInfo.model,
-        continuation: isContinuation, ...usage,
+        continuation: isContinuation, billed: !unbilled, ...usage,
       }))
 
       sse.close(stopReason)

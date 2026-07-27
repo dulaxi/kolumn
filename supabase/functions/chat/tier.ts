@@ -46,6 +46,21 @@ export function isContinuationMessage(message: unknown): boolean {
     message.some((b) => b && typeof b === "object" && (b as any).type === "tool_result")
 }
 
+// The tool_use ids a continuation round is reporting results for. Used to
+// verify against server-issued grants before treating the round as unbilled —
+// a fabricated history can pass validateContinuation, but cannot mint grants.
+export function toolResultIds(message: unknown): string[] {
+  if (!Array.isArray(message)) return []
+  const ids: string[] = []
+  for (const b of message) {
+    if (b && typeof b === "object" && (b as any).type === "tool_result") {
+      const id = (b as any).tool_use_id
+      if (typeof id === "string" && id) ids.push(id)
+    }
+  }
+  return ids
+}
+
 export async function checkTier(
   supabase: SupabaseClient,
   userId: string,
@@ -111,8 +126,8 @@ export function validateHistory(history: unknown): string | null {
 // Continuations are unbilled — validate hard. Stateless linkage check: every
 // tool_result must reference a tool_use id present in the supplied history.
 // (Forgeable with a fabricated history; real anti-forgery needs server-side
-// turn state. This blocks accidental misuse and raises abuse effort; the
-// usage log line keeps the rest observable.)
+// turn state — see chat_tool_grants in index.ts, which is the actual billing
+// gate. This stays as a cheap structural guard.)
 export function validateContinuation(message: unknown[], history: unknown[]): string | null {
   if (message.length === 0 || message.length > CONTINUATION_MAX_BLOCKS) return "bad block count"
   const knownIds = new Set<string>()
