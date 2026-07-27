@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Plus, Waveform } from '@phosphor-icons/react'
+import { ArrowUp } from '@phosphor-icons/react'
 import Button from '../ui/Button'
 
 // `busy`: the current conversation is streaming a reply. Typing stays
@@ -7,15 +7,26 @@ import Button from '../ui/Button'
 // blocked (Enter + button) until the stream finishes.
 export default function ChatInput({ onSend, autoFocus = false, docked = true, busy = false }) {
   const [input, setInput] = useState('')
+  const [blockedHint, setBlockedHint] = useState(false)
   const textareaRef = useRef(null)
+  const hintTimer = useRef(null)
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) textareaRef.current.focus()
   }, [autoFocus])
 
+  useEffect(() => () => clearTimeout(hintTimer.current), [])
+
   const handleSubmit = () => {
     const text = input.trim()
-    if (!text || busy) return
+    if (!text) return
+    if (busy) {
+      // Draft stays put; a transient cue explains why nothing was sent.
+      setBlockedHint(true)
+      clearTimeout(hintTimer.current)
+      hintTimer.current = setTimeout(() => setBlockedHint(false), 2000)
+      return
+    }
     onSend(text)
     setInput('')
     if (textareaRef.current) {
@@ -47,19 +58,15 @@ export default function ChatInput({ onSend, autoFocus = false, docked = true, bu
           }}
         />
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon-sm" aria-label="Add files">
-            <Plus className="w-5 h-5" />
-          </Button>
-          <div className="flex-1" />
-          {input.trim() ? (
-            <Button size="icon-sm" onClick={handleSubmit} disabled={busy} aria-label="Send message">
-              <ArrowUp className="w-4 h-4" weight="bold" />
-            </Button>
-          ) : (
-            <Button variant="ghost" size="icon-sm" aria-label="Use voice mode">
-              <Waveform size={20} weight="regular" />
-            </Button>
+          {blockedHint && (
+            <span aria-live="polite" className="font-mono text-[11px] text-[var(--text-muted)]">
+              Waiting for the current reply…
+            </span>
           )}
+          <div className="flex-1" />
+          <Button size="icon-sm" onClick={handleSubmit} disabled={!input.trim() || busy} aria-label="Send message">
+            <ArrowUp className="w-4 h-4" weight="bold" />
+          </Button>
         </div>
       </div>
     </div>

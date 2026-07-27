@@ -1,19 +1,21 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { CaretDown, ChatsCircle, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { ChatsCircle, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { useChatStore } from '../store/chatStore'
 import { formatDistanceToNow } from 'date-fns'
 import EmptyState from '../components/ui/EmptyState'
 import Button from '../components/ui/Button'
+import ConfirmModal from '../components/board/ConfirmModal'
 import { PageHeader } from '../components/layout/headerSlot'
-import { TOOLBAR_BTN, TOOLBAR_BTN_FILL, TOOLBAR_BTN_FILL_PRIMARY } from '../constants/buttonStyles'
+import { TOOLBAR_BTN, TOOLBAR_BTN_FILL_PRIMARY } from '../constants/buttonStyles'
 
 export default function ChatListPage() {
   const navigate = useNavigate()
   const conversations = useChatStore((s) => s.conversations)
   const deleteConversation = useChatStore((s) => s.deleteConversation)
   const [search, setSearch] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const sorted = useMemo(() => {
     const all = Object.values(conversations).sort(
@@ -30,10 +32,6 @@ export default function ChatListPage() {
       <PageHeader align="narrow">
         <h1 className="font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)]">Chat</h1>
         <div className="flex items-center gap-2 shrink-0">
-          <button type="button" className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}>
-            Sort by Activity
-            <CaretDown className="w-3 h-3 opacity-60" weight="bold" />
-          </button>
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
@@ -76,7 +74,7 @@ export default function ChatListPage() {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id) }}
+                onClick={(e) => { e.stopPropagation(); setConfirmDelete(conv) }}
                 className="shrink-0 opacity-0 group-hover:opacity-100 text-[var(--text-faint)] hover:text-[var(--label-red-text)] hover:bg-[var(--surface-raised)]"
                 aria-label="Delete conversation"
               >
@@ -104,6 +102,18 @@ export default function ChatListPage() {
               New chat
             </button>
           }
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          title="Delete conversation?"
+          message="This permanently removes the conversation and its messages."
+          onConfirm={() => {
+            deleteConversation(confirmDelete.id)
+            setConfirmDelete(null)
+          }}
+          onCancel={() => setConfirmDelete(null)}
         />
       )}
     </div>
