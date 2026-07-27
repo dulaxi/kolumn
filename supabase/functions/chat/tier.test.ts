@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
-import { filterToolsForMode, isContinuationMessage } from "./tier.ts"
+import { filterToolsForMode, isContinuationMessage, validateContinuation, validateHistory } from "./tier.ts"
 import { MODEL } from "./model.ts"
 
 const FAKE_TOOLS = [
@@ -65,4 +65,25 @@ Deno.test("checkTier model always comes from the MODEL constant", async () => {
   assertEquals(MODEL.startsWith("claude-"), true)
   const tierModule = await import("./tier.ts")
   assertEquals("classifyModel" in tierModule, false)
+})
+
+Deno.test("validateHistory caps length and content size", () => {
+  assertEquals(validateHistory(undefined), null)
+  assertEquals(validateHistory([{ role: "user", content: "hi" }]), null)
+  assertEquals(validateHistory(Array.from({ length: 41 }, () => ({ role: "user", content: "x" }))) !== null, true)
+  assertEquals(validateHistory([{ role: "user", content: "y".repeat(50001) }]) !== null, true)
+  assertEquals(validateHistory("nope") !== null, true)
+})
+
+Deno.test("validateContinuation enforces shape, caps, and history linkage", () => {
+  const history = [
+    { role: "user", content: "q" },
+    { role: "assistant", content: [{ type: "tool_use", id: "toolu_1", name: "search_cards", input: {} }] },
+  ]
+  const good = [{ type: "tool_result", tool_use_id: "toolu_1", content: "{}" }]
+  assertEquals(validateContinuation(good, history), null)
+  assertEquals(validateContinuation([{ type: "text", text: "x" }], history) !== null, true)
+  assertEquals(validateContinuation([{ type: "tool_result", tool_use_id: "toolu_UNKNOWN", content: "{}" }], history) !== null, true)
+  assertEquals(validateContinuation([{ type: "tool_result", tool_use_id: "toolu_1", content: "z".repeat(50001) }], history) !== null, true)
+  assertEquals(validateContinuation(Array.from({ length: 9 }, () => ({ type: "tool_result", tool_use_id: "toolu_1", content: "{}" })), history) !== null, true)
 })

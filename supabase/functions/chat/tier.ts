@@ -89,6 +89,52 @@ export async function checkTier(
   return { tier, allowed: true, remaining: -1, model: MODEL }
 }
 
+const HISTORY_MAX_ITEMS = 40
+const HISTORY_MAX_CONTENT = 50000
+const CONTINUATION_MAX_BLOCKS = 8
+const TOOL_RESULT_MAX_CONTENT = 50000
+
+// null = valid; otherwise a human-readable reason (the 400 message).
+export function validateHistory(history: unknown): string | null {
+  if (history === undefined || history === null) return null
+  if (!Array.isArray(history)) return "history must be an array"
+  if (history.length > HISTORY_MAX_ITEMS) return "history too long"
+  for (const item of history) {
+    if (!item || typeof item !== "object") return "malformed history item"
+    const content = (item as any).content
+    const size = typeof content === "string" ? content.length : JSON.stringify(content ?? "").length
+    if (size > HISTORY_MAX_CONTENT) return "history item too large"
+  }
+  return null
+}
+
+// Continuations are unbilled — validate hard. Stateless linkage check: every
+// tool_result must reference a tool_use id present in the supplied history.
+// (Forgeable with a fabricated history; real anti-forgery needs server-side
+// turn state. This blocks accidental misuse and raises abuse effort; the
+// usage log line keeps the rest observable.)
+export function validateContinuation(message: unknown[], history: unknown[]): string | null {
+  if (message.length === 0 || message.length > CONTINUATION_MAX_BLOCKS) return "bad block count"
+  const knownIds = new Set<string>()
+  for (const item of Array.isArray(history) ? history : []) {
+    const content = (item as any)?.content
+    if (Array.isArray(content)) {
+      for (const b of content) {
+        if (b?.type === "tool_use" && typeof b.id === "string") knownIds.add(b.id)
+      }
+    }
+  }
+  for (const b of message) {
+    if (!b || typeof b !== "object") return "malformed block"
+    const block = b as any
+    if (block.type !== "tool_result") return "only tool_result blocks allowed"
+    if (typeof block.tool_use_id !== "string" || !block.tool_use_id) return "missing tool_use_id"
+    if (!knownIds.has(block.tool_use_id)) return "tool_use_id not in history"
+    if (typeof block.content === "string" && block.content.length > TOOL_RESULT_MAX_CONTENT) return "tool_result too large"
+  }
+  return null
+}
+
 // Effective tool list from (mode × tier). Chat gets the read-only lookup tools — ALL tiers for now; the paid-only
 // gate from the (mode × tier) matrix is deferred to the tier redesign.
 export function filterToolsForMode(

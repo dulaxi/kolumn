@@ -2,7 +2,7 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { buildContext } from "./context.ts"
 import { TOOLS } from "./tools.ts"
 import { SSEWriter, sseHeaders } from "./stream.ts"
-import { checkTier, filterToolsForMode, isContinuationMessage, Mode, UsageCheckError } from "./tier.ts"
+import { checkTier, filterToolsForMode, isContinuationMessage, Mode, UsageCheckError, validateContinuation, validateHistory } from "./tier.ts"
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 const TITLE_SYSTEM_PROMPT =
@@ -205,6 +205,17 @@ Deno.serve(async (req) => {
   }
   if (mode === "chat") {
     body.boardId = undefined
+  }
+
+  const historyErr = validateHistory(body.history)
+  if (historyErr) {
+    return json(400, { error: "invalid_history", message: "History is too large or malformed." })
+  }
+  if (Array.isArray(body.message)) {
+    const contErr = validateContinuation(body.message, body.history || [])
+    if (contErr) {
+      return json(400, { error: "invalid_message", message: "Malformed tool results." })
+    }
   }
 
   // Continuations (tool_result rounds) are unbilled on BOTH surfaces — chat
