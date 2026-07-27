@@ -19,7 +19,7 @@ function segmentText(text, activities) {
   return segments
 }
 
-export default function ChatMessage({ message }) {
+export default function ChatMessage({ message, onRetry }) {
   const navigate = useNavigate()
   const cards = useBoardStore((s) => s.cards)
   const setActiveBoard = useBoardStore((s) => s.setActiveBoard)
@@ -75,7 +75,17 @@ export default function ChatMessage({ message }) {
       </div>
 
       {message.error && (
-        <InlineNotice variant="error" className="mt-3 max-w-md">
+        <InlineNotice
+          variant="error"
+          className="mt-3 max-w-md"
+          action={
+            onRetry && !message.error.isLimit ? (
+              <button type="button" onClick={onRetry} className="underline underline-offset-2">
+                Retry
+              </button>
+            ) : undefined
+          }
+        >
           {message.error.message}
           {message.error.isLimit && (
             <>

@@ -18,13 +18,14 @@ export default function ChatPage() {
   const navigate = useNavigate()
   const conversation = useChatStore((s) => s.conversations[id])
   const messages = useChatStore((s) => s.messages[id]) || []
-  const streamingId = useChatStore((s) => s.streamingConversationId)
+  const streaming = useChatStore((s) => !!s.streaming[id])
   const addMessage = useChatStore((s) => s.addMessage)
   const sendMessage = useChatStore((s) => s.sendMessage)
   const renameConversation = useChatStore((s) => s.renameConversation)
   const toggleStarred = useChatStore((s) => s.toggleStarred)
   const deleteConversation = useChatStore((s) => s.deleteConversation)
   const setRailGroupBy = useChatStore((s) => s.setRailGroupBy)
+  const retryMessage = useChatStore((s) => s.retryMessage)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -179,7 +180,7 @@ export default function ChatPage() {
         </div>
 
         {/* Composer */}
-        <ChatInput onSend={handleSend} autoFocus docked={false} busy={streamingId === id} />
+        <ChatInput onSend={handleSend} autoFocus docked={false} busy={streaming} />
 
         {/* Conversation — newest exchange first */}
         <div className="mt-6 flex flex-col pb-8">
@@ -187,9 +188,13 @@ export default function ChatPage() {
             <div key={exchange.key} className={i > 0 ? 'mt-5 border-t border-[var(--border-subtle)] pt-5' : ''}>
               {exchange.user && <ChatMessage message={exchange.user} />}
               {exchange.replies.map((msg) => (
-                <ChatMessage key={msg.id} message={msg} />
+                <ChatMessage
+                  key={msg.id}
+                  message={msg}
+                  onRetry={msg.error && !msg.error.isLimit ? () => retryMessage(id, msg.id) : undefined}
+                />
               ))}
-              {i === 0 && streamingId === id && <TypingIndicator />}
+              {i === 0 && streaming && !exchange.replies.some((r) => r.text) && <TypingIndicator />}
             </div>
           ))}
         </div>
