@@ -1,4 +1,5 @@
 import { useBoardStore } from '../store/boardStore'
+import { waitForRealCardId } from '../store/boardStore/waitForRealCardId'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { LEGACY_ICON_REMAP } from '../components/board/DynamicIcon'
 import { supabase } from './supabase'
@@ -209,15 +210,11 @@ export async function executeTool(action, params) {
     const taskNumber = useBoardStore.getState().cards[tempId]?.task_number ?? null
 
     let cardId = tempId
-    for (let i = 0; i < 20; i++) {
-      await new Promise((r) => setTimeout(r, 200))
-      const realId = useBoardStore.getState()._tempIdMap[tempId]
-      if (realId) {
-        aiBuildingCards.add(realId)
-        saveAICard(realId)
-        cardId = realId
-        break
-      }
+    const realId = await waitForRealCardId(tempId)
+    if (realId) {
+      aiBuildingCards.add(realId)
+      saveAICard(realId)
+      cardId = realId
     }
     setTimeout(() => { aiBuildingCards.delete(tempId); aiBuildingCards.delete(cardId) }, 3000)
 
@@ -945,11 +942,8 @@ export async function executeTool(action, params) {
 
     // Resolve temp ID → real ID (mirrors the create_card pattern)
     let newId = newTempId
-    for (let i = 0; i < 20; i++) {
-      await new Promise((r) => setTimeout(r, 200))
-      const realId = useBoardStore.getState()._tempIdMap[newTempId]
-      if (realId) { newId = realId; break }
-    }
+    const realDupId = await waitForRealCardId(newTempId)
+    if (realDupId) newId = realDupId
 
     // If the user picked a different target column, move the new card there.
     // Same-column duplicate is the default and skips this update.
