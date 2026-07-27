@@ -4,6 +4,8 @@ import { runChatLoop } from '../lib/chatAgentLoop'
 import { streamChat } from '../lib/aiClient'
 import { logError } from '../utils/logger'
 import { useBoardStore } from './boardStore'
+import { useAuthStore } from './authStore'
+import * as chatSync from '../lib/chatSync'
 import { findMentionedCardIds } from '../lib/cardMentions'
 
 /**
@@ -41,6 +43,13 @@ const titlingInFlight = new Set()
 
 // One in-flight stream per conversation; Stop and delete abort through here.
 const abortControllers = new Map()
+
+// Per-session sync bookkeeping. syncedIds: conversations known to exist on
+// the server (created or upserted this session, or hydrated) — hydrate must
+// never flag these localOnly even if a fetch races a fresh upsert.
+// loadedThreads: conversations whose messages were fetched this session.
+export const _syncedIds = new Set()
+const loadedThreads = new Set()
 
 // Streaming patches the store on every SSE chunk; without a debounce each
 // chunk re-serializes the ENTIRE chat history into localStorage
@@ -257,6 +266,52 @@ export const useChatStore = create(persist((set, get) => ({
       },
     }
   }),
+
+  // Reconcile the thread list from the server (once, post-auth). Server rows
+  // replace same-id cached conversations; cached conversations the server
+  // doesn't know become localOnly (legacy, pre-persistence) and never sync.
+  hydrateFromServer: async () => {
+    const userId = useAuthStore.getState().user?.id
+    if (!userId) return
+    const res = await chatSync.fetchThreads()
+    if (!res.ok) return
+    for (const t of res.data) _syncedIds.add(t.id)
+    set((s) => {
+      const merged = {}
+      for (const [id, conv] of Object.entries(s.conversations)) {
+        merged[id] = conv.localOnly || _syncedIds.has(id)
+          ? conv
+          : { ...conv, localOnly: true }
+      }
+      for (const t of res.data) {
+        merged[t.id] = t
+      }
+      return { conversations: merged }
+    })
+  },
+
+  // Lazy per-conversation message load: cache paints first, server
+  // reconciles once per session. Local messages the server doesn't have
+  // (errored replies, in-flight sends) are preserved as a tail.
+  ensureMessagesLoaded: async (conversationId) => {
+    const conv = get().conversations[conversationId]
+    const userId = useAuthStore.getState().user?.id
+    if (!conv || conv.localOnly || !userId) return
+    if (loadedThreads.has(conversationId)) return
+    loadedThreads.add(conversationId)
+    const res = await chatSync.fetchMessages(conversationId)
+    if (!res.ok) {
+      loadedThreads.delete(conversationId)
+      return
+    }
+    set((s) => {
+      if (!s.conversations[conversationId]) return s
+      const local = s.messages[conversationId] || []
+      const serverIds = new Set(res.data.map((m) => m.id))
+      const merged = [...res.data, ...local.filter((m) => !serverIds.has(m.id))]
+      return { messages: { ...s.messages, [conversationId]: merged } }
+    })
+  },
 
   setActiveConversation: (id) => set({ activeConversationId: id }),
   setStreaming: (conversationId) => set((s) => ({

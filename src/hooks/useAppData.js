@@ -4,6 +4,7 @@ import { useBoardStore } from '../store/boardStore'
 import { useBoardSharingStore } from '../store/boardSharingStore'
 import { useWorkspacesStore } from '../store/workspacesStore'
 import { useNotificationStore } from '../store/notificationStore'
+import { useChatStore } from '../store/chatStore'
 import { supabase } from '../lib/supabase'
 import { hasLocalData, migrateLocalData } from '../lib/migrateLocalData'
 import { trySeedOnboardingBoard } from '../lib/seedOnboardingBoard'
@@ -60,6 +61,7 @@ export function useAppData() {
       fetchWorkspaces(),
       fetchWorkspaceInvitations(),
       fetchNotifications(),
+      useChatStore.getState().hydrateFromServer(),
     ])
 
     loadAllData().then(async (results) => {

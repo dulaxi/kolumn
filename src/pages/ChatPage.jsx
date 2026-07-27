@@ -34,6 +34,7 @@ export default function ChatPage() {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
+    useChatStore.getState().ensureMessagesLoaded(id)
     useChatStore.getState().setActiveConversation(id)
     return () => useChatStore.getState().setActiveConversation(null)
   }, [id])
