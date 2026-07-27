@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { env } from './env'
 import { logError } from '../utils/logger'
 
-export async function streamChat({ message, history = [], mode, boardId, today }, { onText, onToolCall, onDone, onError, onTier }) {
+export async function streamChat({ message, history = [], mode, boardId, today }, { onText, onToolCall, onDone, onError, onTier }, { signal } = {}) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) {
     onError('Not authenticated')
@@ -26,8 +26,14 @@ export async function streamChat({ message, history = [], mode, boardId, today }
         'apikey': env.supabaseAnonKey,
       },
       body: JSON.stringify(body),
+      signal,
     })
   } catch (err) {
+    // A deliberate abort is a quiet exit — the caller stopped the stream.
+    if (err.name === 'AbortError') {
+      onDone?.({ stopReason: 'aborted' })
+      return
+    }
     logError('[aiClient] request failed', err)
     onError(err.message, undefined)
     return
@@ -100,6 +106,10 @@ export async function streamChat({ message, history = [], mode, boardId, today }
     }
     onDone({ stopReason: null })
   } catch (err) {
+    if (err.name === 'AbortError') {
+      onDone({ stopReason: 'aborted' })
+      return
+    }
     onError(err.message)
   }
 }

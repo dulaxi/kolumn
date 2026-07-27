@@ -24,7 +24,7 @@ function describeActivity(action, result) {
 // executes → tool_result → model reacts — but streams text live to the
 // caller across rounds and reports tool activity + returned card ids.
 // Tool transcripts are ephemeral: the caller persists only the final text.
-export async function runChatLoop({ text, history = [], today }, { onText, onActivity, onTier } = {}) {
+export async function runChatLoop({ text, history = [], today }, { onText, onActivity, onTier } = {}, { signal } = {}) {
   const transcript = [...history]
   let message = text // string on round 1; tool_result blocks on continuations
   let fullText = ''
@@ -48,8 +48,14 @@ export async function runChatLoop({ text, history = [], today }, { onText, onAct
           onDone: ({ stopReason: sr } = {}) => { stopReason = sr; resolve() },
           onError: (err, code) => { streamErr = String(err); errorCode = code; resolve() },
         },
+        { signal },
       )
     })
+
+    // Abort is quiet: keep whatever streamed, report nothing as an error.
+    if (stopReason === 'aborted' || signal?.aborted) {
+      return { fullText, toolCardIds: [...toolCardIds], error: null, errorCode: null, aborted: true }
+    }
 
     if (streamErr) {
       logError('[chatLoop] stream error:', streamErr)
@@ -101,6 +107,10 @@ export async function runChatLoop({ text, history = [], today }, { onText, onAct
       results.push(block)
     }
 
+    if (signal?.aborted) {
+      return { fullText, toolCardIds: [...toolCardIds], error: null, errorCode: null, aborted: true }
+    }
+
     // Final-round guard: when the NEXT request will be the last allowed
     // round, tell the model to answer instead of chaining again.
     if (round === MAX_ROUNDS - 2) {
@@ -111,5 +121,5 @@ export async function runChatLoop({ text, history = [], today }, { onText, onAct
     message = results
   }
 
-  return { fullText, toolCardIds: [...toolCardIds], error, errorCode }
+  return { fullText, toolCardIds: [...toolCardIds], error, errorCode, aborted: false }
 }
