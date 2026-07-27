@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaretDown } from '@phosphor-icons/react'
+import { CaretDown, CaretRight } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { groupCards } from '../../lib/cardRailGroups'
+import { splitMentionedIds } from '../../lib/chatExchanges'
 import Card from '../board/Card'
 import Button from '../ui/Button'
 import Menu from '../ui/Menu'
@@ -19,8 +20,9 @@ const GROUP_MODES = [
 // Right-rail panel listing the exact board cards this conversation mentions.
 // Derived from per-message `mentionedCardIds` (title-scan resolver) plus the
 // legacy `cardIds` field; newest mention first, deduped, deleted cards skipped.
-// `groupBy` rearranges the visible cards into labeled sections; the cap and
-// mention order are unaffected.
+// The latest exchange's cards render up front; older mentions collapse behind
+// an "Earlier · N" divider. `groupBy` rearranges each side into labeled
+// sections; the cap applies to the current side only.
 export default function CardRail({ messages, groupBy = 'mentioned', onGroupByChange }) {
   const navigate = useNavigate()
   const cards = useBoardStore((s) => s.cards)
@@ -31,26 +33,40 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
   const [showAll, setShowAll] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const mentioned = useMemo(() => {
+  const { current, earlier } = useMemo(() => {
+    const { currentRaw, earlierRaw } = splitMentionedIds(messages)
     const seen = new Set()
-    const out = []
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i]
-      for (const raw of [...(msg.mentionedCardIds || []), ...(msg.cardIds || [])]) {
+    const resolve = (raws) => {
+      const out = []
+      for (const raw of raws) {
         const cardId = (tempIdMap && tempIdMap[raw]) || raw
         if (seen.has(cardId)) continue
         seen.add(cardId)
         if (cards[cardId]) out.push(cards[cardId])
       }
+      return out
     }
-    return out
+    // Current resolves first so a card mentioned now AND earlier renders
+    // once, as current.
+    return { current: resolve(currentRaw), earlier: resolve(earlierRaw) }
   }, [messages, cards, tempIdMap])
 
-  // Cap first, then group: grouping only rearranges what's already visible.
-  const visible = showAll ? mentioned : mentioned.slice(0, VISIBLE_CAP)
-  const groups = useMemo(
+  // Starts expanded only when the latest exchange holds no cards — otherwise
+  // the rail would look empty while holding cards. Mount-time decision;
+  // later messages don't flip it (local state, not persisted).
+  const [showEarlier, setShowEarlier] = useState(
+    () => current.length === 0 && earlier.length > 0,
+  )
+
+  // Cap first, then group — and the cap scopes to the current side only.
+  const visible = showAll ? current : current.slice(0, VISIBLE_CAP)
+  const currentGroups = useMemo(
     () => groupCards(visible, groupBy, { boards, columns }),
     [visible, groupBy, boards, columns],
+  )
+  const earlierGroups = useMemo(
+    () => groupCards(earlier, groupBy, { boards, columns }),
+    [earlier, groupBy, boards, columns],
   )
 
   const activeMode = GROUP_MODES.find((m) => m.value === groupBy) || GROUP_MODES[0]
@@ -62,6 +78,22 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
       window.dispatchEvent(new CustomEvent('kolumn:open-card', { detail: { cardId: card.id } }))
     }, 50)
   }
+
+  // Both sides can produce the same group key (e.g. 'mentioned', 'board-b1')
+  // and render as siblings — the prefix keeps React keys unique.
+  const renderGroups = (groups, keyPrefix) =>
+    groups.map((group) => (
+      <div key={keyPrefix + group.key} className="flex flex-col gap-3">
+        {group.label && (
+          <div className="pt-1 text-xs text-[var(--text-muted)]">
+            {group.label} · {group.cards.length}
+          </div>
+        )}
+        {group.cards.map((card) => (
+          <Card key={card.id} card={card} onClick={() => openCard(card)} />
+        ))}
+      </div>
+    ))
 
   return (
     <div className="rounded-xl border border-[var(--border-subtle)]">
@@ -100,7 +132,7 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
       </div>
       <div className="h-px w-full bg-[var(--border-subtle)]" />
       <div className="px-[1.375rem] py-4">
-        {mentioned.length === 0 ? (
+        {current.length === 0 && earlier.length === 0 ? (
           <div className="h-40 rounded-xl bg-[var(--surface-raised)] flex items-center justify-center px-6 text-center text-sm text-[var(--text-muted)]">
             Cards Claude mentions will show up here.
           </div>
@@ -108,23 +140,27 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
           // Cards render at the board column's true width (290px desktop,
           // Column.jsx), not stretched to the panel width.
           <div className="mx-auto flex w-full max-w-[290px] flex-col gap-3">
-            {groups.map((group) => (
-              <div key={group.key} className="flex flex-col gap-3">
-                {group.label && (
-                  <div className="pt-1 text-xs text-[var(--text-muted)]">
-                    {group.label} · {group.cards.length}
-                  </div>
-                )}
-                {group.cards.map((card) => (
-                  <Card key={card.id} card={card} onClick={() => openCard(card)} />
-                ))}
-              </div>
-            ))}
-            {mentioned.length > VISIBLE_CAP && !showAll && (
+            {renderGroups(currentGroups, 'cur-')}
+            {current.length > VISIBLE_CAP && !showAll && (
               <Button variant="ghost" size="sm" onClick={() => setShowAll(true)}>
-                Show all {mentioned.length}
+                Show all {current.length}
               </Button>
             )}
+            {earlier.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowEarlier((o) => !o)}
+                className="flex cursor-pointer items-center gap-1.5 pt-1 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
+              >
+                {showEarlier ? (
+                  <CaretDown size={12} weight="bold" />
+                ) : (
+                  <CaretRight size={12} weight="bold" />
+                )}
+                Earlier · {earlier.length}
+              </button>
+            )}
+            {showEarlier && renderGroups(earlierGroups, 'earl-')}
           </div>
         )}
       </div>
