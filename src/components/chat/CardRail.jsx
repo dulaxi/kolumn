@@ -33,6 +33,13 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
   const [showAll, setShowAll] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Streaming replaces `messages` identity on every chunk, but mentions only
+  // change when a message's id lists do — key the expensive split/resolve on
+  // this fingerprint instead.
+  const mentionKey = messages
+    .map((m) => `${(m.mentionedCardIds || []).join(',')}|${(m.cardIds || []).join(',')}`)
+    .join(';')
+
   const { current, earlier } = useMemo(() => {
     const { currentRaw, earlierRaw } = splitMentionedIds(messages)
     const seen = new Set()
@@ -49,7 +56,8 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
     // Current resolves first so a card mentioned now AND earlier renders
     // once, as current.
     return { current: resolve(currentRaw), earlier: resolve(earlierRaw) }
-  }, [messages, cards, tempIdMap])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mentionKey stands in for messages
+  }, [mentionKey, cards, tempIdMap])
 
   // Starts expanded only when the latest exchange holds no cards — otherwise
   // the rail would look empty while holding cards. Mount-time decision;

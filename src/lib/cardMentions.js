@@ -18,13 +18,30 @@ function findMatchIndex(haystack, needle) {
   return -1
 }
 
+function buildCandidates(cardsById) {
+  return Object.values(cardsById || {})
+    .filter((c) => typeof c.title === 'string' && c.title.trim().length >= 2)
+    .sort((a, b) => b.title.trim().length - a.title.trim().length)
+}
+
+// The sorted candidate list only changes when the cards object does —
+// boardStore replaces `cards` wholesale on every mutation, so object
+// identity is a safe cache key. Avoids re-sorting ~N cards per message.
+let _cacheSource = null
+let _cacheCandidates = null
+
+function candidatesFor(cardsById) {
+  if (cardsById === _cacheSource) return _cacheCandidates
+  _cacheSource = cardsById
+  _cacheCandidates = buildCandidates(cardsById)
+  return _cacheCandidates
+}
+
 export function findMentionedCardIds(text, cardsById) {
   if (!text) return []
   let haystack = text.toLowerCase()
   const ids = []
-  const cards = Object.values(cardsById || {})
-    .filter((c) => typeof c.title === 'string' && c.title.trim().length >= 2)
-    .sort((a, b) => b.title.trim().length - a.title.trim().length)
+  const cards = candidatesFor(cardsById)
   for (const card of cards) {
     const needle = card.title.trim().toLowerCase()
     const idx = findMatchIndex(haystack, needle)
