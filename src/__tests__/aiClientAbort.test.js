@@ -36,3 +36,26 @@ describe('streamChat abort', () => {
     expect(global.fetch.mock.calls[0][1].signal).toBe(controller.signal)
   })
 })
+
+describe('streamChat abort during error-body read', () => {
+  beforeEach(() => { global.fetch = vi.fn() })
+
+  test('AbortError from response.text() resolves via onDone(aborted), not a hang or rejection', async () => {
+    const abortErr = new Error('aborted')
+    abortErr.name = 'AbortError'
+    global.fetch.mockResolvedValue({
+      ok: false,
+      status: 429,
+      text: () => Promise.reject(abortErr),
+    })
+    const onDone = vi.fn()
+    const onError = vi.fn()
+    await streamChat(
+      { message: 'hi', mode: 'chat' },
+      { onText: vi.fn(), onDone, onError },
+      { signal: new AbortController().signal },
+    )
+    expect(onDone).toHaveBeenCalledWith({ stopReason: 'aborted' })
+    expect(onError).not.toHaveBeenCalled()
+  })
+})

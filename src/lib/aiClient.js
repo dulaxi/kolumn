@@ -40,7 +40,17 @@ export async function streamChat({ message, history = [], mode, boardId, today }
   }
 
   if (!response.ok) {
-    const text = await response.text()
+    let text = ''
+    try {
+      text = await response.text()
+    } catch (err) {
+      // Abort landing while the error body is read must still resolve the
+      // caller's round promise — otherwise the conversation hangs busy.
+      if (err.name === 'AbortError') {
+        onDone?.({ stopReason: 'aborted' })
+        return
+      }
+    }
     logError('[aiClient] error response', { status: response.status, text })
     try {
       const err = JSON.parse(text)
