@@ -63,58 +63,83 @@ export function rowToMessage(row) {
 }
 
 export async function fetchThreads({ limit = 200 } = {}) {
-  const { data, error } = await supabase
-    .from('chat_threads')
-    .select('*')
-    .order('updated_at', { ascending: false })
-    .limit(limit)
-  if (error) {
-    logError('[chatSync] fetchThreads failed:', error)
-    return { ok: false, error }
+  try {
+    const { data, error } = await supabase
+      .from('chat_threads')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit)
+    if (error) {
+      logError('[chatSync] fetchThreads failed:', error)
+      return { ok: false, error }
+    }
+    return { ok: true, data: (data || []).map(rowToThread) }
+  } catch (err) {
+    logError('[chatSync] fetchThreads threw:', err)
+    return { ok: false, error: err }
   }
-  return { ok: true, data: (data || []).map(rowToThread) }
 }
 
 export async function fetchMessages(threadId, { limit = 200, before } = {}) {
-  let query = supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('thread_id', threadId)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  if (before) query = query.lt('created_at', before)
-  const { data, error } = await query
-  if (error) {
-    logError('[chatSync] fetchMessages failed:', error)
-    return { ok: false, error }
+  try {
+    let query = supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    if (before) query = query.lt('created_at', before)
+    const { data, error } = await query
+    if (error) {
+      logError('[chatSync] fetchMessages failed:', error)
+      return { ok: false, error }
+    }
+    // Fetched newest-first for keyset paging; the store keeps chronological.
+    return { ok: true, data: (data || []).map(rowToMessage).reverse() }
+  } catch (err) {
+    logError('[chatSync] fetchMessages threw:', err)
+    return { ok: false, error: err }
   }
-  // Fetched newest-first for keyset paging; the store keeps chronological.
-  return { ok: true, data: (data || []).map(rowToMessage).reverse() }
 }
 
 export async function upsertThread(userId, conv) {
-  const { error } = await supabase.from('chat_threads').upsert(threadToRow(userId, conv))
-  if (error) {
-    logError('[chatSync] upsertThread failed:', error)
-    return { ok: false, error }
+  try {
+    const { error } = await supabase.from('chat_threads').upsert(threadToRow(userId, conv))
+    if (error) {
+      logError('[chatSync] upsertThread failed:', error)
+      return { ok: false, error }
+    }
+    return { ok: true }
+  } catch (err) {
+    logError('[chatSync] upsertThread threw:', err)
+    return { ok: false, error: err }
   }
-  return { ok: true }
 }
 
 export async function upsertMessage(userId, threadId, msg) {
-  const { error } = await supabase.from('chat_messages').upsert(messageToRow(userId, threadId, msg))
-  if (error) {
-    logError('[chatSync] upsertMessage failed:', error)
-    return { ok: false, error }
+  try {
+    const { error } = await supabase.from('chat_messages').upsert(messageToRow(userId, threadId, msg))
+    if (error) {
+      logError('[chatSync] upsertMessage failed:', error)
+      return { ok: false, error }
+    }
+    return { ok: true }
+  } catch (err) {
+    logError('[chatSync] upsertMessage threw:', err)
+    return { ok: false, error: err }
   }
-  return { ok: true }
 }
 
 export async function deleteThread(id) {
-  const { error } = await supabase.from('chat_threads').delete().eq('id', id)
-  if (error) {
-    logError('[chatSync] deleteThread failed:', error)
-    return { ok: false, error }
+  try {
+    const { error } = await supabase.from('chat_threads').delete().eq('id', id)
+    if (error) {
+      logError('[chatSync] deleteThread failed:', error)
+      return { ok: false, error }
+    }
+    return { ok: true }
+  } catch (err) {
+    logError('[chatSync] deleteThread threw:', err)
+    return { ok: false, error: err }
   }
-  return { ok: true }
 }

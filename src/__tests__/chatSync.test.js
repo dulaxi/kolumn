@@ -113,6 +113,21 @@ describe('reads', () => {
     const res = await fetchThreads()
     expect(res.ok).toBe(false)
   })
+
+  test('a rejected query resolves ok:false instead of throwing', async () => {
+    builder.then = () => { throw new Error('network down') }
+    const res = await fetchThreads()
+    expect(res.ok).toBe(false)
+  })
+
+  test('stopped:false rows do not fabricate a stopped key', async () => {
+    result = {
+      data: [{ id: 'm1', role: 'user', text: 'q', card_ids: [], mentioned_card_ids: [], activities: [], stopped: false, created_at: '1' }],
+      error: null,
+    }
+    const res = await fetchMessages('t1')
+    expect('stopped' in res.data[0]).toBe(false)
+  })
 })
 
 describe('writes', () => {
