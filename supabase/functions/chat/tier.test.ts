@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts"
 import { filterToolsForMode, isContinuationMessage } from "./tier.ts"
+import { MODEL } from "./model.ts"
 
 const FAKE_TOOLS = [
   { name: "create_card" }, { name: "create_board" },
@@ -54,4 +55,14 @@ Deno.test("pill mode excludes the chat read tools for every tier", () => {
       throw new Error(`pill/${tier} leaked read tools: ${names}`)
     }
   }
+})
+
+Deno.test("checkTier model always comes from the MODEL constant", async () => {
+  // classifyModel is gone; both tiers resolve the same central constant.
+  // (checkTier's DB calls are unreachable here — this only checks the constant wiring
+  // via the module surface: MODEL exists and tier.ts re-exports no classifyModel.)
+  assertEquals(typeof MODEL, "string")
+  assertEquals(MODEL.startsWith("claude-"), true)
+  const tierModule = await import("./tier.ts")
+  assertEquals("classifyModel" in tierModule, false)
 })

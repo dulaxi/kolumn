@@ -1,5 +1,6 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { CHAT_READ_TOOLS } from "./tools.ts"
+import { MODEL } from "./model.ts"
 
 export type Mode = "pill" | "chat" | "title"
 
@@ -58,7 +59,7 @@ export async function checkTier(
   if (profileError) console.error("[tier] profile fetch failed, degrading to free:", profileError)
 
   const tier = (profile?.tier || "free") as "free" | "pro"
-  const model = "claude-haiku-4-5-20251001"
+  const model = MODEL
 
   // Unbilled calls — tool-result continuation rounds and title housekeeping —
   // skip the usage increment entirely.
@@ -85,7 +86,7 @@ export async function checkTier(
     return { tier, allowed: true, remaining: Math.max(0, FREE_DAILY_LIMIT - (usage.count || 0)), model }
   }
 
-  return { tier, allowed: true, remaining: -1, model: classifyModel("") }
+  return { tier, allowed: true, remaining: -1, model: MODEL }
 }
 
 // Effective tool list from (mode × tier). Chat gets the read-only lookup tools — ALL tiers for now; the paid-only
@@ -101,19 +102,4 @@ export function filterToolsForMode(
   if (mode === "chat") return tools.filter((t: any) => CHAT_READ_TOOLS.includes(t.name))
   const byTier = tier === "pro" ? [...tools] : tools.filter((t: any) => !PRO_ONLY_TOOLS.includes(t.name))
   return byTier.filter((t: any) => !PILL_DISALLOWED_TOOLS.includes(t.name))
-}
-
-function classifyModel(message: string): string {
-  const lower = message.toLowerCase()
-
-  const writePatterns = [
-    "create", "make", "add", "build", "new card", "new board",
-    "move", "update", "change", "edit", "set", "assign", "delete",
-    "remove", "generate", "write", "draft", "break down", "turn into",
-  ]
-
-  const isWrite = writePatterns.some((p) => lower.includes(p))
-
-  if (isWrite) return "claude-haiku-4-5-20251001"
-  return "claude-haiku-4-5-20251001"
 }
