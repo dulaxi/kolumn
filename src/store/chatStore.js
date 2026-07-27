@@ -321,6 +321,30 @@ export const useChatStore = create(persist((set, get) => ({
     get().clearStreaming(conversationId)
     get().generateTitle(conversationId).catch(() => {})
   },
+
+  // Re-send the user message that produced an errored assistant reply. The
+  // errored message is removed first so the transcript reads as a clean
+  // second attempt (sendMessage appends a fresh assistant message).
+  retryMessage: (conversationId, messageId) => {
+    const msgs = get().messages[conversationId] || []
+    const idx = msgs.findIndex((m) => m.id === messageId)
+    if (idx === -1 || !msgs[idx].error) return Promise.resolve()
+    let userText = null
+    for (let i = idx - 1; i >= 0; i--) {
+      if (msgs[i].role === 'user') {
+        userText = msgs[i].text
+        break
+      }
+    }
+    if (!userText) return Promise.resolve()
+    set((s) => ({
+      messages: {
+        ...s.messages,
+        [conversationId]: s.messages[conversationId].filter((m) => m.id !== messageId),
+      },
+    }))
+    return get().sendMessage(conversationId, userText)
+  },
 }), {
   name: 'kolumn-chat',
   storage: createJSONStorage(() => debouncedStorage),
