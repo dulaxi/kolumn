@@ -52,14 +52,14 @@ const components = {
   ul: ({ children }) => <ul className="pl-5 my-2 list-disc">{children}</ul>,
   ol: ({ children }) => <ol className="pl-5 my-2 list-decimal">{children}</ol>,
   li: ({ children }) => <li className="my-1">{children}</li>,
-  inlineCode: ({ children }) => (
-    <code className="bg-[var(--surface-raised)] px-1.5 py-0.5 rounded text-[13px] font-mono">
-      {children}
-    </code>
-  ),
-  code: ({ _inline, children, className }) => {
+  code: ({ children, className }) => {
     const text = nodeText(children)
-    const isBlock = text.includes('\n') || className != null
+    // Fenced blocks always carry a trailing newline (mdast appends one to any
+    // non-empty value) or a language className; inline code can never contain
+    // a newline (CommonMark collapses them to spaces). An EMPTY fenced block
+    // has neither — but empty inline code isn't expressible, so empty text
+    // means fenced.
+    const isBlock = Boolean(className) || text.includes('\n') || text.length === 0
     if (!isBlock) {
       return (
         <code className="bg-[var(--surface-raised)] px-1.5 py-0.5 rounded text-[13px] font-mono">
