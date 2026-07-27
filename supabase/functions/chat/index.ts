@@ -21,6 +21,16 @@ function json(status: number, body: Record<string, unknown>) {
   })
 }
 
+// Second cache breakpoint: tools precede system in Anthropic's cache
+// hierarchy, so an uncached tools array would invalidate the system prefix.
+// Map-copy — never mutate the shared TOOLS entries.
+function withToolCacheBreakpoint(tools: any[]): any[] {
+  if (tools.length === 0) return tools
+  return tools.map((t, i) =>
+    i === tools.length - 1 ? { ...t, cache_control: { type: "ephemeral" } } : t,
+  )
+}
+
 // Resolves an array of label text strings into label IDs (via the upsert_label
 // RPC, which creates labels that don't yet exist) and syncs the card_labels
 // join table for a given card.
@@ -227,7 +237,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  const { systemPrompt } = await buildContext(supabase, user.id, {
+  const { systemBlocks } = await buildContext(supabase, user.id, {
     boardId: body.boardId,
     today: body.today,
     mode,
@@ -257,13 +267,10 @@ Deno.serve(async (req) => {
           model: tierInfo.model,
           max_tokens: 4096,
           system: [
-            {
-              type: "text",
-              text: systemPrompt,
-              cache_control: { type: "ephemeral" },
-            },
+            { type: "text", text: systemBlocks.static, cache_control: { type: "ephemeral" } },
+            { type: "text", text: systemBlocks.dynamic },
           ],
-          tools: filterToolsForMode(TOOLS, tierInfo.tier, mode),
+          tools: withToolCacheBreakpoint(filterToolsForMode(TOOLS, tierInfo.tier, mode)),
           messages,
           stream: true,
         }),

@@ -7,7 +7,7 @@ export async function buildContext(
   supabase: SupabaseClient,
   userId: string,
   opts: { boardId?: string; today?: string; mode?: "pill" | "chat"; tier?: "free" | "pro" } = {},
-): Promise<{ systemPrompt: string }> {
+): Promise<{ systemBlocks: { static: string; dynamic: string } }> {
   const [boardsRes, columnsRes, cardsRes, notesRes, profileRes] = await Promise.all([
     supabase.from("boards").select("id, name, icon"),
     supabase.from("columns").select("id, board_id, title, position").order("position"),
@@ -305,9 +305,11 @@ A read-only assistant with two lookup tools. You can see every board, card, labe
 - Ask which column, priority, or icon an action should use — that implies you will perform it.
 - Use emojis.`
 
-  const systemPrompt = `You are Kolumn, a sharp project management assistant. You manage boards, cards, and workflow. Be direct — act on clear intent, ask only when genuinely ambiguous.
+  const staticBlock = `You are Kolumn, a sharp project management assistant. You manage boards, cards, and workflow. Be direct — act on clear intent, ask only when genuinely ambiguous.
 
-User: ${profile.display_name}
+${chatMode ? chatRulesSection : tier === "free" ? freePillRules : proPillRules}`
+
+  const dynamicBlock = `User: ${profile.display_name}
 Today: ${today}
 Team: ${memberList || "None"}${workspacesLine}${scopeSection}
 
@@ -322,9 +324,7 @@ ${alertsSummary}
 - Completed: ${recentCompleted.length} cards
 
 ## Notes
-${notesSummary}
+${notesSummary}`
 
-${chatMode ? chatRulesSection : tier === "free" ? freePillRules : proPillRules}`
-
-  return { systemPrompt }
+  return { systemBlocks: { static: staticBlock, dynamic: dynamicBlock } }
 }
