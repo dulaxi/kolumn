@@ -24,6 +24,7 @@ export default function ChatPage() {
   const renameConversation = useChatStore((s) => s.renameConversation)
   const toggleStarred = useChatStore((s) => s.toggleStarred)
   const deleteConversation = useChatStore((s) => s.deleteConversation)
+  const setRailGroupBy = useChatStore((s) => s.setRailGroupBy)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -202,7 +203,11 @@ export default function ChatPage() {
         ref={railRef}
         className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto overscroll-contain subtle-scrollbar"
       >
-        <CardRail messages={messages} />
+        <CardRail
+          messages={messages}
+          groupBy={conversation?.railGroupBy || 'mentioned'}
+          onGroupByChange={(mode) => setRailGroupBy(id, mode)}
+        />
       </div>
 
       {confirmDelete && (
