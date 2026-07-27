@@ -116,4 +116,27 @@ describe('ensureMessagesLoaded', () => {
     await useChatStore.getState().ensureMessagesLoaded(id)
     expect(chatSync.fetchMessages).toHaveBeenCalledTimes(2)
   })
+
+  test('an errored local message older than newer server messages sorts into place', async () => {
+    const id = crypto.randomUUID()
+    useChatStore.setState({
+      conversations: { [id]: { id, title: 'T', created_at: '1', updated_at: '1' } },
+      messages: {
+        [id]: [
+          { id: 'u1', role: 'user', text: 'first q', created_at: '2026-07-27T10:00:00.000Z' },
+          { id: 'err1', role: 'assistant', text: '', error: { message: 'x' }, created_at: '2026-07-27T10:00:01.000Z' },
+          { id: 'u2', role: 'user', text: 'second q', created_at: '2026-07-27T10:05:00.000Z' },
+        ],
+      },
+    })
+    chatSync.fetchMessages.mockResolvedValue({
+      ok: true,
+      data: [
+        { id: 'u1', role: 'user', text: 'first q', cardIds: [], mentionedCardIds: [], activities: [], created_at: '2026-07-27T10:00:00.000Z' },
+        { id: 'u2', role: 'user', text: 'second q', cardIds: [], mentionedCardIds: [], activities: [], created_at: '2026-07-27T10:05:00.000Z' },
+      ],
+    })
+    await useChatStore.getState().ensureMessagesLoaded(id)
+    expect(useChatStore.getState().messages[id].map((m) => m.id)).toEqual(['u1', 'err1', 'u2'])
+  })
 })

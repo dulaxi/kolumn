@@ -51,6 +51,24 @@ const abortControllers = new Map()
 export const _syncedIds = new Set()
 const loadedThreads = new Set()
 
+// Fire-and-forget write-through. Local state is authoritative this session;
+// chatSync resolves { ok:false } on failure (already logged) — nothing to
+// handle here. localOnly (legacy) conversations never sync.
+function pushThread(get, conversationId) {
+  const conv = get().conversations[conversationId]
+  const userId = useAuthStore.getState().user?.id
+  if (!conv || conv.localOnly || !userId) return
+  _syncedIds.add(conversationId)
+  chatSync.upsertThread(userId, conv)
+}
+
+function pushMessage(get, conversationId, msg) {
+  const conv = get().conversations[conversationId]
+  const userId = useAuthStore.getState().user?.id
+  if (!conv || conv.localOnly || !userId || !msg) return
+  chatSync.upsertMessage(userId, conversationId, msg)
+}
+
 // Streaming patches the store on every SSE chunk; without a debounce each
 // chunk re-serializes the ENTIRE chat history into localStorage
 // synchronously. Trailing 400ms debounce + quota guard + pagehide flush.
@@ -110,6 +128,7 @@ export const useChatStore = create(persist((set, get) => ({
       messages: { ...s.messages, [id]: [] },
       activeConversationId: id,
     }))
+    pushThread(get, id)
     return id
   },
 
@@ -144,6 +163,10 @@ export const useChatStore = create(persist((set, get) => ({
         },
       },
     }))
+    if (role === 'user') {
+      pushMessage(get, conversationId, msg)
+      pushThread(get, conversationId)
+    }
     return msg.id
   },
 
@@ -167,6 +190,7 @@ export const useChatStore = create(persist((set, get) => ({
         [conversationId]: { ...s.conversations[conversationId], title: fallback },
       },
     }))
+    pushThread(get, conversationId)
 
     const firstAssistant = msgs.find((m) => m.role === 'assistant' && m.text && m.text.trim())
     if (!firstAssistant) return
@@ -205,6 +229,7 @@ export const useChatStore = create(persist((set, get) => ({
           },
         }
       })
+      pushThread(get, conversationId)
     } finally {
       titlingInFlight.delete(conversationId)
     }
@@ -217,6 +242,8 @@ export const useChatStore = create(persist((set, get) => ({
 
   deleteConversation: (id) => {
     abortControllers.get(id)?.abort()
+    const conv = get().conversations[id]
+    const userId = useAuthStore.getState().user?.id
     set((s) => {
       const { [id]: _, ...restConvs } = s.conversations
       const { [id]: __, ...restMsgs } = s.messages
@@ -228,6 +255,7 @@ export const useChatStore = create(persist((set, get) => ({
         activeConversationId: s.activeConversationId === id ? null : s.activeConversationId,
       }
     })
+    if (conv && !conv.localOnly && userId) chatSync.deleteThread(id)
   },
 
   renameConversation: (id, title) => {
@@ -242,30 +270,37 @@ export const useChatStore = create(persist((set, get) => ({
         },
       }
     })
+    pushThread(get, id)
   },
 
-  toggleStarred: (id) => set((s) => {
-    if (!s.conversations[id]) return s
-    return {
-      conversations: {
-        ...s.conversations,
-        [id]: { ...s.conversations[id], starred: !s.conversations[id].starred },
-      },
-    }
-  }),
+  toggleStarred: (id) => {
+    set((s) => {
+      if (!s.conversations[id]) return s
+      return {
+        conversations: {
+          ...s.conversations,
+          [id]: { ...s.conversations[id], starred: !s.conversations[id].starred },
+        },
+      }
+    })
+    pushThread(get, id)
+  },
 
   // Per-conversation card-rail grouping ('mentioned' | 'board' | 'column' |
   // 'due'). Absent = 'mentioned'. Lives on the conversation so it persists
   // with the rest of the chat state.
-  setRailGroupBy: (id, mode) => set((s) => {
-    if (!s.conversations[id]) return s
-    return {
-      conversations: {
-        ...s.conversations,
-        [id]: { ...s.conversations[id], railGroupBy: mode },
-      },
-    }
-  }),
+  setRailGroupBy: (id, mode) => {
+    set((s) => {
+      if (!s.conversations[id]) return s
+      return {
+        conversations: {
+          ...s.conversations,
+          [id]: { ...s.conversations[id], railGroupBy: mode },
+        },
+      }
+    })
+    pushThread(get, id)
+  },
 
   // Reconcile the thread list from the server (once, post-auth). Server rows
   // replace same-id cached conversations; cached conversations the server
@@ -309,6 +344,7 @@ export const useChatStore = create(persist((set, get) => ({
       const local = s.messages[conversationId] || []
       const serverIds = new Set(res.data.map((m) => m.id))
       const merged = [...res.data, ...local.filter((m) => !serverIds.has(m.id))]
+      merged.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
       return { messages: { ...s.messages, [conversationId]: merged } }
     })
   },
@@ -383,6 +419,8 @@ export const useChatStore = create(persist((set, get) => ({
     if (aborted) {
       // User-initiated stop: keep everything that streamed, no error state.
       patchMsg({ stopped: true, mentionedCardIds })
+      pushMessage(get, conversationId, get().messages[conversationId]?.find((m) => m.id === msgId))
+      pushThread(get, conversationId)
       get().clearStreaming(conversationId)
       if (fullText.trim()) get().generateTitle(conversationId).catch(() => {})
       return
@@ -399,6 +437,8 @@ export const useChatStore = create(persist((set, get) => ({
     }
 
     patchMsg({ mentionedCardIds })
+    pushMessage(get, conversationId, get().messages[conversationId]?.find((m) => m.id === msgId))
+    pushThread(get, conversationId)
     get().clearStreaming(conversationId)
     get().generateTitle(conversationId).catch(() => {})
   },
