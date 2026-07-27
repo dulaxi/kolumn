@@ -27,6 +27,7 @@ const PILL_DISALLOWED_TOOLS = [
   // never coaches them — the board snapshot already covers reads.
   "search_cards",
   "summarize_board",
+  "get_card",
 ]
 
 export interface TierInfo {

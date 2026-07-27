@@ -12,11 +12,11 @@ const FAKE_TOOLS = [
 ]
 
 Deno.test("chat mode gets exactly the read tools, all tiers", () => {
-  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }]
+  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }, { name: "get_card" }]
   const freeNames = filterToolsForMode(withRead, "free", "chat").map((t) => t.name)
   const proNames = filterToolsForMode(withRead, "pro", "chat").map((t) => t.name)
-  assertEquals(freeNames, ["search_cards", "summarize_board"])
-  assertEquals(proNames, ["search_cards", "summarize_board"])
+  assertEquals(freeNames, ["search_cards", "summarize_board", "get_card"])
+  assertEquals(proNames, ["search_cards", "summarize_board", "get_card"])
 })
 
 Deno.test("free pill gets create_card only", () => {
@@ -47,10 +47,10 @@ Deno.test("isContinuationMessage detects tool_result blocks", () => {
 })
 
 Deno.test("pill mode excludes the chat read tools for every tier", () => {
-  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }]
+  const withRead = [...FAKE_TOOLS, { name: "search_cards" }, { name: "summarize_board" }, { name: "get_card" }]
   for (const tier of ["free", "pro"] as const) {
     const names = filterToolsForMode(withRead, tier, "pill").map((t: any) => t.name)
-    if (names.includes("search_cards") || names.includes("summarize_board")) {
+    if (names.includes("search_cards") || names.includes("summarize_board") || names.includes("get_card")) {
       throw new Error(`pill/${tier} leaked read tools: ${names}`)
     }
   }

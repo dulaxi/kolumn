@@ -241,15 +241,17 @@ export const TOOLS = [
   },
   {
     name: "search_cards",
-    description: "Read-only: search the user's cards across all their boards by text. Matches card titles, descriptions, assignee names, and label text. Archived cards are never returned. Returns matching cards with their ids, board, column, priority, due date, labels, assignees, and checklist progress. Never modifies anything.",
+    description: "Read-only: search the user's cards across all their boards by text. Matches card titles, descriptions, assignee names, and label text. Archived cards are never returned. Returns matching cards with their ids, board, column, priority, due date, labels, assignees, and checklist progress. Returns at most 20 ranked matches plus the true total; page with offset. Never modifies anything.",
     input_schema: {
       type: "object",
       properties: {
         query: { type: "string", description: "Text to search for (case-insensitive)" },
         board: { type: "string", description: "Optional: restrict the search to this board (by name)" },
         include_completed: { type: "boolean", description: "Optional: include completed cards (default false)" },
+        due: { type: "string", enum: ["overdue", "today", "week", "none"], description: "Optional: only cards in this due-date bucket ('week' = due within the next 7 days, 'none' = no due date). query is optional when due is given." },
+        offset: { type: "integer", description: "Optional: skip this many ranked results (default 0) — use to page when total exceeds the returned count" },
       },
-      required: ["query"],
+      required: [],
     },
   },
   {
@@ -263,7 +265,19 @@ export const TOOLS = [
       required: ["board"],
     },
   },
+  {
+    name: "get_card",
+    description: "Read-only: full detail for ONE card — complete description, checklist items with done flags, labels, assignees, priority, due date, board and column. Use it after identifying the card. If multiple cards share the title, candidates are returned instead — call again with the board name to disambiguate. Never modifies anything.",
+    input_schema: {
+      type: "object",
+      properties: {
+        card_title: { type: "string", description: "Title of the card to fetch (case-insensitive; exact match preferred)" },
+        board: { type: "string", description: "Optional: board name to disambiguate duplicate titles" },
+      },
+      required: ["card_title"],
+    },
+  },
 ] as const
 
 // The chat surface's read-only allowlist — consumed by tier.filterToolsForMode.
-export const CHAT_READ_TOOLS = ["search_cards", "summarize_board"]
+export const CHAT_READ_TOOLS = ["search_cards", "summarize_board", "get_card"]
