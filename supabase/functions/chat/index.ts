@@ -266,9 +266,15 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: tierInfo.model,
           max_tokens: 4096,
+          // Three cache breakpoints (Anthropic allows 4): last tool, static
+          // block, dynamic block. The static breakpoint survives board edits;
+          // the dynamic breakpoint recovers consecutive-turn hits when nothing
+          // changed — and matters on small prompts, where tools+static alone
+          // can sit under the model's cache-eligibility floor (4,096 tokens
+          // on Haiku 4.5) while the full prefix clears it.
           system: [
             { type: "text", text: systemBlocks.static, cache_control: { type: "ephemeral" } },
-            { type: "text", text: systemBlocks.dynamic },
+            { type: "text", text: systemBlocks.dynamic, cache_control: { type: "ephemeral" } },
           ],
           tools: withToolCacheBreakpoint(filterToolsForMode(TOOLS, tierInfo.tier, mode)),
           messages,
