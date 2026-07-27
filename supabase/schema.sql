@@ -1281,5 +1281,12 @@ alter table public.chat_messages enable row level security;
 create policy "chat_threads_owner" on public.chat_threads
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+-- with check also confirms thread_id belongs to the same user — the FK to
+-- chat_threads(id) only proves the thread exists, not who owns it, so
+-- without this a user could attach a message to another user's thread_id.
 create policy "chat_messages_owner" on public.chat_messages
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and thread_id in (select id from public.chat_threads where user_id = auth.uid())
+  );

@@ -7,6 +7,7 @@ import { useBoardStore } from './boardStore'
 import { useAuthStore } from './authStore'
 import * as chatSync from '../lib/chatSync'
 import { findMentionedCardIds } from '../lib/cardMentions'
+import { onStoreEvent } from './storeEvents'
 
 /**
  * Maps a raw stream/HTTP error string to user-facing copy.
@@ -90,6 +91,17 @@ function flushPersist() {
       logError('[chatStore] persist failed (quota?):', err)
     }
   }
+}
+
+// Discards (rather than commits) a queued debounced write. Used on
+// session:reset — a queued write is keyed to the user who's leaving, and
+// flushing it after clearStorage() would just re-persist their data.
+function cancelPendingPersist() {
+  if (persistTimer) {
+    clearTimeout(persistTimer)
+    persistTimer = null
+  }
+  pendingPersist = null
 }
 
 const debouncedStorage = {
@@ -504,3 +516,36 @@ export const useChatStore = create(persist((set, get) => ({
   storage: createJSONStorage(() => debouncedStorage),
   partialize: (s) => trimForCache(s),
 }))
+
+// Shared-browser / account-switch rationale: without this, signing out (or
+// switching accounts on the same tab) leaves the previous user's threads,
+// messages, in-flight streams, and localStorage cache resident — the next
+// signed-in user on this device would briefly see (and could overwrite) a
+// stranger's chat history. Mirrors the tenant-store reset pattern already
+// used by boardStore / noteStore / boardSharingStore / workspacesStore.
+// Exported (rather than an inline listener body) so tests can trigger it
+// directly without going through the full auth flow.
+export function _resetChatState() {
+  // 1. A queued debounced write is keyed to the departing user — drop it
+  // before it can re-persist their data after clearStorage() below.
+  cancelPendingPersist()
+  // 2. Any stream still running belongs to the departing user's session.
+  for (const controller of abortControllers.values()) controller.abort()
+  abortControllers.clear()
+  // 3. Module-level session bookkeeping (not part of Zustand state).
+  _syncedIds.clear()
+  loadedThreads.clear()
+  // 4. Store state.
+  useChatStore.setState({
+    conversations: {},
+    messages: {},
+    activeConversationId: null,
+    streaming: {},
+    tierInfo: null,
+  })
+  // 5. The persisted cache — otherwise a reload before the next user sends
+  // a message would rehydrate this user's threads from localStorage.
+  useChatStore.persist.clearStorage()
+}
+
+onStoreEvent('session:reset', _resetChatState)

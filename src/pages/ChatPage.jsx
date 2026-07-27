@@ -33,11 +33,17 @@ export default function ChatPage() {
   const [draft, setDraft] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
+  // hasConversation is in the deps so a deep-link/refresh to a thread outside
+  // the boot cache — where conversations[id] is undefined at mount, before
+  // hydrateFromServer() lands — retries ensureMessagesLoaded once the thread
+  // appears (false→true). loadedThreads inside ensureMessagesLoaded makes the
+  // extra call idempotent, so this never double-fetches.
+  const hasConversation = !!conversation
   useEffect(() => {
     useChatStore.getState().ensureMessagesLoaded(id)
     useChatStore.getState().setActiveConversation(id)
     return () => useChatStore.getState().setActiveConversation(null)
-  }, [id])
+  }, [id, hasConversation])
 
   useEffect(() => {
     const handler = () => navigate('/boards')
