@@ -1200,32 +1200,56 @@ export async function executeTool(action, params) {
 
   if (action === 'search_cards') {
     const query = String(params.query || '').trim().toLowerCase()
-    if (!query) return { ok: false, error: 'query is required' }
+    const due = params.due || null
+    if (!query && !due) return { ok: false, error: 'query or due is required' }
     let boardFilter = null
     if (params.board) {
       boardFilter = findBoardByName(params.board)
       if (!boardFilter) return { ok: false, error: `Board "${params.board}" not found` }
+    }
+    // Local-midnight due buckets — same math as the card rail's grouping.
+    const dueBucketOf = (card) => {
+      if (!card.due_date) return 'none'
+      const d = parseDueDate(card.due_date)
+      if (!d || Number.isNaN(d.getTime())) return 'none'
+      const now = new Date()
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+      const weekEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 8)
+      if (d < todayStart) return 'overdue'
+      if (d < tomorrowStart) return 'today'
+      if (d < weekEnd) return 'week'
+      return 'later'
     }
     const matches = []
     for (const card of Object.values(store.cards)) {
       if (card.archived) continue
       if (boardFilter && card.board_id !== boardFilter.id) continue
       if (card.completed && !params.include_completed) continue
+      if (due) {
+        // A completed card is never "overdue" — mirrors summarize_board.
+        if (due === 'overdue' && card.completed) continue
+        if (dueBucketOf(card) !== due) continue
+      }
       const labels = getCardLabelTexts(store, card.id)
-      // Tier 1: title or label (a label query is exact intent, not an
-      // incidental text hit). Tier 2: description / assignee names.
-      const primary = (card.title || '').toLowerCase().includes(query)
-        || labels.some((t) => t.toLowerCase().includes(query))
-      const secondary = (card.description || '').toLowerCase().includes(query)
-        || (card.assignees || []).join(' ').toLowerCase().includes(query)
-      if (!primary && !secondary) continue
+      let primary = false
+      if (query) {
+        // Tier 1: title or label (a label query is exact intent, not an
+        // incidental text hit). Tier 2: description / assignee names.
+        primary = (card.title || '').toLowerCase().includes(query)
+          || labels.some((t) => t.toLowerCase().includes(query))
+        const secondary = (card.description || '').toLowerCase().includes(query)
+          || (card.assignees || []).join(' ').toLowerCase().includes(query)
+        if (!primary && !secondary) continue
+      }
       matches.push({ card, labels, primary })
     }
     matches.sort((a, b) =>
       (b.primary === true) - (a.primary === true)
       || String(b.card.updated_at || '').localeCompare(String(a.card.updated_at || ''))
     )
-    const cards = matches.slice(0, 20).map(({ card, labels }) => ({
+    const offset = Math.max(0, Number(params.offset) || 0)
+    const cards = matches.slice(offset, offset + 20).map(({ card, labels }) => ({
       id: card.id,
       title: card.title,
       board: store.boards[card.board_id]?.name || null,
@@ -1243,7 +1267,61 @@ export async function executeTool(action, params) {
         ? { description: card.description.trim().slice(0, 160) }
         : {}),
     }))
-    return { ok: true, count: cards.length, total: matches.length, cards }
+    return { ok: true, count: cards.length, total: matches.length, offset, cards }
+  }
+
+  if (action === 'get_card') {
+    const title = String(params.card_title || '').trim()
+    if (!title) return { ok: false, error: 'card_title is required' }
+    let boardFilter = null
+    if (params.board) {
+      boardFilter = findBoardByName(params.board)
+      if (!boardFilter) return { ok: false, error: `Board "${params.board}" not found` }
+    }
+    const lower = title.toLowerCase()
+    const pool = Object.values(store.cards).filter((c) =>
+      !c.archived && (!boardFilter || c.board_id === boardFilter.id))
+    // Exact (case-insensitive) matches beat substring matches; ambiguity is
+    // surfaced, never guessed away.
+    let found = pool.filter((c) => (c.title || '').toLowerCase() === lower)
+    if (found.length === 0) {
+      found = pool.filter((c) => (c.title || '').toLowerCase().includes(lower))
+    }
+    if (found.length === 0) return { ok: true, found: false }
+    if (found.length > 1) {
+      return {
+        ok: true,
+        ambiguous: true,
+        candidates: found.slice(0, 10).map((c) => ({
+          title: c.title,
+          board: store.boards[c.board_id]?.name || null,
+          column: store.columns[c.column_id]?.title || null,
+        })),
+      }
+    }
+    const c = found[0]
+    return {
+      ok: true,
+      found: true,
+      card: {
+        id: c.id,
+        title: c.title,
+        board: store.boards[c.board_id]?.name || null,
+        column: store.columns[c.column_id]?.title || null,
+        priority: c.priority || null,
+        due_date: c.due_date || null,
+        completed: !!c.completed,
+        task_number: c.task_number ?? null,
+        labels: getCardLabelTexts(store, c.id),
+        assignees: c.assignees || [],
+        ...(Array.isArray(c.checklist) && c.checklist.length > 0
+          ? { checklist: c.checklist.map((i) => ({ text: i.text, done: !!i.done })) }
+          : {}),
+        ...((c.description || '').trim() ? { description: c.description.trim() } : {}),
+        created_at: c.created_at || null,
+        updated_at: c.updated_at || null,
+      },
+    }
   }
 
   if (action === 'summarize_board') {

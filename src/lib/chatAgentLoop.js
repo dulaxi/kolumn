@@ -16,6 +16,12 @@ function describeActivity(action, result) {
     if (!result?.ok) return { icon: 'board', label: "Couldn't summarize board" }
     return { icon: 'board', label: `Summarized ${result.board}` }
   }
+  if (action === 'get_card') {
+    if (!result?.ok) return { icon: 'search', label: 'Card lookup failed' }
+    if (result.ambiguous) return { icon: 'search', label: `Looked up card · ${result.candidates.length} matches` }
+    if (result.found === false) return { icon: 'search', label: 'Card not found' }
+    return { icon: 'search', label: `Looked up ${result.card.title}` }
+  }
   return { icon: 'search', label: result?.ok ? `${action} done` : `${action} failed` }
 }
 
@@ -102,6 +108,7 @@ export async function runChatLoop({ text, history = [], today }, { onText, onAct
           for (const c of col.cards || []) if (c?.id) toolCardIds.add(c.id)
         }
       }
+      if (result?.ok && result.card?.id) toolCardIds.add(result.card.id)
       const block = { type: 'tool_result', tool_use_id: tc.id, content: JSON.stringify(result) }
       if (!result?.ok) block.is_error = true
       results.push(block)
