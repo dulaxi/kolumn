@@ -82,7 +82,7 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
   // Both sides can produce the same group key (e.g. 'mentioned', 'board-b1')
   // and render as siblings — the prefix keeps React keys unique.
   const renderGroups = (groups, keyPrefix) =>
-    groups.map((group) => (
+    groups.filter((group) => group.cards.length > 0).map((group) => (
       <div key={keyPrefix + group.key} className="flex flex-col gap-3">
         {group.label && (
           <div className="pt-1 text-xs text-[var(--text-muted)]">
@@ -149,6 +149,7 @@ export default function CardRail({ messages, groupBy = 'mentioned', onGroupByCha
             {earlier.length > 0 && (
               <button
                 type="button"
+                aria-expanded={showEarlier}
                 onClick={() => setShowEarlier((o) => !o)}
                 className="flex cursor-pointer items-center gap-1.5 pt-1 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
               >

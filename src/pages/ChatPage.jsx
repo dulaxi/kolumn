@@ -204,6 +204,7 @@ export default function ChatPage() {
         className="col-span-7 mt-4 xl:col-span-5 xl:mt-0 xl:pl-12 xl:pr-2 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto overscroll-contain subtle-scrollbar"
       >
         <CardRail
+          key={id}
           messages={messages}
           groupBy={conversation?.railGroupBy || 'mentioned'}
           onGroupByChange={(mode) => setRailGroupBy(id, mode)}
