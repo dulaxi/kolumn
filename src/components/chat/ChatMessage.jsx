@@ -1,9 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useBoardStore } from '../../store/boardStore'
 import Card from '../board/Card'
 import MarkdownRenderer from './MarkdownRenderer'
 import InlineNotice from '../ui/InlineNotice'
-import { MagnifyingGlass } from '@phosphor-icons/react'
+import { Check, Copy, MagnifyingGlass } from '@phosphor-icons/react'
 
 // Split assistant text at each activity's atChar. atChar always lands on a
 // round boundary (complete markdown), so segments render safely.
@@ -17,6 +18,33 @@ function segmentText(text, activities) {
   }
   segments.push({ text: text.slice(prev), activity: null })
   return segments
+}
+
+// Hover-reveal copy for an assistant message; copies the raw markdown.
+function CopyMessageButton({ text }) {
+  const [copied, setCopied] = useState(false)
+  const timer = useRef(null)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const copy = () => {
+    navigator.clipboard?.writeText(text)
+    setCopied(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setCopied(false), 1500)
+  }
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label="Copy message"
+      className="mt-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-[var(--text-muted)] opacity-0 transition-opacity hover:bg-[var(--surface-raised)] hover:text-[var(--text-secondary)] focus-visible:opacity-100 group-hover:opacity-100"
+    >
+      {copied ? (
+        <Check size={14} weight="bold" className="text-[var(--color-lime-dark)]" />
+      ) : (
+        <Copy size={14} />
+      )}
+    </button>
+  )
 }
 
 export default function ChatMessage({ message, onRetry, busy }) {
@@ -51,7 +79,7 @@ export default function ChatMessage({ message, onRetry, busy }) {
   const activities = message.activities || []
 
   return (
-    <div className="mb-5 pl-1">
+    <div className="mb-5 pl-1 group">
       <div
         className="text-[16px] leading-[1.7] text-[var(--text-secondary)]"
         style={{ fontFamily: 'var(--font-logo)', fontWeight: 400 }}
@@ -77,6 +105,8 @@ export default function ChatMessage({ message, onRetry, busy }) {
       {message.stopped && (
         <div className="mt-2 font-mono text-xs text-[var(--text-muted)]">Stopped</div>
       )}
+
+      {message.text && !message.error && !busy && <CopyMessageButton text={message.text} />}
 
       {message.error && (
         <InlineNotice
