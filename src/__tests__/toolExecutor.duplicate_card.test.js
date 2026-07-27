@@ -79,6 +79,9 @@ beforeEach(() => {
             completed: false,
           },
         },
+        // Self-map so waitForRealCardId resolves instantly — without this
+        // every test in the suite sat out the full 4s resolution timeout.
+        _tempIdMap: { ...(s._tempIdMap || {}), [newId]: newId },
       }))
       return newId
     }),

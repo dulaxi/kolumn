@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { useBoardStore } from '../store/boardStore'
 import { waitForRealCardId } from '../store/boardStore/waitForRealCardId'
 
