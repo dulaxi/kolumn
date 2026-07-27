@@ -226,9 +226,9 @@ Not AI despite the names: `src/components/ActionCard.jsx` (presentational only),
 
 ### The Claude call (current state)
 
-- **Model:** `claude-haiku-4-5-20251001` — hardcoded in `tier.ts` four times. **No central constant yet** (T2-#5 below).
+- **Model:** the single `MODEL` constant in `supabase/functions/chat/model.ts` — the ONE model literal in the repo. `tier.ts` imports it; `classifyModel` was deleted (2026-07-27).
 - **Streaming:** native Anthropic SSE → parsed in `index.ts` → re-emitted as our own SSE protocol (`type: text|tier|tool_call|done|error`).
-- **Caching:** `cache_control: { type: "ephemeral" }` on the full system prompt. Tools array and message history are uncached. **No cache-hit telemetry** (T2-#7).
+- **Caching:** three breakpoints (2026-07-27): last tool, static system block (persona + rules), dynamic system block (user data). A card edit invalidates only the dynamic tail; consecutive unchanged turns hit the full prefix. Note: Haiku 4.5's cache floor is 4,096 tokens per prefix. **Telemetry:** every request logs `[chat] usage` (input/cache_creation/cache_read/output tokens + mode/tier/continuation) — check with `get_logs`.
 - **Not in use:** extended thinking, batch API, files API, vision, retries, fallback model.
 - **History window:** last 20 messages, sliced naively in `chatStore.sendMessage` — can orphan a `tool_use` from its `tool_result` (T3-#8).
 
@@ -296,11 +296,11 @@ Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 5. **Replace the 4s temp-ID polling in `toolExecutor.js`** with the existing realtime subscription in `boardStore`.
 
 **T2 — cost, latency, instrumentation:**
-6. **Branch the system prompt by `mode`.** Pill prompt: short, action-focused, board context pinned. Chat prompt: full read-only context with Q&A framing. Today one prompt serves both.
-7. **Split each prompt** into a cached static prefix and an uncached dynamic tail. Today any card edit invalidates the entire cache.
-8. **Centralize the model ID** into one `MODEL` constant at the top of `tier.ts` (or a new `model.ts`).
-9. **Resolve `classifyModel()`** — branch it for real or delete it.
-10. **Log Anthropic usage fields** (`input_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`, `output_tokens`) so we can see whether caching actually fires.
+6. ✅ **DONE — prompt branches by mode/tier** (chat ruleset, free-pill compact ruleset, pro-pill rulebook).
+7. ✅ **DONE — cached static prefix + dynamic tail** with a third breakpoint on the dynamic block (see The Claude call above).
+8. ✅ **DONE — `MODEL` constant in `model.ts`.**
+9. ✅ **DONE — `classifyModel` deleted** (was dead: both branches identical and the call site passed `""`).
+10. ✅ **DONE — `[chat] usage` log line per request** (all four token fields + mode/tier/model/continuation). Continuation/history payloads are now validated server-side (caps + tool_use linkage; clients clamp tool_results to 10k chars/block).
 
 **T3 — UX, cleanup, parity:**
 11. **Implement `search_cards` and `summarize_board`** as real read-only tools for the chat surface (currently no-op placeholders).
@@ -313,7 +313,7 @@ Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 ### AI-specific conventions
 
 - **One Claude entry point.** All Anthropic API calls live in `supabase/functions/chat/index.ts`. There is no `ANTHROPIC_API_KEY` in the frontend and there shouldn't be. If you find yourself wanting a second AI surface, propose it first.
-- **Model IDs:** never hardcode in source files. Once T2-#5 lands, import the `MODEL` constant. Until then, if you touch a hardcoded model string, fix them all in the same change.
+- **Model IDs:** never hardcode in source files — import `MODEL` from `supabase/functions/chat/model.ts` (the repo's single model literal).
 - **New tools require a result-reporting plan.** A tool that returns nothing to the model is a footgun. Document how the outcome reaches the next turn (via `tool_result`, refreshed context, or both).
 - **System prompt ordering:** static prefix first, volatile tail last. Don't sprinkle dates, IDs, or counts into the static prefix.
 - **Telemetry:** prefer `src/utils/logger.js` over ad-hoc `console.log` for anything you want to survive into production. The edge function logs go to Supabase function logs — readable via `supabase functions logs chat` or the MCP `get_logs` tool.
