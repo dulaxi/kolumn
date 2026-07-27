@@ -177,6 +177,14 @@ Deno.serve(async (req) => {
           return
         }
         const data = await response.json()
+        console.log("[chat] usage", JSON.stringify({
+          mode: "title", tier: tierInfo.tier, model: tierInfo.model,
+          continuation: false,
+          input_tokens: data.usage?.input_tokens ?? null,
+          cache_creation_input_tokens: data.usage?.cache_creation_input_tokens ?? null,
+          cache_read_input_tokens: data.usage?.cache_read_input_tokens ?? null,
+          output_tokens: data.usage?.output_tokens ?? null,
+        }))
         const text = (data.content || [])
           .filter((b: { type?: string }) => b.type === "text")
           .map((b: { text?: string }) => b.text || "")
@@ -301,6 +309,12 @@ Deno.serve(async (req) => {
       let currentToolId = ""
       let currentToolInput = ""
       let stopReason: string | null = null
+      let usage: Record<string, number | null> = {
+        input_tokens: null,
+        cache_creation_input_tokens: null,
+        cache_read_input_tokens: null,
+        output_tokens: null,
+      }
 
       while (true) {
         const { done, value } = await reader.read()
@@ -318,7 +332,14 @@ Deno.serve(async (req) => {
           try {
             const event = JSON.parse(data)
 
-            if (event.type === "content_block_start") {
+            if (event.type === "message_start") {
+              const u = event.message?.usage
+              if (u) {
+                usage.input_tokens = u.input_tokens ?? null
+                usage.cache_creation_input_tokens = u.cache_creation_input_tokens ?? null
+                usage.cache_read_input_tokens = u.cache_read_input_tokens ?? null
+              }
+            } else if (event.type === "content_block_start") {
               if (event.content_block?.type === "tool_use") {
                 currentToolName = event.content_block.name
                 currentToolId = event.content_block.id
@@ -344,6 +365,7 @@ Deno.serve(async (req) => {
               }
             } else if (event.type === "message_delta") {
               if (event.delta?.stop_reason) stopReason = event.delta.stop_reason
+              if (event.usage?.output_tokens != null) usage.output_tokens = event.usage.output_tokens
             } else if (event.type === "error") {
               // Anthropic mid-stream failure (e.g. overloaded_error). Without
               // this branch the stream ends as a clean "done" with partial
@@ -357,6 +379,11 @@ Deno.serve(async (req) => {
           }
         }
       }
+
+      console.log("[chat] usage", JSON.stringify({
+        mode, tier: tierInfo.tier, model: tierInfo.model,
+        continuation: isContinuation, ...usage,
+      }))
 
       sse.close(stopReason)
     } catch (err) {
