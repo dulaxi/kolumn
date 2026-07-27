@@ -196,6 +196,19 @@ export const useChatStore = create(persist((set, get) => ({
     }
   }),
 
+  // Per-conversation card-rail grouping ('mentioned' | 'board' | 'column' |
+  // 'due'). Absent = 'mentioned'. Lives on the conversation so it persists
+  // with the rest of the chat state.
+  setRailGroupBy: (id, mode) => set((s) => {
+    if (!s.conversations[id]) return s
+    return {
+      conversations: {
+        ...s.conversations,
+        [id]: { ...s.conversations[id], railGroupBy: mode },
+      },
+    }
+  }),
+
   setActiveConversation: (id) => set({ activeConversationId: id }),
   setStreaming: (conversationId) => set({ streamingConversationId: conversationId }),
   clearStreaming: () => set({ streamingConversationId: null }),
