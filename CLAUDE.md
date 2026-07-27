@@ -217,7 +217,7 @@ Supabase Edge Function. Everything else is plumbing around it.
 | Frontend — pill | `src/components/board/QuickAddBar.jsx` | ~225 | **The action surface.** Mounted per board, forces `board: boardName` into every tool call. Has a fast path that splits comma/newline input and skips the LLM. Drives `src/lib/pillAgentLoop.js` for its multi-round tool loop. |
 | Frontend — chat page | `src/pages/ChatPage.jsx`, `ChatListPage.jsx`, `src/components/chat/*` | ~440 total | The conversation surface. Bubbles, composer, markdown rendering. **Chat mode fires no write tools** (enforced server-side by `(mode × tier)`). |
 | Frontend — client | `src/lib/aiClient.js` | ~105 | `fetch` to `/functions/v1/chat`; SSE parser; dispatches `onText / onTier / onToolCall / onDone / onError`. Forwards a `mode` parameter. |
-| Frontend — store | `src/store/chatStore.js` | ~160 | Zustand: conversations, messages, tierInfo, streaming state. **Conversations live in localStorage only.** Used by ChatPage; pill bypasses it. |
+| Frontend — store | `src/store/chatStore.js` | ~450 | Zustand: conversations, messages, tierInfo, per-conversation streaming map. **Persists to Supabase via `src/lib/chatSync.js`** (hydrate post-auth, lazy per-thread message load, write-through on every mutation); localStorage is a bounded boot cache. Used by ChatPage; pill bypasses it. |
 | Frontend — pill agent loop | `src/lib/pillAgentLoop.js` | ~120 | **The pill's agent loop.** `runPillLoop()` runs up to `MAX_ROUNDS` (4) rounds of model → `tool_use` → browser executes → `tool_result` → model reacts, with proper `tool_use`/`tool_result` pairing. **The tool-result loop is closed here.** |
 | Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` exist as no-op placeholders. |
 
@@ -292,7 +292,7 @@ Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 1. **Implement the `mode` parameter** end-to-end (`aiClient.js` → `index.ts` → `tier.ts`). Backend computes effective tool list from `(mode × tier)`. Without this, the pill/chat split is policy, not enforcement.
 2. ✅ **DONE — Strip write tools from the chat path.** Chat mode fires no write tools; the effective tool list is computed server-side from `(mode × tier)`.
 3. ✅ **DONE — Close the tool-result loop.** `src/lib/pillAgentLoop.js` (`runPillLoop`, `MAX_ROUNDS`) runs proper multi-round `tool_use`/`tool_result` pairing: after the browser executes a tool, the result is fed back as a `tool_result` block so the model can react and chain steps.
-4. **Persist conversations to Supabase.** ⚠️ The `chat_threads` / `chat_messages` tables **do not exist anywhere in the repo** — only `chat_usage` does (`supabase/migrations/chat_tier_system.sql`). Persisting conversations means building those tables from scratch. Current localStorage-only history dies when the user clears cookies or switches devices.
+4. ✅ **DONE — Persist conversations to Supabase.** `chat_threads` / `chat_messages` (`2026-07-27-chat-persistence.sql`) with per-user RLS; `src/lib/chatSync.js` is the sync layer (bounded keyset reads, mapped writes); server is truth, localStorage is a bounded boot cache (30 threads / 100 msgs, legacy `localOnly` exempt). Pre-persistence local chats stay `localOnly` and never sync.
 5. **Replace the 4s temp-ID polling in `toolExecutor.js`** with the existing realtime subscription in `boardStore`.
 
 **T2 — cost, latency, instrumentation:**
@@ -464,9 +464,10 @@ will overwrite anything inconsistent with `assignee_refs`.**
 
 Tables: `profiles`, `workspaces`, `workspace_members`, `workspace_invitations`,
 `boards`, `board_members`, `board_invitations`, `columns`, `cards`, `notes`,
-plus `chat_usage` (daily message-count tracking). **There are no `chat_threads`
-/ `chat_messages` tables** — conversation persistence is unbuilt (see AI backlog
-T1-#4).
+plus `chat_usage` (daily message-count tracking) and, since 2026-07-27,
+`chat_threads` / `chat_messages` (`2026-07-27-chat-persistence.sql`) —
+conversation persistence with per-user RLS (messages' with-check also proves
+thread ownership; FKs alone don't). Client-generated UUIDs are the PKs.
 
 **Removed 2026-07-20** (`2026-07-20-index-and-plans-cleanup.sql`): the `plans`
 table and `profiles.plan_id` were dropped. `profiles.tier`
