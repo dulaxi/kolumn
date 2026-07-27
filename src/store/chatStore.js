@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { runChatLoop } from '../lib/chatAgentLoop'
 import { streamChat } from '../lib/aiClient'
 import { logError } from '../utils/logger'
@@ -38,6 +38,47 @@ export function cleanTitle(raw) {
 // Guards concurrent generateTitle() calls for the same conversation from
 // firing streamChat more than once (e.g. a rapid double sendMessage).
 const titlingInFlight = new Set()
+
+// Streaming patches the store on every SSE chunk; without a debounce each
+// chunk re-serializes the ENTIRE chat history into localStorage
+// synchronously. Trailing 400ms debounce + quota guard + pagehide flush.
+const PERSIST_DEBOUNCE_MS = 400
+let persistTimer = null
+let pendingPersist = null
+
+function flushPersist() {
+  if (persistTimer) {
+    clearTimeout(persistTimer)
+    persistTimer = null
+  }
+  if (pendingPersist) {
+    const { name, value } = pendingPersist
+    pendingPersist = null
+    try {
+      localStorage.setItem(name, value)
+    } catch (err) {
+      logError('[chatStore] persist failed (quota?):', err)
+    }
+  }
+}
+
+const debouncedStorage = {
+  getItem: (name) => localStorage.getItem(name),
+  setItem: (name, value) => {
+    pendingPersist = { name, value }
+    if (!persistTimer) {
+      persistTimer = setTimeout(() => {
+        persistTimer = null
+        flushPersist()
+      }, PERSIST_DEBOUNCE_MS)
+    }
+  },
+  removeItem: (name) => localStorage.removeItem(name),
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushPersist)
+}
 
 export const useChatStore = create(persist((set, get) => ({
   conversations: {},
@@ -282,5 +323,6 @@ export const useChatStore = create(persist((set, get) => ({
   },
 }), {
   name: 'kolumn-chat',
+  storage: createJSONStorage(() => debouncedStorage),
   partialize: (s) => ({ conversations: s.conversations, messages: s.messages }),
 }))
