@@ -58,3 +58,25 @@ describe('retryMessage', () => {
     expect(runChatLoop).not.toHaveBeenCalled()
   })
 })
+
+describe('retryMessage streaming guard', () => {
+  test('no-op while the conversation is already streaming', async () => {
+    useChatStore.setState({ conversations: {}, messages: {}, streaming: {} })
+    runChatLoop.mockReset()
+    const id = useChatStore.getState().createConversation()
+    useChatStore.getState().addMessage(id, { role: 'user', text: 'q' })
+    const failedId = useChatStore.getState().addMessage(id, { role: 'assistant', text: '' })
+    useChatStore.setState((s) => ({
+      streaming: { ...s.streaming, [id]: true },
+      messages: {
+        ...s.messages,
+        [id]: s.messages[id].map((m) =>
+          m.id === failedId ? { ...m, error: { message: 'snag', isLimit: false } } : m
+        ),
+      },
+    }))
+    await useChatStore.getState().retryMessage(id, failedId)
+    expect(runChatLoop).not.toHaveBeenCalled()
+    expect(useChatStore.getState().messages[id].find((m) => m.id === failedId)).toBeDefined()
+  })
+})

@@ -326,6 +326,10 @@ export const useChatStore = create(persist((set, get) => ({
   // errored message is removed first so the transcript reads as a clean
   // second attempt (sendMessage appends a fresh assistant message).
   retryMessage: (conversationId, messageId) => {
+    // Retry must respect the same one-stream-per-conversation rule the
+    // composer's busy guard enforces — an old exchange's Retry button is
+    // still clickable while a new reply streams.
+    if (get().streaming[conversationId]) return Promise.resolve()
     const msgs = get().messages[conversationId] || []
     const idx = msgs.findIndex((m) => m.id === messageId)
     if (idx === -1 || !msgs[idx].error) return Promise.resolve()
