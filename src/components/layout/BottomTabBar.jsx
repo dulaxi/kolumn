@@ -22,8 +22,12 @@ export default function BottomTabBar() {
             }`
           }
         >
-          <Icon className="w-5 h-5" />
-          <span>{label}</span>
+          {({ isActive }) => (
+            <>
+              <Icon className="w-5 h-5" weight={isActive ? 'fill' : 'regular'} />
+              <span>{label}</span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

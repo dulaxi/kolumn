@@ -119,7 +119,7 @@ export default function SettingsModal({ open, onClose, initialSection = 'general
                           : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                       } ${dimmed ? 'opacity-40' : ''}`}
                     >
-                      <ActiveIcon size={16} className="shrink-0" />
+                      <ActiveIcon size={16} weight={active ? 'fill' : 'regular'} className="shrink-0" />
                       <span className="min-w-0 flex-1 truncate">{section.label}</span>
                     </button>
                   </li>

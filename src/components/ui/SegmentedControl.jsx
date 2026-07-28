@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { cloneElement, isValidElement, useLayoutEffect, useRef, useState } from 'react'
 
 // Radiogroup-semantics segmented control (claude.ai-style): subtle track,
 // sliding 1px-bordered thumb, one tab stop, arrow-key navigation with wrap.
@@ -56,6 +56,12 @@ export default function SegmentedControl({
       )}
       {options.map((opt) => {
         const selected = opt.value === value
+        // Selected segment flips its icon to Phosphor fill (app-wide
+        // convention). Only component elements (Phosphor icons) get the
+        // weight — a raw DOM element (e.g. <svg>) is left untouched.
+        const icon = isValidElement(opt.icon) && typeof opt.icon.type !== 'string'
+          ? cloneElement(opt.icon, { weight: selected ? 'fill' : 'regular' })
+          : opt.icon
         return (
           <button
             key={opt.value}
@@ -74,7 +80,7 @@ export default function SegmentedControl({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            {opt.icon}
+            {icon}
             {opt.label}
           </button>
         )
