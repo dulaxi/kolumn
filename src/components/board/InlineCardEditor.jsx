@@ -160,7 +160,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
       // Chrome matches Card.jsx (surface-card + mist border + 16px radius);
       // the raised shadow is the "editing" affordance. No transition-all —
       // animating our own size changes is what made the editor feel wonky.
-      className="w-full flex flex-col gap-3 rounded-2xl border border-[var(--color-mist)] p-4 text-left bg-[var(--surface-card)] shadow-[0_4px_24px_rgba(27,27,24,0.10)]"
+      className="animate-rise-in w-full flex flex-col gap-3 rounded-2xl border border-[var(--color-mist)] p-4 text-left bg-[var(--surface-card)] shadow-[0_4px_24px_rgba(27,27,24,0.10)]"
     >
       {/* Top row: icon + title + check (priority) */}
       <div className="flex items-center gap-3">
