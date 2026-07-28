@@ -38,6 +38,7 @@ Feel target: subtle. Overlays 150–250ms enter (decelerating ease-out),
 --dur-overlay-out: 120ms;  /* popover/menu exit */
 --dur-modal-in: 200ms;     /* modal panel + backdrop enter */
 --dur-modal-out: 150ms;    /* modal panel + backdrop exit */
+--dur-editor-in: 120ms;    /* InlineCardEditor entrance */
 --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);  /* decelerating, Radix-style */
 --ease-exit: cubic-bezier(0.4, 0, 1, 1);      /* ease-in */
 ```
@@ -69,13 +70,21 @@ into `Modal.jsx`:
   requires zero consumer markup changes.
 - **Exit requires staying mounted.** Deferred unmount inside Modal only
   plays when the consumer flips `open` to false while keeping the element
-  mounted. Consumers that hard-unmount (`{show && <Modal …>}` /
-  `if (!card) return null`) get enter-only.
-  - **Convert to prop-driven open (exit works):** SettingsModal,
-    CardDetailPanel (snapshot the last non-null card in a ref so content
-    persists through the 150ms exit), SearchDialog, QuickAddBar composer.
-  - **Leave enter-only:** rare/low-traffic conditional modals; they still
-    gain the enter animation for free with zero changes.
+  mounted. Consumer census (verified in code):
+  - **Already prop-driven — exit works free:** SettingsModal
+    (`open={settingsOpen}`, always mounted in AppLayout), SearchDialog
+    (`open={open}`).
+  - **CardDetailPanel:** hard-unmounted by BoardsPage
+    (`{editingCardId && <Suspense>…}`). Fix inside the panel: a `closing`
+    state — close actions run `handleSave()`, set `closing`, render
+    `<Modal open={!closing}>`, and call the parent `onClose` after
+    `MODAL_EXIT_MS`. No BoardsPage changes.
+  - **QuickAddBar composer:** already has bespoke pill-bounce enter/exit
+    and its own backdrop opacity transition. It passes a new
+    `animated={false}` prop (default `true`) so Modal's animation doesn't
+    double up. `animated={false}` also skips the deferred unmount.
+  - **Leave enter-only:** remaining conditional modals (CreateBoardModal,
+    BoardActivityModal, etc.); they gain the enter animation for free.
 - **SearchDialog dedupe:** remove its own `animate-dropdown` panel class so
   it doesn't double-animate once Modal animates.
 - Escape/focus behavior unchanged: `handleClose` fires immediately;
@@ -84,16 +93,20 @@ into `Modal.jsx`:
 
 ### 3. Symmetric exits for the stragglers
 
-- **Tooltip:** opacity-only fade-out over `--dur-overlay-out` (120ms) with
-  the same deferred-unmount pattern. Enter stays `animate-dropdown`.
+- **Tooltip:** reuses `animate-dropdown-out` (120ms scale+fade, symmetric
+  with its `animate-dropdown` enter) with the same deferred-unmount
+  pattern. Hovering back during the exit cancels it.
 - **SearchDialog:** exit comes free from §2.
 
 ### 4. Drag-and-drop settle
 
 Restore `dropAnimation` in `BoardView.jsx` (`dropAnimation={null}` →
-dnd-kit's default drop animation, ~250ms ease). **Acceptance gate:** the
-cross-column drag flicker fixed in cc380ca must not regress — re-test that
-exact scenario in the browser. If flicker returns, tune
+dnd-kit's default drop animation, ~250ms ease), except under effective
+reduced motion, where it stays `null` (via `useReducedMotion()`).
+Note: `dropAnimation={null}` predates the cc380ca flicker fix (that commit
+touched only the store persistence layer), so this is independent of it.
+**Acceptance gate:** the cross-column drag flicker fixed in cc380ca must
+not regress — re-test that exact scenario in the browser. If flicker returns, tune
 `dropAnimation.sideEffects` (e.g. suppress the source-card opacity flash)
 rather than reverting to `null`. If it can't be made clean, keep `null` and
 record why in a code comment.
