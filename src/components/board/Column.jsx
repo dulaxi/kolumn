@@ -4,6 +4,7 @@ import { DotsSixVertical, DotsThree, Gauge, Pencil, Plus, Trash } from '@phospho
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useBoardStore } from '../../store/boardStore'
+import { useShallow } from 'zustand/react/shallow'
 import SortableCard from './SortableCard'
 import InlineCardEditor from './InlineCardEditor'
 import GhostCard from './GhostCard'
@@ -56,7 +57,19 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
 
   const renameRef = useRef(null)
 
-  const allCards = useBoardStore((s) => s.cards)
+  // Subscribe to ONLY this column's cards, via shallow equality: the component
+  // re-renders when THIS column's card set/order changes, not when any card in
+  // any column (or any other board) changes. Without this, every position
+  // update during a drag re-rendered every column — O(columns × totalCards)
+  // reconciliation per frame. The filter+sort still runs per store change, but
+  // the expensive re-render of unaffected columns is skipped.
+  const columnCards = useBoardStore(
+    useShallow((s) =>
+      Object.values(s.cards)
+        .filter((c) => c.column_id === column.id && !c.archived)
+        .sort((a, b) => a.position - b.position),
+    ),
+  )
   const cardLabels = useBoardStore((s) => s.cardLabels)
   const labels = useBoardStore((s) => s.labels)
   const tempIdMap = useBoardStore((s) => s._tempIdMap)
@@ -66,14 +79,6 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const updateColumnWipLimit = useBoardStore((s) => s.updateColumnWipLimit)
 
   const { setNodeRef: setDroppableRef } = useDroppable({ id: column.id })
-
-  // Memoize: only recompute when cards object or column.id changes
-  const columnCards = useMemo(
-    () => Object.values(allCards)
-      .filter((c) => c.column_id === column.id && !c.archived)
-      .sort((a, b) => a.position - b.position),
-    [allCards, column.id]
-  )
 
   // Apply filters then sort (keep columnCards intact for DnD)
   const filteredCards = useMemo(() => {
