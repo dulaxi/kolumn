@@ -162,6 +162,7 @@ export default function QuickAddBar({ boardId, hidden = false }) {
     <Modal
       open
       onClose={collapseWithAnim}
+      animated={false}
       backdropClassName={`bg-black/10 transition-opacity duration-200 ${collapsing ? 'opacity-0' : 'opacity-100'}`}
       contentClassName="flex items-end justify-center pb-6"
       initialFocusRef={inputRef}

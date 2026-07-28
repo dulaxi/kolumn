@@ -104,7 +104,7 @@ export default function SearchDialog({ open, onClose }) {
       initialFocusRef={inputRef}
     >
       <div
-        className="relative w-full max-w-2xl mx-4 bg-[var(--surface-card)] rounded-xl border-[0.5px] border-[var(--border-default)] shadow-[var(--shadow-raised)] overflow-hidden animate-dropdown"
+        className="relative w-full max-w-2xl mx-4 bg-[var(--surface-card)] rounded-xl border-[0.5px] border-[var(--border-default)] shadow-[var(--shadow-raised)] overflow-hidden"
       >
         {/* Search input */}
         <div className="flex items-center gap-2 pl-6 pt-[1.1rem] pb-[0.9rem] pr-2.5">

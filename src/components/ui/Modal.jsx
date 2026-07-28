@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { MODAL_EXIT_MS } from '../../constants/motion'
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -99,9 +100,31 @@ export default function Modal({
   contentClassName = 'flex items-center justify-center',
   className = '',
   zIndex = 40,
+  // Enter/exit animation (backdrop fade + panel scale). Consumers with
+  // bespoke animation (QuickAddBar's pill-bounce) pass false to keep
+  // today's instant mount/unmount.
+  animated = true,
 }) {
   const contentRef = useRef(null)
   const mouseDownInsideRef = useRef(false)
+
+  // Deferred unmount so the exit animation can play (same pattern as
+  // Popover). `open` drives behavior (locks, listeners, data-state);
+  // `rendered` only decides whether the DOM exists.
+  const [rendered, setRendered] = useState(open)
+  useEffect(() => {
+    if (open) {
+      setRendered(true)
+      return
+    }
+    if (!rendered) return
+    if (!animated) {
+      setRendered(false)
+      return
+    }
+    const t = setTimeout(() => setRendered(false), MODAL_EXIT_MS)
+    return () => clearTimeout(t)
+  }, [open, rendered, animated])
 
   const handleClose = useCallback(() => {
     if (typeof onClose === 'function') onClose()
@@ -181,7 +204,7 @@ export default function Modal({
     }
   }, [open, dismissOnEscape, trapFocus, handleClose])
 
-  if (!open) return null
+  if (!rendered) return null
 
   // Track whether the *mousedown* started inside the panel. If a user
   // selects text inside the dialog and drags the cursor outside the
@@ -208,6 +231,8 @@ export default function Modal({
     <div
       className={`fixed inset-0 ${backdropClassName} ${contentClassName} ${className}`}
       style={{ zIndex }}
+      data-state={open ? 'open' : 'closed'}
+      {...(animated ? { 'data-animated': '' } : {})}
       onMouseDown={onBackdropMouseDown}
       onClick={onBackdropClick}
       data-modal-backdrop

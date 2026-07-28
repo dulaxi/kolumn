@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useState } from 'react'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Modal from '../components/ui/Modal'
 
@@ -233,5 +233,52 @@ describe('Modal primitive', () => {
       </>,
     )
     expect(document.body.style.overflow).toBe('')
+  })
+
+  test('backdrop carries data-animated and data-state="open" while open', () => {
+    render(<Harness />)
+    const backdrop = document.querySelector('[data-modal-backdrop]')
+    expect(backdrop.hasAttribute('data-animated')).toBe(true)
+    expect(backdrop.getAttribute('data-state')).toBe('open')
+  })
+
+  test('exit is deferred: closing keeps the DOM with data-state="closed", then unmounts', () => {
+    vi.useFakeTimers()
+    try {
+      const { rerender } = render(<Harness />)
+      rerender(<Harness open={false} />)
+      const backdrop = document.querySelector('[data-modal-backdrop]')
+      expect(backdrop).not.toBe(null)
+      expect(backdrop.getAttribute('data-state')).toBe('closed')
+      act(() => { vi.advanceTimersByTime(200) })
+      expect(document.querySelector('[data-modal-backdrop]')).toBe(null)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('animated={false} renders no data-animated and unmounts immediately', () => {
+    const { rerender } = render(<Harness animated={false} />)
+    const backdrop = document.querySelector('[data-modal-backdrop]')
+    expect(backdrop.hasAttribute('data-animated')).toBe(false)
+    rerender(<Harness animated={false} open={false} />)
+    expect(document.querySelector('[data-modal-backdrop]')).toBe(null)
+  })
+
+  test('scroll lock and inert release immediately on close, before the exit finishes', () => {
+    vi.useFakeTimers()
+    try {
+      document.body.style.overflow = 'auto'
+      const { rerender } = render(<Harness />)
+      expect(document.body.style.overflow).toBe('hidden')
+      rerender(<Harness open={false} />)
+      // Exit animation still playing (DOM mounted), but locks are gone
+      expect(document.querySelector('[data-modal-backdrop]')).not.toBe(null)
+      expect(document.body.style.overflow).toBe('auto')
+      expect(appRoot.hasAttribute('inert')).toBe(false)
+      act(() => { vi.advanceTimersByTime(200) })
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
