@@ -13,13 +13,13 @@
     <link rel="preload" href="/fonts/clash-grotesk-variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/sentient-400.woff2" as="font" type="font/woff2" crossorigin />
 
-    <!-- Pill font (--font-pill, in-app badges only). Loaded non-blocking via the
-         media=print swap so it never delays first paint on the public landing
-         page (which uses no pills). Was a render-blocking @import in index.css. -->
+    <!-- Pill font (--font-pill, in-app badges only) is injected from the app
+         bundle in main.jsx — NOT a <link media="print" onload> swap here, because
+         the production CSP (serve.json) has no 'unsafe-inline' in script-src and
+         would block the inline onload. Preconnect warms the connection so the
+         JS-injected fetch is quick; the load itself stays off the render path. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />

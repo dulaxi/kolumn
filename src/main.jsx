@@ -13,6 +13,18 @@ import * as Sentry from '@sentry/react'
 import { env } from './lib/env'
 import { initAnalytics } from './lib/analytics'
 
+// Pill font (--font-pill) — injected from the bundle rather than a <link>
+// media-swap in index.html, whose inline onload is blocked by our CSP (no
+// 'unsafe-inline' in script-src). Injecting from here is CSP-safe (script runs
+// from 'self') and non-render-blocking (a dynamically-inserted stylesheet
+// doesn't hold up first paint). style-src/font-src already allow Google Fonts.
+{
+  const pillFont = document.createElement('link')
+  pillFont.rel = 'stylesheet'
+  pillFont.href = 'https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap'
+  document.head.appendChild(pillFont)
+}
+
 // Initialize Sentry (no-op if DSN not configured)
 if (env.sentryDsn) {
   Sentry.init({
