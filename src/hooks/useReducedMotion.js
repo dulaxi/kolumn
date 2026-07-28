@@ -1,4 +1,4 @@
-import { useRef, useSyncExternalStore } from 'react'
+import { useRef, useCallback, useSyncExternalStore } from 'react'
 import { useSettingsStore } from '../store/settingsStore'
 
 const QUERY = '(prefers-reduced-motion: reduce)'
@@ -36,17 +36,17 @@ export default function useReducedMotion() {
     return mqlRef.current
   }
 
-  function subscribe(callback) {
+  const subscribe = useCallback((callback) => {
     const mql = getMql()
     if (!mql) return () => {}
     mql.addEventListener('change', callback)
     return () => mql.removeEventListener('change', callback)
-  }
+  }, [])
 
-  function getSnapshot() {
+  const getSnapshot = useCallback(() => {
     const mql = getMql()
     return mql ? mql.matches : false
-  }
+  }, [])
 
   const systemReduced = useSyncExternalStore(subscribe, getSnapshot, () => false)
   if (motion === 'reduced') return true
