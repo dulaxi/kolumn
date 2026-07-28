@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import useReducedMotion from '../../hooks/useReducedMotion'
 
 // Kept tight: a full circuit is 3×(dwell+travel) ≈ 16s — the upsell step is a
 // decision screen, so the whole story should land before the user clicks a CTA.
@@ -12,11 +13,7 @@ export const TRAVEL_MS = 1200 // one scurry between adjacent stations (8 × 150m
  * journey parks at station 0 ('perform') and sets no timers.
  */
 export default function useKlayJourney(stationCount, { dwellMs = DWELL_MS, travelMs = TRAVEL_MS } = {}) {
-  const reduced = useRef(
-    typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ).current
+  const reduced = useReducedMotion()
   const [state, setState] = useState({ station: 0, phase: 'perform' })
 
   useEffect(() => {

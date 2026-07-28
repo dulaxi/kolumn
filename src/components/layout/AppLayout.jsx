@@ -13,6 +13,7 @@ import InlineNotice from '../ui/InlineNotice'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAuthStore } from '../../store/authStore'
 import { applyTheme } from '../../utils/theme'
+import { applyMotion } from '../../utils/motion'
 import { useIsDesktop } from '../../hooks/useMediaQuery'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { useAppData } from '../../hooks/useAppData'
@@ -33,6 +34,7 @@ export default function AppLayout() {
   const collapsed = useSettingsStore((s) => s.sidebarCollapsed)
   const workspaceSidebarOpen = useSettingsStore((s) => s.workspaceSidebarOpen)
   const theme = useSettingsStore((s) => s.theme)
+  const motion = useSettingsStore((s) => s.motion)
   const font = useSettingsStore((s) => s.font)
   const isDesktop = useIsDesktop()
   const location = useLocation()
@@ -58,6 +60,10 @@ export default function AppLayout() {
   // Public pages outside the app shell are pinned light (their CSS is not
   // dark-ready) — restore light when the shell unmounts.
   useEffect(() => () => applyTheme('light'), [])
+
+  useEffect(() => {
+    applyMotion(motion)
+  }, [motion])
 
   useEffect(() => {
     document.documentElement.style.removeProperty('font-family')

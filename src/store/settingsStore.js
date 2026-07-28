@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { applyTheme } from '../utils/theme'
+import { applyMotion } from '../utils/motion'
 
 // v0 → v1: the theme setting used 'default' to mean light; it is now an
 // explicit 'system' | 'light' | 'dark'. Persisted 'default' becomes 'light'
@@ -18,6 +19,7 @@ export const useSettingsStore = create(
     (set, get) => ({
       sidebarCollapsed: false,
       theme: 'system',
+      motion: 'system', // 'system' | 'full' | 'reduced' — see utils/motion.js
       font: 'mona-sans',
       mobileMenuOpen: false,
       favoriteBoards: [],
@@ -54,6 +56,10 @@ export const useSettingsStore = create(
       setTheme: (theme) => {
         set({ theme })
         applyTheme(theme)
+      },
+      setMotion: (motion) => {
+        set({ motion })
+        applyMotion(motion)
       },
       setFont: (font) => set({ font }),
       toggleFavorite: (boardId) => {

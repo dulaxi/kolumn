@@ -9,6 +9,7 @@ import './index.css'
 import App from './App.jsx'
 import { useAuthStore } from './store/authStore'
 import { applyTheme, pickBootTheme } from './utils/theme'
+import { applyMotion } from './utils/motion'
 import * as Sentry from '@sentry/react'
 import { env } from './lib/env'
 import { initAnalytics } from './lib/analytics'
@@ -66,8 +67,11 @@ if ('serviceWorker' in navigator) {
 // zustand persist migration, so resolveTheme's legacy-'default'→light
 // fallback covers un-migrated values. Public/marketing routes are pinned
 // light (their CSS is not dark-ready) — only app shell routes are themed.
-const savedTheme = JSON.parse(localStorage.getItem('kolumn-settings') || '{}')?.state?.theme
-applyTheme(pickBootTheme(window.location.pathname, savedTheme))
+const savedSettings = JSON.parse(localStorage.getItem('kolumn-settings') || '{}')?.state
+applyTheme(pickBootTheme(window.location.pathname, savedSettings?.theme))
+// Motion applies on every route — reduced motion is welcome on marketing
+// pages too, unlike the dark theme (whose CSS is app-shell-only).
+applyMotion(savedSettings?.motion)
 
 // Initialize auth before rendering
 useAuthStore.getState().initialize()
