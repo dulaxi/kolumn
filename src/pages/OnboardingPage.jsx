@@ -767,7 +767,7 @@ function DisclaimerStep({ onContinue }) {
           <li className="flex gap-4 items-start">
             <div
               aria-hidden="true"
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[var(--accent-lime-wash)] text-[var(--accent-lime-dark)]"
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[var(--accent-lime-wash)] text-[var(--accent-lime-text)]"
             >
               <ArrowCounterClockwise size={18} weight="duotone" />
             </div>

@@ -339,7 +339,7 @@ const DemoCard = forwardRef(function DemoCard({
             {hasChecklist && (
               <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]'
+                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
                   : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
               }`}>
                 <CheckSquare size={12} weight="bold" />

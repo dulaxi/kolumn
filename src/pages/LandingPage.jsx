@@ -573,7 +573,7 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {card.dueDate && (
-              <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]">
+              <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]">
                 <CalendarDot size={12} weight="bold" />
                 {card.dueDate}
               </span>
@@ -581,7 +581,7 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
             {card.checklist && (
               <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]'
+                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
                   : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
               }`}>
                 <CheckSquare size={12} weight="bold" />

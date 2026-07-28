@@ -23,7 +23,7 @@ export default function ShortcutsSheet({ open, onClose }) {
               className="flex items-center gap-3 py-3 font-mono text-[12px] text-[var(--text-primary)]"
             >
               <span className="flex-1 truncate">{desc}</span>
-              <span className="font-mono text-[11px] text-[var(--accent-lime-dark)] bg-[var(--accent-lime-wash)] px-2 py-0.5 rounded-md">
+              <span className="font-mono text-[11px] text-[var(--accent-lime-text)] bg-[var(--accent-lime-wash)] px-2 py-0.5 rounded-md">
                 {keys.join(' + ')}
               </span>
             </li>

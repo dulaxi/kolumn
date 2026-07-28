@@ -122,7 +122,7 @@ function CardPreview({ card, labels }) {
       {(card.dueDate || hasChecklist) && (
         <div className="flex items-center gap-2 mt-2.5">
           {card.dueDate && (
-            <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]">
+            <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]">
               <CalendarDot size={12} weight="bold" />
               {card.dueDate}
             </span>
@@ -131,7 +131,7 @@ function CardPreview({ card, labels }) {
             <span
               className={`text-[10px] font-medium flex items-center gap-1 px-2 py-0.5 rounded-full ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]'
+                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
                   : 'bg-[var(--surface-raised)] text-[var(--text-muted)]'
               }`}
             >

@@ -104,6 +104,7 @@
   --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
   --notice-error-text: #A86434;  /* copper-dark: AA-safe on copper-wash + card */
   --notice-warn-text: #8A6B1F;   /* dark honey: readable on honey-wash */
+  --accent-lime-text: #4C6A1E;   /* dark lime: AA text on lime-wash (5.4:1) — the lime accents themselves fail there */
 
   /* Toast pale-fill theming (decision: error-style-decisions-3.html, 2B).
      Saturated toast fills (lime/copper/red/honey) are theme-stable and keep
@@ -192,6 +193,7 @@
   --label-red-bg: #3D1818;    --label-red-text: #E08080;
   --notice-error-text: #D89A6E;
   --notice-warn-text: #D4B86A;
+  --accent-lime-text: #BDD255;   /* bright lime: readable on the dark lime-wash */
 
   --toast-pale-border: #E8E5E0;
   --toast-info-bg: #2E2E2B;

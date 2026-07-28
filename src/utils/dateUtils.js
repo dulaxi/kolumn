@@ -69,7 +69,7 @@ export function dueDateBadgeClass(date) {
   const d = typeof date === 'string' ? parseDueDate(date) : date
   if (isYesterday(d) || (isPast(d) && !isToday(d))) return 'bg-[var(--color-copper-wash)] text-[var(--color-copper)]'
   if (isToday(d)) return 'bg-[var(--color-honey-wash)] text-[var(--color-honey)]'
-  return 'bg-[var(--color-lime-wash)] text-[var(--color-lime-dark)]'
+  return 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
 }
 
 // Outlined / "faded pill" variant of the due-date chip: same color
