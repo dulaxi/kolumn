@@ -23,14 +23,29 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip').textContent).toContain('Hint')
   })
 
-  test('hides content on mouseleave', () => {
+  test('hides content on mouseleave after the exit animation window', () => {
     render(<Tooltip content="Hint" delay={50}><button type="button">trigger</button></Tooltip>)
     const trigger = screen.getByText('trigger')
     fireEvent.mouseEnter(trigger)
     act(() => { vi.advanceTimersByTime(60) })
     expect(screen.getByRole('tooltip')).toBeTruthy()
     fireEvent.mouseLeave(trigger)
+    // Deferred unmount: still in the DOM while the fade-out plays
+    expect(screen.getByRole('tooltip')).toBeTruthy()
+    act(() => { vi.advanceTimersByTime(130) })
     expect(screen.queryByRole('tooltip')).toBe(null)
+  })
+
+  test('re-hovering during the exit cancels it and keeps the tooltip up', () => {
+    render(<Tooltip content="Hint" delay={50}><button type="button">trigger</button></Tooltip>)
+    const trigger = screen.getByText('trigger')
+    fireEvent.mouseEnter(trigger)
+    act(() => { vi.advanceTimersByTime(60) })
+    fireEvent.mouseLeave(trigger)
+    fireEvent.mouseEnter(trigger)
+    // Past the exit window — the cancelled exit must not have unmounted it
+    act(() => { vi.advanceTimersByTime(200) })
+    expect(screen.getByRole('tooltip')).toBeTruthy()
   })
 
   test('disabled=true suppresses the tooltip entirely', () => {

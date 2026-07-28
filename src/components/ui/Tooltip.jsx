@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, cloneElement, isValidElement } from 'react'
 import { createPortal } from 'react-dom'
+import { OVERLAY_EXIT_MS } from '../../constants/motion'
 
 // Gap between trigger and tip (the old mb-2/mt-2 offset).
 const GAP = 8
@@ -31,11 +32,16 @@ export default function Tooltip({
   children,
 }) {
   const [open, setOpen] = useState(false)
+  const [exiting, setExiting] = useState(false)
   const [pos, setPos] = useState(null)
   const timer = useRef(null)
+  const exitTimer = useRef(null)
   const anchorRef = useRef(null)
 
-  useEffect(() => () => clearTimeout(timer.current), [])
+  useEffect(() => () => {
+    clearTimeout(timer.current)
+    clearTimeout(exitTimer.current)
+  }, [])
 
   // Track the trigger while open so the tip follows scrolls/resizes
   // (capture=true catches nested scroll containers like the column list).
@@ -57,6 +63,8 @@ export default function Tooltip({
 
   const show = () => {
     clearTimeout(timer.current)
+    clearTimeout(exitTimer.current)
+    setExiting(false)
     timer.current = setTimeout(() => {
       const rect = anchorRef.current?.getBoundingClientRect()
       if (rect) setPos((POSITION[placement] || POSITION.top)(rect))
@@ -65,7 +73,14 @@ export default function Tooltip({
   }
   const hide = () => {
     clearTimeout(timer.current)
-    setOpen(false)
+    clearTimeout(exitTimer.current)
+    if (!open) return
+    // Deferred unmount so the fade-out can play (mirrors Popover).
+    setExiting(true)
+    exitTimer.current = setTimeout(() => {
+      setOpen(false)
+      setExiting(false)
+    }, OVERLAY_EXIT_MS)
   }
 
   const triggerProps = {
@@ -98,7 +113,7 @@ export default function Tooltip({
         >
           <span
             role="tooltip"
-            className="relative block px-2 py-1 text-[11px] font-medium text-white bg-[var(--color-ink)] rounded-md whitespace-nowrap animate-dropdown"
+            className={`relative block px-2 py-1 text-[11px] font-medium text-white bg-[var(--color-ink)] rounded-md whitespace-nowrap ${exiting ? 'animate-dropdown-out' : 'animate-dropdown'}`}
           >
             {content}
             <span
