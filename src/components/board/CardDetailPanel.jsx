@@ -27,6 +27,7 @@ import { selectCardLabels } from '../../store/selectors'
 import { usePresenceStore } from '../../store/presenceStore'
 import { othersOnCard } from '../../store/presence'
 import { resolveProfileColor, COLOR_DOT_CLASSES } from '../../constants/colors'
+import { MODAL_EXIT_MS } from '../../constants/motion'
 
 export default memo(function CardDetailPanel({ cardId, onClose }) {
   const card = useBoardStore((s) => s.cards[cardId])
@@ -90,6 +91,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
   const descriptionRef = useRef(null)
   const [showLabelForm, setShowLabelForm] = useState(false)
   const [showActivity, setShowActivity] = useState(false)
+  const [closing, setClosing] = useState(false)
   // Legacy assignee fallback preserved — formDataRef initialization below still needs this local
   const initialAssignees = cardAssigneeRefs(card)
   const members = useBoardMembers(card)
@@ -181,13 +183,20 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     updateCard(cardId, { title: title.trim() || card.title, description, assigneeRefs: assignees, due_date: dueDate || null, checklist, priority })
   }
 
-  const handleSaveAndClose = () => { handleSave(); onClose() }
+  const handleSaveAndClose = () => {
+    if (closing) return
+    handleSave()
+    // Flip the Modal closed so its exit animation plays, then unmount via
+    // the parent (BoardsPage hard-unmounts us, so it must come second).
+    setClosing(true)
+    setTimeout(onClose, MODAL_EXIT_MS)
+  }
 
   const priColor = priority === 'high' ? 'var(--color-copper)' : priority === 'low' ? 'var(--color-lime-dark)' : 'var(--color-honey)'
 
   return (
     <Modal
-      open
+      open={!closing}
       onClose={handleSaveAndClose}
       contentClassName="grid items-center justify-items-center overflow-y-auto subtle-scrollbar overflow-x-hidden md:p-10 p-4"
       // Open in view-only mode — no element gets initial focus. The
