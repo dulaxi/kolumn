@@ -4,6 +4,7 @@ import { Plus, X } from '@phosphor-icons/react'
 import { DndContext, DragOverlay } from '@dnd-kit/core'
 import { useBoardStore } from '../../store/boardStore'
 import { useBoardDnd } from '../../hooks/useBoardDnd'
+import useReducedMotion from '../../hooks/useReducedMotion'
 import { useGhostHoverStore } from '../../store/ghostHoverStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { deriveGhosts } from '../../lib/moveGhosts'
@@ -52,6 +53,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   } : null
 
   const { dndContextProps, activeCardId, activeCard, isMobile } = useBoardDnd({ boardId, boardColumns })
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     if (isAddingColumn && inputRef.current) inputRef.current.focus()
@@ -167,7 +169,9 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         </div>
       </div>
 
-      <DragOverlay dropAnimation={null}>
+      {/* undefined = dnd-kit's default ~250ms drop settle; null (reduced
+          motion) = snap instantly, the pre-motion-pass behavior. */}
+      <DragOverlay dropAnimation={reducedMotion ? null : undefined}>
         {activeCardId && activeCard ? (
           <div className={`${isMobile ? 'scale-105 shadow-xl' : 'rotate-2'} opacity-90`}>
             <Card card={activeCard} onClick={() => {}} />
