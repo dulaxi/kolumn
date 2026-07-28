@@ -167,7 +167,7 @@ export default function IconPicker({ value, onChange, onClose }) {
         </div>
 
         {/* Icons grid */}
-        <div ref={gridScrollRef} className="flex-1 overflow-y-auto px-3 pb-2">
+        <div ref={gridScrollRef} className="flex-1 overflow-y-auto subtle-scrollbar px-3 pb-2">
           {/* Remove icon shortcut — only visible when one is currently set */}
           {value && !searchResults && (
             <button
@@ -195,7 +195,7 @@ export default function IconPicker({ value, onChange, onClose }) {
         {/* Bottom category tab bar — iOS emoji-picker style */}
         {!searchResults && (
           <div className="border-t border-[var(--border-subtle)] bg-[var(--surface-card)]">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto subtle-scrollbar">
               <div className="flex items-center px-2 py-1.5 gap-0.5">
                 {tabs.map((tab) => (
                   <Tooltip key={tab.key} content={tab.label}>

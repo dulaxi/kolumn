@@ -189,7 +189,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     <Modal
       open
       onClose={handleSaveAndClose}
-      contentClassName="grid items-center justify-items-center overflow-y-auto overflow-x-hidden md:p-10 p-4"
+      contentClassName="grid items-center justify-items-center overflow-y-auto subtle-scrollbar overflow-x-hidden md:p-10 p-4"
       // Open in view-only mode — no element gets initial focus. The
       // previous fallback (first focusable = "All cards" back button)
       // showed a stray :focus-visible ring whenever the panel was opened
@@ -430,7 +430,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto subtle-scrollbar overflow-x-hidden">
           {/* Description — same DOM element across view + edit modes
               so box dimensions never shift on click. Read-only divs and
               the contentEditable share the exact `text-sm leading-relaxed

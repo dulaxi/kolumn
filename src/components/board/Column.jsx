@@ -169,7 +169,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={handleRenameKeyDown}
               onBlur={handleRename}
-              className="text-sm font-semibold rounded-lg px-1.5 py-0.5 flex-1 mr-2 border-0.5 border-[var(--border-default)] hover:border-[var(--color-mist)] focus:border-[var(--border-focus)] focus:outline-none focus:border-[var(--text-primary)] bg-[var(--surface-card)]"
+              className="flex-1 min-w-0 mr-2 text-sm font-semibold px-1.5 py-0.5 rounded bg-[var(--surface-card)] border border-[var(--border-default)] focus:outline-none focus:border-[var(--text-primary)]"
             />
           ) : (
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">
@@ -257,7 +257,7 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       {/* Cards list */}
       <div
         ref={setDroppableRef}
-        className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pb-2 space-y-2 min-h-[80px]"
+        className="flex-1 overflow-y-auto subtle-scrollbar [scrollbar-gutter:stable] pb-2 space-y-2 min-h-[80px]"
       >
         <SortableContext
           items={allCardIds}

@@ -114,7 +114,7 @@ export default function AssigneePicker({
           className="w-full text-sm rounded-lg px-2 py-1.5 border border-[var(--border-default)] hover:border-[var(--color-mist)] focus:border-[var(--border-focus)] focus:outline-none placeholder-[var(--text-faint)]"
         />
       </div>
-      <div className="max-h-56 overflow-y-auto">
+      <div className="max-h-56 overflow-y-auto subtle-scrollbar">
         {/* Free-text / former-member selections appear first */}
         {externalRefs.map((ref) => (
           <div

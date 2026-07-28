@@ -126,7 +126,7 @@ export default function BoardActivityModal({ boardId, cardId = null, onClose }) 
     <Modal
       open
       onClose={onClose}
-      contentClassName="grid items-center justify-items-center overflow-y-auto md:p-10 p-4"
+      contentClassName="grid items-center justify-items-center overflow-y-auto subtle-scrollbar md:p-10 p-4"
     >
       <div className="flex flex-col text-left shadow-[var(--shadow-raised)] border-0.5 border-[var(--border-default)] rounded-xl md:p-6 p-4 bg-[var(--surface-page)] w-full max-w-lg">
         <div className="flex items-start justify-between">
@@ -162,7 +162,7 @@ export default function BoardActivityModal({ boardId, cardId = null, onClose }) 
           ))}
         </div>
 
-        <div className="h-[65vh] overflow-y-auto overflow-x-hidden -mx-2 px-2">
+        <div className="h-[65vh] overflow-y-auto subtle-scrollbar overflow-x-hidden -mx-2 px-2">
           {groups.length === 0 && (
             <p className="py-10 text-center text-sm text-[var(--text-muted)]">
               {rows.length === 0

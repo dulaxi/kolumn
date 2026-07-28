@@ -196,7 +196,7 @@ export default function InlineCardEditor({ cardId: rawCardId, onDone }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Task name..."
-              className="flex-1 text-sm font-medium text-[var(--text-primary)] bg-transparent border-none focus:outline-none placeholder-[var(--text-faint)]"
+              className="flex-1 min-w-0 text-sm font-medium text-[var(--text-primary)] bg-transparent border-none focus:outline-none placeholder-[var(--text-faint)]"
             />
             {/* Priority check circle — cycles priority on click */}
             <PriorityMenu
