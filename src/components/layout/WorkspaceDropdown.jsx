@@ -5,10 +5,8 @@ import Tooltip from '../ui/Tooltip'
 
 import { useWorkspacesStore } from '../../store/workspacesStore'
 import { resolveWorkspaceColor } from '../../constants/colors'
+import { OVERLAY_EXIT_MS } from '../../constants/motion'
 import WorkspaceCreateModal from '../workspace/WorkspaceCreateModal'
-
-// Panel exit animation duration (matches @keyframes dropdownOut in index.css)
-const EXIT_MS = 120
 
 const ROW_BASE = 'flex items-center h-8 rounded-lg text-sm transition-colors duration-75 overflow-hidden'
 
@@ -82,7 +80,7 @@ export default function WorkspaceDropdown({
     if (open) { setRendered(true); setExiting(false); return }
     if (!rendered) return
     setExiting(true)
-    const t = setTimeout(() => { setRendered(false); setExiting(false) }, EXIT_MS)
+    const t = setTimeout(() => { setRendered(false); setExiting(false) }, OVERLAY_EXIT_MS)
     return () => clearTimeout(t)
   }, [open, rendered])
 

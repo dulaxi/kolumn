@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { OVERLAY_EXIT_MS } from '../../constants/motion'
 
 function mergeClassNames(...parts) {
   return parts.filter(Boolean).join(' ')
@@ -26,10 +27,6 @@ const PANEL_VISUAL =
   'z-50 min-w-[200px] p-1 ' +
   'bg-[var(--surface-card)] border border-[var(--color-mist)] rounded-[10px] ' +
   'shadow-[0_10px_30px_rgba(27,27,24,0.10),0_2px_6px_rgba(27,27,24,0.04)]'
-
-// Keep the panel mounted briefly after close so the exit animation can play.
-// Matches the duration of @keyframes dropdownOut in index.css.
-const EXIT_MS = 120
 
 export default function Popover({
   open,
@@ -63,7 +60,7 @@ export default function Popover({
     const t = setTimeout(() => {
       setRendered(false)
       setExiting(false)
-    }, EXIT_MS)
+    }, OVERLAY_EXIT_MS)
     return () => clearTimeout(t)
   }, [open, rendered])
 

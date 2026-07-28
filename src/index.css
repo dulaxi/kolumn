@@ -54,6 +54,16 @@
      at wash strength so it stays legible at grid-cell size. */
 
   --animate-fadeIn: fadeIn 1s ease forwards;
+  /* Motion tokens — single source of truth for animation durations.
+     JS deferred-unmount timers mirror these in src/constants/motion.js
+     (CSS vars aren't synchronously readable pre-mount); keep in sync. */
+  --dur-overlay-in: 150ms;   /* popover/menu/tooltip enter */
+  --dur-overlay-out: 120ms;  /* popover/menu/tooltip exit */
+  --dur-modal-in: 200ms;     /* modal panel + backdrop enter */
+  --dur-modal-out: 150ms;    /* modal panel + backdrop exit */
+  --dur-editor-in: 120ms;    /* InlineCardEditor entrance */
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);  /* decelerating (modal enter) */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);      /* accelerating (modal exit) */
 }
 
 /* Prevent horizontal overflow on mobile only */
@@ -354,17 +364,13 @@
 }
 .ghost-slot > * { overflow: hidden; }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-ghost-in, .ghost-slot { animation: none; }
-}
-
 @keyframes dropdownIn {
   from { opacity: 0; transform: scale(0.95) translateY(-4px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .animate-dropdown {
-  animation: dropdownIn 0.15s ease-out;
+  animation: dropdownIn var(--dur-overlay-in) ease-out;
 }
 
 @keyframes dropdownOut {
@@ -373,7 +379,49 @@
 }
 
 .animate-dropdown-out {
-  animation: dropdownOut 0.12s ease-in forwards;
+  animation: dropdownOut var(--dur-overlay-out) ease-in forwards;
+}
+
+/* Modal enter/exit — applied by the Modal primitive via data attributes.
+   The panel rule targets the backdrop's layout children through the
+   display:contents wrapper ([role] = the dialog wrapper), so consumers
+   need zero markup changes. QuickAddBar opts out via animated={false}
+   (no data-animated attribute) to keep its bespoke pill-bounce. */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modalOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.97) translateY(2px); }
+}
+[data-modal-backdrop][data-animated] {
+  animation: fadeIn var(--dur-modal-in) var(--ease-enter);
+}
+[data-modal-backdrop][data-animated] > [role] > * {
+  animation: modalIn var(--dur-modal-in) var(--ease-enter);
+}
+[data-modal-backdrop][data-animated][data-state="closed"] {
+  animation: fadeOut var(--dur-modal-out) var(--ease-exit) forwards;
+  pointer-events: none;
+}
+[data-modal-backdrop][data-animated][data-state="closed"] > [role] > * {
+  animation: modalOut var(--dur-modal-out) var(--ease-exit) forwards;
+}
+
+/* InlineCardEditor entrance — mount-only fade + 4px rise. Opacity and
+   transform only; the editor's own size must never animate (see the
+   "No transition-all" note in InlineCardEditor.jsx). */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise-in {
+  animation: riseIn var(--dur-editor-in) ease-out;
 }
 
 @keyframes slideInRight {
@@ -498,9 +546,6 @@
   flex-shrink: 0;
   animation: toast-pulse 1.6s ease-in-out infinite;
 }
-@media (prefers-reduced-motion: reduce) {
-  .toast-pulse-dot { animation: none; }
-}
 
 .ai-skeleton-block {
   background: var(--surface-raised);
@@ -514,6 +559,39 @@
     var(--surface-raised) 75%
   );
   background-size: 200% 100%;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────
+   Two triggers, one list:
+   1. OS-level prefers-reduced-motion, unless the user explicitly chose
+      "Full" in Settings → Accessibility (data-motion="full").
+   2. The in-app "Reduced" setting (data-motion="reduced"), regardless
+      of OS. applyMotion() in src/utils/motion.js stamps the attribute;
+      'system' means no attribute, so the media query live-follows the OS.
+   Hover transition-colors is exempt (not motion in the vestibular
+   sense). Deferred-unmount timers still run — surfaces linger inertly
+   for ≤150ms, which is invisible without the animation. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) :is(
+    .animate-dropdown, .animate-dropdown-out, .animate-ghost-in,
+    .ghost-slot, .animate-slide-in-right, .animate-rise-in,
+    .toast-pulse-dot, .audio-bar, .btn-wave > span, .typing-wave > span,
+    .ai-skeleton-block, [class*="pill-bounce"],
+    [data-modal-backdrop][data-animated],
+    [data-modal-backdrop][data-animated] > [role] > *
+  ) {
+    animation: none !important;
+  }
+}
+:root[data-motion="reduced"] :is(
+  .animate-dropdown, .animate-dropdown-out, .animate-ghost-in,
+  .ghost-slot, .animate-slide-in-right, .animate-rise-in,
+  .toast-pulse-dot, .audio-bar, .btn-wave > span, .typing-wave > span,
+  .ai-skeleton-block, [class*="pill-bounce"],
+  [data-modal-backdrop][data-animated],
+  [data-modal-backdrop][data-animated] > [role] > *
+) {
+  animation: none !important;
 }
 
 /* Text selection */
