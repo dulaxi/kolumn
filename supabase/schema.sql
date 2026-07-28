@@ -1319,3 +1319,16 @@ create index if not exists chat_tool_grants_user_created
   on public.chat_tool_grants (user_id, created_at desc);
 
 alter table public.chat_tool_grants enable row level security;
+
+-- Persistent IP → "City, Country" cache for the account edge function's
+-- session list (2026-07-28). Service-role only: the edge function's
+-- service-role client is the sole reader/writer; RLS on, no policies, grants
+-- revoked from anon/authenticated (same lockdown as chat_usage/chat_tool_grants).
+create table public.ip_geo_cache (
+  ip        text primary key,
+  location  text        not null,
+  cached_at timestamptz not null default now()
+);
+
+alter table public.ip_geo_cache enable row level security;
+revoke all on public.ip_geo_cache from anon, authenticated;

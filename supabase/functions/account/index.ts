@@ -43,28 +43,67 @@ function parseDevice(ua: string | null): string {
   return `${browser} · ${os}`
 }
 
-// --- ip → "City, Country" (best effort) ---------------------------------
+// --- ip → "City, Country" (best effort, persistently cached) -------------
 const PRIVATE_IP = /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/
+const GEO_TTL_MS = 30 * 24 * 60 * 60 * 1000 // re-resolve an IP at most monthly
 
-async function geolocate(ip: string | null, cache: Map<string, string>): Promise<string> {
-  if (!ip || PRIVATE_IP.test(ip)) return "—"
-  const hit = cache.get(ip)
-  if (hit) return hit
+const isPublicIp = (ip: string | null): ip is string => !!ip && !PRIVATE_IP.test(ip)
+
+// Resolve one IP to "City, Country" via ipwho.is. Returns null on failure or a
+// non-geolocatable response, so the caller can fall back to the raw IP WITHOUT
+// caching a miss (a cached miss would stick for the whole TTL).
+async function geoFetch(ip: string): Promise<string | null> {
   const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), 2000)
+  const timer = setTimeout(() => ctrl.abort(), 1500)
   try {
     const res = await fetch(`https://ipwho.is/${ip}`, { signal: ctrl.signal })
     const data = await res.json()
-    const loc = data?.success && data.city && data.country
+    return data?.success && data.city && data.country
       ? `${data.city}, ${data.country}`
-      : ip
-    cache.set(ip, loc)
-    return loc
+      : null
   } catch {
-    return ip
+    return null
   } finally {
     clearTimeout(timer)
   }
+}
+
+// Resolve a set of IPs, hitting the persistent ip_geo_cache first and only
+// calling the external API for IPs that are missing or past their TTL. Freshly
+// resolved IPs are written back so subsequent session-list loads are instant.
+async function resolveLocations(
+  admin: ReturnType<typeof createClient>,
+  ips: string[],
+): Promise<Map<string, string>> {
+  const geo = new Map<string, string>()
+  if (!ips.length) return geo
+
+  const { data: cached } = await admin
+    .from("ip_geo_cache")
+    .select("ip, location, cached_at")
+    .in("ip", ips)
+  const now = Date.now()
+  for (const row of (cached ?? []) as { ip: string; location: string; cached_at: string }[]) {
+    if (now - new Date(row.cached_at).getTime() < GEO_TTL_MS) geo.set(row.ip, row.location)
+  }
+
+  const missing = ips.filter((ip) => !geo.has(ip))
+  if (missing.length) {
+    const resolved = await Promise.all(
+      missing.map(async (ip) => ({ ip, location: await geoFetch(ip) })),
+    )
+    const fresh = resolved.filter((r) => r.location) as { ip: string; location: string }[]
+    for (const r of fresh) geo.set(r.ip, r.location)
+    if (fresh.length) {
+      try {
+        await admin.from("ip_geo_cache").upsert(
+          fresh.map((r) => ({ ip: r.ip, location: r.location, cached_at: new Date().toISOString() })),
+          { onConflict: "ip" },
+        )
+      } catch { /* cache write is best-effort — never fail the request over it */ }
+    }
+  }
+  return geo
 }
 
 // --- JWT payload (already verified by getUser) --------------------------
@@ -107,20 +146,26 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc("admin_list_sessions", { p_user_id: user.id })
     if (error) return json(500, { error: "sessions_failed" })
     const currentSessionId = jwtClaims(token)["session_id"] ?? null
-    const geoCache = new Map<string, string>()
-    const sessions = await Promise.all((data ?? []).map(async (s: {
+
+    type SessionRow = {
       id: string; created_at: string; updated_at: string | null
       refreshed_at: string | null; user_agent: string | null; ip: string | null
-    }) => ({
+    }
+    const rows = (data ?? []) as SessionRow[]
+
+    // One cached batch resolution instead of a blocking per-session lookup.
+    const geo = await resolveLocations(admin, [...new Set(rows.map((s) => s.ip).filter(isPublicIp))])
+
+    const sessions = rows.map((s) => ({
       id: s.id,
       device: parseDevice(s.user_agent),
       user_agent: s.user_agent ?? "",
       ip: s.ip ?? "",
-      location: await geolocate(s.ip, geoCache),
+      location: isPublicIp(s.ip) ? (geo.get(s.ip) ?? s.ip) : "—",
       created_at: s.created_at,
       last_active_at: s.refreshed_at ?? s.updated_at ?? s.created_at,
       current: s.id === currentSessionId,
-    })))
+    }))
     return json(200, { sessions })
   }
 
