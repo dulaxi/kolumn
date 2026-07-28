@@ -14,6 +14,14 @@ import { buildLastMove } from '../../../lib/moveGhosts'
 
 const cardCreateLimiter = createRateLimiter(10, 10000)   // 10 cards per 10s
 
+// Optimistically nudge a board's cached archived-count (backs the Archived
+// toggle when that board's archived rows aren't loaded). No-op if we've never
+// head-counted the board — the store-derived archivedCards.length covers it then.
+function bumpArchivedCount(counts, boardId, delta) {
+  if (!counts || !(boardId in counts)) return counts
+  return { ...counts, [boardId]: Math.max(0, (counts[boardId] || 0) + delta) }
+}
+
 export const createCardsSlice = (set, get) => ({
   cards: {},
   _isDragging: false,
@@ -450,6 +458,7 @@ export const createCardsSlice = (set, get) => ({
     // Optimistic — mark archived
     set((state) => ({
       cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
+      _archivedCounts: bumpArchivedCount(state._archivedCounts, card.board_id, +1),
     }))
 
     const { error } = await supabase.from('cards').update({ archived: true }).eq('id', cardId)
@@ -457,6 +466,7 @@ export const createCardsSlice = (set, get) => ({
       logError('Failed to archive card:', error)
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
+        _archivedCounts: bumpArchivedCount(state._archivedCounts, card.board_id, -1),
       }))
       showToast.error('Failed to archive task')
     } else {
@@ -471,6 +481,7 @@ export const createCardsSlice = (set, get) => ({
 
     set((state) => ({
       cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: false } },
+      _archivedCounts: bumpArchivedCount(state._archivedCounts, card.board_id, -1),
     }))
 
     const { error } = await supabase.from('cards').update({ archived: false }).eq('id', cardId)
@@ -478,6 +489,7 @@ export const createCardsSlice = (set, get) => ({
       logError('Failed to unarchive card:', error)
       set((state) => ({
         cards: { ...state.cards, [cardId]: { ...state.cards[cardId], archived: true } },
+        _archivedCounts: bumpArchivedCount(state._archivedCounts, card.board_id, +1),
       }))
       showToast.error('Failed to restore task')
     } else {
@@ -564,14 +576,17 @@ export const createCardsSlice = (set, get) => ({
     // that were silently dropped while _isDragging was true
     const boardId = state.activeBoardId
     if ((movedCrossColumn || anyFailed) && boardId && boardId !== '__all__') {
-      const { data } = await supabase.from('cards').select('*').eq('board_id', boardId)
+      // Active cards only — archived cards for this board load on demand and
+      // must NOT be pruned by this reconciliation (they're absent from `data`).
+      const { data } = await supabase.from('cards').select('*').eq('board_id', boardId).eq('archived', false)
       if (data) {
         set((s) => {
           const cards = { ...s.cards }
           data.forEach((c) => { cards[c.id] = c })
-          // Remove cards that no longer exist on this board
+          // Remove ACTIVE cards that no longer exist on this board (leave
+          // archived cards — they're intentionally not in `data`).
           Object.keys(cards).forEach((id) => {
-            if (cards[id].board_id === boardId && !data.find((c) => c.id === id)) {
+            if (cards[id].board_id === boardId && !cards[id].archived && !data.find((c) => c.id === id)) {
               delete cards[id]
             }
           })

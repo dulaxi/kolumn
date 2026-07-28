@@ -17,6 +17,14 @@ export const createBoardsSlice = (set, get) => ({
   _loadedBoardCards: new Set(),
   _loadingBoardCards: new Set(),
   _allCardsLoaded: false,
+  // Archived cards are the only unbounded-growth set, and the sole consumer is
+  // the per-board Archived view — every other surface (columns, search,
+  // all-tasks, stats, AI tools) filters archived out. So the loaders above
+  // fetch active cards only; archived cards load on demand, scoped to one
+  // board, when the Archived view opens. _archivedCounts backs the toggle's
+  // count/visibility without loading the rows.
+  _loadedArchivedBoards: new Set(),
+  _archivedCounts: {},
 
   clearError: () => set({ error: null }),
 
@@ -77,12 +85,12 @@ export const createBoardsSlice = (set, get) => ({
       let cardsData = []
       const loaded = new Set()
       if (loadAll) {
-        const cardsRes = await supabase.from('cards').select('*').order('position')
+        const cardsRes = await supabase.from('cards').select('*').eq('archived', false).order('position')
         if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
         cardsData = cardsRes.data || []
         Object.keys(boardMap).forEach((id) => loaded.add(id))
       } else if (scopedBoardId) {
-        const cardsRes = await supabase.from('cards').select('*').eq('board_id', scopedBoardId).order('position')
+        const cardsRes = await supabase.from('cards').select('*').eq('board_id', scopedBoardId).eq('archived', false).order('position')
         if (cardsRes.error) logError('Failed to fetch cards:', cardsRes.error)
         cardsData = cardsRes.data || []
         loaded.add(scopedBoardId)
@@ -90,6 +98,14 @@ export const createBoardsSlice = (set, get) => ({
 
       const cardMap = {}
       cardsData.forEach((c) => { cardMap[c.id] = c })
+      // This fetch is active-cards-only. On a refetch (boards:refetch), carry
+      // over any archived cards already loaded on demand so they survive the
+      // cards-map replace — otherwise the Archived view would go empty while
+      // _loadedArchivedBoards still claims they're loaded.
+      const prevCards = get().cards
+      for (const id in prevCards) {
+        if (prevCards[id].archived) cardMap[id] = prevCards[id]
+      }
 
       const cardIds = cardsData.map((c) => c.id)
       const cardLabelsRes = cardIds.length === 0
@@ -155,7 +171,7 @@ export const createBoardsSlice = (set, get) => ({
       return { _loadingBoardCards: loadingNext }
     })
     try {
-      const cardsRes = await supabase.from('cards').select('*').eq('board_id', boardId).order('position')
+      const cardsRes = await supabase.from('cards').select('*').eq('board_id', boardId).eq('archived', false).order('position')
       if (cardsRes.error) { logError('Failed to fetch board cards:', cardsRes.error); return }
       const newCards = cardsRes.data || []
       const ids = newCards.map((c) => c.id)
@@ -198,7 +214,7 @@ export const createBoardsSlice = (set, get) => ({
     try {
       const cardsRes = missing.length === 0
         ? { data: [] }
-        : await supabase.from('cards').select('*').in('board_id', missing).order('position')
+        : await supabase.from('cards').select('*').in('board_id', missing).eq('archived', false).order('position')
       if (cardsRes.error) { logError('Failed to fetch all cards:', cardsRes.error); return }
       const newCards = cardsRes.data || []
       const ids = newCards.map((c) => c.id)
@@ -218,6 +234,51 @@ export const createBoardsSlice = (set, get) => ({
       })
     } catch (err) {
       logError('ensureAllCardsLoaded failed:', err)
+    }
+  },
+
+  // Cheap head-count of a board's archived cards — backs the Archived toggle's
+  // count + visibility without pulling the rows. Called when a board is viewed.
+  fetchArchivedCount: async (boardId) => {
+    if (!boardId || boardId === '__all__') return
+    const { count, error } = await supabase
+      .from('cards')
+      .select('id', { count: 'exact', head: true })
+      .eq('board_id', boardId)
+      .eq('archived', true)
+    if (error) { logError('Failed to fetch archived count:', error); return }
+    set((state) => ({ _archivedCounts: { ...state._archivedCounts, [boardId]: count || 0 } }))
+  },
+
+  // On-demand load of one board's archived cards (+ their card_labels), merged
+  // into the same cards map. Idempotent per board per session. Triggered when
+  // the Archived view opens — never on the boot/cross-board hot path.
+  fetchArchivedCards: async (boardId) => {
+    if (!boardId || boardId === '__all__') return
+    if (get()._loadedArchivedBoards?.has(boardId)) return
+    try {
+      const cardsRes = await supabase.from('cards').select('*').eq('board_id', boardId).eq('archived', true).order('position')
+      if (cardsRes.error) { logError('Failed to fetch archived cards:', cardsRes.error); return }
+      const rows = cardsRes.data || []
+      const ids = rows.map((c) => c.id)
+      const clRes = ids.length
+        ? await supabase.from('card_labels').select('card_id, label_id').in('card_id', ids)
+        : { data: [] }
+      set((state) => {
+        const cards = { ...state.cards }
+        rows.forEach((c) => { cards[c.id] = c })
+        const cardLabels = { ...state.cardLabels }
+        ;(clRes.data || []).forEach((cl) => {
+          const next = new Set(cardLabels[cl.card_id] || [])
+          next.add(cl.label_id)
+          cardLabels[cl.card_id] = next
+        })
+        const loadedNext = new Set(state._loadedArchivedBoards || [])
+        loadedNext.add(boardId)
+        return { cards, cardLabels, _loadedArchivedBoards: loadedNext, _archivedCounts: { ...state._archivedCounts, [boardId]: rows.length } }
+      })
+    } catch (err) {
+      logError('fetchArchivedCards failed:', err)
     }
   },
 

@@ -54,6 +54,10 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const cardLabels = useBoardStore((s) => s.cardLabels)
   const unarchiveCard = useBoardStore((s) => s.unarchiveCard)
   const deleteCard = useBoardStore((s) => s.deleteCard)
+  const fetchArchivedCount = useBoardStore((s) => s.fetchArchivedCount)
+  const fetchArchivedCards = useBoardStore((s) => s.fetchArchivedCards)
+  const archivedLoaded = useBoardStore((s) => s._loadedArchivedBoards.has(activeBoardId))
+  const archivedCountRemote = useBoardStore((s) => s._archivedCounts[activeBoardId])
   const user = useAuthStore((s) => s.user)
 
   const activeBoard = boards[activeBoardId]
@@ -69,6 +73,21 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
     if (!isRealBoard) return []
     return Object.values(cards).filter((c) => c.board_id === activeBoardId && c.archived)
   }, [cards, activeBoardId, isRealBoard])
+
+  // Archived cards no longer ride the boot/cross-board load — they're fetched
+  // on demand per board. Head-count them when a board is viewed (drives the
+  // toggle's visibility + count); load the rows only when the view opens. Once
+  // loaded, the store-derived archivedCards.length is authoritative (it also
+  // reflects in-session archives); before that, fall back to the head count.
+  useEffect(() => {
+    if (isRealBoard) fetchArchivedCount(activeBoardId)
+  }, [isRealBoard, activeBoardId, fetchArchivedCount])
+
+  useEffect(() => {
+    if (showArchived && isRealBoard) fetchArchivedCards(activeBoardId)
+  }, [showArchived, isRealBoard, activeBoardId, fetchArchivedCards])
+
+  const displayArchivedCount = archivedLoaded ? archivedCards.length : (archivedCountRemote ?? archivedCards.length)
 
   const uniqueAssignees = useMemo(() => {
     const names = new Set()
@@ -260,7 +279,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             </div>
           )}
 
-          {isRealBoard && archivedCards.length > 0 && (
+          {isRealBoard && displayArchivedCount > 0 && (
             <button
               type="button"
               onClick={() => setShowArchived(!showArchived)}
@@ -271,7 +290,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               }`}
             >
               <Archive className="w-4 h-4 -ml-0.5" weight={showArchived ? 'fill' : 'regular'} />
-              Archived ({archivedCards.length})
+              Archived ({displayArchivedCount})
             </button>
           )}
           </div>
