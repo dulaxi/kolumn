@@ -13,6 +13,14 @@
     <link rel="preload" href="/fonts/clash-grotesk-variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/sentient-400.woff2" as="font" type="font/woff2" crossorigin />
 
+    <!-- Pill font (--font-pill, in-app badges only). Loaded non-blocking via the
+         media=print swap so it never delays first paint on the public landing
+         page (which uses no pills). Was a render-blocking @import in index.css. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" /></noscript>
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Kolumn — Project Management" />
@@ -30,9 +38,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Kolumn" />
+    <!-- Phosphor web font — powers DynamicIcon's `ph ph-<name>` classes for
+         DB-stored icon names. Two weights are used: regular, and fill (the
+         active/selected board icon in the sidebar — SidebarBoardItem sets
+         weight={active ? 'fill' : 'regular'}). The genuinely-unused light/bold
+         weights were dropped 2026-07-27 (the React icon components render their
+         own SVG and don't need this font at all). -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
   </head>
   <body style="background-color:#F2EDE8;margin:0">

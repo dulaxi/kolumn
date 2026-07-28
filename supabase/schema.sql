@@ -1025,7 +1025,7 @@ create policy "Members can create card activity"
   on public.card_activity for insert
   to authenticated
   with check (
-    user_id = auth.uid()
+    user_id = (select auth.uid())
     and board_id in (select get_my_board_ids())
   );
 
@@ -1289,16 +1289,16 @@ alter table public.chat_threads enable row level security;
 alter table public.chat_messages enable row level security;
 
 create policy "chat_threads_owner" on public.chat_threads
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- with check also confirms thread_id belongs to the same user — the FK to
 -- chat_threads(id) only proves the thread exists, not who owns it, so
 -- without this a user could attach a message to another user's thread_id.
 create policy "chat_messages_owner" on public.chat_messages
-  for all using (user_id = auth.uid())
+  for all using (user_id = (select auth.uid()))
   with check (
-    user_id = auth.uid()
-    and thread_id in (select id from public.chat_threads where user_id = auth.uid())
+    user_id = (select auth.uid())
+    and thread_id in (select id from public.chat_threads where user_id = (select auth.uid()))
   );
 
 -- Single-use grants for unbilled continuation rounds (2026-07-27). The chat

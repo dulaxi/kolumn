@@ -9,7 +9,9 @@ const VENDOR_CHUNKS = {
   react: ['react', 'react-dom', 'react-router-dom'],
   supabase: ['@supabase/supabase-js'],
   sentry: ['@sentry/react'],
-  posthog: ['posthog-js'],
+  // posthog-js is loaded via a dynamic import() in src/lib/analytics.js — a
+  // manualChunks entry here would fight the dynamic split and drop the code
+  // from the build. Vite auto-emits it as its own lazy async chunk.
   phosphor: ['@phosphor-icons/react'],
   motion: ['motion'],
   markdown: ['react-markdown', 'remark-gfm'],
