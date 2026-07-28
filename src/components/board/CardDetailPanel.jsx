@@ -98,6 +98,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
 
   const isDirtyRef = useRef(false)
   const autoSaveTimerRef = useRef(null)
+  const closeTimerRef = useRef(null)
   const formDataRef = useRef({ title: card?.title || '', description: card?.description || '', assignees: [...initialAssignees], dueDate: card?.due_date || '', checklist: card?.checklist ? card.checklist.map((item) => ({ ...item })) : [], priority: card?.priority || 'medium' })
 
   useEffect(() => {
@@ -106,6 +107,11 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     // attachments on every card edit. fetchAttachments is a stable store action.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardId, fetchAttachments])
+
+  // The deferred-close timer must die with this instance — BoardsPage
+  // remounts the panel per card (key={cardId}), and an orphaned timer's
+  // stale onClose would close the NEXT card's panel.
+  useEffect(() => () => clearTimeout(closeTimerRef.current), [])
 
   // Re-sync local form state when the card is updated externally (AI tool
   // call, realtime broadcast from another client, etc.) and the user has no
@@ -189,7 +195,7 @@ export default memo(function CardDetailPanel({ cardId, onClose }) {
     // Flip the Modal closed so its exit animation plays, then unmount via
     // the parent (BoardsPage hard-unmounts us, so it must come second).
     setClosing(true)
-    setTimeout(onClose, MODAL_EXIT_MS)
+    closeTimerRef.current = setTimeout(onClose, MODAL_EXIT_MS)
   }
 
   const priColor = priority === 'high' ? 'var(--color-copper)' : priority === 'low' ? 'var(--color-lime-dark)' : 'var(--color-honey)'
