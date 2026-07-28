@@ -285,7 +285,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               onClick={() => setShowArchived(!showArchived)}
               className={`${TOOLBAR_BTN} ${
                 showArchived
-                  ? 'bg-[var(--color-honey-wash)] text-[var(--color-honey)]'
+                  ? 'bg-[var(--color-honey-wash)] text-[var(--notice-warn-text)]'
                   : TOOLBAR_BTN_FILL
               }`}
             >
