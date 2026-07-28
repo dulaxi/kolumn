@@ -557,42 +557,77 @@ export const createCardsSlice = (set, get) => ({
       .map((cardId) => {
         const card = state.cards[cardId]
         if (!card) return null
-        return { id: cardId, column_id: card.column_id, position: card.position, completed: card.completed }
+        const w = { id: cardId, column_id: card.column_id, position: card.position, completed: card.completed }
+        // Persist last_move in the SAME write as the position, so cross-column
+        // moves don't fire a second, position-less last_move write whose realtime
+        // echo carries the pre-move (stale) position — the "cards jump/shift
+        // briefly" flicker. Only the moved card carries a fresh last_move; for
+        // the rest this re-writes their existing value (idempotent).
+        if (card.last_move !== undefined) w.last_move = card.last_move
+        return w
       })
       .filter(Boolean)
 
-    // Parallel writes to minimize race window
-    const results = await Promise.all(writes.map(({ id, ...rest }) =>
-      supabase.from('cards').update(rest).eq('id', id)
-        .then(({ error }) => {
-          if (error) logError('Failed to persist card position:', error)
-          return !error
-        })
-    ))
-    const anyFailed = results.some((ok) => !ok)
-    if (anyFailed) showToast.error('Some card moves failed to save — resyncing')
-
-    // Refetch cards after cross-column moves to recover any realtime updates
-    // that were silently dropped while _isDragging was true
-    const boardId = state.activeBoardId
-    if ((movedCrossColumn || anyFailed) && boardId && boardId !== '__all__') {
-      // Active cards only — archived cards for this board load on demand and
-      // must NOT be pruned by this reconciliation (they're absent from `data`).
-      const { data } = await supabase.from('cards').select('*').eq('board_id', boardId).eq('archived', false)
-      if (data) {
-        set((s) => {
-          const cards = { ...s.cards }
-          data.forEach((c) => { cards[c.id] = c })
-          // Remove ACTIVE cards that no longer exist on this board (leave
-          // archived cards — they're intentionally not in `data`).
-          Object.keys(cards).forEach((id) => {
-            if (cards[id].board_id === boardId && !cards[id].archived && !data.find((c) => c.id === id)) {
-              delete cards[id]
-            }
+    // Mark these cards' local positions as in flight. Realtime echoes AND the
+    // reconcile refetch below skip in-flight cards, so a slow refetch from an
+    // earlier, still-pending drag can't revert a later optimistic move (the
+    // "card flashes back then forward" glitch on rapid successive drags).
+    const persistedIds = writes.map((w) => w.id)
+    persistedIds.forEach((id) => _inFlightCards.add(id))
+    try {
+      // Parallel writes to minimize race window
+      const results = await Promise.all(writes.map(({ id, ...rest }) =>
+        supabase.from('cards').update(rest).eq('id', id)
+          .then(({ error }) => {
+            if (error) logError('Failed to persist card position:', error)
+            return !error
           })
-          return { cards }
-        })
+      ))
+      const anyFailed = results.some((ok) => !ok)
+      if (anyFailed) showToast.error('Some card moves failed to save — resyncing')
+
+      // Refetch cards after cross-column moves to recover any realtime updates
+      // that were silently dropped while _isDragging was true
+      const boardId = state.activeBoardId
+      if ((movedCrossColumn || anyFailed) && boardId && boardId !== '__all__') {
+        // Active cards only — archived cards for this board load on demand and
+        // must NOT be pruned by this reconciliation (they're absent from `data`).
+        const { data } = await supabase.from('cards').select('*').eq('board_id', boardId).eq('archived', false)
+        if (data) {
+          set((s) => {
+            const cards = { ...s.cards }
+            let changed = false
+            data.forEach((c) => {
+              // Skip cards with a newer local write in flight — refetched rows
+              // for them may predate that write and would clobber the move.
+              if (_inFlightCards.has(c.id)) return
+              // Preserve object identity for cards that didn't actually change.
+              // Replacing every card with an equal-but-new object reference
+              // re-renders the whole board on every cross-column drop (a visible
+              // "reload" flicker); only touch rows the server actually updated.
+              const existing = cards[c.id]
+              if (existing && existing.updated_at === c.updated_at) return
+              cards[c.id] = c
+              changed = true
+            })
+            // Remove ACTIVE cards that no longer exist on this board (leave
+            // archived cards — they're intentionally not in `data` — and any
+            // in-flight card, which may be mid-move and legitimately absent).
+            Object.keys(cards).forEach((id) => {
+              if (cards[id].board_id === boardId && !cards[id].archived &&
+                  !_inFlightCards.has(id) && !data.find((c) => c.id === id)) {
+                delete cards[id]
+                changed = true
+              }
+            })
+            // No-op when nothing changed so the `cards` reference is preserved
+            // and no subscriber re-renders.
+            return changed ? { cards } : {}
+          })
+        }
       }
+    } finally {
+      persistedIds.forEach((id) => _inFlightCards.delete(id))
     }
   },
 
@@ -608,15 +643,14 @@ export const createCardsSlice = (set, get) => ({
       { id: profile?.id ?? null, name: profile?.display_name || 'Someone', color: profile?.color ?? null, icon: profile?.icon ?? null, at: new Date().toISOString() },
     )
 
-    // Optimistic local update so the mover sees their own ghost immediately;
-    // other clients receive it via the existing realtime cards subscription.
+    // Optimistic local update so the mover sees their own ghost immediately.
+    // last_move is PERSISTED by persistCardPositions in the same write as the
+    // new column/position (see below) — issuing a separate position-less write
+    // here echoed the stale pre-move position and made cards jump on drop.
+    // Other clients receive last_move via that persist write's realtime echo.
     set((s) => (s.cards[cardId]
       ? { cards: { ...s.cards, [cardId]: { ...s.cards[cardId], last_move: lastMove } } }
       : {}))
-
-    // Fire-and-forget: persist to the card row (never blocks the drag).
-    supabase.from('cards').update({ last_move: lastMove }).eq('id', cardId)
-      .then(({ error }) => { if (error) logError('last_move write failed:', error) })
 
     // Append-only structured history (powers the future full-trail tier).
     logActivity(cardId, 'moved', `${fromCol?.title || 'Unknown'} → ${toCol?.title || 'Unknown'}`, {

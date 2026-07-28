@@ -6,11 +6,26 @@ import { logError } from '../../utils/logger'
 
 export const ACTIVE_BOARD_KEY = 'kolumn_active_board'
 
-// Cards with a local write in flight. Realtime echoes for these are skipped so
-// a stale echo (including the echo of the user's own earlier write) can't
-// clobber a newer optimistic edit. See the 2026-07-20 architecture audit.
-// SHARED single instance: cardsSlice adds/removes ids, mergeCardEcho reads it.
-export const _inFlightCards = new Set()
+// Cards with a local write in flight. Realtime echoes AND the drag-persist
+// reconcile refetch skip these so a stale server read (including the echo of
+// the user's own earlier write, or a slow refetch from an earlier drag) can't
+// clobber a newer optimistic edit. See the 2026-07-20 architecture audit and
+// the 2026-07-28 drag-persist race fix.
+//
+// Ref-counted: overlapping writes for the same card (e.g. dragging cards in
+// rapid succession) each add()/delete() independently, so the card stays
+// protected until the LAST in-flight write for it settles. Exposes the Set
+// API surface the callers use (add/delete/has).
+export const _inFlightCards = {
+  _counts: new Map(),
+  add(id) { this._counts.set(id, (this._counts.get(id) || 0) + 1) },
+  delete(id) {
+    const n = (this._counts.get(id) || 0) - 1
+    if (n > 0) this._counts.set(id, n)
+    else this._counts.delete(id)
+  },
+  has(id) { return this._counts.has(id) },
+}
 
 // Apply a realtime card change, guarding against stale/echo overwrites.
 // Returns a partial state for zustand's set() ({} = no-op).
