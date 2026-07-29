@@ -100,6 +100,12 @@ into `Modal.jsx`:
 
 ### 4. Drag-and-drop settle
 
+> **Outcome note (post-implementation):** shipped, tried in the browser, and
+> **reverted by user decision** — instant drop placement felt better than the
+> 250ms settle. `dropAnimation={null}` is back, now with a code comment
+> marking it deliberate. The rest of this section is kept as the record of
+> what was tried.
+
 Restore `dropAnimation` in `BoardView.jsx` (`dropAnimation={null}` →
 dnd-kit's default drop animation, ~250ms ease), except under effective
 reduced motion, where it stays `null` (via `useReducedMotion()`).
