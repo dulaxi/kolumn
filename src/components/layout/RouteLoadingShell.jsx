@@ -98,7 +98,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         <ContentSkeleton pathname={pathname} />
         {slow && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[var(--surface-page)]/70">
-            <PixelKlay animation="grow" scale={8} label="Klay loading" />
+            <PixelKlay animation="tap" scale={8} label="Klay loading" />
             <span className="font-mono text-xs text-[var(--text-muted)]">
               <LetterWave text="Kanbanning…" tone="typing" />
             </span>

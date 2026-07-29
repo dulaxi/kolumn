@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klay — Kanbanning… loader alternatives · Kolumn</title>
+    <style>
+      :root, [data-theme="light"] {
+        --surface-page: #FAF8F6; --surface-card: #FFFFFF;
+        --border-default: #E0DBD5; --border-subtle: #E8E2DB;
+        --text-primary: #1B1B18; --text-secondary: #5C5C57; --text-muted: #8E8E89; --text-faint: #C4BFB8;
+        --color-logo: #8BA32E; --color-mauve: #A8969E;
+      }
+      [data-theme="dark"] {
+        --surface-page: #1C1C1A; --surface-card: #262624;
+        --border-default: #454340; --border-subtle: #332F2D;
+        --text-primary: #E8E5E0; --text-secondary: #B0ADA7; --text-muted: #8A8782; --text-faint: #6B6966;
+        --color-logo: #A8BA32; --color-mauve: #C4A0B8;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--surface-page); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 48px 32px 120px; }
+      h1 { font-family: Georgia, serif; font-weight: 400; font-size: 38px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      header.page p { color: var(--text-secondary); margin: 0 0 4px; max-width: 720px; }
+      .meta-line { font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+      .hero { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 14px; margin-top: 28px; padding: 10px; position: sticky; top: 10px; z-index: 5; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+      .hero-stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 10px; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+      .hero-caption { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); text-align: center; padding: 8px 0 4px; }
+      svg { shape-rendering: crispEdges; display: block; }
+      @keyframes typing-letter-wave { 0%, 16%, 100% { color: var(--text-muted); opacity: 0.5; } 5% { color: var(--color-logo); opacity: 1; } 10% { color: var(--color-mauve); opacity: 1; } }
+      .twave { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+      .twave span { color: var(--text-muted); opacity: 0.5; animation: typing-letter-wave var(--wave-dur, 1.8s) linear infinite; animation-delay: calc(var(--i) * 90ms); font-weight: 500; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+      .card { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 12px; padding: 10px; cursor: pointer; transition: border-color 120ms; }
+      .card:hover { border-color: var(--color-mauve); }
+      .card.active { border-color: var(--color-logo); box-shadow: 0 0 0 1px var(--color-logo); }
+      .card .stage { background: var(--surface-page); border: 1px solid var(--border-subtle); border-radius: 8px; height: 130px; display: grid; place-items: center; }
+      .card .nm { font-size: 13px; font-weight: 600; margin-top: 8px; }
+      .card .note { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.45; }
+      h2 { font-family: Georgia, serif; font-weight: 400; font-size: 22px; margin: 40px 0 2px; }
+      .sub { color: var(--text-secondary); font-size: 13px; margin: 2px 0 0; max-width: 720px; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 10; font: inherit; font-size: 12px; font-weight: 500; background: var(--surface-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 24px rgba(27,27,24,0.10); }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Toggle theme</button>
+    <div class="wrap">
+      <header class="page">
+        <h1>Kanbanning… — loader alternatives</h1>
+        <p>The route loader and board cards-loader currently play <strong>grow</strong> under the "Kanbanning…" letter-wave. Candidates below are built loop-first — a loader repeats forever, so seamlessness and calm beat narrative — and deliberately card-free: Klay's own body and abstract cues carry the motion. Click any card to preview it in the real loader composition (sticky stage above).</p>
+        <p class="meta-line">2026-07-28 · used by RouteLoadingShell.jsx + BoardView.jsx (cardsLoading) · style: klay-detailed-props.html v2 system</p>
+      </header>
+      <div class="hero">
+        <div class="hero-stage"><div id="hero-anim"></div><span class="twave" id="hero-word"></span></div>
+        <div class="hero-caption" id="hero-name"></div>
+      </div>
+      <div id="sections"></div>
+      <p class="meta-line" style="margin-top:28px">Klay stays 4-color (olive, lime, mauve, ink); props use mist/cream/honey only here. Mauve never leaves Klay.</p>
+    </div>
+
+    <script>
+      const P = { o:'#8BA32E', l:'#C2D64A', m:'#A8969E', k:'#1B1B18', w:'#FDFBF7', h:'#D4A843', c:'#C27A4A', s:'#E0DBD5', K:'#5C5C57', S:'#C4BFB8' };
+      const E = '............';
+      const BASE = [E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E,E];
+      const LEFT = [E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E];
+      const LEFT_DOWN = [E,E,'...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E];
+      const LEFT_UP = ['...l........','..lll.......','...o........','mmmmmm......','mkmmkm......','mmmmmm......','.m..m.......',E,E,E,E];
+      // LEFT-pose eye rows
+      const LC='mkmmkm......', LL='kmmkmm......', LR='mmkmmk......', LX='mmmmmm......';
+      const ARM='mmmmmmm.....'; // pot row with pushing arm
+
+      // fine-grid helpers (24 cols × 22 rows, drawn at half scale in front)
+      function place(str, x) { return ('.'.repeat(x) + str + '.'.repeat(24)).slice(0, 24); }
+      function hi(shape, x, y) { const o = {}; shape.forEach((row, i) => { o[y + i] = place(row, x); }); return o; }
+      function overlay(a, b) { return [...a].map((ch, i) => (b[i] !== '.' ? b[i] : ch)).join(''); }
+      function merge(...os) { const out = {}; for (const o of os) for (const y in o) out[y] = out[y] ? overlay(out[y], o[y]) : o[y]; return out; }
+      function F(base, mod, hiRows, ms) { const c = base.slice(); if (mod) for (const y in mod) c[+y] = mod[y]; return { map: c, hi: hiRows || null, ms: ms || 300 }; }
+      const A = (cat, name, note, frames) => ({ cat, name, note, frames });
+
+      // BASE-family poses for bobbing
+      const DOWN = [E,E,'......l.....','.....lll....','......o.....','...mmmmmm...','...mkmmkm...','...mmmmmm...','....m..m....',E,E];
+      // BASE shifted a column left/right, for pacing
+      const BASE_L = [E,'.....l......','....lll.....','.....o......','..mmmmmm....','..mkmmkm....','..mmmmmm....','...m..m.....',E,E,E];
+      const BASE_R = [E,'.......l....','......lll...','.......o....','....mmmmmm..','....mkmmkm..','....mmmmmm..','.....m..m...',E,E,E];
+      // BASE-pose eye rows
+      const XC='...mkmmkm...', XL='...kmmkmm...', XR='...mmkmmk...';
+
+      const LEAF = ['ll'];   // detached lime leaf (Klay's own colors may orbit him)
+      const DOT  = ['SS','SS']; // mist thinking-dot (BUB_S in the runtime)
+
+      const ANIMS = [
+
+      // ─── Current ───
+      A('Current', 'Grow (today)', 'What plays now: the sprout regrows and blooms. Calm, but a slow 3.8s narrative for a loader.', [
+        F(BASE, { 1: E, 2: E, 3: E }, null, 800),
+        F(BASE, { 1: E, 2: '......l.....', 3: '......o.....' }, null, 800),
+        F(BASE, null, null, 800),
+        F(BASE, { 0: '.....lml....' }, null, 1400),
+      ]),
+      A('Current', 'Tap (library)', 'Existing library scene: the classic waiting foot-tap. Already a loader-grade loop — included for comparison.', [
+        F(BASE, null, null, 260),
+        F(BASE, { 7: '....m.......', 8: '.......m....' }, null, 200),
+        F(BASE, null, null, 200),
+        F(BASE, { 7: '....m.......', 8: '.......m....' }, null, 200),
+      ]),
+
+      // ─── New alternatives (no cards, no board props) ───
+      A('New', 'Leaf orbit', 'One of his own leaves does laps around him while his eyes track it — a loading spinner made of Klay himself. Perfectly seamless.', [
+        F(BASE, null, hi(LEAF, 11, 0), 240),
+        F(BASE, { 5: XR }, hi(LEAF, 19, 7), 240),
+        F(DOWN, null, hi(LEAF, 11, 16), 240),
+        F(BASE, { 5: XL }, hi(LEAF, 2, 7), 240),
+      ]),
+      A('New', 'Metronome', 'The sprout ticks side to side, eyes following, keeping time. Rhythmic "working on it" energy; endlessly loopable.', [
+        F(BASE, { 1: '.....l......', 2: '....lll.....', 5: XL }, null, 280),
+        F(BASE, null, null, 280),
+        F(BASE, { 1: '.......l....', 2: '......lll...', 5: XR }, null, 280),
+        F(BASE, null, null, 280),
+      ]),
+      A('New', 'Dots', 'The chat typing-indicator "…" in pixel form: three dots build beside him, clear, repeat. Klay watches them appear. Pairs with the letter-wave below.', [
+        F(BASE, { 5: XR }, hi(DOT, 15, 2), 300),
+        F(BASE, { 5: XR }, merge(hi(DOT, 15, 2), hi(DOT, 18, 2)), 300),
+        F(BASE, { 5: XR }, merge(hi(DOT, 15, 2), hi(DOT, 18, 2), hi(DOT, 21, 2)), 450),
+        F(DOWN, null, null, 250),
+      ]),
+      A('New', 'Breathe', 'A slow elastic pulse: the sprout stretches tall, settles, squashes down. Klay as a breathing loading pulse — the calmest option.', [
+        F(BASE, null, null, 400),
+        F(BASE, { 0: '......l.....', 1: '.....lll....', 2: '......o.....', 3: '......o.....' }, null, 300),
+        F(BASE, null, null, 300),
+        F(DOWN, { 2: E, 3: '.....lll....', 4: '......o.....' }, null, 350),
+      ]),
+      A('New', 'Pace', 'He paces a step left, a step right, eyes leading each turn — waiting with intent, like anyone outside a meeting room.', [
+        F(BASE_L, { 5: '..kmmkmm....' }, null, 300),
+        F(BASE, { 7: '....m...m...' }, null, 220),
+        F(BASE_R, { 5: '....mmkmmk..' }, null, 300),
+        F(BASE, { 7: '...m...m....' }, null, 220),
+      ]),
+      ];
+
+      function render(frame, scale) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', 12 * scale); svg.setAttribute('height', 11 * scale);
+        frame.map.forEach((row, y) => {
+          [...row].slice(0, 12).forEach((ch, x) => {
+            const color = P[ch]; if (!color) return;
+            const r = document.createElementNS(ns, 'rect');
+            r.setAttribute('x', x * scale); r.setAttribute('y', y * scale);
+            r.setAttribute('width', scale); r.setAttribute('height', scale);
+            r.setAttribute('fill', color); svg.appendChild(r);
+          });
+        });
+        if (frame.hi) {
+          const half = scale / 2;
+          for (const yStr in frame.hi) {
+            const row = frame.hi[yStr]; if (typeof row !== 'string') continue;
+            const y = +yStr;
+            [...row].slice(0, 24).forEach((ch, x) => {
+              const color = P[ch]; if (!color) return;
+              const r = document.createElementNS(ns, 'rect');
+              r.setAttribute('x', x * half); r.setAttribute('y', y * half);
+              r.setAttribute('width', half); r.setAttribute('height', half);
+              r.setAttribute('fill', color); svg.appendChild(r);
+            });
+          }
+        }
+        return svg;
+      }
+      function play(mount, anim, scale) {
+        let idx = 0, timer;
+        function tick() {
+          mount.textContent = '';
+          mount.appendChild(render(anim.frames[idx], scale));
+          timer = setTimeout(() => { idx = (idx + 1) % anim.frames.length; tick(); }, anim.frames[idx].ms);
+        }
+        tick();
+        return () => clearTimeout(timer);
+      }
+      function waveify(el, word) {
+        el.textContent = ''; let i = 0;
+        for (const ch of word) { const s = document.createElement('span'); s.textContent = ch; s.style.setProperty('--i', i++); el.appendChild(s); }
+        el.style.setProperty('--wave-dur', Math.max(1.6, i * 0.09 + 0.7) + 's');
+      }
+      waveify(document.getElementById('hero-word'), 'Kanbanning…');
+
+      const heroMount = document.getElementById('hero-anim');
+      const heroName = document.getElementById('hero-name');
+      let stopHero = null, activeCard = null;
+      function setHero(anim) {
+        if (stopHero) stopHero();
+        stopHero = play(heroMount, anim, 13);
+        heroName.textContent = anim.cat + ' · ' + anim.name + ' — as it would appear in the route loader';
+      }
+      const sections = document.getElementById('sections');
+      const SUBS = {
+        'Current': 'What ships today, plus the library’s existing waiting loop.',
+        'New': 'Five card-free candidates — pure Klay motion and abstract cues, ordered spinner-like to characterful.',
+      };
+      const cats = [...new Set(ANIMS.map(a => a.cat))];
+      cats.forEach((cat) => {
+        const h = document.createElement('h2'); h.textContent = cat; sections.appendChild(h);
+        const sub = document.createElement('p'); sub.className = 'sub'; sub.textContent = SUBS[cat] || ''; sections.appendChild(sub);
+        const grid = document.createElement('div'); grid.className = 'grid'; sections.appendChild(grid);
+        ANIMS.filter(a => a.cat === cat).forEach((anim) => {
+          const card = document.createElement('div'); card.className = 'card';
+          const stage = document.createElement('div'); stage.className = 'stage';
+          const holder = document.createElement('div');
+          play(holder, anim, 9);
+          stage.appendChild(holder); card.appendChild(stage);
+          const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = anim.name; card.appendChild(nm);
+          const note = document.createElement('div'); note.className = 'note'; note.textContent = anim.note; card.appendChild(note);
+          card.addEventListener('click', () => {
+            if (activeCard) activeCard.classList.remove('active');
+            card.classList.add('active'); activeCard = card;
+            setHero(anim);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          grid.appendChild(card);
+        });
+      });
+      setHero(ANIMS[0]);
+    </script>
+  </body>
+</html>
