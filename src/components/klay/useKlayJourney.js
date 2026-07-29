@@ -10,7 +10,8 @@ export const TRAVEL_MS = 1200 // one scurry between adjacent stations (8 × 150m
  * useKlayJourney — the journey clock for the upsell step. Cycles
  * perform → travel around `stationCount` stations, forever. During
  * 'travel', `station` is the destination. Under prefers-reduced-motion the
- * journey parks at station 0 ('perform') and sets no timers.
+ * journey sets no timers; if reduction turns on mid-run it freezes in place
+ * (whatever station/phase it was at, not necessarily station 0).
  */
 export default function useKlayJourney(stationCount, { dwellMs = DWELL_MS, travelMs = TRAVEL_MS } = {}) {
   const reduced = useReducedMotion()

@@ -569,8 +569,8 @@
       of OS. applyMotion() in src/utils/motion.js stamps the attribute;
       'system' means no attribute, so the media query live-follows the OS.
    Hover transition-colors is exempt (not motion in the vestibular
-   sense). Deferred-unmount timers still run — surfaces linger inertly
-   for ≤150ms, which is invisible without the animation. */
+   sense). Deferred-unmount timers still run — with animation:none the
+   closing surface stays visible but inert for ≤150ms, then unmounts. */
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion="full"]) :is(
     .animate-dropdown, .animate-dropdown-out, .animate-ghost-in,

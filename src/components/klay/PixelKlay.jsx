@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ANIMATIONS, PALETTE, COARSE_COLS, COARSE_ROWS } from './klayAnimations'
+import useReducedMotion from '../../hooks/useReducedMotion'
 
 /**
  * PixelKlay — plays a Klay animation as crisp SVG pixel frames.
@@ -18,13 +19,17 @@ import { ANIMATIONS, PALETTE, COARSE_COLS, COARSE_ROWS } from './klayAnimations'
 export default function PixelKlay({ animation = 'idle', scale = 8, playOnce = false, paused = false, label = 'Klay', className = '' }) {
   const frames = ANIMATIONS[animation] || ANIMATIONS.idle
   const [idx, setIdx] = useState(0)
+  // This is a JS setTimeout-driven sprite loop, not CSS — the global
+  // prefers-reduced-motion guard in index.css can't reach it, so we read the
+  // effective reduce-motion setting directly and fold it into the pause check.
+  const reduced = useReducedMotion()
 
   useEffect(() => {
     setIdx(0)
   }, [animation])
 
   useEffect(() => {
-    if (paused) return undefined // freeze on the current frame
+    if (paused || reduced) return undefined // freeze on the current frame
     if (playOnce && idx >= frames.length - 1) return undefined // rest on the last frame
     // idx can be stale here — animation may have just switched to a shorter
     // sequence and the [animation] reset effect (above) hasn't landed yet.
@@ -32,7 +37,7 @@ export default function PixelKlay({ animation = 'idle', scale = 8, playOnce = fa
     const f = frames[idx] || frames[0]
     const timer = setTimeout(() => setIdx((i) => (i + 1) % frames.length), f.ms)
     return () => clearTimeout(timer)
-  }, [idx, frames, playOnce, paused])
+  }, [idx, frames, playOnce, paused, reduced])
 
   const { map, hi } = frames[idx] || frames[0]
   const half = scale / 2
