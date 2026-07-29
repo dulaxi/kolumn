@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--
+  halftone-shading · motion-mixer
+  Tune the animated layers live (on/off, speed, amount, fps). Static scene fixed.
+  Copy motion -> JSON you paste into anim-template.html's P. Locked pace as default.
+-->
+<html><head><meta charset="utf-8"><title>Halftone motion mixer</title>
+<style>
+  body{margin:0;font-family:'IBM Plex Mono',monospace;background:#e9e6df;color:#15130d}
+  #mx{display:flex;gap:16px;padding:16px;align-items:flex-start;flex-wrap:wrap}
+  #panel{flex:0 0 280px;border:1px solid #cfc9be;border-radius:10px;padding:12px 14px;background:#fff}
+  #stage{flex:1;min-width:440px}#stage svg{border:1px solid #cfc9be;border-radius:10px;width:100%;height:auto;display:block}
+  .head{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#666;margin:8px 0 6px}
+  .row{padding:6px 0;border-bottom:1px solid #eee}.row:last-child{border:0}
+  .nm{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+  .ctl{display:grid;grid-template-columns:46px 1fr 40px;align-items:center;gap:6px}
+  .ctl label{font-size:10px;color:#888}.ctl .val{font-size:10px;color:#555;text-align:right}.ctl input{width:100%}
+  #copy{font:11px 'IBM Plex Mono',monospace;padding:6px 10px;border:1px solid #15130d;border-radius:8px;background:#15130d;color:#fff;cursor:pointer;margin-top:10px}
+</style></head><body>
+<div id="mx"><div id="panel"></div><div id="stage"></div></div>
+<script>
+const W=1280,H=720,INK='#15130d',BG='#f5f3ed',SP=6,MAX_R=1.68;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rect=(x,y,x0,y0,x1,y1)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+const near=(a,b,t)=>Math.abs(a-b)<=t;
+const dist=(x,y,cx,cy)=>Math.hypot(x-cx,y-cy);
+const edge=(x,y,x0,y0,x1,y1,t=3)=>rect(x,y,x0,y0,x1,y1)&&(near(x,x0,t)||near(x,x1,t)||near(y,y0,t)||near(y,y1,t));
+function cyl(x,y,x0,y0,x1,y1){ if(!rect(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1))return 0.95; const u=(x-x0)/(x1-x0),v=(y-y0)/(y1-y0); return clamp(0.4+0.5*Math.abs(u-0.3)+v*0.18,0.2,0.9); }
+function cover(x,y,x0,y0,x1,y1){ if(!rect(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1))return 0.95; if(y<y0+6)return near(x,(x0+x1)/2,20)?0.3:0.38; const v=(y-y0-6)/((y1-y0)-6); if(v<0.14)return 0.35; return clamp(0.5+v*0.28,0.4,0.85); }
+const frameR=(x,y)=>rect(x,y,300,58,980,470), paneR=(x,y)=>rect(x,y,326,86,954,444);
+const muntin=(x,y)=>near(x,535,7)||near(x,744,7)||near(y,265,7);
+function hash(x,y){const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s);}
+const titleEl=`<text x="${W-40}" y="76" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="26" fill="${INK}"><tspan fill="#C27A4A">&#9834;</tspan>  01 &#8211; Klay FM &#183; Night Desk</text>`;
+function measureBox(m,px=14,py=9){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('width',W);s.setAttribute('height',H);s.style.cssText='position:absolute;left:-9999px;top:0';s.innerHTML=m;document.body.appendChild(s);const b=s.querySelector('text').getBBox();document.body.removeChild(s);return{x0:b.x-px,y0:b.y-py,x1:b.x+b.width+px,y1:b.y+b.height+py};}
+const TB=measureBox(titleEl);const inKO=(x,y)=>rect(x,y,TB.x0,TB.y0,TB.x1,TB.y1);
+function dot(x,y,tone,size,op){ tone=clamp(tone+(hash(x,y)-0.5)*0.06,0,1); let r=(0.6+tone*3.4)*size; if(r>MAX_R)r=MAX_R; if(r<0.12)return ''; const o=clamp(0.2+0.8*tone,0.06,1)*op; return `<circle cx="${x}" cy="${y}" r="${r.toFixed(2)}" fill="${INK}" fill-opacity="${o.toFixed(2)}"/>`; }
+const STATIC=[
+  ['wall',(x,y)=> (y<560&&!frameR(x,y)&&!(y>=470&&y<=503))?0.08:0,0.45],
+  ['sky',(x,y)=> (paneR(x,y)&&!muntin(x,y))?0.12:0,0.7],
+  ['moon',(x,y)=>{ if(!paneR(x,y))return 0; const d=dist(x,y,858,150); if(d<46&&dist(x,y,880,143)>46)return d>40?0.6:0.82; return 0; },0.35],
+  ['skyline',(x,y)=>{ if(!paneR(x,y)||muntin(x,y))return 0; const b=Math.floor(x/20); if(((b*37)%100)<24)return 0; const top=444-(28+((b*53)%96)); if(y>=top&&y<=444){ if(near(y,top,3))return 0.5; const wx=Math.floor(x/9),wy=Math.floor(y/9); if(((wx+wy)%3===0)&&((b*7)%2===0))return 0.3; return 0.72;} return 0; },0.55],
+  ['muntin',(x,y)=>{ if(!paneR(x,y)||!muntin(x,y))return 0; if(near(x,533,2)||near(y,263,2))return 0.45; return 0.85; },0.3],
+  ['frame',(x,y)=>{ if(!frameR(x,y)||paneR(x,y))return 0; if(near(x,326,4)||near(x,954,4)||near(y,86,4)||near(y,444,4))return 0.95; if(near(x,300,4)||near(x,980,4)||near(y,58,4)||near(y,470,4))return 0.5; return 0.78; },0.35],
+  ['sill',(x,y)=>{ if(!(x>=288&&x<=992))return 0; if(near(y,470,2))return 0.95; if(rect(x,y,288,470,992,503)){const v=(y-470)/33; return clamp(0.45+v*0.4,0.4,0.9);} return 0; },0.25],
+  ['desk',(x,y)=>{ if(near(y,560,3))return 0.95; if(y>560){let dk=0.32; if(((y-560)%20)<3)dk=0.55; if(near(y,H-4,4))dk=0.9; return dk;} return 0; },0.3],
+  ['books',(x,y)=>{ if(near(y,528,2)||near(y,502,2))return 0.9; return Math.max(cover(x,y,332,528,470,558),cover(x,y,342,502,462,528),cover(x,y,352,478,452,502)); },0.35],
+  ['openbk',(x,y)=>{ if(!rect(x,y,480,540,592,558))return 0; const rel=(x-480)/112,tent=540+Math.abs(rel-0.5)*30; if(near(x,536,2))return 0.95; if(near(y,tent,3))return 0.9; if(y<tent)return 0; const line=(Math.floor((y-tent)/4))%2===0&&!near(x,536,6); return line?0.5:0.28; },0.3],
+  ['cup',(x,y)=>{ const c=cyl(x,y,606,520,660,558); if(c)return c; for(let px=616;px<=650;px+=10){ if(near(x,px,2)&&y>=496&&y<=520)return y<500?0.95:0.6; } return 0; },0.3],
+  ['mug',(x,y)=>{ if(rect(x,y,780,508,836,516))return 0.95; if(rect(x,y,784,510,832,514))return 0.35; const c=cyl(x,y,778,516,838,558); if(c)return c; if(dist(x,y,842,528)<16&&dist(x,y,842,528)>9)return 0.9; return 0; },0.3],
+  ['lamp',(x,y)=>{ if(rect(x,y,864,404,948,432)){ if(near(y,404,4))return 0.9; if(near(y,432,3))return 0.4; const v=(y-404)/28; return clamp(0.75-v*0.4,0.35,0.85);} if(near(x,905,3)&&y>=432&&y<=548)return 0.85; const b=cyl(x,y,858,548,952,558); if(b)return b; return 0; },0.3],
+];
+let staticDots='';
+for(let x=SP/2;x<W;x+=SP) for(let y=SP/2;y<H;y+=SP){ if(inKO(x,y))continue; for(let i=STATIC.length-1;i>=0;i--){const t=STATIC[i][1](x,y); if(t>0){staticDots+=dot(x,y,t,STATIC[i][2],1);break;}} }
+
+// locked pace defaults
+const P={ fps:6,
+  rain:{on:1,speed:10,dens:2,len:402,size:0.65},
+  steam:{on:1,speed:16,wob:4,op:0.7,size:0.3},
+  lamp:{on:1,speed:6.5,amp:0.4,size:0.3} };
+const rainT =(x,y,t)=>{ if(!P.rain.on||!paneR(x,y)||muntin(x,y)||y>=P.rain.len)return 0; const yy=y+Math.floor(t*P.rain.speed); return ((x*3+yy*7)%74)<P.rain.dens?0.4:0; };
+const steamT=(x,y,t)=>{ if(!P.steam.on||y<464||y>508)return 0; const ph=(t*P.steam.speed)%36; if(((508-y+ph)%6)>2)return 0; const wob=Math.sin(y*0.25+t*1.6)*P.steam.wob; if(near(x,800+wob,2)||near(x,816-wob,2)){ const fade=clamp((y-464)/44,0,1); return P.steam.op*fade; } return 0; };
+const glowT =(x,y,t)=>{ if(!P.lamp.on)return 0; const d=dist(x,y,906,442); if(d>15)return 0; return clamp((1-d/15)*(0.24+P.lamp.amp*Math.sin(t*P.lamp.speed)),0,0.42); };
+const ANIM=[[rainT,()=>P.rain.size],[steamT,()=>P.steam.size],[glowT,()=>P.lamp.size]];
+
+const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.style.background=BG;
+svg.innerHTML=`<g>${staticDots}</g><g id="an"></g>${titleEl}`;
+document.getElementById('stage').appendChild(svg);
+const an=svg.querySelector('#an');let last=0;
+function loop(ms){ const t=ms/1000; if(ms-last>1000/P.fps){ last=ms; let d=''; for(let x=SP/2;x<W;x+=SP) for(let y=SP/2;y<H;y+=SP){ if(inKO(x,y))continue; for(const [fn,sz] of ANIM){ const tn=fn(x,y,t); if(tn>0){ d+=dot(x,y,tn,sz(),1); break; } } } an.innerHTML=d; } requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+function ctl(lbl,min,max,step,val,fmt,on){const w=document.createElement('div');w.className='ctl';const l=document.createElement('label');l.textContent=lbl;const v=document.createElement('span');v.className='val';v.textContent=fmt(val);const i=document.createElement('input');i.type='range';i.min=min;i.max=max;i.step=step;i.value=val;i.oninput=e=>{v.textContent=fmt(+e.target.value);on(+e.target.value);};w.append(l,i,v);return w;}
+function toggle(obj){const b=document.createElement('input');b.type='checkbox';b.checked=!!obj.on;b.onchange=e=>obj.on=e.target.checked?1:0;return b;}
+const panel=document.getElementById('panel');panel.innerHTML='<div class="head">Global</div>';
+panel.append(ctl('fps',6,30,1,P.fps,x=>x+'',v=>P.fps=v));
+function group(title,obj,rows){const h=document.createElement('div');h.className='head';h.textContent=title;panel.append(h);const box=document.createElement('div');box.className='row';const nm=document.createElement('div');nm.className='nm';const s=document.createElement('span');s.textContent='enabled';nm.append(s,toggle(obj));box.append(nm);rows.forEach(r=>box.append(ctl(...r)));panel.append(box);}
+group('Rain (drift)',P.rain,[['speed',4,90,1,P.rain.speed,x=>x+'',v=>P.rain.speed=v],['density',1,8,1,P.rain.dens,x=>x+'',v=>P.rain.dens=v],['length',120,444,6,P.rain.len,x=>x+'',v=>P.rain.len=v],['size',0,1,0.05,P.rain.size,x=>x.toFixed(2),v=>P.rain.size=v]]);
+group('Steam (oscillate)',P.steam,[['speed',6,40,1,P.steam.speed,x=>x+'',v=>P.steam.speed=v],['wobble',0,12,1,P.steam.wob,x=>x+'',v=>P.steam.wob=v],['opac',0,1,0.05,P.steam.op,x=>x.toFixed(2),v=>P.steam.op=v]]);
+group('Lamp (pulse)',P.lamp,[['speed',1,12,0.5,P.lamp.speed,x=>x+'',v=>P.lamp.speed=v],['strength',0,0.4,0.02,P.lamp.amp,x=>x.toFixed(2),v=>P.lamp.amp=v]]);
+const copy=document.createElement('button');copy.id='copy';copy.textContent='Copy motion';copy.onclick=()=>{navigator.clipboard.writeText(JSON.stringify(P));copy.textContent='Copied!';setTimeout(()=>copy.textContent='Copy motion',1200);};
+panel.append(copy);
+</script>
+</body></html>

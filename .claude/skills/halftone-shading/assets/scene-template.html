@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!--
+  halftone-shading · scene-template
+  A finished frame renderer. Copy this file, then edit the LAYERS array and the
+  scene geometry. The render loop, size ceiling, knockout, and shading helpers
+  are done for you. See ../SKILL.md and ../references/technique.md.
+-->
+<html><head><meta charset="utf-8"><title>Halftone scene</title>
+<style>html,body{margin:0;background:#5c5c57;display:grid;place-items:center;min-height:100vh}#stage svg{display:block}</style>
+</head><body><div id="stage"></div>
+<script>
+// ── config ────────────────────────────────────────────────────────────────
+const W=1280, H=720;          // 16:9 frame
+const BG='#f5f3ed';           // warm cream ground
+const INK='#15130d';          // warm near-black dots
+const SP=6;                   // RULE 1: one consistent grid spacing
+const MAX_R=1.68;             // RULE 2: hard dot-size ceiling (never exceed)
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rect=(x,y,x0,y0,x1,y1)=>x>=x0&&x<=x1&&y>=y0&&y<=y1;
+const near=(a,b,t)=>Math.abs(a-b)<=t;
+const dist=(x,y,cx,cy)=>Math.hypot(x-cx,y-cy);
+const edge=(x,y,x0,y0,x1,y1,t=3)=>rect(x,y,x0,y0,x1,y1)&&(near(x,x0,t)||near(x,x1,t)||near(y,y0,t)||near(y,y1,t));
+
+// RULE 3: per-item tone authors — form is drawn INTO the object, not lit.
+// cyl: a round body — dark outline, highlight column near u=0.3, darker right/low.
+function cyl(x,y,x0,y0,x1,y1){
+  if(!rect(x,y,x0,y0,x1,y1))return 0;
+  if(edge(x,y,x0,y0,x1,y1))return 0.95;
+  const u=(x-x0)/(x1-x0),v=(y-y0)/(y1-y0);
+  return clamp(0.4+0.5*Math.abs(u-0.3)+v*0.18,0.2,0.9);
+}
+// cover: a flat panel (book) — light top face, spine highlight, darker toward base.
+function cover(x,y,x0,y0,x1,y1){
+  if(!rect(x,y,x0,y0,x1,y1))return 0;
+  if(edge(x,y,x0,y0,x1,y1))return 0.95;
+  if(y<y0+6)return near(x,(x0+x1)/2,20)?0.3:0.38;
+  const v=(y-y0-6)/((y1-y0)-6);
+  if(v<0.14)return 0.35;
+  return clamp(0.5+v*0.28,0.4,0.85);
+}
+
+// scene regions used by more than one layer
+const frameR=(x,y)=>rect(x,y,300,58,980,470), paneR=(x,y)=>rect(x,y,326,86,954,444);
+const muntin=(x,y)=>near(x,535,7)||near(x,744,7)||near(y,265,7);
+
+// title + knockout box measured to HUG the text (any length) — never hardcode
+// the rectangle; a fixed box leaves a big empty cream slab. Pad lightly.
+const titleEl=`<text x="${W-40}" y="76" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="26" fill="${INK}"><tspan fill="#C27A4A">&#9834;</tspan>  01 &#8211; Klay FM &#183; Night Desk</text>`;
+function measureBox(markup,padX=14,padY=9){
+  const s=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('width',W);s.setAttribute('height',H);s.style.cssText='position:absolute;left:-9999px;top:0';
+  s.innerHTML=markup;document.body.appendChild(s);
+  const b=s.querySelector('text').getBBox();document.body.removeChild(s);
+  return {x0:b.x-padX,y0:b.y-padY,x1:b.x+b.width+padX,y1:b.y+b.height+padY};
+}
+const TITLEBOX=measureBox(titleEl);   // knockout: no dots inside
+
+// ── LAYERS (background → foreground; foreground wins) ───────────────────────
+// each: [name, tone(x,y)->0..1, layerSizeCeiling]
+const LAYERS=[
+  ['wall',   (x,y)=> (y<560&&!frameR(x,y)&&!(y>=470&&y<=503))?0.08:0, 0.45],
+  ['sky',    (x,y)=> (paneR(x,y)&&!muntin(x,y))?0.12:0, 0.7],
+  ['moon',   (x,y)=>{ if(!paneR(x,y))return 0; const d=dist(x,y,858,150); if(d<46&&dist(x,y,880,143)>46)return d>40?0.6:0.82; return 0; }, 0.35],
+  ['skyline',(x,y)=>{ if(!paneR(x,y)||muntin(x,y))return 0; const b=Math.floor(x/20); if(((b*37)%100)<24)return 0; const top=444-(28+((b*53)%96)); if(y>=top&&y<=444){ if(near(y,top,3))return 0.5; const wx=Math.floor(x/9),wy=Math.floor(y/9); if(((wx+wy)%3===0)&&((b*7)%2===0))return 0.3; return 0.72;} return 0; }, 0.55],
+  ['rain',   (x,y)=> (paneR(x,y)&&!muntin(x,y)&&y<320&&((x*3+y*7)%74)<3)?0.35:0, 0.55],
+  ['muntin', (x,y)=>{ if(!paneR(x,y)||!muntin(x,y))return 0; if(near(x,533,2)||near(y,263,2))return 0.45; return 0.85; }, 0.3],
+  ['frame',  (x,y)=>{ if(!frameR(x,y)||paneR(x,y))return 0; if(near(x,326,4)||near(x,954,4)||near(y,86,4)||near(y,444,4))return 0.95; if(near(x,300,4)||near(x,980,4)||near(y,58,4)||near(y,470,4))return 0.5; return 0.78; }, 0.35],
+  ['sill',   (x,y)=>{ if(!(x>=288&&x<=992))return 0; if(near(y,470,2))return 0.95; if(rect(x,y,288,470,992,503)){const v=(y-470)/33; return clamp(0.45+v*0.4,0.4,0.9);} return 0; }, 0.25],
+  ['desk',   (x,y)=>{ if(near(y,560,3))return 0.95; if(y>560){let dk=0.32; if(((y-560)%20)<3)dk=0.55; if(near(y,H-4,4))dk=0.9; return dk;} return 0; }, 0.3],
+  ['books',  (x,y)=>{ if(near(y,528,2)||near(y,502,2))return 0.9; return Math.max(cover(x,y,332,528,470,558),cover(x,y,342,502,462,528),cover(x,y,352,478,452,502)); }, 0.35],
+  ['openbk', (x,y)=>{ if(!rect(x,y,480,540,592,558))return 0; const rel=(x-480)/112,tent=540+Math.abs(rel-0.5)*30; if(near(x,536,2))return 0.95; if(near(y,tent,3))return 0.9; if(y<tent)return 0; const line=(Math.floor((y-tent)/4))%2===0&&!near(x,536,6); return line?0.5:0.28; }, 0.3],
+  ['cup',    (x,y)=>{ const c=cyl(x,y,606,520,660,558); if(c)return c; for(let px=616;px<=650;px+=10){ if(near(x,px,2)&&y>=496&&y<=520)return y<500?0.95:0.6; } return 0; }, 0.3],
+  ['mug',    (x,y)=>{ if(rect(x,y,780,508,836,516))return 0.95; if(rect(x,y,784,510,832,514))return 0.35; const c=cyl(x,y,778,516,838,558); if(c)return c; if(dist(x,y,842,528)<16&&dist(x,y,842,528)>9)return 0.9; for(let sy=474;sy<506;sy+=6){const wob=Math.sin(sy*0.25)*6; if((near(x,800+wob,2)||near(x,818-wob,2))&&y>=sy&&y<sy+3)return 0.4;} return 0; }, 0.3],
+  ['lamp',   (x,y)=>{ if(rect(x,y,864,404,948,432)){ if(near(y,404,4))return 0.9; if(near(y,432,3))return 0.4; const v=(y-404)/28; return clamp(0.75-v*0.4,0.35,0.85);} if(dist(x,y,906,442)<14)return clamp(dist(x,y,906,442)/14*0.4,0.08,0.4); if(near(x,905,3)&&y>=432&&y<=548)return 0.85; const b=cyl(x,y,858,548,952,558); if(b)return b; return 0; }, 0.3],
+];
+
+// optional: per-layer overrides from the mixer's "Copy settings" JSON.
+// {spacing, layers:{name:{size,op}}}  — leave null to use the ceilings above.
+const CFG=null;
+
+// ── render ──────────────────────────────────────────────────────────────────
+function hash(x,y){const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s);}
+let dots='';
+for(let x=SP/2;x<W;x+=SP) for(let y=SP/2;y<H;y+=SP){
+  if(rect(x,y,TITLEBOX.x0,TITLEBOX.y0,TITLEBOX.x1,TITLEBOX.y1))continue;  // knockout
+  let tone=0,size=0.4,op=1;
+  for(let i=LAYERS.length-1;i>=0;i--){
+    const [name,fn,cap]=LAYERS[i]; const t=fn(x,y);
+    if(t>0){ tone=t; size=cap; if(CFG&&CFG.layers[name]){size=CFG.layers[name].size; op=CFG.layers[name].op;} break; }
+  }
+  if(tone<=0)continue;
+  tone=clamp(tone+ (hash(x,y)-0.5)*0.06, 0, 1);          // gentle dither
+  let r=(0.6+tone*3.4)*size; if(r>MAX_R)r=MAX_R;         // RULE 2
+  if(r<0.12)continue;
+  const o=clamp(0.2+0.8*tone,0.06,1)*op;
+  dots+=`<circle cx="${x}" cy="${y}" r="${r.toFixed(2)}" fill="${INK}" fill-opacity="${o.toFixed(2)}"/>`;
+}
+document.getElementById('stage').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:${BG}">${dots}${titleEl}</svg>`;
+</script>
+</body></html>
