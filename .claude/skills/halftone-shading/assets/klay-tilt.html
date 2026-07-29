@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+  halftone-shading · klay-tilt
+  The Klay FM dimensional-Klay renderer + a live tuner. One axis (azimuth) drives
+  everything: the SILHOUETTE never changes, only (1) the eyes slide toward the
+  look direction and (2) a darker COLOR band grows on the depth side. Canonical
+  Klay sizes (pot 6x3 cols3-8, eyes cols4&7, feet cols4&7, leaves cols5-7,
+  stem/tip col6). Locked defaults: pot depth 1.6, leg/stem depth 0.6.
+  No pitch axis (decided against). See ../references/klay-tilt.md.
+-->
+<html><head><meta charset="utf-8"><title>Klay FM — tilt renderer</title>
+<style>body{margin:0;background:#e9e6df;font-family:'IBM Plex Mono',monospace;color:#15130d}
+#wrap{padding:18px;max-width:720px;margin:0 auto}#stage svg{border:1px solid #cfc9be;border-radius:10px}
+label{font-size:13px}input[type=range]{width:100%;max-width:640px}#note{color:#777;margin-top:6px;font-size:12px}</style>
+</head><body><div id="wrap">
+<div id="stage"></div>
+<div style="margin-top:14px">
+  <label>axis (azimuth): <span id="av">-22</span>°</label><br><input id="ax" type="range" min="-90" max="90" value="-22" step="1"><br>
+  <label style="display:inline-block;margin-top:6px">pot depth: <span id="dv">1.6</span></label><br><input id="dp" type="range" min="0" max="4" value="1.6" step="0.1"><br>
+  <label style="display:inline-block;margin-top:6px">leg/stem depth: <span id="lv">0.60</span></label><br><input id="lg" type="range" min="0" max="2" value="0.6" step="0.05">
+  <div id="note"></div>
+</div></div>
+<script>
+const M='#A8969E', OL='#8BA32E', LM='#C2D64A', K='#1B1B18';
+const RC=(x,y,w,h,f)=> (w>0.4&&h>0.4)?`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(w+0.6).toFixed(1)}" height="${(h+0.6).toFixed(1)}" fill="${f}"/>`:'';
+function lerp(a,b,t){const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16)),pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16));return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join('');}
+
+/**
+ * klayTilt(azDeg, opts) -> SVG <rect> string. Drop into a frame's Klay <g>
+ * (give the group shape-rendering="crispEdges"). Canonical proportions; the
+ * silhouette is identical at every angle — only eyes + color change.
+ *   opts: {U=18 (px per coarse cell), cx (feet-center x), groundY (feet bottom y),
+ *          potDepth=1.6, legDepth=0.6}
+ */
+function klayTilt(azDeg, opts={}){
+  const {U=18, cx=0, groundY=0, potDepth=1.6, legDepth=0.6}=opts;
+  const aa=Math.sin(azDeg*Math.PI/180), t=Math.abs(aa), sideLeft=aa>=0;   // look right -> depth LEFT
+  const potX0=cx-3*U, potW=6*U, ux=i=>potX0+i*U, yTop=r=>groundY-(8-r)*U;
+  const w=Math.min(potW, t*potDepth*U), legDW=Math.min(U, t*legDepth*U);
+  const darkM=lerp(M,'#5f545b',0.35+0.65*t), darkO=lerp(OL,'#586a1e',0.35+0.65*t);
+  const band=(x,y,w0,h,light,dark)=>{ if(w<=0.1)return RC(x,y,w0,h,light);
+    if(sideLeft){const dl=Math.max(0,Math.min(w0,(potX0+w)-x));return RC(x,y,dl,h,dark)+RC(x+dl,y,w0-dl,h,light);}
+    const dl=Math.max(0,Math.min(w0,(x+w0)-(potX0+potW-w)));return RC(x,y,w0-dl,h,light)+RC(x+w0-dl,y,dl,h,dark); };
+  const slice=(x,y,w0,h,light,dark)=>{ if(legDW<=0.1)return RC(x,y,w0,h,light); const dw=Math.min(w0,legDW);
+    return sideLeft?RC(x,y,dw,h,dark)+RC(x+dw,y,w0-dw,h,light):RC(x,y,w0-dw,h,light)+RC(x+w0-dw,y,dw,h,dark); };
+  let o='';
+  o+=band(potX0,yTop(4),potW,3*U,M,darkM);                                  // POT (big band)
+  o+=slice(ux(1),yTop(7),U,U,M,darkM)+slice(ux(4),yTop(7),U,U,M,darkM);     // LEGS (own depth)
+  o+=slice(ux(3),yTop(3),U,U,OL,darkO);                                     // STEM (own depth)
+  o+=RC(ux(2),yTop(2),U*3,U,LM)+RC(ux(3),yTop(1),U,U,LM);                    // LEAVES + TIP (no depth)
+  const shift=aa*U*0.9, cl=x=>Math.max(potX0,Math.min(potX0+potW-U,x));
+  o+=RC(cl(ux(1)+shift),yTop(5),U,U,K)+RC(cl(ux(4)+shift),yTop(5),U,U,K);   // EYES (slide toward look)
+  return o;
+}
+
+// ---- tuner ----
+const stage=document.getElementById('stage'), ax=document.getElementById('ax'), dp=document.getElementById('dp'), lg=document.getElementById('lg'), av=document.getElementById('av'), dv=document.getElementById('dv'), lv=document.getElementById('lv'), note=document.getElementById('note');
+function render(){
+  const a=+ax.value, DS=+dp.value, legDS=+lg.value; av.textContent=a; dv.textContent=DS.toFixed(1); lv.textContent=legDS.toFixed(2);
+  note.textContent = a===0?'front — canonical, no depth':`looking ${a>0?'RIGHT → depth LEFT':'LEFT → depth RIGHT'}`;
+  const body=klayTilt(a,{U:34,cx:340,groundY:300,potDepth:DS,legDepth:legDS});
+  stage.innerHTML=`<svg viewBox="0 0 680 380" width="680" height="380" style="background:#f5f3ed" shape-rendering="crispEdges"><line x1="0" y1="300" x2="680" y2="300" stroke="#ded8cf" stroke-width="2"/>${body}</svg>`;
+}
+[ax,dp,lg].forEach(s=>s.oninput=render); render();
+</script>
+</body></html>

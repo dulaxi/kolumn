@@ -98,7 +98,11 @@ and `assets/motion-mixer.html` tunes movers live.
 
 For a different scene you can swap bg/ink, but keep the *warm* pairing — cool
 cream + cool ink reads clinical. The one spot of real color in a Klay FM frame is
-Klay himself (his 4-color sprite), added last.
+Klay himself (his 4-color sprite), added last, as a solid crisp sprite over the
+dots. His Klay FM dimensional/tilt treatment (turn faked by sliding eyes + a
+darker color band, not by reshaping) has its own renderer and rules in
+`references/klay-tilt.md` + `assets/klay-tilt.html`. Things he *uses* (laptop,
+mug) render fine/detailed and in the prop palette, never mauve.
 
 ## Authoring workflow
 
