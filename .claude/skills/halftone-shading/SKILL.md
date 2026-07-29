@@ -104,6 +104,13 @@ darker color band, not by reshaping) has its own renderer and rules in
 `references/klay-tilt.md` + `assets/klay-tilt.html`. Things he *uses* (laptop,
 mug) render fine/detailed and in the prop palette, never mauve.
 
+**A complete, editable Klay FM frame** lives in `assets/klay-fm-frame.html`
+(halftone night-desk scene + motion pass + tilt-Klay + a fine-pixel MacBook he
+types on + the pixel-note title, composed in layer order) — copy it and edit the
+five marked blocks to make a new frame; you never start from blank. To build a
+frame from a rough user **sketch**, follow `references/from-sketch.md` — this
+style is layout-driven, so a labelled box drawing is enough input.
+
 ## Authoring workflow
 
 1. **Block the scene as layers.** Start from `assets/scene-template.html` — it has
