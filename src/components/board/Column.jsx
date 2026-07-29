@@ -290,7 +290,12 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
             // Match inline card by direct ID or via temp→real ID map
             const isInline = card.id === inlineCardId || (inlineCardId && tempIdMap?.[inlineCardId] === card.id)
             return isInline ? (
-              <InlineCardEditor key={card.id} cardId={card.id} onDone={onInlineDone} />
+              // Keyed by the session's original id, NOT card.id: the backend
+              // confirm swaps temp→real card ids, and a card.id key would
+              // remount the editor mid-typing (replays the mount animation as
+              // a blink, drops pendingLabels). The editor resolves temp ids
+              // itself via _tempIdMap.
+              <InlineCardEditor key={inlineCardId} cardId={inlineCardId} onDone={onInlineDone} />
             ) : (
               <SortableCard key={card.id} card={card} onClick={onCardClick} onComplete={onCompleteCard} isSelected={card.id === selectedCardId} />
             )

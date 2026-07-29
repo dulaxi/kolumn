@@ -32,14 +32,11 @@ export default function BoardsPage() {
 
   const addCard = useBoardStore((s) => s.addCard)
   const columns = useBoardStore((s) => s.columns)
-  const tempIdMap = useBoardStore((s) => s._tempIdMap)
 
-  // Swap inline card ID when temp card gets persisted to real ID
-  useEffect(() => {
-    if (inlineCardId && tempIdMap?.[inlineCardId]) {
-      setInlineCardId(tempIdMap[inlineCardId])
-    }
-  }, [inlineCardId, tempIdMap])
+  // inlineCardId deliberately stays the ORIGINAL (possibly temp) id for the
+  // whole editing session. Column matches it through _tempIdMap and the
+  // editor resolves it internally — remapping it here re-keyed the editor
+  // mid-typing (mount-animation blink, dropped draft state).
 
   // Listen for global events (search navigation, keyboard shortcuts)
   useEffect(() => {
