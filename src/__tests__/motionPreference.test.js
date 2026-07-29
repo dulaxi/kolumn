@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from 'vitest'
+import { describe, test, expect, afterEach } from 'vitest'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { resolveMotion, applyMotion } from '../utils/motion'
 import { useSettingsStore } from '../store/settingsStore'
