@@ -5,7 +5,7 @@ import Skeleton from '../ui/Skeleton'
 import KolumnLogo from './KolumnLogo'
 import BoardSkeleton from '../board/BoardSkeleton'
 import PixelKlay from '../klay/PixelKlay'
-import LetterWave from '../ui/LetterWave'
+import ThinkingWave from '../ui/ThinkingWave'
 
 /**
  * RouteLoadingShell — staged, destination-aware full-page loading fallback
@@ -100,7 +100,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[var(--surface-page)]/70">
             <PixelKlay animation="tap" scale={8} label="Klay loading" />
             <span className="font-mono text-xs text-[var(--text-muted)]">
-              <LetterWave text="Kanbanning…" tone="typing" />
+              <ThinkingWave />
             </span>
           </div>
         )}

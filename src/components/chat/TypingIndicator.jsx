@@ -1,47 +1,10 @@
-import { useState } from 'react'
 import { Kanban } from '@phosphor-icons/react'
-import LetterWave from '../ui/LetterWave'
+import ThinkingWave from '../ui/ThinkingWave'
 
-// Kanban-brain thinking words — the board thinking about itself.
-// One is picked per response (no immediate repeats) and rendered as a
-// letter wave whose lit window flashes logo olive → mauve.
-// Decision trail: docs/design-mockups/typing-indicator-words.html.
-const THINKING_WORDS = [
-  'Organizing',
-  'Prioritizing',
-  'Triaging',
-  'Sorting',
-  'Shuffling',
-  'Scoping',
-  'Sprinting',
-  'Grooming',
-  'Backlogging',
-  'Roadmapping',
-  'Milestoning',
-  'Timeboxing',
-  'Batching',
-  'Unblocking',
-  'Delegating',
-  'Shipping',
-  'Estimating',
-  'Kanbanning',
-]
-
-// Module-level so remounts (new responses) never repeat the last word.
-let lastWord = null
-function pickWord() {
-  let word
-  do {
-    word = THINKING_WORDS[Math.floor(Math.random() * THINKING_WORDS.length)]
-  } while (word === lastWord)
-  lastWord = word
-  return word
-}
-
+// The word list + one-per-mount pick moved to the shared ThinkingWave
+// (src/components/ui/ThinkingWave.jsx) so the chat and the Klay loaders
+// draw from one vocabulary — see src/constants/thinkingWords.js.
 export default function TypingIndicator() {
-  // One word per mount — each response gets a fresh pick, but the word
-  // stays stable while its response streams.
-  const [word] = useState(pickWord)
   return (
     <div
       role="status"
@@ -49,7 +12,7 @@ export default function TypingIndicator() {
       className="flex items-center gap-2 py-3 pl-1 text-sm font-medium"
     >
       <Kanban size={16} weight="fill" className="text-[var(--color-logo)] shrink-0" />
-      <LetterWave text={`${word}…`} tone="typing" />
+      <ThinkingWave />
     </div>
   )
 }

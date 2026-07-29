@@ -11,7 +11,7 @@ import Column from './Column'
 import Card from './Card'
 import QuickAddBar from './QuickAddBar'
 import PixelKlay from '../klay/PixelKlay'
-import LetterWave from '../ui/LetterWave'
+import ThinkingWave from '../ui/ThinkingWave'
 
 export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCardId, onInlineDone, selectedCardId, filters, sortBy }) {
   const [isAddingColumn, setIsAddingColumn] = useState(false)
@@ -97,7 +97,7 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
           <PixelKlay animation="tap" scale={6} label="Klay loading cards" />
           <span className="font-mono text-xs text-[var(--text-muted)]">
-            <LetterWave text="Kanbanning…" tone="typing" />
+            <ThinkingWave />
           </span>
         </div>
       )}
