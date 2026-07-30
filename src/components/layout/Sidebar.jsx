@@ -236,7 +236,7 @@ export default function Sidebar() {
             aria-label="Go to Home"
             className="flex items-center gap-2 cursor-pointer"
           >
-            <KolumnLogo size={showCollapsed ? 22 : 30} />
+            <KolumnLogo size={21} />
             {!showCollapsed && (
               <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
                 Kolumn

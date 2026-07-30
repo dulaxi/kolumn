@@ -53,7 +53,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         >
           {/* Same geometry as Sidebar.jsx's collapsed logo row: h-12, centered */}
           <div className="flex h-12 items-center justify-center px-1">
-            <KolumnLogo size={22} />
+            <KolumnLogo size={17} />
           </div>
           <div className="flex flex-col items-center gap-4 pt-2">
             <Skeleton variant="circle" width={20} height={20} />
@@ -72,7 +72,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         >
           {/* Same logo row as Sidebar.jsx expanded: h-16, mark 30 + wordmark */}
           <div className="flex h-16 items-center gap-2 px-2">
-            <KolumnLogo size={30} />
+            <KolumnLogo size={21} />
             <span className="text-[23px] font-[450] text-[var(--text-primary)] tracking-tight leading-none font-logo">
               Kolumn
             </span>

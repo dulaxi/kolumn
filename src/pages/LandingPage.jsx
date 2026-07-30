@@ -2,7 +2,8 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import '@fontsource-variable/plus-jakarta-sans'
 
-import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Kanban, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import KolumnLogo from '../components/layout/KolumnLogo'
 
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -873,7 +874,7 @@ function TranscriptChrome() {
       <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
       <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
       <div className="flex items-center gap-1.5 ml-3 text-[#5F6368]">
-        <LiveAudioBars size={11} />
+        <LiveAudioBars size={13} />
         <span className="text-[11px] font-semibold tracking-tight">Live transcript</span>
         <span className="w-1.5 h-1.5 rounded-full bg-[#E03B3B] animate-pulse ml-1" />
       </div>
@@ -1488,7 +1489,7 @@ function MobileNav() {
           aria-label="Kolumn — home"
           className="flex items-center hover:opacity-90 transition-opacity"
         >
-          <Kanban size={34} weight="fill" className="text-[var(--color-logo)]" />
+          <KolumnLogo size={26} />
           <span className="text-[28px] font-[450] text-[var(--text-primary)] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
         </Link>
         <div className="flex items-center gap-3 py-6">
@@ -1518,7 +1519,7 @@ function MobileNav() {
           aria-label="Kolumn — home"
           className="flex items-center hover:opacity-90 transition-opacity"
         >
-          <Kanban size={34} weight="fill" className="text-[var(--color-logo)]" />
+          <KolumnLogo size={26} />
           <span className="text-[28px] font-[450] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
         </Link>
         <button
@@ -1749,7 +1750,7 @@ export default function LandingPage() {
       <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-5xl mx-auto">
         <div className="border-t border-[var(--color-sand)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <Kanban size={16} weight="regular" className="text-[var(--text-muted)]" />
+            <KolumnLogo size={13} />
             <span className="font-bold font-logo">Kolumn</span>
             <span className="text-[var(--text-muted)] mx-1">&middot;</span>
             <span>Built for teams that ship.</span>

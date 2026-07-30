@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Kanban } from '@phosphor-icons/react'
 import LetterWave from '../ui/LetterWave'
+import KolumnLogo from '../layout/KolumnLogo'
 
 // Kanban-brain thinking words — the board thinking about itself.
 // One is picked per response (no immediate repeats) and rendered as a
@@ -48,7 +48,7 @@ export default function TypingIndicator() {
       aria-label="Kolumn is thinking"
       className="flex items-center gap-2 py-3 pl-1 text-sm font-medium"
     >
-      <Kanban size={16} weight="fill" className="text-[var(--color-logo)] shrink-0" />
+      <KolumnLogo size={14} />
       <LetterWave text={`${word}…`} tone="typing" />
     </div>
   )

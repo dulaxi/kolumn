@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { Kanban, Lock } from '@phosphor-icons/react'
+import { Lock } from '@phosphor-icons/react'
+import KolumnLogo from '../components/layout/KolumnLogo'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
@@ -42,7 +43,7 @@ export default function UpdatePasswordPage() {
     <div className="min-h-screen bg-[var(--surface-raised)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Kanban className="w-10 h-10 text-[var(--text-primary)] mx-auto mb-3" weight="light" />
+          <KolumnLogo size={28} className="mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-[var(--text-primary)] font-heading">Set new password</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Enter your new password below</p>
         </div>
