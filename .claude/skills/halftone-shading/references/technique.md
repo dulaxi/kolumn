@@ -48,6 +48,35 @@ faces darker). This is a *convention you hand-apply*, not a computed source.
 
 Each is a pure `(x,y,...bbox) → tone`. Compose them; a prop is often several.
 
+### form — 3D roundness (the quality unlock — read this first)
+
+Crude vs. drawn is almost entirely **form-shading**: instead of a flat fill or a
+one-way gradient, compute a **surface normal** at each point and light it against
+a fixed implied light (upper-left-front). That makes the dots grow/shrink along
+the curve, so a ball looks like a ball. This is per-*object* lighting (a
+consistent implied direction you author), **not** the forbidden global scene
+light.
+
+```js
+// darkness from a surface normal (nx,ny,nz), implied light upper-left-front
+function form(nx,ny,nz){ const lam=clamp(nx*-0.5+ny*-0.55+nz*0.67,-0.25,1); return clamp(0.9-lam*0.95,0.04,0.95); }
+// sphere: normal is the position on the unit hemisphere; add a reflected-light
+// rim on the shadow side (d2>0.72 && ny>0.2) — that rim is what reads as "round".
+```
+
+Three more rules that separate skilled from crude, learned the hard way:
+1. **Curved solids need a visible cap.** A cylinder/cone/mug reads flat until you
+   add the **elliptical top/base face** — that ellipse is the 3D tell.
+2. **Organic things = shaded blob-unions + texture.** A tree/cloud is a union of
+   circles, each form-shaded (lighter toward its lit side) plus a `hash` speckle.
+3. **Repetition reads as craft.** Grooves (`sin` of radius), masonry (offset
+   brick grid), flutes (`sin` of angle) — regular detail looks *made*, not blobby.
+
+**The refined, form-shaded primitives — `sphere`, `cylV`, `cone`, `isoBox`,
+`mug`, `tree`, `cloud`, `record`, `wall`/`stoneFace`, plus `cover`/`bevel` — ship
+as working code in `assets/scene-kit.html`.** Copy from there rather than
+re-deriving; the older flat versions below are kept only as minimal reference.
+
 ### edge / outline
 The shared primitive — a dark border makes any shape read.
 ```js

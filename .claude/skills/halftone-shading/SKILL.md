@@ -46,6 +46,24 @@ deliberate reason.
    small faint dots. Form comes from *within* each item. (Full pattern library:
    `references/technique.md`.)
 
+## Principles (what makes a scene read)
+
+Learned building real scenes — these are as load-bearing as the three rules:
+
+- **Detailed by default.** Author every object with real *form* (a light→shadow
+  falloff across it, via `form()` — see `references/technique.md`) plus internal
+  detail. Flat silhouettes read as clip-art; a 2-year-old's blob is a flat fill.
+- **Monochrome world, color for the subject.** The scene is ink dots on cream;
+  **color is reserved** for the living/energy elements — Klay, fire, music notes,
+  a flag — drawn as crisp *pixels over* the dots. That contrast is what makes the
+  subject pop and the set recede.
+- **Density is mood.** "Clean, not messy" = light fills (0.3–0.5) + crisp
+  outlines (0.9) + lots of blank cream (a bare sky). "Lush" = full-field texture.
+  Choose per scene; don't texture everything by reflex.
+- **Hero + supporting cast + depth.** One focal object, others in support, each
+  at a different depth (nearer = lower/bigger). A flat row of same-size props
+  reads as scattered stickers.
+
 ## The render model
 
 Think of a scene as a stack of **layers**, background → foreground. Each layer is
@@ -113,10 +131,12 @@ style is layout-driven, so a labelled box drawing is enough input.
 
 ## Authoring workflow
 
-1. **Block the scene as layers.** Start from `assets/scene-template.html` — it has
-   the render loop, the cap, the knockout, and a worked example (window, moon,
-   skyline, sill, desk, books, mug, lamp, each shaded per-item). Copy it, edit the
-   `LAYERS` array: add/remove objects, move rectangles.
+1. **Block the scene as layers.** Start from `assets/scene-kit.html` — the engine
+   (dot renderer, cap, knockout title, static/animated loop) plus the **form-shaded
+   pattern library** baked in; you just fill the `LAYERS` array (tone functions,
+   back→front) and `OVERLAYS` (per-frame draws). Everything above the "▼ SCENE"
+   line is the engine you don't touch. (`assets/scene-template.html` is the older,
+   library-less version — prefer scene-kit.)
 2. **Shade each item from the pattern library.** `references/technique.md` gives
    reusable tone authors — `cyl` (round body), `book`/cover (flat panel), `bevel`
    (window frame / anything with thickness), sphere, cloth, plus knockouts. Reach
@@ -132,7 +152,9 @@ style is layout-driven, so a labelled box drawing is enough input.
    `assets/anim-template.html` (static/animated render split baked in) and tune
    speed/amount live in `assets/motion-mixer.html`. Stay in the locked pace
    (fps 6, slow, sparse) unless the scene needs otherwise.
-5. **Verify the rules held:** one spacing, nothing over the cap, no global light.
+5. **Verify:** `node --check` the scene's script FIRST — one parse error (e.g.
+   `-x**2`, which JS refuses to parse) blanks the entire frame. Then confirm the
+   rules held: one spacing, nothing over the cap, no global light.
    Cheap numeric checks (run the scene math in Node): max radius ≤ cap, and no
    declared layer renders **0 dots** — a zero-dot layer is fully occluded by a
    later layer or mis-placed (invisible in the browser, obvious in a dot count).
