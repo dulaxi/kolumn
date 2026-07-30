@@ -1,0 +1,114 @@
+<h2>All five scenes</h2>
+<p class="subtitle">01 window desk (no Klay) · 02 cottage · 03 beach · 04 orbit · 05 castle. Static snapshots.</p>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div><div class="lbl">01 · Window Desk</div><div id="s1" class="tile"></div></div>
+  <div><div class="lbl">02 · Cottage</div><div id="s2" class="tile"></div></div>
+  <div><div class="lbl">03 · Beach</div><div id="s3" class="tile"></div></div>
+  <div><div class="lbl">04 · Orbit</div><div id="s4" class="tile"></div></div>
+  <div><div class="lbl">05 · Castle</div><div id="s5" class="tile"></div></div>
+</div>
+<style>.lbl{font:12px 'IBM Plex Mono',monospace;color:#777;margin-bottom:3px}.tile{background:#f5f3ed;border:1px solid #e2ddd4;border-radius:8px}</style>
+
+<script>
+const W=1280,H=720,INK='#15130d',BG='#f5f3ed',SP=6,MAXR=1.68;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,near=(a,b,t)=>Math.abs(a-b)<=t,dist=(x,y,cx,cy)=>Math.hypot(x-cx,y-cy),rect=(x,y,x0,y0,x1,y1)=>x>=x0&&x<=x1&&y>=y0&&y<=y1,inR=rect;
+const ell=(x,y,cx,cy,rx,ry)=>((x-cx)/rx)**2+((y-cy)/ry)**2,edge=(x,y,x0,y0,x1,y1,t=3)=>rect(x,y,x0,y0,x1,y1)&&(near(x,x0,t)||near(x,x1,t)||near(y,y0,t)||near(y,y1,t));
+function hash(x,y){const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s);}
+function dot(x,y,tone,size=0.55){ tone=clamp(tone+(hash(x,y)-0.5)*0.06,0,1); let r=(0.6+tone*3.4)*size; if(r>MAXR)r=MAXR; if(r<0.12)return ''; const o=clamp(0.2+0.8*tone,0.06,1); return `<circle cx="${x}" cy="${y}" r="${r.toFixed(2)}" fill="${INK}" fill-opacity="${o.toFixed(2)}"/>`; }
+function cyl(x,y,x0,y0,x1,y1){ if(!rect(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1))return 0.95; const u=(x-x0)/((x1-x0)||1); return clamp(0.4+0.5*Math.abs(u-0.3),0.28,0.85); }
+function cover(x,y,x0,y0,x1,y1){ if(!rect(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1))return 0.95; if(y<y0+6)return near(x,(x0+x1)/2,20)?0.3:0.38; const v=(y-y0-6)/((y1-y0)-6); if(v<0.14)return 0.35; return clamp(0.5+v*0.28,0.4,0.85); }
+function box(x,y,x0,y0,x1,y1,fill){ if(!inR(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1))return 0.92; const u=(x-x0)/((x1-x0)||1); return clamp(fill+u*0.16,0.25,0.85); }
+function renderDots(L){ let d=''; for(let x=SP/2;x<W;x+=SP) for(let y=SP/2;y<H;y+=SP){ for(let i=L.length-1;i>=0;i--){ const t=L[i][1](x,y); if(t>0){ d+=dot(x,y,t,L[i][2]??0.55); break; } } } return d; }
+function tile(id,L,extra,title){ document.getElementById(id).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto"><rect width="${W}" height="${H}" fill="${BG}"/><g>${renderDots(L)}</g><g shape-rendering="crispEdges">${extra||''}</g><text x="${W-40}" y="60" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="18" fill="${INK}">${title}</text></svg>`; }
+
+// ══ 01 WINDOW DESK (no Klay) ══
+(function(){ const frameR=(x,y)=>rect(x,y,300,58,980,470),paneR=(x,y)=>rect(x,y,326,86,954,444),muntin=(x,y)=>near(x,535,7)||near(x,744,7)||near(y,265,7);
+  const L=[
+    ['wall',(x,y)=>(y<560&&!frameR(x,y)&&!(y>=470&&y<=503))?0.08:0,0.45],
+    ['sky',(x,y)=>(paneR(x,y)&&!muntin(x,y))?0.12:0,0.7],
+    ['moon',(x,y)=>{ if(!paneR(x,y))return 0; const d=dist(x,y,858,150); if(d<46&&dist(x,y,880,143)>46)return d>40?0.6:0.82; return 0; },0.35],
+    ['skyline',(x,y)=>{ if(!paneR(x,y)||muntin(x,y))return 0; const b=Math.floor(x/20); if(((b*37)%100)<24)return 0; const top=444-(28+((b*53)%96)); if(y>=top&&y<=444){ if(near(y,top,3))return 0.5; const wx=Math.floor(x/9),wy=Math.floor(y/9); if(((wx+wy)%3===0)&&((b*7)%2===0))return 0.3; return 0.72;} return 0; },0.55],
+    ['muntin',(x,y)=>{ if(!paneR(x,y)||!muntin(x,y))return 0; if(near(x,533,2)||near(y,263,2))return 0.45; return 0.85; },0.3],
+    ['frame',(x,y)=>{ if(!frameR(x,y)||paneR(x,y))return 0; if(near(x,326,4)||near(x,954,4)||near(y,86,4)||near(y,444,4))return 0.95; if(near(x,300,4)||near(x,980,4)||near(y,58,4)||near(y,470,4))return 0.5; return 0.78; },0.35],
+    ['sill',(x,y)=>{ if(!(x>=288&&x<=992))return 0; if(near(y,470,2))return 0.95; if(rect(x,y,288,470,992,503)){const v=(y-470)/33; return clamp(0.45+v*0.4,0.4,0.9);} return 0; },0.25],
+    ['desk',(x,y)=>{ if(near(y,560,3))return 0.95; if(y>560){let dk=0.32; if(((y-560)%20)<3)dk=0.55; if(near(y,H-4,4))dk=0.9; return dk;} return 0; },0.3],
+    ['lamp',(x,y)=>{ if(rect(x,y,864,404,948,432)){ if(near(y,404,4))return 0.9; if(near(y,432,3))return 0.4; const v=(y-404)/28; return clamp(0.75-v*0.4,0.35,0.85);} if(near(x,905,3)&&y>=432&&y<=548)return 0.85; const b=cyl(x,y,858,548,952,558); if(b)return b; return 0; },0.3],
+    ['books',(x,y)=>{ if(near(y,528,2)||near(y,502,2))return 0.9; return Math.max(cover(x,y,332,528,470,558),cover(x,y,342,502,462,528),cover(x,y,352,478,452,502)); },0.35],
+    ['mug',(x,y)=>{ const c=cyl(x,y,786,508,858,558); return c||0; },0.3],
+  ];
+  const mac=(()=>{const LX=598,LY=560,LP=9,sil='#CFC9BE',silD='#A9A399',silDD='#8b867d',disp='#26262b',gl='#37506b',key='#9a958c',tp='#B7B1A7';const r=(cx,cy,w,h,f)=>`<rect x="${LX+cx*LP}" y="${LY+cy*LP}" width="${w*LP+0.6}" height="${h*LP+0.6}" fill="${f}"/>`;let o=r(2,0,12,1,sil)+r(2,6,12,1,silD)+r(2,1,1,5,sil)+r(13,1,1,5,silD)+r(3,1,10,5,disp)+r(3,1,10,1.6,gl);for(let row=7;row<=10;row++){const sp=row-7;o+=r(2-sp,row,12+2*sp,1,row===7?silD:sil);}o+=r(-1,11,17,1,silDD);for(let k=0;k<7;k++)o+=r(3+k*1.4,8,0.9,0.7,key);o+=r(6.5,10,4,0.9,tp);return o;})();
+  tile('s1',L,mac,'01 · Klay FM · Night Desk');
+})();
+
+// ══ 02 COTTAGE ══
+(function(){ const FLOORY=520,FAR=558,LIP=700; const fg=new Set(); {let gy=566,gap=7; while(gy<694){ fg.add(Math.round((gy-3)/6)*6+3); gy+=gap; gap+=1.7; }}
+  const archIn=(x,y)=>x>=110&&x<=330&&((y>=222&&y<=468)||(y>=104&&y<222&&dist(x,y,220,222)<=110));
+  const windowPortal=(x,y)=>{ if(!archIn(x,y)){ if(archIn(x-14,y)||archIn(x+14,y)||archIn(x,y-14)||archIn(x,y+14))return (archIn(x-5,y)||archIn(x+5,y)||archIn(x,y-5)||archIn(x,y+5))?0.9:0.55; if(near(x,220,10)&&y>=98&&y<=120)return 0.9; return 0; } const dw=dist(x,y,220,168); if(dw<48){ if(dw>40)return 0.92; if(near(x,220,3)||near(y,168,3))return 0.85; return 0.14; } const st=Math.floor((468-y)/17),sx=136+st*20; if(y>296&&x>=136&&x<=sx&&((468-y)%17)<9)return near(x,sx,3)?0.85:0.5; if(near(x-(468-y)*0.42,120,4)&&y>300&&y<460)return 0.85; if(near(y,258,2)&&x>=130&&x<=312)return 0.85; const bt=(bx,bw,bh,nk)=>{ if(x>=bx-bw&&x<=bx+bw&&y>=258-bh&&y<=258)return (near(x,bx-bw,2)||near(x,bx+bw,2))?0.9:0.55; if(near(x,bx,nk)&&y>=258-bh-8&&y<258-bh)return 0.9; return 0; }; const b=Math.max(bt(164,9,26,3),bt(196,7,34,2),bt(226,10,22,3)); if(b)return b; const v=(y-104)/364; return clamp(0.26+v*0.12,0.22,0.4); };
+  const framePic=(x,y,x0,y0,x1,y1,k)=>{ if(!inR(x,y,x0,y0,x1,y1))return 0; if(edge(x,y,x0,y0,x1,y1,3))return 0.92; if(edge(x,y,x0+5,y0+5,x1-5,y1-5,2))return 0.6; const ix0=x0+9,iy0=y0+9,ix1=x1-9,iy1=y1-9; if(!inR(x,y,ix0,iy0,ix1,iy1))return 0.3; if(k==='land'){ const hz=(iy0+iy1)/2; if(near(y,hz,2))return 0.7; if(y>hz)return (Math.floor((x-ix0)/4)%2)?0.4:0.28; if(dist(x,y,ix1-10,iy0+8)<5)return 0.6; return 0.16; } const cx0=(ix0+ix1)/2; if(dist(x,y,cx0,iy0+14)<8)return 0.6; if(inR(x,y,cx0-9,iy0+22,cx0+9,iy1))return 0.5; return 0.18; };
+  const art=(x,y)=>Math.max(framePic(x,y,398,74,452,128,'land'),framePic(x,y,470,92,514,140,'port'),framePic(x,y,410,158,512,208,'land'));
+  const pipe=(x,y)=>{ if(y<40||y>346)return 0; const px=1090-Math.sin((y-40)/306*Math.PI*0.9)*54; return Math.abs(x-px)<10?(Math.abs(x-px)>7?0.9:0.55):0; };
+  const gramo=(x,y)=>{ if(inR(x,y,452,398,600,472)){ if(edge(x,y,452,398,600,472,3))return 0.92; if(edge(x,y,466,410,586,462,2))return 0.7; const u=(x-452)/148; return clamp(0.5+u*0.14,0.42,0.7);} if(near(x,606,3)&&y>=418&&y<=436)return 0.9; if(dist(x,y,614,430)<9&&dist(x,y,614,430)>5)return 0.9; const rd=ell(x,y,512,394,46,13); if(rd<=1){ const rr=Math.sqrt(rd); if(rr<0.16)return 0.9; if(near(rr,0.22,0.05))return 0.4; return (Math.floor(rr*9)%2)?0.5:0.32;} const e=ell(x,y,520,296,60,42); if(e<=1){ if(e>0.82)return 0.9; const ang=Math.atan2((y-296)/42,(x-520)/60),fl=Math.sin(ang*9)*0.5+0.5; return clamp(0.24+fl*0.52,0.2,0.85);} if(y>=332&&y<=398){ const f=(y-332)/66,ccx=520+f*22+Math.sin(f*3)*4,cw=20-f*11; if(Math.abs(x-ccx)<cw)return near(Math.abs(x-ccx),cw,3)?0.9:0.55;} if(near(y-(x-540)*0.45,396,3)&&x>=540&&x<=596)return 0.85; return 0; };
+  const rocker=(x,y)=>{ if((near(x,772,4)||near(x,860,4))&&y>=286&&y<=440)return 0.9; if(x>=776&&x<=856&&((y>=300&&y<=424)||(y>=280&&y<300&&dist(x,y,816,300)<=40))){ if(near(x,776,3)||near(x,856,3))return 0.88; const u=(x-816)/40; let t=clamp(0.5+Math.abs(u)*0.28,0.35,0.72); if(near(y,338,3)||near(y,382,3))t=0.85; return t;} if(near(y,402,5)&&x>=744&&x<=804)return near(x,744,4)?0.85:0.6; if(dist(x,y,747,406)<7&&dist(x,y,747,406)>3)return 0.85; if(near(x,752,3)&&y>=406&&y<=452)return 0.8; if(x>=748&&x<=890&&y>=424&&y<=456){ if(near(y,424,3)||near(y,456,3))return 0.88; const u=(x-748)/142; return clamp(0.5+u*0.16,0.42,0.7);} if((near(x,762,3)||near(x,876,3))&&y>=456&&y<=492)return 0.85; const rN=500-0.004*(x-816)*(x-816),rF=486-0.004*(x-800)*(x-800); if(x>=742&&x<=898){ if(near(y,rN,4))return 0.9; if(near(y,rF,3))return 0.72;} return 0; };
+  const fCX=1092,fTop=352,fBot=534,fHalf=82,winX0=fCX-32,winX1=fCX+32,winTop=404,baseY=508;
+  const inWin=(x,y)=>x>=winX0&&x<=winX1&&((y>=winTop+24&&y<=baseY)||(y>=winTop&&y<winTop+24&&dist(x,y,fCX,winTop+24)<=34)),inDoor=(x,y)=>x>=fCX-58&&x<=fCX+58&&y>=372&&y<=514;
+  const furnace=(x,y)=>{ if(x>fCX-20&&x<fCX+16&&y>=250&&y<fTop-6)return (x<fCX-16||x>fCX+12)?0.95:0.55; if(y>=fTop-6&&y<fTop+10){const half=96-(y-(fTop-6))*0.5; if(Math.abs(x-fCX)<=half)return Math.abs(x-fCX)>half-5?0.9:0.55;} if(y>=fTop&&y<fBot){const f=0.70+0.30*Math.sin(Math.PI*(y-fTop)/(fBot-fTop)),half=fHalf*f; if(Math.abs(x-fCX)<=half){ if(inWin(x,y))return 0; if(inDoor(x,y)){ if(inWin(x-6,y)||inWin(x+6,y)||inWin(x,y-6)||inWin(x,y+6))return 0.95; if(near(x,fCX-58,4)||near(x,fCX+58,4)||near(y,372,4)||near(y,514,4))return 0.92; const u=(x-fCX)/58; return clamp(0.62+u*0.16,0.52,0.82);} if(Math.abs(x-fCX)>half-5)return 0.95; const u=(x-fCX)/half; let t=clamp(0.5+u*0.34,0.2,0.85); if(near(y,fTop+6,3)||near(y,fBot-8,3))t=0.88; return t;}} if((near(y,fBot,3)||near(y,fBot+8,3))&&Math.abs(x-fCX)<70)return 0.88; for(const dx of [-56,0,56]){ if(y>fBot+10&&y<600){const i=(y-(fBot+10))/6,bow=Math.sin(clamp(i,0,7)/7*Math.PI)*8*(dx<0?-1:dx>0?1:0),lx=fCX+dx+(dx<0?-i*1.6:dx>0?i*1.6:0)+bow; if(Math.abs(x-lx)<6)return Math.abs(x-lx)>3.5?0.9:0.6;} } return 0; };
+  const table=(x,y)=>{ const e=ell(x,y,560,470,140,27); if(e<=1){ const rr=Math.sqrt(e); if(rr>0.9)return 0.9; if(near(y,458,2))return 0.28; if(near(rr,0.55,0.05)||near(rr,0.78,0.05))return 0.5; return 0.4;} for(const lx of [452,560,668]) if(y>=496&&y<=560&&Math.abs(x-lx)<(near(y,512,6)||near(y,540,6)?7:4))return Math.abs(x-lx)>3?0.85:0.55; if(near(y,548,2)&&x>=452&&x<=668)return 0.7; return 0; };
+  const rug=(x,y)=>{ const e=ell(x,y,560,612,214,58); if(e>1){ if(e<1.07){ const a=Math.atan2((y-612)/58,(x-560)/214); return (Math.floor(a*40)%2)?0.55:0;} return 0;} const r=Math.sqrt(e),a=Math.atan2((y-612)/58,(x-560)/214); if(r>0.9)return 0.78; if(near(r,0.8,0.035))return 0.5; if(r>0.42&&r<0.78)return ((Math.floor(a*8)+Math.floor(r*12))%2)?0.44:0.18; if(near(r,0.36,0.05))return 0.55; if(r<0.2)return (Math.floor(a*6)%2)?0.6:0.3; return 0.15; };
+  const plant=(x,y)=>{ if(x>=636&&x<=678&&y>=652&&y<=686){ if(near(x,636,3)||near(x,678,3)||near(y,686,3))return 0.9; if(near(y,654,3))return 0.85; const u=(x-636)/42; return clamp(0.5+u*0.2,0.4,0.7);} const leaves=[[-14,-30,-0.5],[2,-42,0.05],[16,-32,0.5],[-22,-18,-0.95],[22,-20,0.95]]; for(const [dx,dy,rot] of leaves){ const cx0=657+dx,cy0=646+dy,X=(x-cx0)*Math.cos(rot)+(y-cy0)*Math.sin(rot),Y=-(x-cx0)*Math.sin(rot)+(y-cy0)*Math.cos(rot),q=(X/6)**2+(Y/24)**2; if(q<=1)return (q>0.7||Math.abs(Y)<2)?0.72:0.45; } return 0; };
+  const armchair=(x,y)=>{ const r=ell(x,y,110,724,170,170); if(r>1||y<556)return 0; if(r>0.86)return 0.92; const gx=(x-30)/28,gy=(y-576)/28; if(Math.abs(gx-Math.round(gx))<0.14&&Math.abs(gy-Math.round(gy))<0.14&&(Math.round(gx)+Math.round(gy))%2===0)return 0.82; if(near(y,596+(x-30)*0.22,3))return 0.78; const u=(x-30)/200; return clamp(0.5+u*0.16,0.44,0.68); };
+  const L=[
+    (x,y)=>y<FLOORY?clamp(0.08+Math.max(0,(Math.abs(x-640)-380))/300*0.12+(y<64?0.1:0),0.06,0.28):0,
+    (x,y)=>{ if(y<FLOORY)return 0; let t=fg.has(y)?0.5:0.24; const persp=0.35+(y-FLOORY)/(720-FLOORY),m=(((x-640)/persp%92)+92)%92; if(m<3)t=Math.max(t,0.55); if(hash(Math.floor(x/44),Math.floor(y/34))>0.94)t=Math.max(t,0.5); return t; },
+    ['rug',rug],['win',windowPortal],['art',art],['pipe',pipe],['gramo',gramo],['rocker',rocker],['furnace',furnace],['table',table],['plant',plant],['armchair',armchair],
+  ].map(l=>Array.isArray(l)?[l[0],l[1],0.4]:['?',l,0.4]);
+  const t=0.5,F=Math.floor(t*6),P=9; let flame=`<rect x="${fCX-27}" y="${baseY-6}" width="54" height="9" fill="#5a3f24"/>`;
+  for(const [dx,seed] of [[-15,0],[0,1],[15,2]]){ const h=3+((hash(seed,F)*2)|0); for(let k=0;k<h;k++){ const w=(h-k),col=k===0?'#F7ECCF':k<h-1?'#E7B84A':'#C27A4A',jx=((hash(seed,F+k)-0.5)*P)|0; flame+=`<rect x="${(fCX+dx-w*P/2+jx).toFixed(1)}" y="${(baseY-9-k*P).toFixed(1)}" width="${w*P}" height="${P}" fill="${col}"/>`; } }
+  tile('s2',L,flame,'02 · Klay FM · Cottage');
+})();
+
+// ══ 03 BEACH ══
+(function(){ const HZ=360,SEA=468;
+  const sun=(x,y)=>{ const d=dist(x,y,1050,132); if(d>=48&&d<=54)return 0.6; if(d<48)return 0; for(let k=0;k<12;k++){ const a=k/12*6.283; if(near(x,1050+Math.cos(a)*66,3)&&near(y,132+Math.sin(a)*66,3))return 0.55; } return 0; };
+  const clouds=(x,y)=>{ const c=(cx,cy,r)=>ell(x,y,cx,cy,r,r*0.42)<=1?(hash(x,y)>0.5?0.16:0):0; return Math.max(c(300,110,70),c(660,86,54)); };
+  const seaBase=(x,y)=>{ if(y<HZ||y>SEA)return 0; if(near(y,HZ,2))return 0.5; let t=0.16+(1-(y-HZ)/(SEA-HZ))*0.06; if(((y-HZ)%14)<2)t=Math.max(t,0.32); return t; };
+  const inHull=(x,y)=>y>=344&&y<=352&&x>=516&&x<=568&&(x-516)>(352-y)*1.5&&(568-x)>(352-y)*1.5;
+  const boat=(x,y)=>{ if(inHull(x,y))return 0.85; if(near(x,542,2)&&y>=306&&y<=344)return 0.8; if(x>=544&&x<=572&&y>=308&&y<=342&&(x-544)<(342-y)*0.8)return 0.5; return 0; };
+  const sand=(x,y)=>{ if(y<=SEA)return 0; let t=0.13; if(hash(x,y)>0.9)t=0.42; if(((y-SEA)%22)<2)t=Math.max(t,0.22); return t; };
+  const starfish=(x,y)=>{ const cx=320,cy=642; if(dist(x,y,cx,cy)>34)return 0; let m=0; for(let k=0;k<5;k++){ const a=k/5*6.283-1.57,ax=cx+Math.cos(a)*30,ay=cy+Math.sin(a)*30; if(dist(x,y,(cx+ax)/2,(cy+ay)/2)<8)m=1; } if(dist(x,y,cx,cy)<12)m=1; return m?(dist(x,y,cx,cy)>28?0.9:0.5):0; };
+  const umbrella=(x,y)=>{ if(y<=386&&ell(x,y,770,386,96,58)<=1){ if(ell(x,y,770,386,96,58)>0.82)return 0.9; const ang=Math.atan2(386-y,x-770); return (Math.floor(ang/Math.PI*7)%2)?0.62:0.3; } if(near(x,770,3)&&y>=386&&y<=560)return 0.8; if(dist(x,y,770,324)<6)return 0.85; return 0; };
+  const lounger=(x,y)=>{ if(near(y-(x-596)*0.34,470,4)&&x>=596&&x<=672)return 0.85; if(x>=596&&x<=764&&y>=520&&y<=556){ if(near(y,520,3)||near(y,556,3))return 0.85; return ((Math.floor((x-596)/16))%2)?0.42:0.24; } if((near(x,606,3)||near(x,752,3))&&y>=556&&y<=580)return 0.8; return 0; };
+  const trunk=(x,y)=>{ const tx=182-((560-y)/340)*44+Math.sin((560-y)/60)*8; if(y>=214&&y<=562&&Math.abs(x-tx)<11){ if(Math.abs(x-tx)>8)return 0.9; if(near((560-y)%18,0,2))return 0.85; const u=(x-tx)/11; return clamp(0.5+u*0.22,0.4,0.72);} return 0; };
+  const cocon=(x,y)=>(dist(x,y,150,214)<8||dist(x,y,166,220)<8)?0.85:0;
+  let fronds=''; { const cxp=150,cyp=212; for(const a0 of [-1.7,-1.1,-0.5,0.3,1.0,1.7,2.4]){ const len=118; for(let s=8;s<len;s+=5){ const fr=s/len,droop=Math.pow(fr,1.7)*0.8*(a0<0?-1:1),ang=a0+droop,px=cxp+Math.sin(ang)*s,py=cyp-Math.cos(ang)*s+fr*fr*26; fronds+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="1.5" fill="${INK}"/>`; } } }
+  tile('s3',[['sky',(x,y)=>y<HZ?0.06:0,0.5],['clouds',clouds,0.5],['sun',sun,0.5],['sea',seaBase,0.55],['boat',boat,0.4],['sand',sand,0.5],['star',starfish,0.5],['umb',umbrella,0.4],['lng',lounger,0.4],['trunk',trunk,0.4],['coc',cocon,0.4]],fronds,'03 · Klay FM · Beach');
+})();
+
+// ══ 04 ORBIT ══
+(function(){ const PCX=946,PCY=372,PR=172;
+  const stars=(x,y)=>{ const h=hash(x,y); return h>0.986?0.3+hash(y,x)*0.45:0; };
+  const nebula=(x,y)=>{ if(y>340||x>440)return 0; const n=Math.sin(x*0.02+y*0.03)+Math.sin(x*0.05-y*0.02)*0.7+(hash(x,y)-0.5),fall=1-dist(x,y,180,150)/280,v=(n+2)/4; return (v>0.56&&fall>0)?clamp(v*fall*0.5,0,0.4):0; };
+  const ringBand=(x,y)=>{ const e=ell(x,y,PCX,PCY,258,66),ei=ell(x,y,PCX,PCY,198,50); if(e<=1&&ei>1){ const rr=Math.sqrt(e); if(near(rr,0.9,0.06))return 0.3; return (Math.floor(rr*22)%2)?0.55:0.32; } return 0; };
+  const ringBack=(x,y)=>{ if(y>=PCY||dist(x,y,PCX,PCY)<PR)return 0; return ringBand(x,y); };
+  const ringFront=(x,y)=>{ if(y<PCY)return 0; return ringBand(x,y); };
+  const planet=(x,y)=>{ const d=dist(x,y,PCX,PCY); if(d>PR)return 0; if(d>PR-4)return 0.9; const band=Math.sin((y-PCY)*0.055+Math.sin((y-PCY)*0.14)*0.5)*0.5+0.5; let t=clamp(0.28+band*0.34,0.24,0.66); return clamp(t+((x-PCX)/PR)*0.4,0.14,0.92); };
+  const moon=(x,y)=>{ const d=dist(x,y,236,168); if(d>52)return 0; if(d>48)return 0.9; for(const [cx,cy,r] of [[222,156,10],[252,182,8]]){ if(dist(x,y,cx,cy)<r)return dist(x,y,cx,cy)>r-3?0.72:0.48; } return clamp(0.34+((x-236)/52)*0.42,0.2,0.76); };
+  const ast=(x,y)=>{ for(const [cx,cy,r] of [[700,588,24],[1150,150,16],[300,620,15]]){ const d=dist(x,y,cx,cy); if(d<r)return d>r-3?0.9:clamp(0.4+((x-cx)/r)*0.3,0.3,0.7); } return 0; };
+  const RX=430; const rocket=(x,y)=>{ if(y>=282&&y<=332&&Math.abs(x-RX)<(y-282)*0.5)return near(Math.abs(x-RX),(y-282)*0.5,2)?0.9:0.5; if(y>=332&&y<=468&&Math.abs(x-RX)<25){ if(Math.abs(x-RX)>22)return 0.9; if(dist(x,y,RX,376)<15)return dist(x,y,RX,376)>11?0.9:0.14; if(near(y,408,2)||near(y,438,2))return 0.6; const u=(x-RX)/25; return clamp(0.4+u*0.3,0.3,0.7);} if(y>=438&&y<=486){ const fw=(y-438)*0.62; if(x>=RX-25-fw&&x<=RX-21)return 0.85; if(x<=RX+25+fw&&x>=RX+21)return 0.85; } if(y>=468&&y<=484&&Math.abs(x-RX)<16)return 0.8; return 0; };
+  let ex=''; { const F=1,P=7; for(const [dx,seed] of [[-8,0],[0,1],[8,2]]){ const h=2+((hash(seed,F)*2)|0); for(let k=0;k<h;k++){ const w=(h-k),col=k===0?'#F7ECCF':k<h-1?'#E7B84A':'#C27A4A'; ex+=`<rect x="${(RX+dx-w*P/2).toFixed(1)}" y="${(486+k*P).toFixed(1)}" width="${w*P}" height="${P}" fill="${col}"/>`; } } }
+  tile('s4',[['stars',stars,0.5],['neb',nebula,0.5],['rb',ringBack,0.4],['pl',planet,0.45],['rf',ringFront,0.4],['moon',moon,0.45],['ast',ast,0.4],['rk',rocket,0.4]],ex,'04 · Klay FM · Orbit');
+})();
+
+// ══ 05 CASTLE ══
+(function(){ const hillY=x=>500-Math.exp(-(((x-640)/340)**2))*44;
+  const sun=(x,y)=>{ const d=dist(x,y,250,150); if(d<=44){ if(d>39)return 0.72; if(hash(x,y)>0.62)return 0.28; return 0; } for(let k=0;k<12;k++){ const a=k/12*6.2832; if(dist(x,y,250+Math.cos(a)*56,150+Math.sin(a)*56)<3)return 0.6; } return 0; };
+  const ground=(x,y)=>{ const h=hillY(x); if(y<h)return 0; if(near(y,h,2))return 0.6; let t=0.1; if(hash(x,y)>0.94)t=0.3; return t; };
+  const cren=(x,yTop,x0,x1)=>(x>=x0&&x<=x1)&&(Math.floor((x-x0)/16)%2===0);
+  const keep=(x,y)=>{ const x0=584,x1=696,base=hillY(640)-4,top=214; if(x<x0||x>x1)return 0; if(y>=top-16&&y<top)return cren(x,top,x0,x1)?(near(x,x0,2)||near(x,x1,2)?0.9:0.5):0; if(y<top||y>base)return 0; if(near(x,x0,2)||near(x,x1,2)||near(y,top,2))return 0.9; if(x>=612&&x<=668&&((y>=406&&y<=base)||(y>=380&&y<406&&dist(x,y,640,406)<=28))){ if(near(dist(x,y,640,406),28,2)&&y<406)return 0.9; if(y>=406&&(near(x,612,2)||near(x,668,2)))return 0.9; return 0.14; } for(const wy of [292,344]) if(near(x,640,3)&&y>=wy&&y<=wy+22)return 0.85; if(near((y-top)%26,0,2))return 0.28; return clamp(0.34+((x-640)/56)*0.12,0.28,0.5); };
+  const tower=cx=>(x,y)=>{ const r=30,top=252,apex=200,base=hillY(cx)-2; if(y>=apex&&y<top){ const half=(y-apex)/(top-apex)*r; if(Math.abs(x-cx)<=half)return near(Math.abs(x-cx),half,2)?0.9:0.45; return 0; } if(y>=top&&y<=base&&Math.abs(x-cx)<=r){ if(Math.abs(x-cx)>r-2||near(y,top,2))return 0.9; if(near(x,cx,3)&&y>=330&&y<=356)return 0.85; return clamp(0.34+((x-cx)/r)*0.28,0.26,0.62); } return 0; };
+  const wall=(x,y)=>{ const base=hillY(x)-2; for(const [x0,x1] of [[548,588],[692,732]]){ if(x>=x0&&x<=x1){ const top=436; if(y>=top-12&&y<top)return cren(x,top,x0,x1)?0.6:0; if(y>=top&&y<=base){ if(near(y,top,2))return 0.9; return clamp(0.32+((x-x0)/(x1-x0))*0.1,0.28,0.44); } } } return 0; };
+  const tree=cx=>(x,y)=>{ const base=hillY(cx); if(near(x,cx,4)&&y>=base-70&&y<=base)return 0.75; const d=dist(x,y,cx,base-96); if(d<=46){ if(d>42)return 0.7; if(hash(x,y)>0.55)return 0.34; } return 0; };
+  const fl=(px,py)=>{ const P=6,cols=8,rows=5; let o=`<rect x="${px-2}" y="${py-30}" width="4" height="76" fill="${INK}"/>`; for(let c=0;c<cols;c++){ const amp=(c/cols)**1.3,off=Math.sin(-c*0.8)*7*amp,shade=c%2?'#A8322A':'#C0392B'; for(let r=0;r<rows;r++)o+=`<rect x="${(px+c*P).toFixed(1)}" y="${(py+r*P+off).toFixed(1)}" width="${P+0.8}" height="${P+0.6}" fill="${(r===0||r===rows-1)?'#8f2a22':shade}"/>`; } return o; };
+  tile('s5',[['sun',sun,0.5],['grd',ground,0.5],['tL',tree(150),0.4],['tR',tree(1130),0.4],['wall',wall,0.4],['toL',tower(524),0.4],['toR',tower(756),0.4],['keep',keep,0.42]],fl(524,160)+fl(640,174)+fl(756,160),'05 · Klay FM · Castle');
+})();
+</script>
