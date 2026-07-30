@@ -37,7 +37,7 @@ export default function NotFoundState({
           logo has to come along — in-app states already sit under it. */}
       {logo && (
         <span className="flex items-center gap-2 mb-8">
-          <KolumnLogo size={26} />
+          <KolumnLogo size={21} />
           <span className="text-[20px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
             Kolumn
           </span>

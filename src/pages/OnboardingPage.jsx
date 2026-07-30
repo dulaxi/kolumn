@@ -9,11 +9,11 @@ import Tooltip from '../components/ui/Tooltip'
 import InlineNotice from '../components/ui/InlineNotice'
 import FieldError from '../components/ui/FieldError'
 import PlanPicker from '../components/PlanPicker'
+import KolumnLogo from '../components/layout/KolumnLogo'
 import UpsellStep from '../components/UpsellStep'
 import { PLANS } from '../data/plans'
 
 import {
-  Kanban,
   EyeSlash,
   ArrowCounterClockwise,
   CaretDown,
@@ -243,7 +243,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-[var(--surface-page)] flex flex-col">
       <div className="flex justify-center pt-10" aria-hidden="true">
         <div className="flex items-center">
-          <Kanban size={28} weight="fill" className="text-[var(--color-logo)]" />
+          <KolumnLogo size={20} />
           <span className="text-[22px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">
             Kolumn
           </span>
