@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Klay sprout as Kolumn logo — exploration</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=clash-grotesk@300,400,500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --page: #FAF8F6; --card: #FFFFFF; --raised: #F2EDE8; --hover: #E8E2DB;
+    --border: #E0DBD5; --border-subtle: #E8E2DB;
+    --ink: #1B1B18; --secondary: #5C5C57; --muted: #8E8E89; --faint: #C4BFB8;
+    --lime: #C2D64A; --olive: #8BA32E; --lime-wash: #EEF2D6;
+    --dark-page: #1C1C1A; --dark-card: #262624; --dark-border: #454340;
+    --dark-text: #E8E5E0; --dark-secondary: #B0ADA7; --dark-muted: #8A8782;
+    --mono: 'IBM Plex Mono', 'SF Mono', SFMono-Regular, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    --logo-font: 'Clash Grotesk', var(--sans);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--page); color: var(--ink); font-family: var(--sans); padding: 48px 40px 96px; }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+  h1 { font-family: var(--logo-font); font-weight: 425; font-size: 28px; margin: 8px 0 4px; }
+  .sub { font-size: 14px; color: var(--secondary); max-width: 62ch; line-height: 1.5; }
+
+  section { margin-top: 56px; }
+  h2 { font-family: var(--mono); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--secondary); font-weight: 600; margin-bottom: 6px; }
+  .note { font-size: 13px; color: var(--muted); margin-bottom: 18px; max-width: 70ch; line-height: 1.5; }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .tile { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+  .tile .cap { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .tile.dark { background: var(--dark-page); border-color: var(--dark-border); }
+  .tile.dark .cap { color: var(--dark-muted); }
+
+  svg.mark { display: block; shape-rendering: crispEdges; }
+
+  /* lockups */
+  .lockup { display: flex; align-items: center; gap: 12px; }
+  .wordmark { font-family: var(--logo-font); font-weight: 300; letter-spacing: -0.01em; }
+  .dark .wordmark { color: var(--dark-text); }
+
+  /* sprout riding the l */
+  .word-sprout { position: relative; display: inline-block; }
+  .word-sprout .l-anchor { position: relative; display: inline-block; }
+  .word-sprout svg { position: absolute; left: 50%; transform: translateX(-50%); }
+
+  /* sidebar mock */
+  .sidebar-mock { width: 250px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--page); }
+  .sidebar-mock .head { display: flex; align-items: center; gap: 9px; padding: 14px 14px 12px; border-bottom: 1px solid var(--border-subtle); }
+  .sidebar-mock .rowitem { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; color: var(--secondary); }
+  .sidebar-mock .rowitem .sw { width: 14px; height: 14px; border-radius: 4px; background: var(--raised); border: 1px solid var(--border); }
+  .sidebar-mock.dark { background: var(--dark-page); border-color: var(--dark-border); }
+  .sidebar-mock.dark .head { border-color: #332F2D; }
+  .sidebar-mock.dark .rowitem { color: var(--dark-secondary); }
+  .sidebar-mock.dark .rowitem .sw { background: #2E2E2B; border-color: var(--dark-border); }
+
+  /* browser tab mock */
+  .tab-mock { display: flex; align-items: center; gap: 8px; background: var(--raised); border: 1px solid var(--border); border-bottom: none; border-radius: 10px 10px 0 0; padding: 8px 14px; width: 210px; font-size: 12px; color: var(--secondary); }
+  .tab-strip { background: var(--hover); padding: 8px 10px 0; border-radius: 12px 12px 0 0; }
+
+  /* app icon tiles */
+  .appicon { width: 96px; height: 96px; border-radius: 22px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Exploration · klay branch</div>
+  <h1>Klay's sprout as the Kolumn mark</h1>
+  <p class="sub">The plant from Klay's head — lime tip + leaves (#C2D64A) on an olive stem
+  (#8BA32E) — lifted straight off the sprite's rows y1–y3 and treated as a standalone logo
+  mark. Mauve stays on Klay's pot; the mark is the two greens only.</p>
+
+  <!-- ============ THE MARK ============ -->
+  <section>
+    <h2>1 · The mark</h2>
+    <p class="note">Sprite-exact: rows y1–y3 of Klay's BASE pose, untouched. Lime tip, lime
+    leaf row, one olive stem pixel — 3×3 on the pixel grid, no smoothing.</p>
+    <div class="row">
+      <div class="tile" style="flex:1; min-width:220px;">
+        <svg class="mark" width="120" height="120" viewBox="0 0 3 3">
+          <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+          <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+          <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+        </svg>
+        <div class="cap">sprite-exact · 3×3</div>
+      </div>
+      <div class="tile dark" style="flex:1; min-width:220px;">
+        <svg class="mark" width="120" height="120" viewBox="0 0 3 3">
+          <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+          <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+          <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+        </svg>
+        <div class="cap">on dark — greens hold as-is</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOCKUPS ============ -->
+  <section>
+    <h2>2 · Lockups with the wordmark</h2>
+    <p class="note">Clash Grotesk 300, ink. Mark sized to the x-height, sitting on the baseline
+    side. Last variant plants the sprout on the “l” — the wordmark itself becomes the pot,
+    which is the closest read of “Klay's plant on Kolumn's head.”</p>
+    <div class="row">
+      <div class="tile" style="flex:1; min-width:300px;">
+        <div class="lockup">
+          <svg class="mark" width="27" height="27" viewBox="0 0 3 3">
+            <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+            <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+            <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+          </svg>
+          <span class="wordmark" style="font-size:40px;">Kolumn</span>
+        </div>
+        <div class="cap">mark left · ink wordmark</div>
+      </div>
+      <div class="tile" style="flex:1; min-width:300px;">
+        <div class="lockup">
+          <svg class="mark" width="27" height="27" viewBox="0 0 3 3">
+            <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+            <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+            <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+          </svg>
+          <span class="wordmark" style="font-size:40px; color:#8BA32E;">Kolumn</span>
+        </div>
+        <div class="cap">mark + olive wordmark (current --color-logo)</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <div class="tile" style="flex:1; min-width:300px; padding-top:44px;">
+        <span class="word-sprout wordmark" style="font-size:44px;">Ko<span class="l-anchor">l<svg class="mark" width="21" height="21" viewBox="0 0 3 3" style="top:-20px;">
+          <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+          <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+          <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+        </svg></span>umn</span>
+        <div class="cap">sprout growing from the “l”</div>
+      </div>
+      <div class="tile dark" style="flex:1; min-width:300px; padding-top:44px;">
+        <span class="word-sprout wordmark" style="font-size:44px;">Ko<span class="l-anchor">l<svg class="mark" width="21" height="21" viewBox="0 0 3 3" style="top:-20px;">
+          <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+          <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+          <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+        </svg></span>umn</span>
+        <div class="cap">same, dark</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SIZES ============ -->
+  <section>
+    <h2>3 · Small sizes & favicon</h2>
+    <p class="note">The 3-px-wide grid survives tiny rendering — at 16px each sprite pixel is
+    still ~5 device pixels.</p>
+    <div class="row">
+      <div class="tile" style="flex:2; min-width:320px;">
+        <div style="display:flex; align-items:flex-end; gap:28px;">
+          <div style="text-align:center;"><svg class="mark" width="16" height="16" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg><div class="cap" style="margin-top:8px;">16</div></div>
+          <div style="text-align:center;"><svg class="mark" width="24" height="24" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg><div class="cap" style="margin-top:8px;">24</div></div>
+          <div style="text-align:center;"><svg class="mark" width="32" height="32" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg><div class="cap" style="margin-top:8px;">32</div></div>
+          <div style="text-align:center;"><svg class="mark" width="48" height="48" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg><div class="cap" style="margin-top:8px;">48</div></div>
+        </div>
+      </div>
+      <div class="tile" style="flex:3; min-width:320px; align-items:stretch;">
+        <div class="tab-strip">
+          <div class="tab-mock">
+            <svg class="mark" width="14" height="14" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+            <span>Kolumn — Boards</span>
+          </div>
+        </div>
+        <div class="cap" style="text-align:center;">browser tab</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTEXTS ============ -->
+  <section>
+    <h2>4 · In context</h2>
+    <p class="note">Sidebar header lockup (mark at 18px + wordmark 17px), both themes, and
+    app-icon treatments. Cream tile keeps the product's paper feel; ink tile is the
+    high-contrast option.</p>
+    <div class="row">
+      <div class="tile" style="flex:1; min-width:290px;">
+        <div class="sidebar-mock">
+          <div class="head">
+            <svg class="mark" width="16" height="16" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+            <span class="wordmark" style="font-size:17px; font-weight:400;">Kolumn</span>
+          </div>
+          <div class="rowitem"><span class="sw"></span> Search</div>
+          <div class="rowitem"><span class="sw"></span> Chats</div>
+          <div class="rowitem" style="padding-bottom:14px;"><span class="sw"></span> Workspace</div>
+        </div>
+        <div class="cap">sidebar · light</div>
+      </div>
+      <div class="tile dark" style="flex:1; min-width:290px;">
+        <div class="sidebar-mock dark">
+          <div class="head">
+            <svg class="mark" width="16" height="16" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+            <span class="wordmark" style="font-size:17px; font-weight:400;">Kolumn</span>
+          </div>
+          <div class="rowitem"><span class="sw"></span> Search</div>
+          <div class="rowitem"><span class="sw"></span> Chats</div>
+          <div class="rowitem" style="padding-bottom:14px;"><span class="sw"></span> Workspace</div>
+        </div>
+        <div class="cap">sidebar · dark</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <div class="tile" style="flex:1; min-width:220px;">
+        <div class="appicon" style="background:#FDFBF7;">
+          <svg class="mark" width="44" height="44" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+        </div>
+        <div class="cap">app icon · cream</div>
+      </div>
+      <div class="tile" style="flex:1; min-width:220px;">
+        <div class="appicon" style="background:#1B1B18; border-color:#1B1B18;">
+          <svg class="mark" width="44" height="44" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+        </div>
+        <div class="cap">app icon · ink</div>
+      </div>
+      <div class="tile" style="flex:1; min-width:220px;">
+        <div class="appicon" style="background:#EEF2D6;">
+          <svg class="mark" width="44" height="44" viewBox="0 0 3 3"><rect x="1" y="0" width="1" height="1" fill="#C2D64A"/><rect x="0" y="1" width="3" height="1" fill="#C2D64A"/><rect x="1" y="2" width="1" height="1" fill="#8BA32E"/></svg>
+        </div>
+        <div class="cap">app icon · lime wash</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROVENANCE ============ -->
+  <section>
+    <h2>5 · Provenance</h2>
+    <p class="note">Where the mark comes from: rows y1–y3 of Klay's BASE pose. The mark is
+    Klay minus pot and eyes — the growing part. Klay keeps mauve; the brand mark never uses it.</p>
+    <div class="row">
+      <div class="tile" style="flex:1; min-width:260px;">
+        <svg class="mark" width="168" height="154" viewBox="0 0 12 11">
+          <rect x="6" y="1" width="1" height="1" fill="#C2D64A"/>
+          <rect x="5" y="2" width="3" height="1" fill="#C2D64A"/>
+          <rect x="6" y="3" width="1" height="1" fill="#8BA32E"/>
+          <rect x="3" y="4" width="6" height="1" fill="#A8969E"/>
+          <rect x="3" y="5" width="1" height="1" fill="#A8969E"/><rect x="4" y="5" width="1" height="1" fill="#1B1B18"/><rect x="5" y="5" width="2" height="1" fill="#A8969E"/><rect x="7" y="5" width="1" height="1" fill="#1B1B18"/><rect x="8" y="5" width="1" height="1" fill="#A8969E"/>
+          <rect x="3" y="6" width="6" height="1" fill="#A8969E"/>
+          <rect x="4" y="7" width="1" height="1" fill="#A8969E"/><rect x="7" y="7" width="1" height="1" fill="#A8969E"/>
+        </svg>
+        <div class="cap">Klay, BASE pose — the source</div>
+      </div>
+      <div class="tile" style="flex:1; min-width:260px;">
+        <svg class="mark" width="140" height="140" viewBox="0 0 3 3">
+          <rect x="1" y="0" width="1" height="1" fill="#C2D64A"/>
+          <rect x="0" y="1" width="3" height="1" fill="#C2D64A"/>
+          <rect x="1" y="2" width="1" height="1" fill="#8BA32E"/>
+        </svg>
+        <div class="cap">the mark — rows y1–y3, greens only</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

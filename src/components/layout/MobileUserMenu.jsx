@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Gear, Kanban, SignOut } from '@phosphor-icons/react'
+import { Gear, SignOut } from '@phosphor-icons/react'
+import KolumnLogo from './KolumnLogo'
 import { useAuthStore } from '../../store/authStore'
 import Menu from '../ui/Menu'
 
@@ -43,7 +44,7 @@ export default function MobileUserMenu() {
         aria-label="User menu"
         className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
       >
-        <Kanban className="w-[22px] h-[22px] text-[var(--text-primary)]" weight="light" />
+        <KolumnLogo size={16} />
       </button>
     </Menu>
   )
