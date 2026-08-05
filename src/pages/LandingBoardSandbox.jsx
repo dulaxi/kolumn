@@ -13,8 +13,10 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { ArrowUp, CalendarDot, CheckCircle, CheckSquare, FileText, Kanban, Plus, Sparkle, Waveform } from '@phosphor-icons/react'
+import { ArrowUp, CalendarDot, CheckCircle, CheckSquare, FileText, Plus, Sparkle, Waveform } from '@phosphor-icons/react'
+import KolumnLockup from '../components/layout/KolumnLockup'
 import Avatar from '../components/ui/Avatar'
+import { LABEL_OUTLINE } from '../utils/formatting'
 
 const DEMO_COLUMNS = [
   { id: 'demo-col-1', title: 'To Do' },
@@ -311,8 +313,11 @@ const DemoCard = forwardRef(function DemoCard({
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
             {card.labels?.length > 0 && card.labels.map((label) => (
-              <span key={`${label.text}-${label.color}`} className="font-medium text-[var(--text-secondary)] lowercase">
-                /{label.text}
+              <span
+                key={`${label.text}-${label.color}`}
+                className={`text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize ${LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray}`}
+              >
+                {label.text}
               </span>
             ))}
           </div>
@@ -331,18 +336,18 @@ const DemoCard = forwardRef(function DemoCard({
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {card.due_date && (
-              <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--surface-hover)] text-[var(--text-muted)]">
-                <CalendarDot size={12} weight="bold" />
+              <span className="font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 text-[var(--text-muted)] border-[var(--text-muted)]/30">
+                <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
                 {new Date(card.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
             {hasChecklist && (
-              <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
+              <span className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
-                  : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                  ? 'text-[var(--color-lime-dark)] border-[var(--color-lime-dark)]/30'
+                  : 'text-[var(--text-muted)] border-[var(--text-muted)]/30'
               }`}>
-                <CheckSquare size={12} weight="bold" />
+                <CheckSquare size={14} weight="regular" className="shrink-0 -mt-px" />
                 {checked}/{total}
               </span>
             )}
@@ -360,7 +365,7 @@ const DemoCard = forwardRef(function DemoCard({
    slide-up offsets) are threaded via the cardOverrides map keyed by
    card id; refs by the cardRefs map. Keeps prop signatures clean as
    the drag choreography grows. */
-function MiniColumn({ col, cards, indexOffset = 0, cardOverrides = {}, cardRefs = {} }) {
+function MiniColumn({ col, cards, count, indexOffset = 0, cardOverrides = {}, cardRefs = {} }) {
   return (
     <div className="flex flex-col w-[290px] shrink-0">
       <div className="flex items-center justify-between px-0.5 pb-3">
@@ -370,7 +375,7 @@ function MiniColumn({ col, cards, indexOffset = 0, cardOverrides = {}, cardRefs 
         >
           {col.title}
         </h3>
-        <span className="text-xs text-[var(--text-muted)]">{cards.length}</span>
+        <span className="text-xs text-[var(--text-muted)]">{count ?? cards.length}</span>
       </div>
       <div className="flex flex-col gap-2 flex-1">
         {cards.map((card, i) => {
@@ -729,15 +734,7 @@ export function HeroAnimation({ parentScale = 1 } = {}) {
             className="absolute left-0 right-0 z-30 flex justify-center pointer-events-none"
             style={{ top: '25%', transform: 'translateY(-50%)' }}
           >
-            <div className="flex items-center gap-2">
-              <Kanban size={28} weight="fill" className="text-[var(--color-logo)]" />
-              <span
-                className="text-[26px] tracking-tight leading-none text-[var(--text-primary)]"
-                style={{ fontFamily: 'Clash Grotesk, system-ui, sans-serif', fontWeight: 500 }}
-              >
-                Kolumn
-              </span>
-            </div>
+            <KolumnLockup text={28} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -882,6 +879,13 @@ export function HeroAnimation({ parentScale = 1 } = {}) {
                 <div className="flex gap-5">
                   {(() => {
                     let runningIndex = 0
+                    // Header counts track the drag choreography (cards render
+                    // in their source column and "move" via transforms, so
+                    // cards.length alone never changes): each moved card
+                    // leaves "to do" and joins "In Progress" the moment it
+                    // settles — card 2 at phase 14, card 1 at 18, card 3 at 21.
+                    const movedCount =
+                      (phase >= 14 ? 1 : 0) + (phase >= 18 ? 1 : 0) + (phase >= 21 ? 1 : 0)
                     return DEMO_COLUMNS.map((col) => {
                       const cardsForCol = DEMO_CARDS.filter((c) => c.column_id === col.id)
                       const node = (
@@ -889,6 +893,9 @@ export function HeroAnimation({ parentScale = 1 } = {}) {
                           key={col.id}
                           col={col}
                           cards={cardsForCol}
+                          count={col.id === 'demo-col-2'
+                            ? movedCount
+                            : cardsForCol.length - movedCount}
                           indexOffset={runningIndex}
                           cardOverrides={cardOverrides}
                           cardRefs={cardRefs}
@@ -1012,15 +1019,7 @@ export function HeroAnimation({ parentScale = 1 } = {}) {
               className="absolute left-0 right-0 flex justify-center"
               style={{ top: '25%', transform: 'translateY(-50%)' }}
             >
-              <div className="flex items-center gap-2">
-                <Kanban size={28} weight="fill" className="text-[var(--color-logo)]" />
-                <span
-                  className="text-[26px] tracking-tight leading-none text-[var(--text-primary)]"
-                  style={{ fontFamily: 'Clash Grotesk, system-ui, sans-serif', fontWeight: 500 }}
-                >
-                  Kolumn
-                </span>
-              </div>
+              <KolumnLockup text={28} />
             </motion.div>
 
             {/* Heading + CTA — vertically centered */}

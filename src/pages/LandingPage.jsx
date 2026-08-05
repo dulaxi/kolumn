@@ -1,11 +1,11 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
-import '@fontsource-variable/plus-jakarta-sans'
 
-import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
 import KolumnLockup from '../components/layout/KolumnLockup'
+import { LABEL_OUTLINE } from '../utils/formatting'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
@@ -551,8 +551,11 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
             {card.labels?.length > 0 && card.labels.map((label) => (
-              <span key={label.text} className="font-medium text-[var(--text-secondary)] lowercase">
-                /{label.text}
+              <span
+                key={label.text}
+                className={`text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize ${LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray}`}
+              >
+                {label.text}
               </span>
             ))}
           </div>
@@ -574,18 +577,18 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {card.dueDate && (
-              <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]">
-                <CalendarDot size={12} weight="bold" />
+              <span className="font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 text-[var(--text-muted)] border-[var(--text-muted)]/30">
+                <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
                 {card.dueDate}
               </span>
             )}
             {card.checklist && (
-              <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
+              <span className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
-                  : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                  ? 'text-[var(--color-lime-dark)] border-[var(--color-lime-dark)]/30'
+                  : 'text-[var(--text-muted)] border-[var(--text-muted)]/30'
               }`}>
-                <CheckSquare size={12} weight="bold" />
+                <CheckSquare size={14} weight="regular" className="shrink-0 -mt-px" />
                 {card.checklist.done}/{card.checklist.total}
               </span>
             )}
@@ -604,7 +607,7 @@ function AIGeneratedCards({ cardStates }) {
     <div className="pt-5 px-4 flex justify-center select-none">
       <div className="flex flex-col w-full max-w-[290px]">
         <div className="flex items-baseline gap-2 px-0.5 pb-3">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+          <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
           <span className="text-xs text-[var(--text-muted)]">{AI_CARDS.length}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -752,7 +755,7 @@ function SlackExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{CHAT_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -925,7 +928,7 @@ function TranscriptExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{TRANSCRIPT_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -1068,7 +1071,7 @@ function GmailExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{GMAIL_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -1415,7 +1418,6 @@ function HeroAuthCard() {
                 className="w-full !text-base !rounded-[0.6rem]"
               >
                 Continue with email
-                <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
           ) : (
@@ -1661,14 +1663,16 @@ export default function LandingPage() {
 
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
-        <div className="px-6 sm:px-10 pb-8 max-w-[90rem] mx-auto">
+        {/* pt-3: the animation tile would otherwise sit mathematically flush
+            with the sticky nav's bottom edge (zero clearance), and device-px
+            rounding at some zooms/DPRs paints the nav over its top rows. */}
+        <div className="px-6 sm:px-10 pt-3 pb-8 max-w-[90rem] mx-auto">
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_720px] gap-4">
             {/* Left — Copy (center-aligned) */}
             <div className="flex w-full min-h-[85vh] items-center">
             <div className="text-center flex flex-col items-center w-full">
               <h1 className="text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl font-light text-[#1B1B18] tracking-tight leading-[1.08] mb-5">
-                Kanban,<br />
-                <span className="text-[#8BA32E] font-heading">restored</span>.
+                Said, <span className="text-[#8BA32E] font-heading">done</span>.
               </h1>
               <p className="text-base sm:text-lg text-[#5C5C57] max-w-lg mb-8 leading-relaxed">
                 The kanban you talk to.
@@ -1682,7 +1686,7 @@ export default function LandingPage() {
                 size and CSS-scales it to fit any container width — so it stays
                 visible on phones/tablets without cards getting cut on the
                 edges. font-sans is set inside ScaledHero to escape the page's
-                landing-font (Plus Jakarta Sans) and restore the app sans
+                landing-font base (now Inter too) and keep the app sans
                 (Inter). */}
             <div className="flex justify-center items-center w-full mt-8 xl:mt-0">
               <ScaledHero />
