@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kolumn — 1:1 social avatar (sprout mark)</title>
+
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-grotesk@300,400,500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --page:#FAF8F6; --card:#FFF; --border:#E0DBD5; --ink:#1B1B18;
+      --secondary:#5C5C57; --muted:#8E8E89;
+      --mono:'IBM Plex Mono','SF Mono',SFMono-Regular,Menlo,monospace;
+      --sans:-apple-system,BlinkMacSystemFont,'Inter',system-ui,sans-serif;
+      --logo-font:'Clash Grotesk',var(--sans);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--page); color:var(--ink); font-family:var(--sans); padding:48px 32px 120px; }
+
+    .head { max-width:1060px; margin:0 auto; }
+    .kicker { font-family:var(--mono); font-size:11px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; }
+    h1 { font-family:var(--logo-font); font-weight:425; font-size:28px; margin:8px 0 6px; }
+    .sub { font-size:14px; color:var(--secondary); max-width:70ch; line-height:1.6; }
+    .sub code { font-family:var(--mono); font-size:12px; background:#F0ECE7; padding:1px 5px; border-radius:4px; }
+
+    .controls { max-width:1060px; margin:26px auto 0; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .toggle { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background:#fff;
+              border-radius:8px; padding:8px 13px; font-size:13px; cursor:pointer; user-select:none; }
+    .toggle:hover { border-color:#C9C3BC; }
+    .toggle input { accent-color:var(--ink); width:14px; height:14px; cursor:pointer; }
+    .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:#fff; }
+    .seg button { border:0; background:transparent; font-family:inherit; font-size:13px; padding:8px 14px; cursor:pointer; color:var(--secondary); }
+    .seg button.on { background:var(--ink); color:#F2EDE8; }
+
+    h2 { font-family:var(--mono); font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+         color:var(--secondary); font-weight:600; max-width:1240px; margin:54px auto 6px; }
+    .note { font-size:13px; color:var(--muted); max-width:1240px; margin:0 auto 18px; line-height:1.6; }
+    .note code { font-family:var(--mono); font-size:12px; }
+
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(268px,1fr)); gap:18px; max-width:1240px; margin:0 auto; }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px;
+            display:flex; flex-direction:column; gap:12px; transition:border-color .15s, box-shadow .15s; }
+    .card:hover { border-color:#C9C3BC; box-shadow:0 4px 24px rgba(27,27,24,.06); }
+    .card.warn { border-color:#E0B4A8; }
+
+    .stage { background-color:#fff;
+      background-image:linear-gradient(45deg,#F0ECE7 25%,transparent 25%),linear-gradient(-45deg,#F0ECE7 25%,transparent 25%),
+                       linear-gradient(45deg,transparent 75%,#F0ECE7 75%),linear-gradient(-45deg,transparent 75%,#F0ECE7 75%);
+      background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0;
+      border-radius:10px; display:flex; align-items:center; justify-content:center; padding:12px; }
+    .stage canvas { width:100%; height:auto; display:block; image-rendering:pixelated; }
+    .stage.circle canvas { border-radius:50%; }
+
+    .sizes { display:flex; align-items:flex-end; gap:12px; padding:9px 12px; background:#F5F2EF; border-radius:10px; }
+    .sizes .slot { display:flex; flex-direction:column; align-items:center; gap:5px; }
+    .sizes canvas { display:block; border-radius:50%; image-rendering:pixelated; }
+    .sizes .lbl { font-family:var(--mono); font-size:9px; color:#A8A29B; }
+
+    .meta .name { font-size:14px; font-weight:600; letter-spacing:-.01em; }
+    .meta .desc { font-size:12px; color:var(--muted); line-height:1.5; margin-top:3px; }
+
+    .ratios { display:flex; gap:6px; flex-wrap:wrap; }
+    .chip { font-family:var(--mono); font-size:10px; padding:3px 7px; border-radius:5px; border:1px solid var(--border); color:var(--secondary); }
+    .chip.good { background:#EEF2D6; border-color:#C9D68A; }
+    .chip.ok   { background:#FBF3DC; border-color:#E8D08A; }
+    .chip.bad  { background:#F8E6E0; border-color:#E0B4A8; color:#9A4A32; }
+
+    .actions { display:flex; gap:8px; }
+    .btn { flex:1; border:1px solid var(--ink); background:var(--ink); color:#F2EDE8; border-radius:8px;
+           padding:9px 8px; font-size:12px; font-weight:500; font-family:inherit; cursor:pointer; }
+    .btn:hover { opacity:.82; }
+    .btn.ghost { background:transparent; color:var(--ink); border-color:var(--border); }
+    .btn.ghost:hover { border-color:var(--ink); opacity:1; }
+
+    .footnote { max-width:1060px; margin:64px auto 0; padding:20px 22px; border:1px solid var(--border);
+                border-radius:12px; background:#fff; font-size:13px; color:var(--secondary); line-height:1.75; }
+    .footnote strong { color:var(--ink); font-weight:600; }
+    .footnote code { font-family:var(--mono); font-size:12px; background:#F5F2EF; padding:1px 5px; border-radius:4px; }
+  </style>
+</head>
+<body>
+
+<div class="head">
+  <div class="kicker">Decision Page</div>
+  <h1>Kolumn — 1:1 social avatar</h1>
+  <p class="sub">
+    Built on the new mark from <code>cc38a69</code>: Klay's sprout, sprite-exact — a 3×3 pixel
+    grid, lime tip + leaf row over an olive stem. Per <code>KolumnLogo.jsx</code> the sprout's
+    hexes are <strong>fixed in both themes</strong>, so the only thing that varies below is the
+    <em>field behind it</em> — never the mark. Everything renders on a snapped integer pixel
+    grid, so exports stay crisp with no seams.
+  </p>
+</div>
+
+<div class="controls">
+  <label class="toggle"><input type="checkbox" id="circleToggle" checked> Circle crop (X · LinkedIn · IG)</label>
+  <div class="seg" id="padSeg">
+    <button data-pad="5">5×5 field · bold</button>
+    <button data-pad="7" class="on">7×7 field · airy</button>
+    <button data-pad="9">9×9 field · quiet</button>
+  </div>
+  <div class="seg" id="sizeSeg">
+    <button data-size="512">512</button>
+    <button data-size="1024" class="on">1024</button>
+  </div>
+</div>
+
+<h2>A · Mark only — profile picture</h2>
+<p class="note">
+  The sprout is a 3-pixel-tall shape. It reads as a shape, not a symbol, so contrast against the
+  field is everything — the ratio chips are computed live (WCAG relative luminance) for both the
+  lime leaf and the olive stem.
+</p>
+<div class="grid" id="gridA"></div>
+
+<h2>C · Mauve fields — Klay's own colour</h2>
+<p class="note">
+  Mauve is Klay's pot hex, reserved in <code>klayAnimations.js</code> as
+  <code>m: '#A8969E' — KLAY ONLY, never props</code>. These vary only the <em>field</em>;
+  the sprout keeps its lime/olive. Note that the mauve family splits sharply — the two
+  <strong>dark</strong> plums are the strongest fields on this whole page, while the light
+  mauves are the weakest.
+</p>
+<div class="grid" id="gridC"></div>
+
+<h2>B · Mark + wordmark — square post / OG tile</h2>
+<p class="note">
+  Not avatars — the wordmark won't survive a circle crop. These are for square feed posts and the
+  <code>og:image</code> your <code>index.html</code> is currently missing. B3/B4 are the
+  "sprout rides the <em>l</em>" lockup from <code>klay-sprout-logo.html</code>.
+</p>
+<div class="grid" id="gridB"></div>
+
+<div class="footnote">
+  <strong>What the contrast numbers are telling you.</strong><br>
+  Lime <code>#C2D64A</code> on cream <code>#F2EDE8</code> is about <strong>1.4:1</strong>. That's
+  fine in the sidebar, where the mark sits at 21px beside a wordmark that carries the meaning — but
+  a profile picture is alone at 32px on someone else's timeline, with nothing to anchor it.
+  On ink the same lime is about <strong>10.8:1</strong>.<br><br>
+  <strong>Olive fields are a trap.</strong> A <code>#8BA32E</code> field is the exact hex of the
+  stem pixel, so the stem vanishes and the sprout loses its footing — the tile is flagged for that
+  reason, not for taste.<br><br>
+  <strong>Read the ΔE chip before the ratio chip.</strong> WCAG contrast is luminance-only and
+  deliberately hue-blind — it was designed for text legibility, where hue can't be relied on. The
+  sprout is a chunky colour block, not text, and against a mauve field almost all of its separation
+  is carried by <em>hue</em>, which WCAG cannot measure at all.<br><br>
+  That's why <code>#A8969E</code> scores a terrible <strong>1.02:1</strong> on the stem yet looks
+  perfectly clear: its CIEDE2000 difference is <strong>ΔE 36</strong> (leaf ΔE 40) — versus
+  <strong>ΔE 27</strong> for the cream field that ships as your favicon today. By the metric that
+  matches the object, the pot hex <em>outperforms the status quo</em>. It holds up under
+  deuteranopia too (ΔE 27/31), which is the one case where a hue-carried distinction genuinely
+  degrades. The single real cost is greyscale rendering — in monochrome the stem does vanish.<br><br>
+  The dark plums (<code>#3A3040</code> ΔE 56, <code>#2E2832</code>) win on both metrics at once,
+  which is the only reason to prefer them — not because mauve "fails."<br><br>
+  <strong>Drift found:</strong> <code>index.css</code> defines
+  <code>--color-mauve-wash: #E8DDE2</code> but <code>constants/colors.js</code> ships
+  <code>mauve-wash: #D1C7CB</code>. Two different hexes under one name — C2 and C7 show them
+  side by side.<br><br>
+  <strong>Still open in the repo:</strong> <code>index.html</code> declares
+  <code>twitter:card="summary"</code> with no <code>og:image</code>, so Kolumn links preview with
+  blank artwork. A B-tile fixes it whenever you want.
+</div>
+
+<script>
+/* ── The mark: rows y0–y2 of Klay's BASE pose, sprite-exact ────────── */
+const LIME  = "#C2D64A";
+const OLIVE = "#8BA32E";
+const SPROUT = [                       // {x, y, w, h} in 3×3 grid units
+  { x:1, y:0, w:1, h:1, fill: LIME  }, // tip
+  { x:0, y:1, w:3, h:1, fill: LIME  }, // leaf row
+  { x:1, y:2, w:1, h:1, fill: OLIVE }, // stem
+];
+const MARK_UNITS = 3;
+
+const C = {
+  cream:"#F2EDE8", creamSoft:"#FAF8F6", ink:"#1B1B18", darkCard:"#262624",
+  sand:"#E0DBD5", limeWash:"#EEF2D6", olive:"#8BA32E", lime:"#C2D64A",
+  // Klay's mauve family. --color-mauve is the pot hex from PALETTE.m,
+  // the one klayAnimations.js marks "KLAY ONLY, never props".
+  mauve:"#A8969E", mauveWash:"#E8DDE2", mauveCream:"#F0E8EB",
+  mauveWashDark:"#3A3040", mauveCreamDark:"#2E2832", mauveDark:"#C4A0B8",
+  mauveWashAlt:"#D1C7CB", sparkle:"#D4B8C8",
+};
+
+const VARIANTS_A = [
+  { id:"a1", name:"Ink field",        desc:"Strongest contrast in the set. Pixel art wants a dark field — this is the one that survives 32px on a stranger's timeline.", bg:C.ink },
+  { id:"a2", name:"Cream field",      desc:"Matches the app's light surface and the manifest icon exactly. Warm and on-brand, but the lime goes soft when small.", bg:C.cream },
+  { id:"a3", name:"Dark card",        desc:"The app's dark-mode raised surface. Slightly softer than pure ink, still high contrast.", bg:C.darkCard },
+  { id:"a4", name:"Lime wash",        desc:"Tinted field from --accent-lime-wash. Very quiet — the leaf row nearly merges with it.", bg:C.limeWash },
+  { id:"a5", name:"Olive field",      desc:"The field hex equals the stem hex, so the stem disappears and the sprout floats. Shown as a documented dead end.", bg:C.olive, warn:true },
+  { id:"a6", name:"Ink · squircle",   desc:"Rounded-square field on transparent, for surfaces that DON'T circle-crop: favicon, app tile, GitHub org avatar.", bg:C.ink, radius:0.22, transparent:true },
+  { id:"a7", name:"Cream · squircle", desc:"Same squircle in the light pairing, with a sand hairline so it doesn't dissolve into white pages.", bg:C.cream, radius:0.22, transparent:true, border:C.sand },
+  { id:"a8", name:"Transparent",      desc:"Mark alone, no field. For overlaying on your own artwork — most platforms won't accept it as an avatar upload.", bg:null, transparent:true },
+];
+
+/* Mauve fields. The sprout itself never takes mauve — that hex is Klay's
+   pot and klayAnimations.js reserves it. These vary the field only.      */
+const VARIANTS_C = [
+  { id:"c1", name:"Mauve · Klay's pot",   desc:"--color-mauve, the literal pot hex. Equal-luminance with the stem, so WCAG scores it 1.02:1 — but the separation is carried by hue, and ΔE says it beats the cream field that ships today.", bg:C.mauve },
+  { id:"c2", name:"Mauve wash · light",   desc:"--color-mauve-wash. Soft dusty pink. The whole sprout goes faint against it.", bg:C.mauveWash, warn:true },
+  { id:"c3", name:"Mauve cream · light",  desc:"--color-mauve-cream, the 'I'm currently inside this' fill. Barely tinted off cream.", bg:C.mauveCream, warn:true },
+  { id:"c4", name:"Mauve wash · dark",    desc:"Dark-theme --color-mauve-wash: a deep plum. Lime pops hard against it and it still reads unmistakably mauve.", bg:C.mauveWashDark },
+  { id:"c5", name:"Mauve cream · dark",   desc:"Dark-theme --color-mauve-cream. Near-black plum — the most restrained of the dark mauves.", bg:C.mauveCreamDark },
+  { id:"c6", name:"Mauve · dark theme",   desc:"Dark-theme --color-mauve, a lighter orchid. Mid-tone, so both sprout hexes struggle.", bg:C.mauveDark, warn:true },
+  { id:"c7", name:"Mauve wash · colors.js", desc:"The OTHER mauve-wash — constants/colors.js ships #D1C7CB while index.css ships #E8DDE2. Reads well (ΔE 33/34), but the hex itself is currently a drift bug.", bg:C.mauveWashAlt },
+  { id:"c8", name:"Sparkle",              desc:"--accent-sparkle, the pink Klay's celebration particles use. Included as the nearest mauve-adjacent accent.", bg:C.sparkle, warn:true },
+  { id:"c9", name:"Plum · squircle",      desc:"The one dark mauve that works, as a rounded tile for non-cropping surfaces.", bg:C.mauveWashDark, radius:0.22, transparent:true },
+];
+
+const VARIANTS_B = [
+  { id:"b1", name:"Stacked · ink",       desc:"Sprout above the wordmark, centred. The default square post lockup.",         bg:C.ink,   word:"#E8E5E0", lockup:"stack" },
+  { id:"b2", name:"Stacked · cream",     desc:"Same lockup on the light field, matching the app shell.",                     bg:C.cream, word:C.ink,     lockup:"stack" },
+  { id:"b3", name:"Sprout on the l · ink",   desc:"The signature lockup — the sprout grows out of the l in Kolumn.",        bg:C.ink,   word:"#E8E5E0", lockup:"onL"  },
+  { id:"b4", name:"Sprout on the l · cream", desc:"Light-field version of the signature lockup.",                            bg:C.cream, word:C.ink,     lockup:"onL"  },
+];
+
+/* ── WCAG contrast ─────────────────────────────────────────────────── */
+function linRGB(hex){
+  return [1,3,5].map(i => {
+    const c = parseInt(hex.substr(i,2),16)/255;
+    return c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  });
+}
+function lum(hex){ const v = linRGB(hex); return 0.2126*v[0] + 0.7152*v[1] + 0.0722*v[2]; }
+function ratio(a,b){ const L1=lum(a),L2=lum(b); return ((Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05)); }
+
+/* ── CIEDE2000 ──────────────────────────────────────────────────────
+   WCAG contrast is luminance-only — deliberately hue-blind, because it
+   was built for TEXT legibility. The sprout is a chunky colour block,
+   and most of its separation from a mauve field is carried by HUE, which
+   WCAG cannot see. ΔE2000 measures perceptual difference including hue.
+   Rule of thumb: ΔE ~2 just-noticeable, ~10 clearly different, 30+ obvious. */
+function lab(hex){
+  const [r,g,b] = linRGB(hex);
+  const X = 0.4124564*r + 0.3575761*g + 0.1804375*b;
+  const Y = 0.2126729*r + 0.7151522*g + 0.0721750*b;
+  const Z = 0.0193339*r + 0.1191920*g + 0.9503041*b;
+  const f = t => t > 216/24389 ? Math.cbrt(t) : (841/108)*t + 4/29;
+  const fx=f(X/0.95047), fy=f(Y), fz=f(Z/1.08883);
+  return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+}
+function de2000(hexA, hexB){
+  const [L1,a1,b1] = lab(hexA), [L2,a2,b2] = lab(hexB);
+  const rad = Math.PI/180, deg = 180/Math.PI;
+  const C1 = Math.hypot(a1,b1), C2 = Math.hypot(a2,b2), Cb = (C1+C2)/2;
+  const G = 0.5*(1 - Math.sqrt(Math.pow(Cb,7)/(Math.pow(Cb,7)+Math.pow(25,7))||0));
+  const a1p=(1+G)*a1, a2p=(1+G)*a2;
+  const C1p=Math.hypot(a1p,b1), C2p=Math.hypot(a2p,b2);
+  const h1p=((Math.atan2(b1,a1p)*deg)%360+360)%360;
+  const h2p=((Math.atan2(b2,a2p)*deg)%360+360)%360;
+  const dLp=L2-L1, dCp=C2p-C1p;
+  let dhp = 0;
+  if (C1p*C2p !== 0) {
+    dhp = h2p-h1p;
+    if (dhp > 180) dhp -= 360; else if (dhp < -180) dhp += 360;
+  }
+  const dHp = 2*Math.sqrt(C1p*C2p)*Math.sin(dhp*rad/2);
+  const Lbp=(L1+L2)/2, Cbp=(C1p+C2p)/2;
+  let hbp;
+  if (C1p*C2p === 0) hbp = h1p+h2p;
+  else if (Math.abs(h1p-h2p) <= 180) hbp = (h1p+h2p)/2;
+  else hbp = (h1p+h2p < 360) ? (h1p+h2p+360)/2 : (h1p+h2p-360)/2;
+  const T = 1 - 0.17*Math.cos((hbp-30)*rad) + 0.24*Math.cos(2*hbp*rad)
+              + 0.32*Math.cos((3*hbp+6)*rad) - 0.20*Math.cos((4*hbp-63)*rad);
+  const dTh = 30*Math.exp(-Math.pow((hbp-275)/25, 2));
+  const Rc = 2*Math.sqrt(Math.pow(Cbp,7)/(Math.pow(Cbp,7)+Math.pow(25,7))||0);
+  const Sl = 1 + (0.015*Math.pow(Lbp-50,2))/Math.sqrt(20+Math.pow(Lbp-50,2));
+  const Sc = 1 + 0.045*Cbp, Sh = 1 + 0.015*Cbp*T;
+  const Rt = -Math.sin(2*dTh*rad)*Rc;
+  return Math.sqrt(Math.pow(dLp/Sl,2) + Math.pow(dCp/Sc,2) + Math.pow(dHp/Sh,2)
+                   + Rt*(dCp/Sc)*(dHp/Sh));
+}
+
+/* Viénot 1999 deuteranopia simulation — the one case where a hue-carried
+   distinction genuinely degrades, so it's worth showing rather than assuming. */
+const LMS  = [[17.8824,43.5161,4.11935],[3.45565,27.1554,3.86714],[0.0299566,0.184309,1.46709]];
+const LMSi = [[0.0809444479,-0.130504409,0.116721066],
+              [-0.0102485335,0.0540193266,-0.113614708],
+              [-0.000365296938,-0.00412161469,0.693511405]];
+const mul = (m,v) => m.map(row => row.reduce((s,k,j) => s + k*v[j], 0));
+function deuter(hex){
+  const [L,,S] = mul(LMS, linRGB(hex));
+  const rgb = mul(LMSi, [L, 0.494207*L + 1.24827*S, S]);
+  return "#" + rgb.map(c => {
+    c = Math.max(0, Math.min(1, c));
+    const s = c <= 0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055;
+    return Math.round(s*255).toString(16).padStart(2,"0").toUpperCase();
+  }).join("");
+}
+
+function chipClass(r){ return r >= 4.5 ? "good" : r >= 2.5 ? "ok" : "bad"; }
+function deClass(d){ return d >= 25 ? "good" : d >= 12 ? "ok" : "bad"; }
+
+/* ── Renderer — one function drives previews AND downloads ─────────
+   Pixel crispness rule: snap the cell to a whole number of device
+   pixels, then centre the resulting block. Any remainder lands in the
+   outer padding (invisible) rather than inside the mark (seams).      */
+function draw(cv, v, px, opts = {}) {
+  const pad  = opts.pad || 7;
+  cv.width = px; cv.height = px;
+  const ctx = cv.getContext("2d");
+  ctx.clearRect(0,0,px,px);
+  ctx.imageSmoothingEnabled = false;
+
+  const isLockup = !!v.lockup;
+  // Lockups get a finer grid so the mark can be small next to type.
+  const gridN = isLockup ? 24 : pad;
+  const cell  = Math.max(1, Math.floor(px / gridN));
+  const block = cell * gridN;
+  const off   = Math.round((px - block) / 2);
+
+  // Field
+  if (v.bg) {
+    ctx.fillStyle = v.bg;
+    if (v.transparent && v.radius) {
+      const r = v.radius * px;
+      ctx.beginPath(); ctx.roundRect(0,0,px,px,r); ctx.fill();
+      if (v.border) { ctx.strokeStyle = v.border; ctx.lineWidth = Math.max(1, px/512); ctx.stroke(); }
+    } else if (!v.transparent) {
+      ctx.fillRect(0,0,px,px);
+    } else {
+      ctx.fillRect(0,0,px,px);
+    }
+  }
+
+  if (!isLockup) {
+    // Mark centred in the padded field.
+    const mOff = off + Math.round(((gridN - MARK_UNITS) / 2) * cell);
+    SPROUT.forEach(p => {
+      ctx.fillStyle = p.fill;
+      ctx.fillRect(mOff + p.x*cell, mOff + p.y*cell, p.w*cell, p.h*cell);
+    });
+    return;
+  }
+
+  /* ── Lockups ── */
+  ctx.textBaseline = "alphabetic";
+  if (v.lockup === "stack") {
+    const mCell = Math.floor(px * 0.085);              // 3 units ≈ 25% of tile
+    const mW = mCell * MARK_UNITS;
+    const mx = Math.round((px - mW) / 2);
+    const my = Math.round(px * 0.30);
+    SPROUT.forEach(p => {
+      ctx.fillStyle = p.fill;
+      ctx.fillRect(mx + p.x*mCell, my + p.y*mCell, p.w*mCell, p.h*mCell);
+    });
+    ctx.fillStyle = v.word;
+    ctx.font = `300 ${px*0.155}px 'Clash Grotesk', sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("Kolumn", px/2, px*0.655);
+    return;
+  }
+
+  // "onL" — sprout grows out of the l. Measured, not eyeballed.
+  const fs = px * 0.155;
+  ctx.font = `300 ${fs}px 'Clash Grotesk', sans-serif`;
+  ctx.textAlign = "left";
+  const full = ctx.measureText("Kolumn").width;
+  const preL = ctx.measureText("Ko").width;      // advance up to the l
+  const lW   = ctx.measureText("l").width;
+  const startX = (px - full) / 2;
+  const baseY  = px * 0.56;
+
+  ctx.fillStyle = v.word;
+  ctx.fillText("Kolumn", startX, baseY);
+
+  const mCell = Math.max(1, Math.round(fs * 0.155));
+  const mW = mCell * MARK_UNITS;
+  const mx = Math.round(startX + preL + lW/2 - mW/2);
+  const my = Math.round(baseY - fs * 0.98 - mW * 0.55);   // sits just above the l's ascender
+  SPROUT.forEach(p => {
+    ctx.fillStyle = p.fill;
+    ctx.fillRect(mx + p.x*mCell, my + p.y*mCell, p.w*mCell, p.h*mCell);
+  });
+}
+
+/* ── Exports ───────────────────────────────────────────────────────── */
+async function exportPNG(v, px, pad) {
+  await document.fonts.ready;
+  const cv = document.createElement("canvas");
+  draw(cv, v, px, { pad });
+  const a = document.createElement("a");
+  a.href = cv.toDataURL("image/png");
+  a.download = `kolumn-${v.id}-${px}.png`;
+  a.click();
+}
+
+function exportSVG(v, pad) {
+  const N = v.lockup ? null : pad;
+  if (!N) { alert("SVG export is available for the mark-only tiles (section A)."); return; }
+  const cell = 100, S = N * cell;
+  const mOff = ((N - MARK_UNITS) / 2) * cell;
+  let inner = "";
+  if (v.bg) {
+    const r = v.transparent && v.radius ? v.radius * S : 0;
+    inner += `<rect width="${S}" height="${S}" rx="${r}" ry="${r}" fill="${v.bg}"/>`;
+    if (v.border) inner += `<rect x=".5" y=".5" width="${S-1}" height="${S-1}" rx="${r}" ry="${r}" fill="none" stroke="${v.border}"/>`;
+  }
+  SPROUT.forEach(p => {
+    inner += `<rect x="${mOff + p.x*cell}" y="${mOff + p.y*cell}" width="${p.w*cell}" height="${p.h*cell}" fill="${p.fill}"/>`;
+  });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}" width="1024" height="1024" shape-rendering="crispEdges">${inner}</svg>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([svg], { type:"image/svg+xml" }));
+  a.download = `kolumn-${v.id}.svg`;
+  a.click();
+}
+
+/* ── Render loop ───────────────────────────────────────────────────── */
+const circleToggle = document.getElementById("circleToggle");
+let PAD = 7, SIZE = 1024;
+
+function ratioChips(v) {
+  if (!v.bg) return `<span class="chip">no field</span>`;
+  const rl = ratio(C.lime, v.bg), ro = ratio(C.olive, v.bg);
+  const dl = de2000(C.lime, v.bg), doo = de2000(C.olive, v.bg);
+  const dlD = de2000(deuter(C.lime), deuter(v.bg));
+  const doD = de2000(deuter(C.olive), deuter(v.bg));
+  const worstDe = Math.min(dl, doo), worstDeD = Math.min(dlD, doD);
+  return `<span class="chip ${deClass(worstDe)}" title="CIEDE2000 perceptual difference, worst of leaf/stem">ΔE ${worstDe.toFixed(0)}</span>` +
+         `<span class="chip ${deClass(worstDeD)}" title="Same, simulated for deuteranopia">ΔE-deut ${worstDeD.toFixed(0)}</span>` +
+         `<span class="chip ${chipClass(rl)}" title="WCAG luminance contrast — hue-blind">leaf ${rl.toFixed(1)}:1</span>` +
+         `<span class="chip ${chipClass(ro)}" title="WCAG luminance contrast — hue-blind">stem ${ro.toFixed(1)}:1</span>`;
+}
+
+function render() {
+  const circle = circleToggle.checked;
+  [["gridA", VARIANTS_A], ["gridC", VARIANTS_C], ["gridB", VARIANTS_B]].forEach(([gid, list]) => {
+    const grid = document.getElementById(gid);
+    grid.innerHTML = "";
+    list.forEach(v => {
+      const card = document.createElement("div");
+      card.className = "card" + (v.warn ? " warn" : "");
+      card.innerHTML = `
+        <div class="stage ${circle ? "circle" : ""}"><canvas></canvas></div>
+        <div class="sizes">
+          ${[64,48,32,24].map(() => `<div class="slot"><canvas></canvas><span class="lbl"></span></div>`).join("")}
+        </div>
+        <div class="meta">
+          <div class="name">${v.id.toUpperCase()} · ${v.name}</div>
+          <div class="desc">${v.desc}</div>
+        </div>
+        <div class="ratios">${ratioChips(v)}</div>
+        <div class="actions">
+          <button class="btn">PNG ${SIZE}</button>
+          <button class="btn ghost">SVG</button>
+        </div>`;
+
+      draw(card.querySelector(".stage canvas"), v, 480, { pad: PAD });
+      const slots = card.querySelectorAll(".sizes .slot");
+      [64,48,32,24].forEach((s,i) => {
+        draw(slots[i].querySelector("canvas"), v, s, { pad: PAD });
+        const c = slots[i].querySelector("canvas");
+        c.style.width = s + "px"; c.style.height = s + "px";
+        slots[i].querySelector(".lbl").textContent = s;
+      });
+
+      const [pngBtn, svgBtn] = card.querySelectorAll(".actions button");
+      pngBtn.onclick = () => exportPNG(v, SIZE, PAD);
+      svgBtn.onclick = () => exportSVG(v, PAD);
+      grid.appendChild(card);
+    });
+  });
+}
+
+document.getElementById("padSeg").onclick = e => {
+  if (!e.target.dataset.pad) return;
+  PAD = +e.target.dataset.pad;
+  document.querySelectorAll("#padSeg button").forEach(b => b.classList.toggle("on", b === e.target));
+  render();
+};
+document.getElementById("sizeSeg").onclick = e => {
+  if (!e.target.dataset.size) return;
+  SIZE = +e.target.dataset.size;
+  document.querySelectorAll("#sizeSeg button").forEach(b => b.classList.toggle("on", b === e.target));
+  render();
+};
+circleToggle.onchange = render;
+
+render();
+document.fonts.ready.then(render);
+</script>
+</body>
+</html>

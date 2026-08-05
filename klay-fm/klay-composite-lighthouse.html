@@ -1,0 +1,70 @@
+<h2>Klay keeper over the lighthouse — locked halftone standard</h2>
+<p class="sub">Dark dots on cream · 9px gap · dots 2/4/5px · frame-anchored 1080p (halftone.js). Klay (2×) raises a spyglass (1×) to watch the sea, over the lighthouse loop. Drag to place, resize (integer snap). C toggles halftone sliders.</p>
+
+<div id="stage">
+  <canvas id="bg" width="1920" height="1080"></canvas>
+  <div id="klay"><canvas id="kc" width="40" height="34"></canvas><div id="handle"></div></div>
+</div>
+<div id="readout" class="mono">—</div>
+<div id="panel"></div>
+
+<video id="vid" src="lighthouse-loop.mp4" muted loop playsinline autoplay preload="auto" style="display:none"></video>
+
+<style>
+  body{background:#f5f3ed;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:24px}
+  h2{font-size:18px;margin:0 0 4px} .sub{font-size:12px;color:#888;margin:0 0 16px;max-width:900px}
+  #stage{position:relative;width:min(1760px,97vw);max-height:82vh;aspect-ratio:16/9;border:1px solid #cfc9be;border-radius:8px;overflow:hidden;background:#f5f3ed}
+  #bg{position:absolute;inset:0;width:100%;height:100%}  /* halftone dots are circles — never pixelated */
+  #klay{position:absolute;width:140px;height:119px;cursor:grab;touch-action:none}
+  #klay:active{cursor:grabbing}
+  #kc{width:100%;height:100%;image-rendering:pixelated;display:block}
+  #handle{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#15130d;border:2px solid #fff;border-radius:3px;cursor:nwse-resize;touch-action:none}
+  #readout{margin-top:12px;font-size:12px;color:#3a382f}
+  #panel{position:fixed;top:16px;right:16px;background:rgba(245,243,237,.95);border:1px solid #e2ddd4;border-radius:10px;padding:12px 14px;font:12px 'IBM Plex Mono',monospace;color:#3a382f;display:grid;gap:7px;width:290px;box-shadow:0 4px 24px rgba(27,27,24,.10);z-index:5}
+  #panel.hidden{display:none} #panel .ttl{font-weight:600;color:#15130d}
+  #panel .prow{display:grid;grid-template-columns:84px 1fr 40px;gap:10px;align-items:center}
+  #panel input[type=range]{width:100%;accent-color:#15130d} #panel .val{color:#8a877c;text-align:right}
+</style>
+
+<script type="module">
+import { P, CW, CH, KOX, KOY, KSCALE, FRAMES } from './lighthouseklay.js';
+import { HALFTONE, attachVideoHalftone } from './halftone.js';
+
+// ---------- background: LOCKED halftone standard ----------
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const bg=document.getElementById('bg'), vid=document.getElementById('vid');
+const { render:halftoneBG, cfg } = attachVideoHalftone(bg, vid, {...HALFTONE, HP:{...HALFTONE.HP}});
+const HP=cfg.HP;
+
+// ---------- foreground: Klay 2× + spyglass 1× ----------
+const kc=document.getElementById('kc'),kx=kc.getContext('2d');
+function drawScene(fr){ kx.clearRect(0,0,CW,CH);
+  fr.rows.forEach((row,y)=>{ for(let x=0;x<row.length;x++){ const ch=row[x]; if(ch!=='.'&&P[ch]){ kx.fillStyle=P[ch]; kx.fillRect(KOX+x*KSCALE,KOY+y*KSCALE,KSCALE,KSCALE); } } });   // Klay 2×
+  for(const y in fr.over){ const row=fr.over[y]; for(let x=0;x<row.length;x++){ const ch=row[x]; if(ch!=='.'&&P[ch]){ kx.fillStyle=P[ch]; kx.fillRect(x,+y,1,1); } } }             // spyglass 1×
+}
+let ki=0,klast=performance.now();
+function tick(now){ halftoneBG(); if(now-klast>=FRAMES[ki].ms){klast=now;ki=(ki+1)%FRAMES.length;} drawScene(FRAMES[ki]); requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+
+// ---------- drag + grid-snapped resize ----------
+const klay=document.getElementById('klay'),handle=document.getElementById('handle'),readout=document.getElementById('readout');
+let scale=4; klay.style.left='120px'; klay.style.top='300px';
+function applySize(){ klay.style.width=(CW*scale)+'px'; klay.style.height=(CH*scale)+'px'; report(); }
+function report(){ readout.textContent=`scale x${scale} · ${CW*scale}x${CH*scale}px · pos ${parseInt(klay.style.left)},${parseInt(klay.style.top)}`; }
+applySize();
+let mode=null,start=null;
+klay.addEventListener('pointerdown',e=>{ if(e.target===handle)return; mode='move'; start={mx:e.clientX,my:e.clientY,l:parseInt(klay.style.left),t:parseInt(klay.style.top)}; klay.setPointerCapture(e.pointerId); e.preventDefault(); });
+handle.addEventListener('pointerdown',e=>{ mode='resize'; start={mx:e.clientX,my:e.clientY,s:scale}; handle.setPointerCapture(e.pointerId); e.stopPropagation(); e.preventDefault(); });
+addEventListener('pointermove',e=>{ if(!mode)return;
+  if(mode==='move'){ klay.style.left=(start.l+(e.clientX-start.mx))+'px'; klay.style.top=(start.t+(e.clientY-start.my))+'px'; report(); }
+  else { const dw=e.clientX-start.mx; scale=clamp(Math.round((CW*start.s+dw)/CW),2,20); applySize(); } });
+addEventListener('pointerup',()=>mode=null);
+
+// ---------- halftone sliders (C toggles) ----------
+const panel=document.getElementById('panel');
+const CTRL=[['contrast','Contrast',0.6,2.2,0.05],['floor','Floor',0,0.6,0.02],['gamma','Gamma',0.6,2,0.05],['mid','1→2 split',0.15,0.6,0.02],['hi','2→3 split',0.5,0.9,0.02]];
+panel.innerHTML='<div class="ttl">Halftone · C to hide</div>';
+CTRL.forEach(([kk,lab,mn,mx,st])=>{ const row=document.createElement('div'); row.className='prow'; row.innerHTML=`<span>${lab}</span><input type="range" min="${mn}" max="${mx}" step="${st}" value="${HP[kk]}" data-k="${kk}"><span class="val">${HP[kk]}</span>`; panel.appendChild(row); });
+panel.addEventListener('input',e=>{ const t=e.target,kk=t.dataset.k; if(!kk)return; HP[kk]=+t.value; t.parentNode.querySelector('.val').textContent=+t.value; });
+addEventListener('keydown',e=>{ if(e.key==='c'||e.key==='C') panel.classList.toggle('hidden'); });
+</script>

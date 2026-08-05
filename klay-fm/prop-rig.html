@@ -1,0 +1,118 @@
+<h2>Prop rig — position & scale a prop against Klay</h2>
+<p class="sub">Klay draws at his scale (2×, chunky); the prop draws at its own scale (1× = half Klay's pixel). Drag the prop to move it, use −/+ to rescale, arrow keys to nudge 1 fine-pixel. Copy the export block and I'll drop the exact numbers into the composite.</p>
+
+<div id="app">
+  <div id="left">
+    <div class="row"><label>Klay pose</label>
+      <select id="pose"><option value="base">base</option><option value="right" selected>right</option><option value="left">left</option></select></div>
+    <div class="row"><label>Prop</label>
+      <select id="prop"><option value="watch">watch</option><option value="briefcase">briefcase</option><option value="can">watering can</option><option value="viewer">tower viewer</option><option value="custom">— custom (paste) —</option></select></div>
+    <div class="row"><label>Klay scale</label><button data-k="ks" data-d="-1">−</button><span id="ksv" class="v">2×</span><button data-k="ks" data-d="1">+</button></div>
+    <div class="row"><label>Prop scale</label><button data-k="ps" data-d="-1">−</button><span id="psv" class="v">1×</span><button data-k="ps" data-d="1">+</button></div>
+    <div class="row"><label>Zoom</label><input id="zoom" type="range" min="6" max="22" value="12"></div>
+    <div class="hint">drag prop = move · ← ↑ → ↓ = nudge 1px · behind/front toggle: B</div>
+    <canvas id="cv" tabindex="0"></canvas>
+    <div id="readout" class="mono">—</div>
+  </div>
+  <div id="right">
+    <div class="ttl">Export <button id="copy">copy</button></div>
+    <textarea id="out" class="mono" readonly rows="7" spellcheck="false"></textarea>
+    <div class="ttl">Custom prop (paste a sprite export, then pick “custom”)</div>
+    <textarea id="cin" class="mono" rows="8" spellcheck="false" placeholder="const P={ h:'#D4A843' };&#10;const SPRITE=[&#10; '..hch..',&#10;];"></textarea>
+    <button id="cload">load custom</button>
+  </div>
+</div>
+
+<style>
+  body{background:#f5f3ed;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:22px}
+  h2{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 16px;max-width:860px}
+  #app{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+  #left{display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;gap:10px;align-items:center;font-size:12px}
+  .row label{width:74px;color:#3a382f}
+  select{padding:5px 8px;border:1px solid #cfc9be;border-radius:6px;background:#fff;font:12px 'IBM Plex Mono',monospace}
+  button{font:12px 'IBM Plex Mono',monospace;padding:4px 10px;border:1px solid #15130d;border-radius:6px;background:#fff;cursor:pointer}
+  button:hover{background:#15130d;color:#f5f3ed}
+  .v{min-width:26px;text-align:center;font-weight:600}
+  .hint{font-size:11px;color:#a8a49b}
+  #cv{image-rendering:pixelated;border:1px solid #cfc9be;border-radius:6px;background:#fff;cursor:grab;outline:none}
+  #cv:active{cursor:grabbing}
+  #readout{font-size:12px;color:#3a382f}
+  #right{width:340px;display:flex;flex-direction:column;gap:8px}
+  .ttl{font-weight:600;font-size:13px;margin-top:6px;display:flex;gap:8px;align-items:center}
+  textarea{width:100%;border:1px solid #cfc9be;border-radius:8px;padding:8px;font:12px 'IBM Plex Mono',monospace;background:#fff;resize:vertical}
+</style>
+
+<script type="module">
+import { P as KP, KLAY } from './klay.js';
+
+// ---- built-in props (art + palette) ----
+const PROPS = {
+  watch: { P:{h:'#D4A843',c:'#C27A4A',w:'#FDFBF7',s:'#C4BFB8',S:'#8E8A83',K:'#3A3A3A'}, art:[
+    '...h.....','..h......','.h.......','...hch...','..hhhhh..','.hhwswhh.','hhwwSwwhh','chswKSshc','hhwwwwwhh','.hhwswhh.','..hhhhh..','...hch...'] },
+  briefcase: { P:{K:'#3A3A3A',n:'#4E2F1A',s:'#C4BFB8',h:'#D4A843',c:'#C27A4A',w:'#FDFBF7'}, art:[
+    '.KKKKKK...','.K....K...','nnnnnnnnnn','nshsnnshsn','nccccccccn','nccwcccccn','nnnnnnnnnn','nccccccccn','nKnnnnnnKn'] },
+  can: { P:{s:'#C4BFB8',k:'#1B1B18'}, art:[
+    '...sss.....s.','..sskss....ss','.sskkkss..sss','sksssssssss..','skssssssss...','sksssssss....','skssssss.....','.sssssss.....'] },
+  viewer: { P:{S:'#C4BFB8',K:'#3A3A3A',w:'#FDFBF7',n:'#4E2F1A',u:'#4E7CA8',U:'#7FB0D6'}, art:[
+    '.....SSSSSS..','....SuuuuuuS.','.nKSuuuuuuUw','.nKSuuuuuuUw','....SuuuuuuS.','.....SSSSSS..','.......KK....','......SKKS...','.......KK....','.......KK....','.......KK....','......SKKS...','.....SSKKSS..','....SSSSSSSS.','....nnnnnnnn.'] },
+};
+let custom = null;
+
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), $=id=>document.getElementById(id);
+const CW=46, CH=40, KOX=6, KOY=6;          // fine grid; Klay origin
+let ks=2, ps=1, cell=12, propX=26, propY=18, behind=false;
+
+function poseRows(){ return KLAY[$('pose').value]; }
+function prop(){ const k=$('prop').value; return k==='custom' ? custom : PROPS[k]; }
+function renderP(){ const pr=prop(); return { ...KP, ...(pr?pr.P:{}) }; }
+
+function size(){ cv.width=CW*cell; cv.height=CH*cell; }
+function drawCells(rows, ox, oy, sc, P){ rows.forEach((row,y)=>{ for(let x=0;x<row.length;x++){ const ch=row[x];
+  if(ch!=='.'&&P[ch]){ ctx.fillStyle=P[ch]; ctx.fillRect((ox+x*sc)*cell,(oy+y*sc)*cell,sc*cell,sc*cell); } } }); }
+function draw(){ ctx.clearRect(0,0,cv.width,cv.height);
+  // faint grid + coarse (2px) guide
+  ctx.strokeStyle='rgba(27,27,24,.06)'; for(let x=0;x<=CW;x++){ctx.beginPath();ctx.moveTo(x*cell+.5,0);ctx.lineTo(x*cell+.5,CH*cell);ctx.stroke();}
+  for(let y=0;y<=CH;y++){ctx.beginPath();ctx.moveTo(0,y*cell+.5);ctx.lineTo(CW*cell,y*cell+.5);ctx.stroke();}
+  const P=renderP(), pr=prop();
+  const klay=()=>drawCells(poseRows(),KOX,KOY,ks,P);
+  const pp=()=>{ if(pr) drawCells(pr.art,propX,propY,ps,P); };
+  if(behind){ pp(); klay(); } else { klay(); pp(); }
+  // prop bbox outline
+  if(pr){ const w=Math.max(...pr.art.map(r=>r.length))*ps, h=pr.art.length*ps;
+    ctx.strokeStyle='rgba(21,19,13,.5)'; ctx.setLineDash([4,3]); ctx.strokeRect(propX*cell+.5,propY*cell+.5,w*cell,h*cell); ctx.setLineDash([]); }
+  sync();
+}
+function sync(){ const pr=prop(); const dx=propX-KOX, dy=propY-KOY;
+  $('readout').textContent=`prop @ fine (${propX},${propY})  ·  rel to Klay (${dx>=0?'+':''}${dx},${dy>=0?'+':''}${dy})  ·  prop ${ps}× · Klay ${ks}×`;
+  $('out').value=`// rig: canvas ${CW}×${CH} · Klay @ (${KOX},${KOY}) ×${ks} · prop @ (${propX},${propY}) ×${ps}${behind?' [behind Klay]':''}\n`+
+    `KSCALE=${ks};  PROP_SCALE=${ps};\nplaceAt(PROP_ART, ${propX}, ${propY});`;
+  $('ksv').textContent=ks+'×'; $('psv').textContent=ps+'×';
+}
+
+// ---- prop bbox hit-test + drag ----
+function propBox(){ const pr=prop(); if(!pr)return null; const w=Math.max(...pr.art.map(r=>r.length))*ps, h=pr.art.length*ps; return {x:propX,y:propY,w,h}; }
+let drag=null;
+cv.addEventListener('pointerdown',e=>{ cv.focus(); const r=cv.getBoundingClientRect(); const fx=(e.clientX-r.left)/cell, fy=(e.clientY-r.top)/cell;
+  const b=propBox(); if(b&&fx>=b.x&&fx<b.x+b.w&&fy>=b.y&&fy<b.y+b.h){ drag={ox:fx-propX,oy:fy-propY}; cv.setPointerCapture(e.pointerId); } });
+cv.addEventListener('pointermove',e=>{ if(!drag)return; const r=cv.getBoundingClientRect(); const fx=(e.clientX-r.left)/cell, fy=(e.clientY-r.top)/cell;
+  propX=Math.max(0,Math.min(CW-1,Math.round(fx-drag.ox))); propY=Math.max(0,Math.min(CH-1,Math.round(fy-drag.oy))); draw(); });
+addEventListener('pointerup',()=>drag=null);
+cv.addEventListener('keydown',e=>{ const k=e.key;
+  if(k==='ArrowLeft')propX--; else if(k==='ArrowRight')propX++; else if(k==='ArrowUp')propY--; else if(k==='ArrowDown')propY++;
+  else if(k==='b'||k==='B')behind=!behind; else return; e.preventDefault(); draw(); });
+
+// ---- controls ----
+$('pose').onchange=draw; $('prop').onchange=draw;
+document.querySelectorAll('button[data-k]').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d;
+  if(b.dataset.k==='ks') ks=Math.max(1,Math.min(4,ks+d)); else ps=Math.max(1,Math.min(4,ps+d)); draw(); });
+$('zoom').oninput=e=>{ cell=+e.target.value; size(); draw(); };
+$('copy').onclick=()=>{ $('out').select(); navigator.clipboard?.writeText($('out').value); };
+$('cload').onclick=()=>{ const t=$('cin').value;
+  const P={}; for(const [,ch,hex] of t.matchAll(/([A-Za-z0-9]):\s*['"]?(#[0-9a-fA-F]{3,8})['"]?/g)) P[ch]=hex;
+  const art=[...t.matchAll(/['"]([.\sA-Za-z0-9]*)['"]/g)].map(m=>m[1]).filter(s=>/[.A-Za-z0-9]/.test(s)&&![...s].every(c=>c===' '));
+  if(!art.length){ alert('no sprite rows found'); return; }
+  custom={P,art}; $('prop').value='custom'; draw(); };
+
+size(); draw();
+</script>

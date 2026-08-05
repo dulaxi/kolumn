@@ -1,0 +1,184 @@
+<h2>Pixel sprite creator</h2>
+<p class="sub">Paint on the grid → copy the export block → paste it to me and I rebuild it exactly. Left-drag paints · right-drag erases · Alt-click eyedrops. The export is the same letter-row format our sprites use.</p>
+
+<div id="app">
+  <div id="left">
+    <div class="tools">
+      <label>W <input id="gw" type="number" min="1" max="64" value="24"></label>
+      <label>H <input id="gh" type="number" min="1" max="64" value="22"></label>
+      <button id="resize">Resize</button>
+      <button id="up2" title="Halve pixel size: each pixel becomes 2×2, grid doubles">×2 finer</button>
+      <button id="dn2" title="Double pixel size: each 2×2 block becomes one pixel, grid halves">÷2 coarser</button>
+      <button id="clear">Clear</button>
+      <label class="chk"><input id="glines" type="checkbox" checked> grid</label>
+      <label class="chk"><input id="coarse" type="checkbox"> coarse guide</label>
+      <label>zoom <input id="zoom" type="range" min="6" max="34" value="20"></label>
+    </div>
+    <canvas id="grid"></canvas>
+    <div id="status" class="mono">—</div>
+  </div>
+
+  <div id="right">
+    <div class="ttl">Palette <span class="hint">(click to select · Alt-click a cell to pick)</span></div>
+    <div id="swatches"></div>
+    <div class="addrow">
+      <input id="pick" type="color" value="#8BA32E">
+      <button id="add">+ add color</button>
+      <span class="hint">gets the next free letter</span>
+    </div>
+
+    <div class="ttl">Export <button id="copy">copy</button></div>
+    <textarea id="out" class="mono" readonly rows="16" spellcheck="false"></textarea>
+
+    <div class="ttl">Import <button id="load">load</button> <span class="hint">paste rows (and P={…} legend), then Load</span></div>
+    <textarea id="in" class="mono" rows="6" spellcheck="false" placeholder="const P={ o:'#8BA32E' };&#10;const SPRITE=[&#10; '....o...',&#10;];"></textarea>
+  </div>
+</div>
+
+<style>
+  body{background:#f5f3ed;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:22px}
+  h2{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 16px;max-width:820px}
+  #app{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  #left{display:flex;flex-direction:column;gap:10px}
+  .tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px}
+  .tools input[type=number]{width:48px;padding:3px 5px;border:1px solid #cfc9be;border-radius:6px;background:#fff;font:12px 'IBM Plex Mono',monospace}
+  .tools .chk{display:flex;gap:5px;align-items:center}
+  button{font:12px 'IBM Plex Mono',monospace;padding:5px 11px;border:1px solid #15130d;border-radius:7px;background:#fff;cursor:pointer}
+  button:hover{background:#15130d;color:#f5f3ed}
+  #grid{image-rendering:pixelated;border:1px solid #cfc9be;border-radius:6px;background:#fff;touch-action:none;cursor:crosshair}
+  #status{font-size:12px;color:#8a877c}
+  #right{width:340px;display:flex;flex-direction:column;gap:8px}
+  .ttl{font-weight:600;font-size:13px;margin-top:6px;display:flex;gap:8px;align-items:center}
+  .ttl .hint,.addrow .hint{font-weight:400;font-size:11px;color:#a8a49b}
+  #swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
+  .sw{position:relative;height:34px;border:1px solid #cfc9be;border-radius:6px;cursor:pointer;display:flex;align-items:flex-end;justify-content:flex-start;overflow:hidden}
+  .sw.sel{outline:2px solid #15130d;outline-offset:1px}
+  .sw .lt{font-size:11px;font-weight:600;background:rgba(245,243,237,.9);padding:0 4px;border-top-right-radius:4px;line-height:15px}
+  .sw.eraser{background:repeating-conic-gradient(#e6e1da 0% 25%,#fff 0% 50%) 50%/12px 12px}
+  .addrow{display:flex;gap:8px;align-items:center}
+  .addrow input[type=color]{width:34px;height:28px;padding:0;border:1px solid #cfc9be;border-radius:6px;background:#fff}
+  textarea{width:100%;border:1px solid #cfc9be;border-radius:8px;padding:8px;font:12px 'IBM Plex Mono',monospace;background:#fff;resize:vertical}
+</style>
+
+<script type="module">
+// ---------- named starter palette (letters match our sprite modules) ----------
+const NAMED=[
+  ['o','#8BA32E'],['l','#C2D64A'],['m','#A8969E'],['M','#8F8088'],['k','#1B1B18'],['w','#FDFBF7'],
+  ['s','#C4BFB8'],['S','#8E8A83'],['K','#3A3A3A'],['h','#D4A843'],['c','#C27A4A'],['n','#7A4A2B'],
+  ['b','#7FB3D5'],['B','#A9D3EA'],['R','#BE3A34'],['r','#E0574F'],['g','#6E7175'],['G','#404346'],
+];
+const LETTERS='oOlLmMkKwWsSnNhHcCbBrRgGtTuUvVxXyYzZ0123456789'; // pool for auto-assigning new colors
+let palette=new Map(NAMED);            // letter -> hex
+let sel='o';                           // selected letter, or '.' for eraser
+
+let W=24,H=22, CELL=20, showGrid=true, showCoarse=false;
+let px=[];                             // H rows of W letters
+const cv=document.getElementById('grid'), ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+
+function initGrid(w,h,keep){ const old=px;
+  px=Array.from({length:h},(_,y)=>Array.from({length:w},(_,x)=> keep&&old[y]&&old[y][x]!==undefined?old[y][x]:'.'));
+  W=w;H=h; sizeCanvas(); draw(); syncOut();
+}
+function sizeCanvas(){ cv.width=W*CELL; cv.height=H*CELL; cv.style.width=(W*CELL)+'px'; cv.style.height=(H*CELL)+'px'; }
+
+// ---------- draw ----------
+function draw(){ ctx.clearRect(0,0,cv.width,cv.height);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const ch=px[y][x];
+    if(ch==='.'){ // checker for empty
+      ctx.fillStyle=((x+y)&1)?'#fbfaf7':'#f0ede6'; ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
+    } else { ctx.fillStyle=palette.get(ch)||'#f0f'; ctx.fillRect(x*CELL,y*CELL,CELL,CELL); }
+  }
+  if(showGrid){ ctx.strokeStyle='rgba(27,27,24,.10)'; ctx.lineWidth=1;
+    for(let x=0;x<=W;x++){ ctx.beginPath(); ctx.moveTo(x*CELL+.5,0); ctx.lineTo(x*CELL+.5,H*CELL); ctx.stroke(); }
+    for(let y=0;y<=H;y++){ ctx.beginPath(); ctx.moveTo(0,y*CELL+.5); ctx.lineTo(W*CELL,y*CELL+.5); ctx.stroke(); }
+  }
+  if(showCoarse){ ctx.strokeStyle='rgba(27,27,24,.34)'; ctx.lineWidth=1;   // bold line every 2 cells = the coarse-pixel boundary
+    for(let x=0;x<=W;x+=2){ ctx.beginPath(); ctx.moveTo(x*CELL+.5,0); ctx.lineTo(x*CELL+.5,H*CELL); ctx.stroke(); }
+    for(let y=0;y<=H;y+=2){ ctx.beginPath(); ctx.moveTo(0,y*CELL+.5); ctx.lineTo(W*CELL,y*CELL+.5); ctx.stroke(); }
+  }
+}
+
+// ---------- paint ----------
+let painting=0; // 0 none, 1 paint, 2 erase
+function cellAt(e){ const r=cv.getBoundingClientRect(); const x=Math.floor((e.clientX-r.left)/CELL), y=Math.floor((e.clientY-r.top)/CELL);
+  return (x>=0&&y>=0&&x<W&&y<H)?[x,y]:null; }
+function apply(e){ const c=cellAt(e); if(!c)return; const [x,y]=c;
+  if(painting===2){ px[y][x]='.'; } else { px[y][x]=sel; }
+  draw(); syncOut(); status(x,y);
+}
+cv.addEventListener('pointerdown',e=>{ const c=cellAt(e); if(!c)return; e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  if(e.altKey){ const [x,y]=c; if(px[y][x]!=='.'){ selectLetter(px[y][x]); } return; }
+  painting = (e.button===2||sel==='.')?2:1; apply(e); });
+cv.addEventListener('pointermove',e=>{ const c=cellAt(e); if(c)status(...c); if(painting)apply(e); });
+addEventListener('pointerup',()=>painting=0);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+function status(x,y){ $('status').textContent=`cell ${x},${y} · paint "${sel==='.'?'·(erase)':sel}" · ${W}×${H}`; }
+
+// ---------- palette UI ----------
+function renderSwatches(){ const box=$('swatches'); box.innerHTML='';
+  // eraser
+  const er=document.createElement('div'); er.className='sw eraser'+(sel==='.'?' sel':''); er.title='eraser';
+  er.innerHTML='<span class="lt">·</span>'; er.onclick=()=>selectLetter('.'); box.appendChild(er);
+  for(const [ch,hex] of palette){ const d=document.createElement('div'); d.className='sw'+(sel===ch?' sel':'');
+    d.style.background=hex; d.title=ch+' '+hex; d.innerHTML=`<span class="lt">${ch}</span>`;
+    d.onclick=()=>selectLetter(ch); box.appendChild(d); }
+}
+function selectLetter(ch){ sel=ch; renderSwatches(); const c=$('status').textContent; }
+function nextFreeLetter(){ for(const L of LETTERS){ if(!palette.has(L)) return L; } return null; }
+
+$('add').onclick=()=>{ const hex=$('pick').value; // reuse a letter if this exact color already exists
+  for(const [ch,h] of palette){ if(h.toLowerCase()===hex.toLowerCase()){ selectLetter(ch); return; } }
+  const L=nextFreeLetter(); if(!L){ alert('palette full'); return; }
+  palette.set(L,hex); selectLetter(L); syncOut(); };
+
+// ---------- export ----------
+function usedLetters(){ const u=new Set(); for(const row of px)for(const ch of row) if(ch!=='.') u.add(ch); return u; }
+function syncOut(){ const u=usedLetters();
+  const legend=[...palette].filter(([ch])=>u.has(ch)).map(([ch,hex])=>`${ch}:'${hex}'`).join(', ');
+  const rows=px.map(r=>`  '${r.join('')}',`).join('\n');
+  $('out').value=`// ${W}x${H} sprite\nconst P={ ${legend} };\nconst SPRITE=[\n${rows}\n];`;
+  renderSwatches();
+}
+$('copy').onclick=()=>{ $('out').select(); navigator.clipboard?.writeText($('out').value); };
+
+// ---------- import ----------
+$('load').onclick=()=>{ const t=$('in').value;
+  // legend: letter:'#hex' pairs anywhere
+  const pairs=[...t.matchAll(/([A-Za-z0-9]):\s*['"]?(#[0-9a-fA-F]{3,8})['"]?/g)];
+  for(const [,ch,hex] of pairs) palette.set(ch,hex);
+  // rows: quoted strings (skip the P={} line's contents by only taking quotes that are ALL palette/. chars)
+  const rows=[...t.matchAll(/['"]([.\sA-Za-z0-9]*)['"]/g)].map(m=>m[1]).filter(s=>/^[.\sA-Za-z0-9]+$/.test(s)&&/[.]/.test(s+'.')&&s.length>1&&![...s].every(c=>c===' '));
+  const grid=rows.filter(s=>/[.A-Za-z0-9]/.test(s));
+  if(!grid.length){ alert('no sprite rows found'); return; }
+  const h=grid.length, w=Math.max(...grid.map(s=>s.length));
+  $('gw').value=w; $('gh').value=h;
+  px=Array.from({length:h},(_,y)=>Array.from({length:w},(_,x)=> (grid[y][x]&&grid[y][x]!==' ')?grid[y][x]:'.'));
+  W=w;H=h; sizeCanvas(); draw(); syncOut();
+};
+
+// ---------- controls ----------
+$('resize').onclick=()=>initGrid(+$('gw').value||1,+$('gh').value||1,true);
+$('clear').onclick=()=>{ if(confirm('Clear the whole grid?')) initGrid(W,H,false); };
+$('glines').onchange=e=>{ showGrid=e.target.checked; draw(); };
+$('coarse').onchange=e=>{ showCoarse=e.target.checked; draw(); };
+$('zoom').oninput=e=>{ CELL=+e.target.value; sizeCanvas(); draw(); };
+// ×2 finer: each pixel becomes a 2×2 block on a doubled grid (art unchanged, now editable at half size)
+$('up2').onclick=()=>{ if(W*2>128||H*2>128){alert('grid would exceed 128');return;}
+  const np=Array.from({length:H*2},(_,y)=>Array.from({length:W*2},(_,x)=>px[y>>1][x>>1]));
+  px=np; W*=2; H*=2; $('gw').value=W; $('gh').value=H; CELL=Math.max(6,Math.round(CELL/2)); $('zoom').value=CELL;
+  sizeCanvas(); draw(); syncOut(); };
+// ÷2 coarser: collapse each 2×2 block to one pixel (top-left sample)
+$('dn2').onclick=()=>{ const nw=Math.floor(W/2),nh=Math.floor(H/2); if(nw<1||nh<1)return;
+  const np=Array.from({length:nh},(_,y)=>Array.from({length:nw},(_,x)=>px[y*2][x*2]));
+  px=np; W=nw; H=nh; $('gw').value=W; $('gh').value=H; CELL=Math.min(34,CELL*2); $('zoom').value=CELL;
+  sizeCanvas(); draw(); syncOut(); };
+
+// ---------- boot (autosave) ----------
+const SAVE='pixelcreator-v1';
+function persist(){ try{ localStorage.setItem(SAVE, JSON.stringify({W,H,px,pal:[...palette]})); }catch(_){} }
+setInterval(persist, 1500);
+try{ const s=JSON.parse(localStorage.getItem(SAVE)); if(s&&s.px){ palette=new Map(s.pal); W=s.W;H=s.H;px=s.px; $('gw').value=W;$('gh').value=H; } }catch(_){}
+if(!px.length) initGrid(24,22,false); else { sizeCanvas(); draw(); syncOut(); }
+renderSwatches();
+</script>

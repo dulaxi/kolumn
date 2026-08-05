@@ -1,0 +1,46 @@
+<h1>Klay — every animation gallery in the project</h1>
+<p class="sub">All Klay/pixel animation pages found across the repo. Click to open each gallery.</p>
+<div class="grid" id="g"></div>
+<style>
+  body{background:#faf8f6;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:28px}
+  h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1200px}
+  a.card{display:block;text-decoration:none;color:inherit;border:1px solid #e6e1da;border-radius:10px;padding:14px 16px;background:#fff;transition:border-color .12s}
+  a.card:hover{border-color:#1B1B18}
+  .name{font-size:14px;font-weight:600;margin-bottom:3px}
+  .desc{font-size:12px;color:#888}
+  .count{float:right;font-size:11px;color:#8BA32E;font-weight:600}
+  .grp{grid-column:1/-1;font-size:12px;color:#aaa;margin:14px 0 2px;text-transform:uppercase;letter-spacing:.05em}
+</style>
+<script>
+const ITEMS=[
+ ['grp','Canonical / biggest'],
+ ['klay-detailed-props.html','klay-detailed-props','The studio — detailed props, canonical style','~100'],
+ ['klay-100.html','klay-100','100 expression & motion ideas','100'],
+ ['potto-animations.html','potto-animations','The original core set','core'],
+ ['grp','Runtime & tiers'],
+ ['../../.superpowers/brainstorm/201007-1785375588/content/klay-gallery.html','klay-gallery (runtime 22)','The 22 shipping animations from klayAnimations.js','22'],
+ ['klay-tier-animations.html','klay-tier-animations','Tier / plan animations',''],
+ ['klay-emptystate-animations.html','klay-emptystate-animations','Empty-state set',''],
+ ['klay-emptystate-finals.html','klay-emptystate-finals','Empty-state finals',''],
+ ['grp','Klay in context'],
+ ['klay-sprout-logo.html','klay-sprout-logo','Sprout → Kolumn logo',''],
+ ['dashboard-klay-clock.html','dashboard-klay-clock','Dashboard clock',''],
+ ['dashboard-klay-options-v2.html','dashboard-klay-options-v2','Dashboard options',''],
+ ['dashboard-klay-worksets.html','dashboard-klay-worksets','Work-sets',''],
+ ['dashboard-klay-freshcolumns-r2.html','dashboard-klay-freshcolumns-r2','Fresh columns',''],
+ ['dashboard-klay-decisions.html','dashboard-klay-decisions','Dashboard decisions',''],
+ ['notfound-klay-decisions.html','notfound-klay-decisions','404 page Klay',''],
+ ['grp','Early pixel-mascot exploration (pre-Klay)'],
+ ['pixel-cute-round.html','pixel-cute-round','Round cute takes',''],
+ ['pixel-frog-bunny.html','pixel-frog-bunny','Frog / bunny',''],
+ ['pixel-mascot-safari.html','pixel-mascot-safari','Mascot safari',''],
+ ['pixel-owl-minimal.html','pixel-owl-minimal','Owl minimal',''],
+ ['pixel-owl-takes.html','pixel-owl-takes','Owl takes',''],
+];
+document.getElementById('g').innerHTML=ITEMS.map(it=>{
+  if(it[0]==='grp') return `<div class="grp">${it[1]}</div>`;
+  const [href,name,desc,count]=it;
+  return `<a class="card" href="${href}" target="_blank"><div class="name">${name}${count?`<span class="count">${count}</span>`:''}</div><div class="desc">${desc}</div></a>`;
+}).join('');
+</script>

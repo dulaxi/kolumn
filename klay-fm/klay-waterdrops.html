@@ -1,0 +1,22 @@
+<h2>Watering can — animated water droplets</h2>
+<p class="sub">Your hand-drawn 32×32 can (static) with the blue droplets animated: teardrops fall from the spout tip along the line you painted, looping. Colors are your b (#7FB3D5) + B (#A9D3EA).</p>
+<div class="stage"><canvas id="c" width="384" height="384"></canvas></div>
+
+<style>
+  body{background:#faf8f6;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:28px}
+  h2{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 20px;max-width:760px}
+  .stage{display:inline-block;background:#fff;border:1px solid #e6e1da;border-radius:12px;padding:18px;box-shadow:0 4px 24px rgba(27,27,24,.08)}
+  #c{image-rendering:pixelated;width:512px;height:512px}
+</style>
+<script type="module">
+import { P, CAN, NW, FRAMES, FRAME_MS } from './waterdrops.js';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d'), CS=12;
+function draw(ov){ ctx.clearRect(0,0,cv.width,cv.height);
+  for(let y=0;y<NW;y++){ const base=CAN[y]||''; const over=ov[y]||'';
+    for(let x=0;x<NW;x++){ const ch=(over[x]&&over[x]!=='.')?over[x]:base[x]; if(ch&&ch!=='.'&&P[ch]){ ctx.fillStyle=P[ch]; ctx.fillRect(x*CS,y*CS,CS,CS); } }
+  }
+}
+let i=0,last=performance.now();
+function loop(now){ if(now-last>=FRAME_MS){ last=now; i=(i+1)%FRAMES.length; } draw(FRAMES[i]); requestAnimationFrame(loop); }
+draw(FRAMES[0]); requestAnimationFrame(loop);
+</script>

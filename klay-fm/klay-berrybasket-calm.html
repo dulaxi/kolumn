@@ -1,0 +1,27 @@
+<h2>Klay — berry basket (calm · 8s loop)</h2>
+<p class="sub">Slow 8-second loop: idle breathing → slow blink → reach into the basket → lift one small berry → gentle drift down the side → settle. One quiet gesture, long holds. klay-detailed-props style.</p>
+<div class="stage"><canvas id="c" width="288" height="264"></canvas></div>
+<div id="clock" class="mono">—</div>
+
+<style>
+  body{background:#faf8f6;color:#1B1B18;font-family:'IBM Plex Mono',ui-monospace,monospace;margin:0;padding:28px}
+  h2{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:#888;margin:0 0 20px;max-width:720px}
+  .stage{display:inline-block;background:#fff;border:1px solid #e6e1da;border-radius:12px;padding:18px;box-shadow:0 4px 24px rgba(27,27,24,.08)}
+  #c{image-rendering:pixelated;width:432px;height:396px}
+  #clock{margin-top:14px;font-size:12px;color:#8a877c}
+</style>
+<script type="module">
+import { P, ANIM } from './berrybasket-calm.js';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d'), CS=24, clock=document.getElementById('clock');   // coarse pixel; fine = CS/2
+const TOTAL=ANIM.reduce((a,f)=>a+f.ms,0);
+function draw(fr){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  fr.map.forEach((row,y)=>{ for(let x=0;x<row.length;x++){ const ch=row[x]; if(ch!=='.'&&P[ch]){ ctx.fillStyle=P[ch]; ctx.fillRect(x*CS,y*CS,CS,CS); } } });
+  if(fr.hi){ const hp=CS/2; for(const ry in fr.hi){ const row=fr.hi[ry]; for(let x=0;x<row.length;x++){ const ch=row[x]; if(ch!=='.'&&P[ch]){ ctx.fillStyle=P[ch]; ctx.fillRect(x*hp,(+ry)*hp,hp,hp); } } } }
+}
+let i=0, last=performance.now(), elapsed=0;
+function loop(now){ if(now-last>=ANIM[i].ms){ elapsed=(elapsed+ANIM[i].ms)%TOTAL; last=now; i=(i+1)%ANIM.length; } draw(ANIM[i]);
+  clock.textContent=`frame ${i+1}/${ANIM.length} · ${(elapsed/1000).toFixed(1)}s / ${(TOTAL/1000).toFixed(0)}s loop`;
+  requestAnimationFrame(loop); }
+draw(ANIM[0]); requestAnimationFrame(loop);
+</script>
