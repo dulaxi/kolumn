@@ -32,6 +32,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    // Bind IPv4 loopback explicitly. Left to the default ('localhost'),
+    // Node resolves ::1 first on macOS and Vite listens on IPv6 only —
+    // Safari then tries 127.0.0.1 (per /etc/hosts order), gets refused,
+    // and reports it can't connect. Chrome masks this via Happy Eyeballs.
+    host: '127.0.0.1',
+  },
   build: {
     // 'hidden' emits .map files for Sentry symbolication without adding
     // sourceMappingURL comments to the served bundles.
