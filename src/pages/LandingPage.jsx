@@ -5,7 +5,7 @@ import '@fontsource-variable/plus-jakarta-sans'
 import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
-import KolumnLogo from '../components/layout/KolumnLogo'
+import KolumnLockup from '../components/layout/KolumnLockup'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
@@ -1489,8 +1489,7 @@ function MobileNav() {
           aria-label="Kolumn — home"
           className="flex items-center hover:opacity-90 transition-opacity"
         >
-          <KolumnLogo size={26} />
-          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
+          <KolumnLockup text={28} />
         </Link>
         <div className="flex items-center gap-3 py-6">
           <a
@@ -1519,8 +1518,7 @@ function MobileNav() {
           aria-label="Kolumn — home"
           className="flex items-center hover:opacity-90 transition-opacity"
         >
-          <KolumnLogo size={26} />
-          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
+          <KolumnLockup text={28} />
         </Link>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
@@ -1751,8 +1749,7 @@ export default function LandingPage() {
       <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-5xl mx-auto">
         <div className="border-t border-[var(--color-sand)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <KolumnLogo size={13} />
-            <span className="font-bold font-logo">Kolumn</span>
+            <KolumnLockup text={12} weight={700} wordClassName="" />
             <span className="text-[var(--text-muted)] mx-1">&middot;</span>
             <span>Built for teams that ship.</span>
           </div>

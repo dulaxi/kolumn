@@ -16,6 +16,7 @@ import SidebarChecklist from './SidebarChecklist'
 import DynamicIcon from '../board/DynamicIcon'
 import Tooltip from '../ui/Tooltip'
 import KolumnLogo from './KolumnLogo'
+import KolumnLockup from './KolumnLockup'
 import { triggerCreateBoard } from '../../utils/createBoardEvent'
 
 function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
@@ -221,14 +222,9 @@ export default function Sidebar() {
             type="button"
             onClick={() => { closeMobileMenu(); navigate('/dashboard') }}
             aria-label="Go to Home"
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center cursor-pointer"
           >
-            <KolumnLogo size={21} />
-            {!showCollapsed && (
-              <span className="text-[23px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
-                Kolumn
-              </span>
-            )}
+            {showCollapsed ? <KolumnLogo size={18} /> : <KolumnLockup text={23} />}
           </button>
         </div>
 
