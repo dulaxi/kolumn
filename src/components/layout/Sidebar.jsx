@@ -16,21 +16,7 @@ import SidebarChecklist from './SidebarChecklist'
 import DynamicIcon from '../board/DynamicIcon'
 import Tooltip from '../ui/Tooltip'
 import KolumnLogo from './KolumnLogo'
-
-// Dispatches a "new board" event with a small retry to handle the case where
-// BoardsPage hasn't mounted yet — used by the Plus buttons in section headers.
-function dispatchCreateBoard(detail) {
-  let attempts = 0
-  let handled = false
-  const onHandled = () => { handled = true }
-  window.addEventListener('kolumn:create-board-ack', onHandled, { once: true })
-  const tryDispatch = () => {
-    if (handled) { window.removeEventListener('kolumn:create-board-ack', onHandled); return }
-    window.dispatchEvent(new CustomEvent('kolumn:create-board', { detail }))
-    if (++attempts < 10) setTimeout(tryDispatch, 100)
-  }
-  setTimeout(tryDispatch, 50)
-}
+import { triggerCreateBoard } from '../../utils/createBoardEvent'
 
 function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
   // No Tooltip on the row itself: the hover-revealed "Show/Hide" text IS the
@@ -266,7 +252,7 @@ export default function Sidebar() {
                 label="Boards"
                 collapsed={boardsCollapsed}
                 onToggle={toggleBoardsCollapsed}
-                onPlusClick={() => { navigate('/boards'); dispatchCreateBoard(); closeMobileMenu() }}
+                onPlusClick={() => { triggerCreateBoard(); closeMobileMenu() }}
                 plusTitle="New board"
               />
               <div className={`flex flex-col gap-px ${boardsCollapsed ? 'hidden' : ''}`}>
@@ -288,7 +274,7 @@ export default function Sidebar() {
                     label={ws.name}
                     collapsed={isCollapsed}
                     onToggle={() => toggleSpaceCollapsed(ws.id)}
-                    onPlusClick={() => { navigate('/boards'); dispatchCreateBoard({ workspaceId: ws.id }); closeMobileMenu() }}
+                    onPlusClick={() => { triggerCreateBoard({ workspaceId: ws.id }); closeMobileMenu() }}
                     plusTitle={`New board in ${ws.name}`}
                   />
                 </div>

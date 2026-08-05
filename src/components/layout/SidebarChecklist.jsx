@@ -20,8 +20,10 @@ export default function SidebarChecklist() {
   const doneCount = ONBOARDING_STEPS.filter((s) => steps[s.key]).length
 
   const go = (key) => {
-    navigate('/boards')
+    // "Create a board" opens the global modal in place; the other steps
+    // happen on the board itself, so those still navigate.
     if (key === 'board') triggerCreateBoard()
+    else navigate('/boards')
   }
 
   return (

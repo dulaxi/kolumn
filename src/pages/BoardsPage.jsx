@@ -6,7 +6,6 @@ import { useAuthStore } from '../store/authStore'
 import BoardSelector from '../components/board/BoardSelector'
 import BoardSkeleton from '../components/board/BoardSkeleton'
 import BoardView from '../components/board/BoardView'
-import CreateBoardModal from '../components/board/CreateBoardModal'
 import LabelManagerModal from '../components/board/LabelManagerModal'
 import PresenceBar from '../components/board/PresenceBar'
 import Button from '../components/ui/Button'
@@ -14,6 +13,7 @@ import EmptyState from '../components/ui/EmptyState'
 import Skeleton from '../components/ui/Skeleton'
 import Spinner from '../components/ui/Spinner'
 import { PageHeader } from '../components/layout/headerSlot'
+import { triggerCreateBoard } from '../utils/createBoardEvent'
 
 const CardDetailPanel = lazy(() => import('../components/board/CardDetailPanel'))
 
@@ -22,8 +22,6 @@ export default function BoardsPage() {
   const [inlineCardId, setInlineCardId] = useState(null)
   const [filters, setFilters] = useState({ priority: [], assignee: null, label: [], due: null })
   const [sortBy, setSortBy] = useState('manual')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createInWorkspaceId, setCreateInWorkspaceId] = useState(null)
   const [labelManagerOpen, setLabelManagerOpen] = useState(false)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
   const boards = useBoardStore((s) => s.boards)
@@ -51,22 +49,15 @@ export default function BoardsPage() {
       const cardId = await addCard(activeBoardId, firstCol.id, { title: '' })
       if (cardId) setInlineCardId(cardId)
     }
-    const openCreate = (e) => {
-      setCreateInWorkspaceId(e?.detail?.workspaceId || null)
-      setShowCreateModal(true)
-      window.dispatchEvent(new CustomEvent('kolumn:create-board-ack'))
-    }
     const openLabelManager = () => setLabelManagerOpen(true)
     window.addEventListener('kolumn:open-card', openCard)
     window.addEventListener('kolumn:close-panel', closePanel)
     window.addEventListener('kolumn:new-card', newCard)
-    window.addEventListener('kolumn:create-board', openCreate)
     window.addEventListener('kolumn:open-label-manager', openLabelManager)
     return () => {
       window.removeEventListener('kolumn:open-card', openCard)
       window.removeEventListener('kolumn:close-panel', closePanel)
       window.removeEventListener('kolumn:new-card', newCard)
-      window.removeEventListener('kolumn:create-board', openCreate)
       window.removeEventListener('kolumn:open-label-manager', openLabelManager)
     }
   }, [activeBoardId, columns, addCard])
@@ -114,7 +105,7 @@ export default function BoardsPage() {
           <PresenceBar />
         </div>
         <div className="shrink-0">
-          <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onCreateBoard={() => setShowCreateModal(true)} onManageLabels={() => setLabelManagerOpen(true)} />
+          <BoardSelector filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} onManageLabels={() => setLabelManagerOpen(true)} />
         </div>
       </PageHeader>
 
@@ -139,7 +130,7 @@ export default function BoardsPage() {
             title="Create your first board"
             body="Organize tasks into columns that match your workflow."
             action={
-              <Button onClick={() => setShowCreateModal(true)}>
+              <Button onClick={() => triggerCreateBoard()}>
                 <SquaresFour className="w-4 h-4" />
                 New Board
               </Button>
@@ -160,13 +151,6 @@ export default function BoardsPage() {
             onClose={() => setEditingCardId(null)}
           />
         </Suspense>
-      )}
-
-      {showCreateModal && (
-        <CreateBoardModal
-          onClose={() => { setShowCreateModal(false); setCreateInWorkspaceId(null) }}
-          workspaceId={createInWorkspaceId}
-        />
       )}
 
       {labelManagerOpen && activeBoardId && activeBoardId !== '__all__' && (

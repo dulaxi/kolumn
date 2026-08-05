@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import WorkspaceSidebar from './WorkspaceSidebar'
 import Header from './Header'
@@ -7,6 +7,7 @@ import { HeaderSlotProvider } from './headerSlot'
 import SearchDialog from '../SearchDialog'
 import ShortcutsSheet from '../ShortcutsSheet'
 import SettingsModal from '../settings/SettingsModal'
+import CreateBoardModal from '../board/CreateBoardModal'
 import BottomTabBar from './BottomTabBar'
 import Button from '../ui/Button'
 import InlineNotice from '../ui/InlineNotice'
@@ -38,12 +39,16 @@ export default function AppLayout() {
   const font = useSettingsStore((s) => s.font)
   const isDesktop = useIsDesktop()
   const location = useLocation()
+  const navigate = useNavigate()
   const toggleSidebar = useSettingsStore((s) => s.toggleSidebar)
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsSection, setSettingsSection] = useState('general')
+  // null | { workspaceId } — create-board modal opens over whatever page
+  // you're on (no pre-navigation); only after creation do we go to /boards.
+  const [createBoard, setCreateBoard] = useState(null)
 
   const { showMigration, migrating, handleMigrate, handleSkipMigration } = useAppData()
 
@@ -77,13 +82,18 @@ export default function AppLayout() {
       setSettingsSection(e?.detail?.section || 'general')
       setSettingsOpen(true)
     }
+    const openCreateBoard = (e) => {
+      setCreateBoard({ workspaceId: e?.detail?.workspaceId || null })
+    }
     window.addEventListener('kolumn:focus-search', openSearch)
     window.addEventListener('kolumn:open-shortcuts', openShortcuts)
     window.addEventListener('kolumn:open-settings', openSettings)
+    window.addEventListener('kolumn:create-board', openCreateBoard)
     return () => {
       window.removeEventListener('kolumn:focus-search', openSearch)
       window.removeEventListener('kolumn:open-shortcuts', openShortcuts)
       window.removeEventListener('kolumn:open-settings', openSettings)
+      window.removeEventListener('kolumn:create-board', openCreateBoard)
     }
   }, [])
 
@@ -112,7 +122,7 @@ export default function AppLayout() {
   // that BoardsPage listens for. They live here so the listener is
   // installed once at the layout level instead of being re-installed
   // every time BoardsPage mounts.
-  const aDialogIsOpen = searchOpen || shortcutsOpen || settingsOpen
+  const aDialogIsOpen = searchOpen || shortcutsOpen || settingsOpen || !!createBoard
   const onBoardsPage = location.pathname.startsWith('/boards')
 
   const shortcuts = useMemo(() => [
@@ -156,6 +166,13 @@ export default function AppLayout() {
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} initialSection={settingsSection} />
+      {createBoard && (
+        <CreateBoardModal
+          workspaceId={createBoard.workspaceId}
+          onClose={() => setCreateBoard(null)}
+          onCreated={() => navigate('/boards')}
+        />
+      )}
       <OfflineBanner />
       <InlineErrorBoundary name="sidebar">
         <Sidebar />
