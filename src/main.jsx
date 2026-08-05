@@ -4,6 +4,14 @@ import '@fontsource-variable/inter'
 import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
 import '@fontsource/ibm-plex-mono/600.css'
+// Phosphor icon font — powers DynamicIcon's `ph ph-<name>` classes for
+// DB-stored icon names (regular + fill weights; fill = active sidebar board).
+// Self-hosted via the npm package for the same reason as the Fontshare faces
+// in fonts.css: the old jsDelivr <link>s left icons invisible on cold caches
+// whenever the CDN was slow. Vite bundles the CSS and serves the woff2 from
+// our own origin as hashed, immutable-cacheable assets.
+import '@phosphor-icons/web/regular'
+import '@phosphor-icons/web/fill'
 import './fonts.css'
 import './index.css'
 import App from './App.jsx'
