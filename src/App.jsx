@@ -19,9 +19,9 @@ const PlanPickerPage = lazy(() => import('./pages/PlanPickerPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BoardsPage = lazy(() => import('./pages/BoardsPage'))
 const BuilderPage = lazy(() => import('./pages/BuilderPage'))
-// Calendar + Notes removed from the dashboard UI — they added little
-// without core differentiation. Page files still exist on disk; restore
-// the lazy imports + routes below if you want them back.
+// Calendar + Notes were removed from the product (files deleted in the
+// 2026-08-05 repo cleanup). If a calendar returns, build it as a board
+// view-toggle, not a page; notes data + noteStore still exist server-side.
 const SettingsRedirect = lazy(() => import('./components/settings/SettingsRedirect'))
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))

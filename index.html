@@ -13,14 +13,6 @@
     <link rel="preload" href="/fonts/clash-grotesk-variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/sentient-400.woff2" as="font" type="font/woff2" crossorigin />
 
-    <!-- Pill font (--font-pill, in-app badges only) is injected from the app
-         bundle in main.jsx — NOT a <link media="print" onload> swap here, because
-         the production CSP (serve.json) has no 'unsafe-inline' in script-src and
-         would block the inline onload. Preconnect warms the connection so the
-         JS-injected fetch is quick; the load itself stays off the render path. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Kolumn — Project Management" />

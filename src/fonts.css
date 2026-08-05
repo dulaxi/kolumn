@@ -4,17 +4,10 @@
  * loaded via <link> in index.html, which made headings/wordmark silently fall
  * back to Georgia/system whenever the Fontshare CDN was slow or blocked.
  * Faces:
- *   Sentient 200/300/400/500/700 static (--font-heading)
+ *   Sentient 300/400 static (the only weights that render; 200/500/700 were
+ *   dropped in the 2026-08-05 repo cleanup)
  *   Clash Grotesk variable, wght 200–700 (--font-logo + --font-heading; app titles at 425, pre-auth display at 300)
  */
-
-@font-face {
-  font-family: 'Sentient';
-  src: url('/fonts/sentient-200.woff2') format('woff2');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
 
 @font-face {
   font-family: 'Sentient';
@@ -28,22 +21,6 @@
   font-family: 'Sentient';
   src: url('/fonts/sentient-400.woff2') format('woff2');
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Sentient';
-  src: url('/fonts/sentient-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Sentient';
-  src: url('/fonts/sentient-700.woff2') format('woff2');
-  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }

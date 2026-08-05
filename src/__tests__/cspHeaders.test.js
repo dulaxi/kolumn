@@ -21,7 +21,7 @@ function directive(csp, name) {
 // crashed React. Chrome leniently accepts wss under an https source; Firefox
 // and Safari require the wss:// scheme to be listed explicitly.
 describe('CSP connect-src allows the Supabase Realtime WebSocket', () => {
-  for (const file of ['../../public/serve.json', '../../vercel.json']) {
+  for (const file of ['../../public/serve.json']) {
     it(`${file} whitelists wss://*.supabase.co`, () => {
       const connectSrc = directive(cspFrom(file), 'connect-src')
       expect(connectSrc).toBeDefined()

@@ -103,7 +103,7 @@ src/
 │   ├── boardSharingStore.js        # Per-board members + invitations
 │   ├── workspacesStore.js          # Multi-tenant workspaces + members + invitations
 │   ├── chatStore.js                # AI chat threads + messages + tool calls
-│   ├── noteStore.js                # Private notes — ⚠️ unwired from UI (see "Removed pages")
+│   ├── noteStore.js                # Private notes — no UI; kept because toolExecutor + notes table use it
 │   ├── notificationStore.js        # In-app notifications
 │   ├── templateStore.js            # Board/card templates
 │   ├── settingsStore.js            # Local-only: sidebar, theme ('system'|'light'|'dark'), font
@@ -112,7 +112,7 @@ src/
 │   ├── ui/                         # Design-system primitives — see Design System → Primitives
 │   │   ├── Avatar.jsx              # Initials avatar, hash-derived color, 4 sizes
 │   │   ├── Button.jsx              # 4 variants × 6 sizes, loading + asChild support
-│   │   ├── Input.jsx + Textarea.jsx # Bordered fields, leading-icon + error states
+│   │   ├── Input.jsx               # Bordered field, leading-icon + error states
 │   │   ├── Modal.jsx               # Portal, focus trap, body scroll lock, stacked-modal aware
 │   │   ├── Popover.jsx             # Anchored overlay with click-outside + escape
 │   │   ├── Menu.jsx                # Popover + Item/Divider/Label sub-components
@@ -138,7 +138,6 @@ src/
 │   ├── ChatPage.jsx + ChatListPage.jsx
 │   ├── WorkspacePage.jsx
 │   ├── NotFoundPage.jsx
-│   └── CalendarPage.jsx + NotesPage.jsx  # ⚠️ unwired — see "Removed pages" note
 ├── utils/
 │   ├── formatting.js               # LABEL_BG, PRIORITY_DOT, AVATAR_COLORS class strings
 │   ├── toast.js                    # showToast.{success|error|delete|...} helpers
@@ -160,20 +159,14 @@ supabase/
     └── account/                    # Sessions list/revoke + delete-account, used by settings' Account pane
 ```
 
-### Removed pages (intentional, do not re-wire)
+### Removed pages (deleted 2026-08-05)
 
-`CalendarPage.jsx`, `NotesPage.jsx`, and `noteStore.js` are unused from
-the dashboard UI. They were removed deliberately to sharpen the product
-focus to "AI-powered kanban" — every PM tool has notes/calendar; trying
-to compete there meant being a worse Notion / worse Google Calendar.
-
-The page files, store, and Supabase `notes` table are left in place so a
-future revival is a one-line route restoration. Do **not** re-add Notes
-to the sidebar or routes without explicit user confirmation.
-
-If a calendar comes back, the right shape is a **board view toggle**
-(month/week grid of cards with `due_date`) alongside the column view —
-not a top-level Calendar nav item.
+Calendar and Notes were cut to sharpen the product to "AI-powered kanban";
+their page files were deleted in the 2026-08-05 repo cleanup (git history
+has them). The Supabase `notes` table and `noteStore.js` remain because
+toolExecutor still writes notes. If a calendar ever returns, the right
+shape is a **board view toggle** (month/week grid of cards with
+`due_date`) alongside the column view — not a top-level Calendar page.
 
 ## AI Workflow (paused — backlog preserved)
 
@@ -286,8 +279,6 @@ gated by **(surface × tier)**, not just tier.
 
 ### Rework backlog (ranked — read before changing AI code)
 
-Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
-
 **T1 — architecture & correctness:**
 1. **Implement the `mode` parameter** end-to-end (`aiClient.js` → `index.ts` → `tier.ts`). Backend computes effective tool list from `(mode × tier)`. Without this, the pill/chat split is policy, not enforcement.
 2. ✅ **DONE — Strip write tools from the chat path.** Chat mode fires no write tools; the effective tool list is computed server-side from `(mode × tier)`.
@@ -383,7 +374,6 @@ rules they encoded live on in this file and the components themselves.)
 | `Avatar`   | `name`, `size` (xs/sm/md/lg), `ring`. Hash-derived color.         |
 | `Button`   | `variant` (primary/secondary/ghost/destructive — no lime accent, see Coherency Rules), `size` (sm/md/lg + icon-{sm,md,lg}), `loading`, `loadingText`, `asChild` (Slot pattern). Defaults to `type="button"`. |
 | `Input`    | `error`, `leadingIcon`, `wrapperClassName`. 1px ink focus border. |
-| `Textarea` | `error`, `rows`. Same focus + error states as `Input`.            |
 | `Modal`    | `open`, `onClose`, `contentClassName`. Portal, focus trap, body scroll lock, stacked-modal aware (only topmost responds to Escape). Suppresses stale `:focus-visible` on trigger after mouse-driven close. |
 | `Popover`  | `open`, `onOpenChange`, `placement` (bottom-start/bottom-end/top-start/top-end), `panel`, `closeOnEscape`, `closeOnOutsideClick`. |
 | `Menu`     | Wraps `Popover`. Sub-components: `Menu.Item` (with `icon`, `shortcut`, `destructive`, `selected`, `checkbox`), `Menu.Divider`, `Menu.Label`. |
@@ -397,7 +387,7 @@ rules they encoded live on in this file and the components themselves.)
 
 - `src/utils/formatting.js` — `LABEL_BG`, `LABEL_BG_QUIET`, `PRIORITY_DOT`, `AVATAR_COLORS` exported as Tailwind class strings (not components). Use these instead of hand-coding label/priority colors.
 - `src/utils/toast.js` — `showToast.{success|error|delete|archive|restore|info|warn|overdue}`. Powered by `react-hot-toast`. Configured globally as `<Toaster position="top-center">` in `App.jsx`. Style: 420px fixed width, 1px ink border, 10px radius, IBM Plex Mono / SF Mono 12px, Phosphor icon + message + dismiss button. Hue = meaning: lime (success/restore), copper (error = failure), red (delete = destructive receipt, carries Undo), honey (warn/overdue/offline = warning/time). Saturated fills are theme-stable with the ink border in both themes; only the two pale fills (`info`, `archive`) theme via `--toast-*` tokens, including the brighter `--toast-pale-border` they need on a dark page. **Never roll your own toast — always import this helper.** `showToast.offline(msg)` returns a persistent (duration ∞) honey toast with a pulse dot for connectivity state; pair with `showToast.dismiss(id)`. Solid toast fills are reserved for transient/floating messages — persistent inline errors use `InlineNotice` (wash) or `FieldError` (micro). Decision records: docs/design-mockups/error-style-decisions{,-3}.html (R2 mockup pruned 2026-07-24; its outcome is captured in the Buttons coherency rule below).
-- `src/hooks/useClickOutside.js`, `src/hooks/useKeyboardShortcuts.js`, `src/hooks/useAppData.js`, `src/hooks/useBoardDnd.js` — extracted hooks. Prefer these over reinventing.
+- `src/hooks/useKeyboardShortcuts.js`, `src/hooks/useAppData.js`, `src/hooks/useBoardDnd.js` — extracted hooks. Prefer these over reinventing.
 
 ## Coherency Rules
 
