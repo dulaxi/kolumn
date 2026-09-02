@@ -25,7 +25,7 @@ export default function PlanCard({
   disabled = false,
   className = '',
 }) {
-  const TopIcon = plan.topIcon
+  const TopIcon = plan.topIcon()
   const isPicker = mode === 'picker'
   // Landing runs the marketing type scale (16px details); the in-app picker
   // stays at the product's 14px body size.

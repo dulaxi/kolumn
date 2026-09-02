@@ -7,12 +7,12 @@ import { showToast } from '../utils/toast'
 import { ArrowLeft, Check, CreditCard, Info } from '@phosphor-icons/react'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import { PRICING } from '../content/pricing'
 
-// Pricing — matches what's on the landing + signup pricing cards.
-// Yearly = 10× monthly (≈17% saved over paying month-by-month).
+const { proMonthlyUsd, proYearlyUsd } = PRICING.limits
 const PRICES = {
-  monthly: { amount: 8, period: 'month', label: '$8.00/month + tax', billed: 'Billed monthly' },
-  yearly:  { amount: 80, period: 'year',  label: '$80.00/year + tax', billed: 'Billed yearly' },
+  monthly: { amount: proMonthlyUsd, period: 'month', label: `$${proMonthlyUsd}.00/month + tax`, billed: 'Billed monthly' },
+  yearly:  { amount: proYearlyUsd,  period: 'year',  label: `$${proYearlyUsd}.00/year + tax`,  billed: 'Billed yearly' },
 }
 
 export default function UpgradeProPage() {
