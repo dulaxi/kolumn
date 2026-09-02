@@ -157,7 +157,7 @@ describe('OnboardingPage — plan step', () => {
     expect(mockNavigate).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /Start for free/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Try Pro free for 7 days/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Get notified/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Coming soon/i })).toBeInTheDocument()
   })
 
   test('Free plan CTA: shows the Pro trial upsell without writing tier or navigating', async () => {

@@ -55,6 +55,11 @@ export default function PlanCard({
 
   return (
     <div className={wrapperClasses}>
+      {plan.badge && (
+        <span className="absolute top-4 right-4 font-mono text-[11px] uppercase tracking-[0.06em] px-2 py-1 rounded-md bg-[var(--accent-lime-wash)] text-[var(--accent-lime-text)]">
+          {plan.badge}
+        </span>
+      )}
       {TopIcon && (
         <div className="mb-5">
           <TopIcon size={56} weight="duotone" className={plan.topIconClass} />
@@ -66,12 +71,17 @@ export default function PlanCard({
       </h3>
       <p className={`${detail} text-[var(--text-secondary)] mb-6`}>{plan.tagline}</p>
 
-      <div className="flex items-baseline gap-1.5 mb-6">
+      <div className="flex items-baseline gap-1.5 mb-2">
         <span className="text-4xl font-normal text-[var(--text-primary)] font-logo">
           {plan.price}
         </span>
-        <span className={`${detail} text-[var(--text-muted)]`}>/ {plan.period}</span>
+        {plan.period && <span className={`${detail} text-[var(--text-muted)]`}>/ {plan.period}</span>}
       </div>
+      {plan.caption ? (
+        <p className="text-sm text-[var(--text-muted)] mb-6">{plan.caption}</p>
+      ) : (
+        <div className="mb-4" />
+      )}
 
       {plan.inheritsFrom && (
         <p className={`${detail} font-semibold text-[var(--text-primary)] mb-2`}>
@@ -92,8 +102,8 @@ export default function PlanCard({
         <button
           type="button"
           onClick={() => onSelect?.(plan.id)}
-          disabled={disabled || loading}
-          aria-label={plan.cta}
+          disabled={disabled || loading || plan.comingSoon}
+          aria-label={plan.comingSoon ? 'Coming soon' : plan.cta}
           aria-busy={loading || undefined}
           className={ctaBaseClasses}
           style={loading ? { opacity: 1 } : undefined}
@@ -103,6 +113,8 @@ export default function PlanCard({
               <span className="sr-only">Setting up</span>
               <LetterWave text="Setting up" />
             </>
+          ) : plan.comingSoon ? (
+            'Coming soon'
           ) : (
             <>
               {plan.cta}
@@ -110,8 +122,13 @@ export default function PlanCard({
             </>
           )}
         </button>
+      ) : plan.ctaTo?.startsWith('mailto:') ? (
+        <a href={plan.ctaTo} className={ctaBaseClasses}>
+          {plan.cta}
+          <ArrowRight className="w-4 h-4" />
+        </a>
       ) : (
-        <Link to="/onboarding" className={ctaBaseClasses}>
+        <Link to={plan.ctaTo || '/onboarding'} className={ctaBaseClasses}>
           {plan.cta}
           <ArrowRight className="w-4 h-4" />
         </Link>
