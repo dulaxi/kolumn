@@ -1,7 +1,7 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 
-import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
 import KolumnLockup from '../components/layout/KolumnLockup'
@@ -11,8 +11,8 @@ import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
 import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
-import PlanCard from '../components/PlanCard'
-import { PLANS } from '../data/plans'
+import FaqItem from '../components/marketing/FaqItem'
+import PlanGrid from '../components/marketing/PlanGrid'
 
 
 // Stats bar removed pre-launch — old values were vanity placeholders
@@ -1228,51 +1228,6 @@ function DemoSlider() {
   )
 }
 
-// Accordion item for the FAQ section. All items start collapsed; each
-// owns its own open/closed state so multiple can be expanded at once.
-// Animation uses the CSS Grid 0fr→1fr trick on the content row so the
-// transition runs against the content's natural height — no JS height
-// measurement, no library, just one transition rule.
-function FaqItem({ question, answer, index }) {
-  const [open, setOpen] = useState(false)
-  const panelId = `faq-panel-${index}`
-  const headerId = `faq-header-${index}`
-  return (
-    <div>
-      <button
-        type="button"
-        id={headerId}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-4 py-2.5 text-left group cursor-pointer"
-      >
-        <h3 className="text-base font-normal text-[var(--text-primary)] tracking-tight leading-snug">
-          {question}
-        </h3>
-        <span
-          aria-hidden="true"
-          className={`shrink-0 w-5 h-5 flex items-center justify-center text-[var(--text-secondary)] transition-transform duration-200 ${open ? 'rotate-45' : ''}`}
-        >
-          <Plus size={18} weight="light" />
-        </span>
-      </button>
-      <div
-        id={panelId}
-        role="region"
-        aria-labelledby={headerId}
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div className="overflow-hidden">
-          <p className="pb-3 pr-10 text-sm font-light text-[var(--text-secondary)] leading-relaxed">
-            {answer}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function GoogleGlyph() {
   return (
     <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
@@ -1731,11 +1686,7 @@ export default function LandingPage() {
             Free for solo and small teams. Pro when you want unlimited AI.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 justify-items-center max-w-[74rem] mx-auto">
-          {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} mode="landing" className="w-full max-w-sm" />
-          ))}
-        </div>
+        <PlanGrid />
       </section>
 
       {/* ─── FAQ ─── */}
