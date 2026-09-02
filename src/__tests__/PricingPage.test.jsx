@@ -27,4 +27,13 @@ describe('PricingPage', () => {
       expect(el.className, el.textContent).not.toMatch(/bg-\[var\(--(accent-lime|color-lime)/)
     }
   })
+
+  test('heading outline has no level skips', () => {
+    render(<MemoryRouter><PricingPage /></MemoryRouter>)
+    const levels = [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')].map((el) => Number(el.tagName[1]))
+    expect(levels[0]).toBe(1)
+    for (let i = 1; i < levels.length; i += 1) {
+      expect(levels[i] - levels[i - 1], `jump before <${document.querySelectorAll('h1,h2,h3,h4,h5,h6')[i].tagName}>`).toBeLessThanOrEqual(1)
+    }
+  })
 })

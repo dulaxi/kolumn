@@ -25,6 +25,7 @@ export default function PricingPage() {
       </section>
 
       <section className="px-6 sm:px-10 pb-20 max-w-[90rem] mx-auto">
+        <h2 className="sr-only">Plans</h2>
         <PlanGrid />
         <p className="mt-8 text-center text-sm text-[var(--text-muted)] max-w-2xl mx-auto">{footnote}</p>
       </section>
@@ -42,7 +43,7 @@ export default function PricingPage() {
       <section className={`${SECTION} pb-20`}>
         <div className="max-w-3xl mx-auto rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-6 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-1">{reassurance.heading}</h2>
+            <h2 className="font-heading font-[425] text-lg text-[var(--text-primary)] mb-1">{reassurance.heading}</h2>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{reassurance.body}</p>
           </div>
           <Button asChild size="md" className="shrink-0">
