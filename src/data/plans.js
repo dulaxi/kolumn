@@ -10,11 +10,11 @@ import { Cheers, Champagne, Popcorn } from '@phosphor-icons/react'
 import { PRICING } from '../content/pricing'
 
 const PRESENTATION = {
-  free: { ghost: true, primaryCta: false, topIcon: () => Popcorn, topIconClass: 'text-[var(--text-primary)]' },
+  free: { ghost: true, primaryCta: false, topIcon: Popcorn, topIconClass: 'text-[var(--text-primary)]' },
   // Lime-tinted icon (vs ink on Free/Team) puts brand accent color
   // exactly where the eye first lands — signals "this one matters."
-  pro: { ghost: false, primaryCta: true, topIcon: () => Champagne, topIconClass: 'text-[var(--color-logo)]' },
-  team: { ghost: false, primaryCta: false, topIcon: () => Cheers, topIconClass: 'text-[var(--text-primary)]' },
+  pro: { ghost: false, primaryCta: true, topIcon: Champagne, topIconClass: 'text-[var(--color-logo)]' },
+  team: { ghost: false, primaryCta: false, topIcon: Cheers, topIconClass: 'text-[var(--text-primary)]' },
 }
 
 export const PLANS = PRICING.tiers.map((tier) => {

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, test, expect } from 'vitest'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
+import { Cheers, Champagne, Popcorn } from '@phosphor-icons/react'
 import { PRICING, pricingJsonLd } from '../content/pricing'
 import { PLANS, getPlan } from '../data/plans'
 
@@ -54,7 +55,14 @@ describe('PLANS derives from PRICING', () => {
   test('picker-only fields are present', () => {
     expect(getPlan('pro').primaryCta).toBe(true)
     expect(getPlan('free').ghost).toBe(true)
-    expect(typeof getPlan('team').topIcon).toBe('function')
     expect(getPlan('team').comingSoon).toBe(true)
+  })
+
+  test('topIcon is the Phosphor component itself, not a wrapper', () => {
+    // Phosphor v2 icons are forwardRef objects, not plain functions. Store
+    // the component as-is; PlanCard renders it directly as <TopIcon />.
+    expect(getPlan('free').topIcon).toBe(Popcorn)
+    expect(getPlan('pro').topIcon).toBe(Champagne)
+    expect(getPlan('team').topIcon).toBe(Cheers)
   })
 })
