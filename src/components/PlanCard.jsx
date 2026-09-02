@@ -27,6 +27,9 @@ export default function PlanCard({
 }) {
   const TopIcon = plan.topIcon
   const isPicker = mode === 'picker'
+  // Landing runs the marketing type scale (16px details); the in-app picker
+  // stays at the product's 14px body size.
+  const detail = isPicker ? 'text-sm' : 'text-base'
 
   const wrapperClasses = [
     'relative rounded-xl p-7 flex flex-col text-left',
@@ -58,34 +61,28 @@ export default function PlanCard({
         </div>
       )}
 
-      <h3
-        className="text-3xl font-normal tracking-tight text-[var(--text-primary)] font-logo"
-        // Inline: .landing-font h3 (Sentient serif) outranks the font-logo
-        // utility on the landing page; the card title should be Clash
-        // Grotesk on every surface.
-        style={{ fontFamily: 'var(--font-logo)' }}
-      >
+      <h3 className="text-3xl font-normal tracking-tight text-[var(--text-primary)] font-logo">
         {plan.name}
       </h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-6">{plan.tagline}</p>
+      <p className={`${detail} text-[var(--text-secondary)] mb-6`}>{plan.tagline}</p>
 
       <div className="flex items-baseline gap-1.5 mb-6">
         <span className="text-4xl font-normal text-[var(--text-primary)] font-logo">
           {plan.price}
         </span>
-        <span className="text-sm text-[var(--text-muted)]">/ {plan.period}</span>
+        <span className={`${detail} text-[var(--text-muted)]`}>/ {plan.period}</span>
       </div>
 
       {plan.inheritsFrom && (
-        <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+        <p className={`${detail} font-semibold text-[var(--text-primary)] mb-2`}>
           Everything in {plan.inheritsFrom}, plus:
         </p>
       )}
 
-      <ul className="space-y-2.5 text-sm text-[var(--text-secondary)] mb-8">
+      <ul className={`space-y-2.5 ${detail} text-[var(--text-secondary)] mb-8`}>
         {plan.bullets.map((bullet) => (
           <li key={bullet} className="flex items-start gap-2">
-            <Check size={14} weight="bold" className="mt-1 text-[var(--color-logo)] shrink-0" />
+            <Check size={isPicker ? 14 : 16} weight="bold" className="mt-1 text-[var(--color-logo)] shrink-0" />
             <span>{bullet}</span>
           </li>
         ))}

@@ -420,20 +420,12 @@
   animation: slideInRight 0.2s ease-out;
 }
 
-/* Landing page fonts — base is the app sans (Inter), so marketing and
-   product share one voice; Sentient below carries the display serif. */
+/* Landing page fonts — same voice as the app: Inter body, Clash Grotesk
+   display headings via the font-heading utility (hero at 300, section and
+   card titles at 425 like in-app page titles). The Sentient serif override
+   was removed 2026-09-01 in the landing/product parity pass. */
 .landing-font {
   font-family: var(--font-sans);
-}
-/* Headings default to the serif display face — except when a heading opts
-   out with .font-sans (e.g. app-parity demo windows, whose column titles
-   must render like the real app). Without the :not() escape this un-layered
-   rule beats Tailwind's layered utilities regardless of specificity. */
-.landing-font h1:not(.font-sans),
-.landing-font h2:not(.font-sans),
-.landing-font h3:not(.font-sans),
-.landing-font .font-heading {
-  font-family: 'Sentient', Georgia, serif;
 }
 
 /* Typing cursor blink (used in DraftNotes typing animation on landing) */

@@ -358,8 +358,7 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 | `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark + pre-auth display (300) |
 | `--font-heading` | Clash Grotesk         | Page titles (weight 425)           |
 | `--font-mono`    | IBM Plex Mono         | Code, IDs, paths                   |
-| `--font-pill`    | Google Sans Text      | Pill labels (PRO, BETA, NEW)       |
-| `.landing-font`  | Plus Jakarta Sans     | Landing page only (scoped class) (+ .landing-font .font-heading → Sentient) |
+| `.landing-font`  | Inter Variable        | Landing page scope — same voice as the app; no serif override (Sentient dropped 2026-09-01, Google Sans pill font dropped 2026-08-05) |
 
 ### Primitives
 

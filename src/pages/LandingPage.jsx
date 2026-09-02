@@ -471,9 +471,10 @@ function DraftNotes({ elapsed }) {
   }
   return (
     <div className="px-6 sm:px-8 pt-5 sm:pt-6 flex flex-col gap-3 select-none">
+      {/* Serif on purpose: this tile imitates a third-party notes app, not Kolumn. */}
       <h3
         className="text-lg sm:text-xl text-[#1B1B18] tracking-tight leading-tight"
-        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 400 }}
+        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 300 }}
       >
         {DRAFT_TITLE}
       </h3>
@@ -503,7 +504,7 @@ function MirrorNotes({ lineOpacities }) {
     <div className="px-6 sm:px-8 pt-5 sm:pt-6 flex flex-col gap-3 select-none">
       <h3
         className="text-lg sm:text-xl text-[#1B1B18] tracking-tight leading-tight"
-        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 400, opacity: lineOpacities[0] }}
+        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 300, opacity: lineOpacities[0] }}
       >
         {DRAFT_TITLE}
       </h3>
@@ -1041,7 +1042,7 @@ function GmailEmailBody({ elapsed }) {
   return (
     <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-3 select-none h-full">
       {/* Subject line */}
-      <h3 className="text-[15px] font-normal text-[#202124] leading-tight font-logo">Board deck gaps — need tonight</h3>
+      <h3 className="text-[15px] font-normal text-[#202124] leading-tight">Board deck gaps — need tonight</h3>
       {/* Sender row */}
       <div className="flex items-start gap-2.5 pb-2 border-b border-[#E8E8E8]">
         <span className="w-7 h-7 rounded-full bg-[#1A73E8] shrink-0 flex items-center justify-center text-[11px] font-semibold text-white">S</span>
@@ -1246,7 +1247,7 @@ function FaqItem({ question, answer, index }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between gap-4 py-2.5 text-left group cursor-pointer"
       >
-        <h3 className="text-lg sm:text-xl font-light text-[var(--text-primary)] tracking-tight leading-snug">
+        <h3 className="text-base font-normal text-[var(--text-primary)] tracking-tight leading-snug">
           {question}
         </h3>
         <span
@@ -1263,7 +1264,7 @@ function FaqItem({ question, answer, index }) {
         className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
       >
         <div className="overflow-hidden">
-          <p className="pb-3 pr-10 text-sm text-[var(--text-secondary)] leading-relaxed">
+          <p className="pb-3 pr-10 text-sm font-light text-[var(--text-secondary)] leading-relaxed">
             {answer}
           </p>
         </div>
@@ -1597,10 +1598,11 @@ function ScaledHero() {
 
   return (
     <div
-      /* max-w 684 = 720 × 0.95 — shrinks the hero 5% on both axes while
-         keeping the 720/830 design aspect-ratio. The inner scale math
-         picks up automatically (scale = min(1, 684/720) = 0.95). */
-      className="relative w-full max-w-[684px] flex items-center justify-center"
+      /* Capped at 560px so the tile shares the hero evenly with the copy
+         column inside the 1152px page container; the 720/830 design
+         aspect-ratio is kept and the inner scale math picks the cap up
+         automatically (scale = min(1, width / 720)). */
+      className="relative w-full max-w-[560px] flex items-center justify-center"
       style={{ aspectRatio: `${HERO_DESIGN_WIDTH} / ${HERO_DESIGN_HEIGHT}` }}
     >
       {/* Layer 2 — outer card (frame + shadow). Cream bg is barely visible
@@ -1666,15 +1668,15 @@ export default function LandingPage() {
         {/* pt-3: the animation tile would otherwise sit mathematically flush
             with the sticky nav's bottom edge (zero clearance), and device-px
             rounding at some zooms/DPRs paints the nav over its top rows. */}
-        <div className="px-6 sm:px-10 pt-3 pb-8 max-w-[90rem] mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_720px] gap-4">
+        <div className="px-6 sm:px-10 pt-3 pb-20 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             {/* Left — Copy (center-aligned) */}
-            <div className="flex w-full min-h-[85vh] items-center">
+            <div className="flex w-full items-center pt-12 pb-4 lg:py-0">
             <div className="text-center flex flex-col items-center w-full">
-              <h1 className="text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl font-light text-[#1B1B18] tracking-tight leading-[1.08] mb-5">
-                Said, <span className="text-[#8BA32E] font-heading">done</span>.
+              <h1 className="font-heading font-normal text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl text-[var(--text-primary)] tracking-tight leading-[1.08] mb-5">
+                A board that listens.
               </h1>
-              <p className="text-base sm:text-lg text-[#5C5C57] max-w-lg mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-lg mb-8 leading-relaxed">
                 The kanban you talk to.
               </p>
               <HeroAuthCard />
@@ -1688,7 +1690,7 @@ export default function LandingPage() {
                 edges. font-sans is set inside ScaledHero to escape the page's
                 landing-font base (now Inter too) and keep the app sans
                 (Inter). */}
-            <div className="flex justify-center items-center w-full mt-8 xl:mt-0">
+            <div className="flex justify-center items-center w-full">
               <ScaledHero />
             </div>
           </div>
@@ -1699,14 +1701,13 @@ export default function LandingPage() {
           top of this file). Re-add once we have real numbers worth quoting. */}
 
       {/* ─── AI Demo Slider (Notes + Slack + Teams + Gmail) ─── */}
-      <section className="px-6 sm:px-10 py-14 max-w-6xl mx-auto">
+      <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto">
         {/* Heading + intro centered */}
-        <div className="text-center mb-8 max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-light text-[#1B1B18] tracking-tight mb-3">
-            Notes in,{' '}
-            <span className="text-[#8BA32E] font-heading">Kanban out</span>
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight mb-3">
+            Notes in, Kanban out
           </h2>
-          <p className="text-sm text-[#5C5C57] leading-relaxed">
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Type how you think. Kolumn reads notes, threads, and emails — then drops
             structured tasks on the board.
           </p>
@@ -1719,12 +1720,14 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Pricing ─── */}
+      {/* Wider than the page column on purpose: three 384px cards need
+          1184px to breathe at 16px detail text. */}
       <section className="px-6 sm:px-10 py-20 max-w-[90rem] mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-light text-[var(--text-primary)] tracking-tight mb-2">
-            Compare <span className="font-heading">plans</span>
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight mb-3">
+            Compare plans
           </h2>
-          <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Free for solo and small teams. Pro when you want unlimited AI.
           </p>
         </div>
@@ -1736,13 +1739,13 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section className="px-6 sm:px-10 py-20 max-w-3xl mx-auto">
+      <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-light text-[var(--text-primary)] tracking-tight mb-2">
-            Frequently asked <span className="font-heading">questions</span>
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight">
+            Frequently asked questions
           </h2>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 max-w-2xl mx-auto">
           {FAQ.map((item, i) => (
             <FaqItem key={item.q} question={item.q} answer={item.a} index={i} />
           ))}
@@ -1750,7 +1753,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-5xl mx-auto">
+      <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-6xl mx-auto">
         <div className="border-t border-[var(--color-sand)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
             <KolumnLockup text={12} weight={700} wordClassName="" />

@@ -14,12 +14,7 @@ export default function Avatar({ name, size = 'sm', className = '', children, ri
   const ring = ringed ? `ring-2 ${ringColor}` : ''
   return (
     <span
-      className={`rounded-full shrink-0 flex items-center justify-center ${sizeClass} ${avatarColorClasses(name)} ${ring} ${className}`}
-      // Inline rather than the font-heading class: on the landing page the
-      // .landing-font .font-heading rule remaps that class to Sentient serif,
-      // which turned demo-card avatar initials serif. The token itself is
-      // Clash Grotesk everywhere, so this renders identically in-app.
-      style={{ fontFamily: 'var(--font-heading)' }}
+      className={`rounded-full shrink-0 flex items-center justify-center font-heading ${sizeClass} ${avatarColorClasses(name)} ${ring} ${className}`}
     >
       {children ?? getInitials(name).toLowerCase()}
     </span>
