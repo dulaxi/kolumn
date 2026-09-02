@@ -6,6 +6,8 @@ import AppLayout from './components/layout/AppLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Spinner from './components/ui/Spinner'
+import MarketingLayout from './components/marketing/MarketingLayout'
+import { marketingRouteElements } from './components/marketing/MarketingRoutes'
 
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -73,6 +75,7 @@ export default function App() {
       <Suspense fallback={<div className="min-h-screen bg-[var(--surface-page)] flex items-center justify-center"><Spinner size={24} /></div>}>
         <Routes>
           <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
+          <Route element={<MarketingLayout />}>{marketingRouteElements()}</Route>
           <Route path="/sandbox/landing-board" element={<ErrorBoundary><LandingBoardSandbox /></ErrorBoundary>} />
           <Route path="/sandbox/onboarding-board" element={<ErrorBoundary><OnboardingBoardSandbox /></ErrorBoundary>} />
           {import.meta.env.DEV && (
