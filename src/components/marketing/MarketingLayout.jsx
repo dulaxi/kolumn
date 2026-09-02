@@ -16,6 +16,12 @@ import { applyTheme } from '../../utils/theme'
 // wraps <Routes>, but the chrome below still needs to commit immediately
 // rather than blank out during page loads/navigations) — this keeps the
 // nav/skip-link/footer on screen while only the main region waits.
+//
+// Do not "simplify" this away: a lazy route component suspending with no
+// ancestor Suspense boundary withholds the ENTIRE render, not just the
+// suspending subtree — nav, skip link and footer included. Verified via a
+// direct render probe (see task-8-report.md); the MarketingLayout tests
+// would go blank on mount without this boundary.
 export default function MarketingLayout() {
   const { pathname } = useLocation()
 

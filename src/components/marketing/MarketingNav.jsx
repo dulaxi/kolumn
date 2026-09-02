@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { CaretDown, List, Minus, Plus, X } from '@phosphor-icons/react'
 import KolumnLockup from '../layout/KolumnLockup'
@@ -104,6 +105,24 @@ export default function MarketingNav() {
     return () => unlockBodyScroll()
   }, [menuOpen])
 
+  // The single Open/Close toggle. While the menu is open it is rendered via
+  // the portal below (fixed at the same on-screen spot) instead of inline
+  // in the mobile bar — see the note on the portal for why: lockBodyScroll
+  // makes #root (and everything left inside it, this button included)
+  // inert, so a click-to-close control has to live outside #root too.
+  const toggleButton = (
+    <button
+      type="button"
+      onClick={() => setMenuOpen((v) => !v)}
+      aria-expanded={menuOpen}
+      aria-controls="marketing-mobile-menu"
+      aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+      className={`w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer${menuOpen ? ' fixed top-[18px] right-5 z-[70] bg-[var(--surface-page)]' : ''}`}
+    >
+      {menuOpen ? <X size={20} /> : <List size={20} />}
+    </button>
+  )
+
   const authControls = user ? (
     <Link to="/dashboard" className={PRIMARY}>Open Kolumn</Link>
   ) : (
@@ -136,56 +155,63 @@ export default function MarketingNav() {
         <Link to="/" aria-label="Kolumn — home" className="flex items-center">
           <KolumnLockup text={28} />
         </Link>
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-expanded={menuOpen}
-          aria-controls="marketing-mobile-menu"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-        >
-          {menuOpen ? <X size={20} /> : <List size={20} />}
-        </button>
+        {!menuOpen && toggleButton}
       </div>
 
-      {menuOpen && (
-        <div
-          id="marketing-mobile-menu"
-          role="dialog"
-          aria-label="Menu"
-          className="sm:hidden fixed inset-x-0 top-[72px] bottom-0 z-50 bg-[var(--surface-page)] px-5 flex flex-col animate-dropdown"
-        >
-          <ul className="flex-1 overflow-y-auto">
-            {NAV_LINKS.map((link) => (
-              <li key={link.to} className="border-b border-[var(--border-subtle)]">
-                <Link to={link.to} className="flex items-center h-14 text-[17px] text-[var(--text-primary)]">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {NAV_MENUS.map((menu) => (
-              <MobileAccordion key={menu.label} menu={menu} />
-            ))}
-            {!user && (
-              <li className="border-b border-[var(--border-subtle)]">
-                <a href={SIGN_IN.to} className="flex items-center h-14 text-[17px] text-[var(--text-primary)]">
-                  {SIGN_IN.label}
-                </a>
-              </li>
-            )}
-          </ul>
-          <div className="flex gap-3 py-4">
-            {user ? (
-              <Link to="/dashboard" className={`${PRIMARY} flex-1 h-11`}>Open Kolumn</Link>
-            ) : (
-              <>
-                <a href={SIGN_IN.to} className={`${SECONDARY} flex-1 h-11`}>{SIGN_IN.label}</a>
-                <Link to={PRIMARY_CTA.to} className={`${PRIMARY} flex-1 h-11`}>{PRIMARY_CTA.label}</Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Portaled to document.body — lockBodyScroll() (below) sets `inert`
+          + aria-hidden on #root while this is open (same mechanism Modal
+          uses to hide the background), and this overlay (plus the toggle
+          button, fixed in the same on-screen spot it occupies when inline)
+          lives inside #root in the component tree. Without the portal,
+          both would inert themselves: the overlay's own links and the
+          close button would be unclickable and invisible to assistive
+          tech. Never reached during a Node/server render — it's inside the
+          `menuOpen &&` guard and menuOpen starts false, so keep the portal
+          call under that guard and never reference document at module
+          scope. */}
+      {menuOpen &&
+        createPortal(
+          <>
+            {toggleButton}
+            <div
+              id="marketing-mobile-menu"
+              role="dialog"
+              aria-label="Menu"
+              className="sm:hidden fixed inset-x-0 top-[72px] bottom-0 z-50 bg-[var(--surface-page)] px-5 flex flex-col animate-dropdown"
+            >
+              <ul className="flex-1 overflow-y-auto">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.to} className="border-b border-[var(--border-subtle)]">
+                    <Link to={link.to} className="flex items-center h-14 text-[17px] text-[var(--text-primary)]">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                {NAV_MENUS.map((menu) => (
+                  <MobileAccordion key={menu.label} menu={menu} />
+                ))}
+                {!user && (
+                  <li className="border-b border-[var(--border-subtle)]">
+                    <a href={SIGN_IN.to} className="flex items-center h-14 text-[17px] text-[var(--text-primary)]">
+                      {SIGN_IN.label}
+                    </a>
+                  </li>
+                )}
+              </ul>
+              <div className="flex gap-3 py-4">
+                {user ? (
+                  <Link to="/dashboard" className={`${PRIMARY} flex-1 h-11`}>Open Kolumn</Link>
+                ) : (
+                  <>
+                    <a href={SIGN_IN.to} className={`${SECONDARY} flex-1 h-11`}>{SIGN_IN.label}</a>
+                    <Link to={PRIMARY_CTA.to} className={`${PRIMARY} flex-1 h-11`}>{PRIMARY_CTA.label}</Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
     </nav>
   )
 }

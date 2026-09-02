@@ -37,6 +37,43 @@ describe('MarketingNav', () => {
     await userEvent.click(screen.getByRole('button', { name: /close menu/i }))
     expect(document.body.style.overflow).not.toBe('hidden')
   })
+
+  // Regression for a critical bug: lockBodyScroll() (called while the menu
+  // is open) sets `inert` on #root, hiding it from assistive tech and
+  // blocking real pointer input to everything left inside it. The overlay
+  // used to render inline inside #root, so it inerted itself — a mobile
+  // menu that opens and cannot be closed, and is invisible to screen
+  // readers while "open". jsdom does not enforce inert's actual
+  // click-blocking behavior, so a plain userEvent.click on the close
+  // button (as in the test above) does not by itself catch this — the DOM
+  // *structure* is what has to be asserted: the overlay and its close
+  // control must not be descendants of #root. RTL's default container
+  // lives directly under document.body (no #root ancestor at all), so a
+  // real #root is created here for the containment check to mean anything.
+  test('mobile overlay portals out of #root so it is reachable while open', async () => {
+    const appRoot = document.createElement('div')
+    appRoot.id = 'root'
+    document.body.appendChild(appRoot)
+    try {
+      render(<MemoryRouter initialEntries={['/pricing']}><MarketingNav /></MemoryRouter>, {
+        container: appRoot,
+        baseElement: document.body,
+      })
+
+      await userEvent.click(screen.getByRole('button', { name: /open menu/i }))
+
+      const overlay = screen.getByRole('dialog', { name: /menu/i })
+      const closeButton = screen.getByRole('button', { name: /close menu/i })
+      expect(appRoot.contains(overlay)).toBe(false)
+      expect(appRoot.contains(closeButton)).toBe(false)
+
+      await userEvent.click(closeButton)
+      expect(screen.queryByRole('dialog', { name: /menu/i })).not.toBeInTheDocument()
+      expect(document.body.style.overflow).not.toBe('hidden')
+    } finally {
+      document.body.removeChild(appRoot)
+    }
+  })
 })
 
 describe('MarketingFooter', () => {
