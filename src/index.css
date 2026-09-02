@@ -100,6 +100,11 @@
   --btn-primary-bg: #1B1B18;
   --btn-primary-text: #FFFFFF;
   --btn-primary-hover: #333333;
+  /* Theme-stable light-on-ink text for dark marketing sections (footer).
+     Defined once; the dark block intentionally does not override them. */
+  --text-on-ink: #F2EDE8;
+  --text-on-ink-muted: #A8A5A0;
+  --border-on-ink: #33322F;
 
   --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
   --notice-error-text: #A86434;  /* copper-dark: AA-safe on copper-wash + card */

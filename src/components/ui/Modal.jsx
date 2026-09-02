@@ -39,7 +39,7 @@ let savedBodyPaddingRight = ''
 // modal handles Escape and Tab focus-trap, so nested modals work correctly.
 const modalStack = []
 
-function lockBodyScroll() {
+export function lockBodyScroll() {
   if (openModalCount === 0) {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     savedBodyOverflow = document.body.style.overflow
@@ -58,7 +58,7 @@ function lockBodyScroll() {
   openModalCount += 1
 }
 
-function unlockBodyScroll() {
+export function unlockBodyScroll() {
   openModalCount = Math.max(0, openModalCount - 1)
   if (openModalCount === 0) {
     document.body.style.overflow = savedBodyOverflow
