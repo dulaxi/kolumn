@@ -1810,10 +1810,12 @@ describe('PricingPage', () => {
     }
   })
 
-  test('the only ink CTAs are Pro and the reassurance strip', () => {
+  test('no button or link is lime-filled', () => {
     render(<MemoryRouter><PricingPage /></MemoryRouter>)
-    const ink = document.querySelectorAll('[class*="btn-primary-bg"], [class*="bg-[var(--text-primary)]"]')
-    expect(ink.length).toBe(2)
+    // Global constraint: lime is a state color, never a button fill.
+    for (const el of document.querySelectorAll('a, button')) {
+      expect(el.className, el.textContent).not.toMatch(/bg-\[var\(--(accent-lime|color-lime)/)
+    }
   })
 })
 ```
@@ -2092,14 +2094,14 @@ import { describe, test, expect } from 'vitest'
 import { renderRoute } from '../prerender-entry'
 
 describe('renderRoute', () => {
-  test('renders /pricing to static HTML with nav, h1, footer and Suspense markers', async () => {
+  test('renders /pricing to fully resolved static HTML, not a Suspense fallback', async () => {
     const html = await renderRoute('/pricing')
     expect(html.startsWith('<div id="root">')).toBe(true)
     expect(html).toContain('aria-label="Main"')
     expect(html).toMatch(/<h1[^>]*>Pricing<\/h1>/)
     expect(html).toContain('Compare plans')
+    expect(html).toContain('Frequently asked questions')
     expect(html).toContain('<footer')
-    expect(html).toContain('<!--$-->')
   })
 
   test('never pulls the env-validating auth path into the SSR graph', async () => {
