@@ -37,7 +37,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>7. Changes and contact</h2>
-        <p>Material changes to this policy will be announced in-app or by email. Questions: support@kolumn.app.</p>
+        <p>Material changes to this policy will be announced in-app or by email. Questions: hello@kolumn.app.</p>
       </section>
     </LegalPage>
   )

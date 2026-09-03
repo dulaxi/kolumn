@@ -45,7 +45,7 @@ export default function TermsPage() {
       </section>
       <section>
         <h2>10. Contact</h2>
-        <p>Questions: support@kolumn.app.</p>
+        <p>Questions: hello@kolumn.app.</p>
       </section>
     </LegalPage>
   )

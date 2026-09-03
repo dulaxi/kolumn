@@ -1,10 +1,9 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 
-import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, Notepad, Tag, Target, TrendUp, VideoCamera, Waveform } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
-import KolumnLockup from '../components/layout/KolumnLockup'
 import { LABEL_OUTLINE } from '../utils/formatting'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -13,6 +12,8 @@ import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
 import FaqItem from '../components/marketing/FaqItem'
 import PlanGrid from '../components/marketing/PlanGrid'
+import MarketingNav from '../components/marketing/MarketingNav'
+import MarketingFooter from '../components/marketing/MarketingFooter'
 
 
 // Stats bar removed pre-launch — old values were vanity placeholders
@@ -1435,80 +1436,6 @@ function HeroAuthCard() {
   )
 }
 
-function MobileNav() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  return (
-    <nav className="sticky top-0 z-50 bg-[var(--surface-page)]">
-      {/* Desktop nav */}
-      <div className="hidden sm:flex items-center justify-between max-w-[90rem] mx-auto" style={{ width: 'calc(100% - (2 * clamp(2rem, 1.43rem + 2.86vw, 4rem)))' }}>
-        <Link
-          to="/"
-          onClick={() => window.scrollTo(0, 0)}
-          aria-label="Kolumn — home"
-          className="flex items-center hover:opacity-90 transition-opacity"
-        >
-          <KolumnLockup text={28} />
-        </Link>
-        <div className="flex items-center gap-3 py-6">
-          <a
-            href="#sign-in"
-            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[0.5px] border-[var(--color-sand)] rounded-lg transition-all duration-200"
-          >
-            Sign in
-          </a>
-          <Link
-            to="/onboarding"
-            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg overflow-hidden transition-transform will-change-transform ease-[cubic-bezier(0.165,0.85,0.45,1)] duration-150 hover:scale-y-[1.015] hover:scale-x-[1.005]"
-          >
-            Get started
-          </Link>
-        </div>
-      </div>
-
-      {/* Mobile nav */}
-      <div className="flex sm:hidden items-center justify-between px-5 py-4">
-        <Link
-          to="/"
-          onClick={() => {
-            window.scrollTo(0, 0)
-            setMenuOpen(false)
-          }}
-          aria-label="Kolumn — home"
-          className="flex items-center hover:opacity-90 transition-opacity"
-        >
-          <KolumnLockup text={28} />
-        </Link>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--color-cream-dark)] transition-colors"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {menuOpen ? <X className="w-5 h-5" /> : <List className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile dropdown */}
-      {menuOpen && (
-        <div className="sm:hidden border-t border-[var(--color-cream-dark)] bg-[var(--surface-page)] px-5 pb-4 pt-3 flex flex-col gap-2 animate-dropdown">
-          <a
-            href="#sign-in"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center h-10 text-[15px] font-normal text-[var(--text-secondary)] border border-[var(--color-sand)] rounded-lg transition-colors hover:text-[var(--text-primary)]"
-          >
-            Sign in
-          </a>
-          <Link
-            to="/onboarding"
-            className="flex items-center justify-center h-10 text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg"
-          >
-            Get started
-          </Link>
-        </div>
-      )}
-    </nav>
-  )
-}
-
 /*
  * Hero container — three nested layers matching the Anthropic Cowork-style
  * pattern (outer flex → middle card with shadow → inner bordered tile that
@@ -1616,7 +1543,7 @@ export default function LandingPage() {
     <div className={`landing-font min-h-screen bg-[var(--surface-page)] transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
 
       {/* ─── Nav ─── */}
-      <MobileNav />
+      <MarketingNav />
 
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
@@ -1704,21 +1631,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-6xl mx-auto">
-        <div className="border-t border-[var(--color-sand)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <KolumnLockup text={12} weight={700} wordClassName="" />
-            <span className="text-[var(--text-muted)] mx-1">&middot;</span>
-            <span>Built for teams that ship.</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
-            <a href="mailto:hello@kolumn.app" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
-            <a href="#sign-in" className="hover:text-[var(--text-secondary)] transition-colors">Sign in</a>
-            <Link to="/onboarding" className="hover:text-[var(--text-secondary)] transition-colors">Sign up</Link>
-          </div>
-        </div>
-        <p className="text-center text-xs text-[var(--text-faint)] mt-4">&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>
-      </footer>
+      <MarketingFooter />
     </div>
   )
 }
