@@ -3,7 +3,6 @@
 // Runs after `vite build` (client) and `vite build --ssr` (dist-ssr).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { createHash } from 'node:crypto'
 
 const DIST = 'dist'
 const entry = await import('../dist-ssr/prerender-entry.js')
@@ -12,30 +11,27 @@ const { MARKETING_ROUTES, SITE_URL, renderRoute, routeMeta, buildHeadTags, headT
 const template = readFileSync(join(DIST, 'index.html'), 'utf8')
 const lastmod = new Date().toISOString().slice(0, 10)
 
-// A prerendered page can contain a nested (non-outermost) <Suspense>
-// boundary — MarketingLayout wraps its <Outlet/> in its own local boundary
-// so nav/footer stay mounted across route-level Suspense — and React's Fizz
-// renderer always emits ANY such boundary using its out-of-order streaming
-// format (placeholder + hidden resolved segment + a tiny inline reveal
-// script), even when `prerender()` has already fully resolved everything
-// before returning. Without the reveal script running, the resolved content
-// stays inertly hidden and hydrateRoot gives up on that boundary. CSP (see
-// public/serve.json) blocks inline scripts by default, so we allow-list the
-// exact script text via SHA-256 hash instead of 'unsafe-inline' — computed
-// fresh per build from what React actually emitted, so it can't drift.
-const inlineScriptHashes = new Set()
-function collectInlineScriptHashes(html) {
-  for (const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
-    const hash = createHash('sha256').update(match[1]).digest('base64')
-    inlineScriptHashes.add(`'sha256-${hash}'`)
-  }
-}
-
 for (const route of MARKETING_ROUTES) {
   const body = await renderRoute(route.path)
   const head = headTagsToHtml(buildHeadTags(routeMeta(route)))
   const html = injectIntoTemplate(template, { head, body })
-  collectInlineScriptHashes(html)
+  // A build-time-only regression guard, not a runtime dependency: an
+  // inline <script> here would mean src/prerender-entry.jsx's
+  // no-suspension setup (resolving the route module ahead of `prerender`,
+  // `progressiveChunkSize: Infinity`) stopped working and React's Fizz
+  // renderer fell back to its out-of-order streaming format again (a
+  // <template> placeholder + the real content in a hidden sibling <div> +
+  // a reveal script) — which the site's CSP (public/serve.json, no
+  // 'unsafe-inline') blocks, silently leaving <main> empty for any crawler
+  // that doesn't execute JS. Fail the build instead of shipping that.
+  if (/<script>/.test(body)) {
+    throw new Error(
+      `[prerender] ${route.path} emitted an inline <script> — the page likely regressed to Fizz's ` +
+        'out-of-order streaming format (a Suspense boundary suspended or grew past ' +
+        'progressiveChunkSize again) and CSP will block it in production. See ' +
+        'src/prerender-entry.jsx.',
+    )
+  }
   // Our production server (scripts/serve-prod.mjs) resolves `/pricing` by
   // checking, in order, a literal file, `pricing/index.html`, then
   // `pricing.html` — matching serve-handler's own cleanUrls candidate
@@ -52,21 +48,3 @@ for (const route of MARKETING_ROUTES) {
 writeFileSync(join(DIST, 'sitemap.xml'), buildSitemap(SITE_URL, ['/', ...MARKETING_ROUTES.map((r) => r.path)], lastmod))
 writeFileSync(join(DIST, 'robots.txt'), buildRobots(SITE_URL))
 console.log(`[prerender] sitemap.xml (${MARKETING_ROUTES.length + 1} urls), robots.txt`)
-
-if (inlineScriptHashes.size > 0) {
-  const serveJsonPath = join(DIST, 'serve.json')
-  const serveConfig = JSON.parse(readFileSync(serveJsonPath, 'utf8'))
-  const hashList = [...inlineScriptHashes].join(' ')
-  for (const rule of serveConfig.headers ?? []) {
-    for (const h of rule.headers ?? []) {
-      if (h.key === 'Content-Security-Policy') {
-        h.value = h.value.replace(
-          /script-src ([^;]*)/,
-          (_m, sources) => `script-src ${sources} ${hashList}`,
-        )
-      }
-    }
-  }
-  writeFileSync(serveJsonPath, JSON.stringify(serveConfig, null, 2))
-  console.log(`[prerender] serve.json CSP: allow-listed ${inlineScriptHashes.size} React reveal-script hash(es)`)
-}

@@ -20,6 +20,11 @@ export const MARKETING_ROUTES = [
     ogDescription: PRICING.meta.ogDescription,
     jsonLd: pricingJsonLd,
     Component: lazy(() => import('../pages/marketing/PricingPage')),
+    // Prerendering needs the resolved module (not the lazy() wrapper) so
+    // MarketingLayout's inner Suspense boundary never actually suspends
+    // during the SSR pass — see src/prerender-entry.jsx. Same factory,
+    // exposed separately so the browser keeps code-splitting via Component.
+    load: () => import('../pages/marketing/PricingPage'),
   },
 ]
 
