@@ -9,7 +9,7 @@ export default {
   seo: {
     title: 'Kolumn for customer support — a kanban for escalations',
     description:
-      'Paste a customer thread and get a card with a summary and priority. Track escalations and engineering handoffs on one board. Free to start; Pro is $8/month.',
+      'Paste a customer thread and get a card with a summary and priority. Track escalations and handoffs on one board. Free to start; Pro is $8/month.',
   },
   hero: {
     eyebrow: 'Kolumn for customer support',

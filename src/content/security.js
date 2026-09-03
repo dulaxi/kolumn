@@ -34,10 +34,10 @@ export const CONTACT_EMAIL = 'hello@kolumn.app'
 export const SECURITY_META = {
   title: 'Security at Kolumn',
   description:
-    'How Kolumn protects your boards: row-level security on every table, members-only access, session control, export and deletion from Settings, and no training on your content.',
+    'How Kolumn protects your boards: row-level security on every table, members-only access, session control, and no training on your content.',
   ogTitle: 'Security at Kolumn',
   ogDescription:
-    'How Kolumn protects your boards: row-level security on every table, members-only access, session control, export and deletion from Settings, and no training on your content.',
+    'How Kolumn protects your boards: row-level security on every table, members-only access, session control, and no training on your content.',
 }
 
 export const HERO = {

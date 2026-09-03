@@ -75,7 +75,7 @@ export const FEATURES_HUB = {
   meta: {
     title: 'Features — Kolumn, the AI kanban',
     description:
-      'Type what you need and cards appear. Ask about your boards in chat. Workspaces, templates, realtime sync, and keyboard search — all in a kanban that stayed a kanban.',
+      'Type what you need and cards appear. Ask about your boards in chat. Workspaces, templates, sync, and keyboard search — a kanban that stayed a kanban.',
     ogTitle: 'Kolumn features',
   },
   eyebrow: 'Features',
@@ -87,7 +87,7 @@ export const FEATURES_HUB = {
   closing: {
     h2: 'Start with a board. The AI shows up when you type.',
     cta: { label: 'Create a free account', to: '/onboarding' },
-    secondary: { label: 'or read about privacy', to: '/privacy' },
+    secondary: { label: 'or read about security', to: '/security' },
   },
 }
 
@@ -101,7 +101,7 @@ export const FEATURE_PAGES = {
     meta: {
       title: 'The pill — Kolumn',
       description:
-        'Type what you need on any board and the AI creates, moves, updates, or completes the cards. Paste a list and it becomes cards instantly. Free tier included.',
+        'Type what you need on any board and the AI creates, moves, updates, or completes the cards. Paste a list and it becomes cards instantly.',
       ogTitle: 'The pill',
     },
     plan: PLAN_FACTS,
@@ -216,7 +216,7 @@ export const FEATURE_PAGES = {
     meta: {
       title: 'Chat — Kolumn',
       description:
-        'Ask questions about your boards and get answers from your own cards: what is overdue, what shipped, what is still open. Read-only, so nothing moves by accident.',
+        'Ask questions about your boards and get answers from your own cards: what is overdue, what shipped, what is still open. Read-only, always.',
       ogTitle: 'Chat',
     },
     plan: PLAN_FACTS,
@@ -311,7 +311,7 @@ export const FEATURE_PAGES = {
       { q: 'Can chat create or move cards?', a: 'No. Chat is read-only on every plan. Use the pill on a board for actions.' },
       { q: 'Which boards can it see?', a: 'The ones you can open: your own, boards shared with you, and boards in your workspaces. Nothing else.' },
       { q: 'Are conversations saved?', a: 'Yes, to your account, with the same row-level security as your boards. Delete a thread and it is gone.' },
-      { q: 'Is my content used to train models?', a: 'No. See the privacy page.', link: { label: 'privacy page', to: '/privacy' } },
+      { q: 'Is my content used to train models?', a: 'No. See the security page.', link: { label: 'security page', to: '/security' } },
       { q: 'Does the daily limit include the pill?', a: `Yes. Free accounts share ${freeMessagesPerDay} messages a day between chat and the pill.` },
     ],
     sibling: {

@@ -9,10 +9,10 @@
 export const ABOUT_META = {
   title: "About Kolumn — a kanban that stayed a kanban",
   description:
-    "Kolumn is a small, independent kanban app with an AI that does the busywork on your boards. Here's what it is, why it's shaped this way, and what we hold to.",
+    "Kolumn is a small, independent kanban app with an AI that does the busywork on your boards. Here's what it is and why it's shaped this way.",
   ogTitle: 'About Kolumn',
   ogDescription:
-    "Kolumn is a small, independent kanban app with an AI that does the busywork on your boards. Here's what it is, why it's shaped this way, and what we hold to.",
+    "Kolumn is a small, independent kanban app with an AI that does the busywork on your boards. Here's what it is and why it's shaped this way.",
 }
 
 export const HERO = {

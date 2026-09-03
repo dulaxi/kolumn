@@ -16,8 +16,9 @@ function tagLabel(tag) {
   return BLOG_TAGS.find((t) => t.id === tag)?.label || tag
 }
 
-export default function BlogPostPage() {
-  const { slug } = useParams()
+export default function BlogPostPage({ slug: slugProp }) {
+  const params = useParams()
+  const slug = slugProp || params.slug
   const post = getPost(slug)
 
   if (!post) {

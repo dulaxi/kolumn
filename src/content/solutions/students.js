@@ -9,7 +9,7 @@ export default {
   seo: {
     title: 'Kolumn for students and educators — a free kanban',
     description:
-      `Paste a syllabus and get every assignment as a card with its due date. Share a board with your group; educators can template a board per course. Free to start.`,
+      `Paste a syllabus and get every assignment as a card with its due date. Share a board with your group; educators can template a board per course.`,
   },
   hero: {
     eyebrow: 'Kolumn for students and educators',

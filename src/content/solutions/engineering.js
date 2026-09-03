@@ -9,7 +9,7 @@ export default {
   seo: {
     title: 'Kolumn for engineering teams — a kanban, no config',
     description:
-      'No workflows to design, no fields to enforce. Paste a standup or a PR discussion and the cards are there; move them in a sentence. Free to start; Pro is $8/month.',
+      'No workflows to design, no fields to enforce. Paste a standup or PR discussion and the cards are there; move them in a sentence. Free; Pro is $8/month.',
   },
   hero: {
     eyebrow: 'Kolumn for engineering teams',

@@ -44,8 +44,9 @@ const markdownComponents = {
   ),
 }
 
-export default function SupportArticlePage() {
-  const { slug } = useParams()
+export default function SupportArticlePage({ slug: slugProp }) {
+  const params = useParams()
+  const slug = slugProp || params.slug
   const found = findArticle(slug)
 
   if (!found) {

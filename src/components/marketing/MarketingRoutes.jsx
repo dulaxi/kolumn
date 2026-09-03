@@ -6,13 +6,13 @@ import { MARKETING_ROUTES } from '../../content/marketing-routes'
 // (BrowserRouter) and src/prerender-entry.jsx (StaticRouter) so both render
 // the identical tree — a requirement for hydration to match.
 export function marketingRouteElements() {
-  return MARKETING_ROUTES.map(({ path, Component }) => (
+  return MARKETING_ROUTES.map(({ path, Component, props }) => (
     <Route
       key={path}
       path={path}
       element={
         <ErrorBoundary>
-          <Component />
+          <Component {...props} />
         </ErrorBoundary>
       }
     />

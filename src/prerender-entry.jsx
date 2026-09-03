@@ -71,7 +71,9 @@ async function resolveRouteElements(path) {
       key={r.path}
       path={r.path}
       element={
-        <ErrorBoundary>{r.path === route.path ? <ResolvedComponent /> : <r.Component />}</ErrorBoundary>
+        <ErrorBoundary>
+          {r.path === route.path ? <ResolvedComponent {...r.props} /> : <r.Component {...r.props} />}
+        </ErrorBoundary>
       }
     />
   ))

@@ -15,8 +15,9 @@ import { getTemplate, relatedTemplates, templateCardCount, TEMPLATE_FAQ } from '
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
 const H3 = 'font-heading font-[425] text-xl text-[var(--text-primary)] mb-3'
 
-export default function TemplatePage() {
-  const { slug } = useParams()
+export default function TemplatePage({ slug: slugProp }) {
+  const params = useParams()
+  const slug = slugProp || params.slug
   const template = getTemplate(slug)
 
   if (!template) {

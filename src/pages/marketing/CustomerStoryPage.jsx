@@ -15,8 +15,9 @@ import { getStory, relatedStories } from '../../content/customers'
 
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
 
-export default function CustomerStoryPage() {
-  const { slug } = useParams()
+export default function CustomerStoryPage({ slug: slugProp }) {
+  const params = useParams()
+  const slug = slugProp || params.slug
   const story = getStory(slug)
 
   if (!story) {

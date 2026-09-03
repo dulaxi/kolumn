@@ -14,8 +14,9 @@ import { getTutorial, relatedTutorials } from '../../content/tutorials'
 
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
 
-export default function TutorialPage() {
-  const { slug } = useParams()
+export default function TutorialPage({ slug: slugProp }) {
+  const params = useParams()
+  const slug = slugProp || params.slug
   const tutorial = getTutorial(slug)
 
   if (!tutorial) {
