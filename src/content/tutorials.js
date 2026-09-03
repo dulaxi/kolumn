@@ -6,6 +6,9 @@
 // Only the pill tutorial (list-to-cards-with-the-pill) ships a full body;
 // the other seven are metadata-only (title + summary) and the article page
 // renders a "coming soon" state until they're written — see TutorialPage.jsx.
+// A `minutes` (read time) is fabricated signal on a page with no content, so
+// only entries with a real `body` carry one; body-less entries omit it and
+// TutorialCard.jsx / TutorialPage.jsx render without it.
 //
 // tier + minutes must stay honest against supabase/functions/chat/tier.ts
 // (FREE_DAILY_LIMIT = 20, PRO_ONLY_TOOLS) and src/content/pricing.js: the
@@ -97,7 +100,6 @@ export const TUTORIALS = [
     summary: 'Tell the pill what changed. It edits the cards on this board instead of creating new ones.',
     topic: 'ai',
     tier: 'pro',
-    minutes: 5,
     next: ['ask-your-boards-in-chat', 'list-to-cards-with-the-pill'],
     body: null,
   },
@@ -107,7 +109,6 @@ export const TUTORIALS = [
     summary: "Open Chat, ask what's overdue or what a board is about, get an answer. Nothing gets changed.",
     topic: 'ai',
     tier: 'free',
-    minutes: 3,
     next: ['list-to-cards-with-the-pill', 'set-up-a-workspace'],
     body: null,
   },
@@ -117,7 +118,6 @@ export const TUTORIALS = [
     summary: "Create a workspace, send invitations, and watch edits show up on everyone's screen as they happen.",
     topic: 'team',
     tier: 'free',
-    minutes: 6,
     next: ['share-one-board', 'search-and-shortcuts'],
     body: null,
   },
@@ -127,7 +127,6 @@ export const TUTORIALS = [
     summary: 'Give someone access to one board without adding them to a workspace.',
     topic: 'team',
     tier: 'free',
-    minutes: 3,
     next: ['set-up-a-workspace', 'search-and-shortcuts'],
     body: null,
   },
@@ -137,7 +136,6 @@ export const TUTORIALS = [
     summary: "Reuse a board or card layout you've already got right, and revisit the getting-started board.",
     topic: 'around',
     tier: 'free',
-    minutes: 4,
     next: ['search-and-shortcuts', 'export-theme-and-motion'],
     body: null,
   },
@@ -147,7 +145,6 @@ export const TUTORIALS = [
     summary: "Search cards across boards, open them without the mouse, and the shortcuts worth memorising.",
     topic: 'around',
     tier: 'free',
-    minutes: 3,
     next: ['start-from-a-template', 'export-theme-and-motion'],
     body: null,
   },
@@ -157,7 +154,6 @@ export const TUTORIALS = [
     summary: 'A tour of Settings: download everything you own, pick light/dark/system, turn animation down.',
     topic: 'around',
     tier: 'free',
-    minutes: 4,
     next: ['start-from-a-template', 'search-and-shortcuts'],
     body: null,
   },

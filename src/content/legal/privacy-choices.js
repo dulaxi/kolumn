@@ -56,13 +56,13 @@ export const PRIVACY_CHOICES = {
       heading: '4. Error reporting',
       body: [
         'When error reporting is enabled for this deployment, Kolumn sends crash and error reports — stack traces, the page you were on, and basic browser information — so we can find and fix bugs.',
-        'There is currently no opt-out for error reporting. [Placeholder — counsel and product have not yet decided whether one should be offered.]',
+        'There is currently no opt-out for error reporting. Kolumn has not yet decided whether one should be offered.',
       ],
     },
     {
       heading: '5. Product emails',
       body: [
-        '[Placeholder — product: sign-up currently references occasional product emails, but Settings has no email-preference control today. This needs to be built, or the reference needs to be removed, before this section can describe a real choice.]',
+        'Sign-up mentions occasional product emails, but Settings does not yet have an email-preference control to opt out of them.',
         'Account and security emails — sign-in, password reset, invitations — are not optional; they are necessary to run your account.',
       ],
     },
@@ -87,7 +87,7 @@ export const PRIVACY_CHOICES = {
     {
       heading: '8. Do Not Track and Global Privacy Control',
       body: [
-        '[Placeholder — Kolumn does not currently detect or honor Do Not Track or Global Privacy Control browser signals. This section will describe real behavior once that is decided, rather than implying it is already respected.]',
+        'Kolumn does not currently detect or honor Do Not Track or Global Privacy Control browser signals.',
       ],
     },
     {

@@ -35,7 +35,7 @@ export const PRICING = {
         'Drag-and-drop, labels, priorities, due dates, checklists',
         'Realtime sync with everyone on the board',
         'The pill creates cards from plain language — 20 AI messages a day',
-        'Chat: ask questions about your boards',
+        'Chat: ask questions, search cards, and summarize boards',
         'Board and card templates',
       ],
       cta: { label: 'Start for free', to: '/onboarding' },
@@ -46,15 +46,15 @@ export const PRICING = {
       tagline: 'For daily use',
       price: '$8',
       period: 'month',
-      caption: 'Billed monthly, plus tax. $80 a year if you pay up front.',
+      caption:
+        'Billed monthly, plus tax. $80 a year if you pay up front. Paid billing has not launched yet — see the pricing FAQ for what selecting Pro does today.',
       badge: 'Recommended',
       comingSoon: false,
       inheritsFrom: 'Free',
       bullets: [
         'No daily AI message limit',
         'The pill moves, updates, completes, and reorganizes cards — not just creates them',
-        'Chat can search cards and summarize boards for you',
-        '7-day free trial, cancel in Settings anytime',
+        '7-day free trial — no card is charged either way while billing is in early access',
       ],
       cta: { label: 'Try Pro free for 7 days', to: '/onboarding' },
     },
@@ -86,8 +86,7 @@ export const PRICING = {
       { label: 'AI messages per day', cells: ['20', 'No limit', 'No limit'] },
       { label: 'Pill: create cards from plain language', cells: [true, true, true] },
       { label: 'Pill: move, update, complete, reorganize', cells: [false, true, true] },
-      { label: 'Chat: ask questions about your boards', cells: [true, true, true] },
-      { label: 'Chat: search cards and summarize boards', cells: [false, true, true] },
+      { label: 'Chat: ask questions, search cards, and summarize boards', cells: [true, true, true] },
       { label: 'Realtime sync across members', cells: [true, true, true] },
       { label: 'Board and card templates', cells: [true, true, true] },
       { label: 'Workspaces with members and invitations', cells: [true, true, true] },
@@ -103,19 +102,23 @@ export const PRICING = {
   faq: [
     {
       q: 'What do I get on Free?',
-      a: 'Boards, columns, and cards with no cap, realtime sync with your team, templates, and the AI pill on every board. Free gets 20 AI messages a day; the counter resets daily. Chat works too, as plain question-and-answer over your boards.',
+      a: 'Boards, columns, and cards with no cap, realtime sync with your team, templates, and the AI pill on every board. Free gets 20 AI messages a day; the counter resets daily. Chat works too — it answers questions, and can search your cards and summarize a board, on every plan including Free.',
     },
     {
       q: 'What does Pro change?',
-      a: 'Two things. The daily message limit goes away, and the AI is allowed to do more than create: it can move, update, complete, and reorganize cards on the board you are looking at, and chat can search cards and summarize boards instead of only answering from what it can see. Pro is $8 a month, billed monthly, or $80 for a year.',
+      a: 'Two things. The daily message limit goes away, and the AI is allowed to do more than create: it can move, update, complete, and reorganize cards on the board you are looking at. Pro is priced at $8 a month, billed monthly, or $80 for a year, once paid billing launches.',
     },
     {
       q: 'What counts as an AI message?',
       a: 'Anything you send to the pill or to chat. Lists you paste into the pill with commas or line breaks are split into cards without touching the AI, so they never count. A single message that triggers several actions still counts once.',
     },
     {
+      q: 'Is Pro billing live yet?',
+      a: "Not yet. Kolumn's paid billing has not launched, so Pro is not chargeable today — no payment method is collected anywhere in the app. Choosing Pro from onboarding or Settings switches your account to Pro immediately at no cost. We will email everyone before any card is charged once billing does launch; until then you can move back to Free anytime from Settings.",
+    },
+    {
       q: 'Is there a trial?',
-      a: 'Yes. Pro comes with a 7-day free trial. We tell you the end date when you start, and you can cancel from Settings before it renews.',
+      a: "Pro is framed as a 7-day free trial, but since paid billing has not launched, nothing is charged when the trial period ends either — you simply stay on Pro until you switch back to Free yourself, from Settings.",
     },
     {
       q: 'Can I switch plans later?',

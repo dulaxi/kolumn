@@ -13,10 +13,10 @@
 export const STATUS_META = {
   title: 'Kolumn status',
   description:
-    'Live status for the Kolumn web app, realtime sync, AI assistant, sign-in, and email, with uptime and incident history.',
+    'What the Kolumn web app, realtime sync, AI assistant, sign-in, and email depend on — shown as unknown until monitoring is connected.',
   ogTitle: 'Kolumn status',
   ogDescription:
-    'Live status for the Kolumn web app, realtime sync, AI assistant, sign-in, and email, with uptime and incident history.',
+    'What the Kolumn web app, realtime sync, AI assistant, sign-in, and email depend on — shown as unknown until monitoring is connected.',
 }
 
 // One row per user-facing dependency. `status` is 'unknown' for every row

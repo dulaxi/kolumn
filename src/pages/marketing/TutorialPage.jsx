@@ -11,6 +11,9 @@ import { getTutorial, relatedTutorials } from '../../content/tutorials'
 // slug via the route param, so whoever wires /tutorials/:slug into
 // MARKETING_ROUTES doesn't need a second component (see TemplatePage.jsx
 // for the same convention).
+// `tutorial.minutes` (read time) is only set on entries with a real body —
+// a read time on an empty page is a fabricated signal — so the "min" pill
+// only renders when it's present.
 
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
 
@@ -48,9 +51,11 @@ export default function TutorialPage({ slug: slugProp }) {
           </h1>
           <p className="text-lg text-[var(--text-secondary)] mb-6">{tutorial.summary}</p>
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="font-mono text-xs inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border border-[var(--border-default)] text-[var(--text-secondary)]">
-              <Clock size={13} /> {tutorial.minutes} min
-            </span>
+            {tutorial.minutes != null && (
+              <span className="font-mono text-xs inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border border-[var(--border-default)] text-[var(--text-secondary)]">
+                <Clock size={13} /> {tutorial.minutes} min
+              </span>
+            )}
             <span className="font-mono text-xs inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border border-[var(--border-default)] text-[var(--text-secondary)]">
               {tutorial.tier === 'pro' ? <Crown size={13} /> : <Sparkle size={13} />}
               {tutorial.tier === 'pro' ? 'Pro' : 'Free'}
@@ -68,7 +73,7 @@ export default function TutorialPage({ slug: slugProp }) {
             <Prose blocks={tutorial.body} />
           ) : (
             <InlineNotice variant="info" icon={false}>
-              This tutorial is being written. In the meantime, the summary above is accurate — {tutorial.summary.toLowerCase()}
+              This tutorial is being written. In the meantime, the summary above is accurate — {tutorial.summary}
             </InlineNotice>
           )}
         </div>

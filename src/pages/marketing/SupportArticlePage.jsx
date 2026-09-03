@@ -12,6 +12,9 @@ import { findArticle, SUPPORT_CONTACT } from '../../content/support'
 // TemplatePage.jsx). Entries with body: null render a "coming soon" state
 // instead of an empty page — most of the 24 articles ship as title +
 // summary only; two carry full content (see src/content/support.js).
+// `article.updated` is only set on entries with a real body — a date on an
+// empty page is a fabricated freshness signal — so the "Updated" line only
+// renders when it's present.
 
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
 
@@ -82,7 +85,9 @@ export default function SupportArticlePage({ slug: slugProp }) {
         <h1 className="font-heading font-[425] text-[36px] leading-[1.1] tracking-tight text-[var(--text-primary)] max-w-[812px] mb-2">
           {article.title}
         </h1>
-        <p className="font-mono text-xs text-[var(--text-muted)]">Updated {article.updated}</p>
+        {article.updated && (
+          <p className="font-mono text-xs text-[var(--text-muted)]">Updated {article.updated}</p>
+        )}
       </section>
 
       <section className={`${SECTION} pb-16`}>
@@ -93,7 +98,7 @@ export default function SupportArticlePage({ slug: slugProp }) {
             </ReactMarkdown>
           ) : (
             <InlineNotice variant="info">
-              This article is coming soon. In the meantime, {article.summary.toLowerCase()}
+              This article is coming soon. In the meantime: {article.summary}
               {' — '}
               <a href={`mailto:${SUPPORT_CONTACT}`} className="underline underline-offset-[3px]">
                 write to us

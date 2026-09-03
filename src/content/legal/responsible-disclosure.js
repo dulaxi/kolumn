@@ -55,7 +55,7 @@ export const RESPONSIBLE_DISCLOSURE = {
       body: [
         'Email hello@kolumn.app with a clear description, the affected page or function, reproduction steps, and a proof of concept if you have one. Please report one issue per email so we can track it.',
         "Do not include another user's real data in your report — reproduce the issue with test data from an account you created yourself.",
-        '[Placeholder — confirm whether a PGP key for encrypted reports will be published before this policy is final.]',
+        'Kolumn does not currently publish a PGP key for encrypted reports.',
       ],
     },
     {
@@ -68,20 +68,19 @@ export const RESPONSIBLE_DISCLOSURE = {
           'No automated scanning that could degrade the service for other users.',
           'No extortion, and no threatening to disclose an issue publicly before we have had a reasonable chance to address it.',
         ] },
-        '[Placeholder — counsel to add any jurisdiction or sanctions-list language this section needs before it is final.]',
       ],
     },
     {
       heading: '6. What we aim to do in return',
       body: [
-        '[Placeholder — counsel and product have not yet committed to a specific acknowledgement or fix-timeline SLA; do not treat any number here as promised until this section is finalized.]',
+        'Kolumn has not committed to a specific acknowledgement or fix-timeline SLA; no number in this section is a promise.',
         "We intend to acknowledge reports, keep researchers updated as we investigate, and credit researchers publicly if they'd like to be credited. We will not share a reporter's identity without their permission.",
       ],
     },
     {
       heading: '7. Safe harbor',
       body: [
-        '[Placeholder — this section is meant to state that good-faith research consistent with this policy will not be met with legal action from Kolumn. That commitment requires counsel review and is not binding until this section is finalized and this placeholder is removed.]',
+        'Kolumn has not published a formal safe-harbor commitment yet. In the meantime, if you have a question about a specific report, contact hello@kolumn.app.',
       ],
     },
     {

@@ -56,7 +56,7 @@ export const USAGE_POLICY = {
       body: [
         "Do not attempt to make Kolumn's AI act on boards or workspaces you do not have access to.",
         "Do not plant hidden instructions in shared card text intended to manipulate another member's AI session when they open that board (prompt injection).",
-        '[Placeholder — counsel to confirm the specific content categories to prohibit here, consistent with the underlying AI provider\'s own usage policy, rather than this page inventing its own list.]',
+        "Follow Anthropic's own usage policies for the underlying model, in addition to the rules on this page — see section 1.",
         'Do not present AI-generated text as human-written in a context where that would deceive someone relying on it.',
       ],
     },
@@ -82,7 +82,7 @@ export const USAGE_POLICY = {
     {
       heading: '8. Enforcement',
       body: [
-        '[Placeholder — counsel and product to finalize the specific enforcement mechanics before this section is final.] In general, Kolumn may rate-limit, warn, suspend, or terminate accounts that violate this policy, and may remove content that violates it. See the Terms of Service for how suspension and termination work.',
+        'The specific enforcement mechanics have not been finalized. In general, Kolumn may rate-limit, warn, suspend, or terminate accounts that violate this policy, and may remove content that violates it. See the Terms of Service for how suspension and termination work.',
       ],
     },
     {

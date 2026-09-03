@@ -8,11 +8,14 @@ import { PRICING } from '../pricing'
 
 const { freeMessagesPerDay, proMonthlyUsd } = PRICING.limits
 
-// solution-page.md §3.5 — captions for helps[] blocks that use write tools
-// beyond create, or that lean on Pro-only chat read tools.
+// solution-page.md §3.5 — caption for helps[] blocks that use write tools
+// beyond create. Chat's search/summarize tools are on every plan today
+// (supabase/functions/chat/tier.ts filterToolsForMode grants CHAT_READ_TOOLS
+// to all tiers), so there is no Pro-only chat caption — only the pill's
+// write actions are gated.
 export const TIER_STRINGS = {
   pillPro: `Pro — free plan creates cards only`,
-  chatReadTools: `Chat answers questions on every plan; read tools on Pro`,
+  chatReadTools: `Chat can search cards and summarize boards on every plan, including Free`,
 }
 
 // solution-page.md §3.8 — the 4-item shared pool. Each vertical file adds
@@ -20,7 +23,7 @@ export const TIER_STRINGS = {
 export const SHARED_FAQ = [
   {
     q: 'Is it free?',
-    a: `Yes. The free plan has boards, columns, cards, sharing and ${freeMessagesPerDay} AI messages a day; the pill creates cards for you. Pro is $${proMonthlyUsd}/month and adds the rest of the AI: moving, updating and completing cards from the pill, and read tools in chat.`,
+    a: `Yes. The free plan has boards, columns, cards, sharing, ${freeMessagesPerDay} AI messages a day, and a chat that can search cards and summarize boards; the pill creates cards for you. Pro is $${proMonthlyUsd}/month and adds the rest of the AI: moving, updating and completing cards from the pill.`,
   },
   {
     q: 'Who can see a board?',

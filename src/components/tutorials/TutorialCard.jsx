@@ -22,7 +22,10 @@ export default function TutorialCard({ tutorial, index = 0 }) {
         <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{tutorial.summary}</p>
         <div className="font-mono text-xs text-[var(--text-muted)] mt-1.5 flex items-center gap-1.5">
           {tutorial.tier === 'pro' ? <Crown size={13} /> : <Sparkle size={13} />}
-          <span>{tutorial.tier === 'pro' ? 'Pro' : 'Free'} · {tutorial.minutes} min</span>
+          <span>
+            {tutorial.tier === 'pro' ? 'Pro' : 'Free'}
+            {tutorial.minutes != null && ` · ${tutorial.minutes} min`}
+          </span>
         </div>
       </div>
     </Link>
