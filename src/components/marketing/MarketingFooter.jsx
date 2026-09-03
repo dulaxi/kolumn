@@ -2,14 +2,38 @@ import { Link } from 'react-router-dom'
 import KolumnLockup from '../layout/KolumnLockup'
 import { CONTACT_EMAIL, FOOTER_GROUPS, FOOTER_TAGLINE } from '../../content/marketing-nav'
 
-// Chrome spec §3.2: ink footer, 80/48 padding, brand column (4/12) + link
-// groups (2/12 each), mono 11px group headings, 13px links at 27px pitch,
-// hairline bottom row. Light-on-ink colors use the theme-stable
-// --text-on-ink / --border-on-ink tokens. No social row yet (handles are an
-// open question); no theme control (marketing routes are light-only).
+// Chrome spec §3.2: ink footer, 80/48 padding, brand column (4/12) + 4 link
+// columns (2/12 each — Resources and Company stacked ~48px apart in the
+// third column so 5 groups fit 4 columns), mono 11px group headings, 13px
+// links at 27px pitch, hairline bottom row. Light-on-ink colors use the
+// theme-stable --text-on-ink / --border-on-ink tokens. No social row yet
+// (handles are an open question); no theme control (marketing routes are
+// light-only).
 
 const CONTAINER = 'max-w-[90rem] mx-auto'
 const CONTAINER_STYLE = { width: 'calc(100% - (2 * clamp(2rem, 1.43rem + 2.86vw, 4rem)))' }
+
+// §3.2: col 1 = Product, col 2 = Solutions, col 3 = Resources + Company
+// stacked, col 4 = Legal. Group Resources/Company by heading (rather than
+// slicing by index) so the layout stays correct if FOOTER_GROUPS is reordered.
+function groupFooterColumns(groups) {
+  const columns = []
+  let pendingResources = null
+  for (const group of groups) {
+    if (group.heading === 'Resources') {
+      pendingResources = group
+      continue
+    }
+    if (group.heading === 'Company' && pendingResources) {
+      columns.push([pendingResources, group])
+      pendingResources = null
+      continue
+    }
+    columns.push([group])
+  }
+  if (pendingResources) columns.push([pendingResources])
+  return columns
+}
 
 function FooterLink({ link }) {
   const className = 'inline-block py-1 text-[13px] leading-[19px] text-[var(--text-on-ink)] hover:underline underline-offset-[3px] decoration-[var(--text-on-ink-muted)]'
@@ -18,6 +42,23 @@ function FooterLink({ link }) {
   }
   return <Link to={link.to} className={className}>{link.label}</Link>
 }
+
+function FooterGroup({ group }) {
+  return (
+    <div>
+      <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-on-ink-muted)] mb-3">
+        {group.heading}
+      </h2>
+      <ul className="flex flex-col">
+        {group.links.map((link) => (
+          <li key={link.to}><FooterLink link={link} /></li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+const FOOTER_COLUMNS = groupFooterColumns(FOOTER_GROUPS)
 
 export default function MarketingFooter() {
   return (
@@ -28,16 +69,13 @@ export default function MarketingFooter() {
             <KolumnLockup text={32} wordClassName="text-[var(--text-on-ink)]" />
             <p className="mt-3 text-sm text-[var(--text-on-ink-muted)]">{FOOTER_TAGLINE}</p>
           </div>
-          {FOOTER_GROUPS.map((group) => (
-            <div key={group.heading} className="lg:col-span-2">
-              <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-on-ink-muted)] mb-3">
-                {group.heading}
-              </h2>
-              <ul className="flex flex-col">
-                {group.links.map((link) => (
-                  <li key={link.to}><FooterLink link={link} /></li>
-                ))}
-              </ul>
+          {FOOTER_COLUMNS.map((columnGroups) => (
+            <div key={columnGroups[0].heading} className="lg:col-span-2">
+              {columnGroups.map((group, i) => (
+                <div key={group.heading} className={i > 0 ? 'mt-12' : undefined}>
+                  <FooterGroup group={group} />
+                </div>
+              ))}
             </div>
           ))}
         </div>

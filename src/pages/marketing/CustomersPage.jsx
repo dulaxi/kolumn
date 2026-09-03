@@ -22,7 +22,7 @@ export default function CustomersPage() {
     <>
       <section className={`${SECTION} pt-20 pb-16`}>
         <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
-          <div>
+          <div className="min-w-0">
             <h1 className="font-heading font-[425] text-5xl sm:text-6xl tracking-tight leading-[1.08] text-[var(--text-primary)] max-w-[640px] mb-5">
               How people run their work on Kolumn
             </h1>
@@ -41,7 +41,7 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h2 className="sr-only">Featured scenario</h2>
             <Link
               to={`/customers/${featured.slug}`}

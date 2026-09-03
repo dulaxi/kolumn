@@ -88,11 +88,11 @@ function HeroBoardPreview({ board }) {
 function HelpCanvas({ help }) {
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-6 sm:p-8 min-h-[240px] grid gap-6 md:grid-cols-2 items-center">
-      <div>
+      <div className="min-w-0">
         {help.kind === 'pill' && (
           <div className="flex items-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--surface-card)] px-4 h-11 min-w-0">
             <DynamicIcon name={help.icon} className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-            <span className="text-sm text-[var(--text-primary)] truncate">{help.prompt}</span>
+            <span className="text-sm text-[var(--text-primary)] truncate min-w-0">{help.prompt}</span>
           </div>
         )}
         {help.kind === 'chat' && (
@@ -107,7 +107,7 @@ function HelpCanvas({ help }) {
           </div>
         )}
       </div>
-      <div>
+      <div className="min-w-0">
         {help.kind === 'chat' && help.result?.[0] && (
           <div className="rounded-xl rounded-br-sm bg-[var(--surface-page)] border border-[var(--border-default)] px-4 py-2.5 text-sm text-[var(--text-secondary)] max-w-[90%] ml-auto">
             {help.result[0]}

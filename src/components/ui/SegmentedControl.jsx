@@ -45,7 +45,7 @@ export default function SegmentedControl({
       role="radiogroup"
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
-      className={`relative inline-flex h-8 items-stretch rounded-lg bg-[var(--surface-hover)] p-0.5 ${className}`}
+      className={`relative inline-flex h-8 items-stretch rounded-lg bg-[var(--surface-hover)] p-0.5 max-w-full overflow-x-auto ${className}`}
     >
       {thumb && (
         <span
@@ -74,7 +74,7 @@ export default function SegmentedControl({
             aria-label={opt.ariaLabel}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(opt.value)}
-            className={`relative z-[1] flex cursor-pointer items-center gap-1.5 rounded-[6px] px-3 text-sm transition-colors ${
+            className={`relative z-[1] flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-[6px] px-3 text-sm transition-colors ${
               selected
                 ? 'font-medium text-[var(--text-primary)]'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
