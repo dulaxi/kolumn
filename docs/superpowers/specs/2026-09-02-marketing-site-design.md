@@ -1,6 +1,6 @@
 # Marketing site (SEO pages) — design
 
-**Date:** 2026-09-02 · **Branch:** development · **Status:** approved in chat, Phase 1 running
+**Date:** 2026-09-02 · **Branch:** development · **Status:** Phase 1 specs done · Phase 2 foundation + pricing shipped (plan: docs/superpowers/plans/2026-09-02-marketing-foundation-pricing.md)
 
 ## Goal
 Give Kolumn a full public marketing surface modelled on the structure and proportions of

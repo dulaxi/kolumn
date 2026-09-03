@@ -56,12 +56,13 @@ Bias: prefer extending an existing pattern over inventing a new one.
 ## Commands
 
 ```bash
-npm run dev          # Vite dev server (port 5173)
-npm run build        # Production build
-npm run preview      # Preview production build (port 4173)
-npm run lint         # ESLint
-npm run test         # Vitest, single run
-npm run test:watch   # Vitest, watch mode
+npm run dev               # Vite dev server (port 5173)
+npm run build             # Production build (runs client build + build:prerender)
+npm run build:prerender   # SSR bundle + dist/<route>/index.html + sitemap.xml + robots.txt
+npm run preview           # Preview production build (port 4173)
+npm run lint              # ESLint
+npm run test              # Vitest, single run
+npm run test:watch        # Vitest, watch mode
 ```
 
 ## Tech stack
@@ -125,12 +126,14 @@ src/
 │   ├── layout/                     # AppLayout, Sidebar, Header, OfflineBanner
 │   ├── board/                      # Board, columns, cards, detail panel, modals
 │   ├── settings/                   # Settings modal: shell (SettingsModal) + panes (General = Profile + Preferences, Account = sessions/sign-out/danger zone, Privacy = data protection + export, Billing = plan) + SettingsRedirect
+│   ├── marketing/                   # Public marketing shell: MarketingLayout (nav/footer/head meta), FaqItem, PlanGrid, CompareTable
 │   ├── ActionCard.jsx              # AI-suggested action card
 │   ├── SearchDialog.jsx            # ⌘K search
 │   ├── ErrorBoundary.jsx + InlineErrorBoundary.jsx
 │   └── ...
 ├── pages/
 │   ├── LandingPage.jsx             # Marketing / public landing
+│   ├── marketing/PricingPage.jsx    # /pricing — prerendered; content from src/content/pricing.js
 │   ├── OnboardingPage.jsx          # 7-step signup flow (terms → details → plan → upsell → disclaimer → name → role)
 │   ├── ForgotPasswordPage / UpdatePasswordPage / PlanPickerPage / UpgradeProPage
 │   ├── DashboardPage.jsx
@@ -143,6 +146,8 @@ src/
 │   ├── toast.js                    # showToast.{success|error|delete|...} helpers
 │   ├── logger.js                   # Sentry wrapper
 │   └── ...
+├── content/                        # Plain-data content: marketing-routes.js (registry → routes, head meta, sitemap), marketing-nav.js, pricing.js
+├── prerender-entry.jsx             # SSR entry used by scripts/prerender.mjs (react-dom/static)
 └── __tests__/                      # Vitest specs
 
 supabase/
@@ -490,6 +495,7 @@ full schema — treat it as the source of truth.
 - **UI changes**: open the dev server in a browser and exercise the feature, including edge cases. Don't claim "done" without seeing it run.
 - **Edge-function changes**: deploy with `supabase functions deploy chat` (or use the Supabase MCP `deploy_edge_function`) and tail logs with `supabase functions logs chat` while exercising the chat in a browser. Type-checking with `deno check supabase/functions/chat/index.ts` catches most edge-function bugs before deploy.
 - **Anthropic API questions** (caching semantics, model IDs, tool-use protocol, extended thinking, batch): use the `claude-api` skill to fetch current docs. Don't go by memory — the API surface changes.
+- **Marketing pages.** Every public marketing route is an entry in `src/content/marketing-routes.js` (path, title, description, JSON-LD, lazy component). The registry drives routing, head tags, the nav dead-link test, the sitemap and prerendering. Nav/footer links live in `src/content/marketing-nav.js` and may only point at registered routes. Pricing numbers live only in `src/content/pricing.js`; `tier.ts`'s free limit is pinned to it by test. Production uses `node scripts/serve-prod.mjs` (not `serve -s`) because `-s` prepends an unconditional rewrite that bypasses file-existence checks, making prerendered pages unreachable; `serve-prod.mjs` uses the same `serve-handler` library (so security headers from `public/serve.json` still apply) but only applies the SPA fallback for paths with no real file. `npm run build` runs three phases: client build, an SSR build of `src/prerender-entry.jsx` into `dist-ssr/`, and `scripts/prerender.mjs` which writes static HTML per route plus `sitemap.xml` and `robots.txt`. The prerender pipeline must keep two constraints: the server-side render resolves each route's module directly via a `load` factory while the browser keeps `lazy()` for code-splitting, and it passes `progressiveChunkSize: Infinity` so page content inlines directly instead of deferring to segments. Nothing in the prerender import graph may touch `src/lib/env.js` (it throws without Supabase env vars during the Node build phase), which is why `src/components/marketing/useMarketingUser.js` reads the auth store through a dynamic `import()` inside an effect rather than a static import.
 
 ## Environment setup
 
