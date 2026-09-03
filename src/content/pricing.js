@@ -56,7 +56,9 @@ export const PRICING = {
         'The pill moves, updates, completes, and reorganizes cards — not just creates them',
         '7-day free trial — no card is charged either way while billing is in early access',
       ],
-      cta: { label: 'Try Pro free for 7 days', to: '/onboarding' },
+      // Label avoids "free trial", which implies a card and a countdown that
+      // do not exist yet. Billing is in early access; nothing is charged.
+      cta: { label: 'Get Pro in early access', to: '/onboarding' },
     },
     {
       id: 'team',
@@ -144,12 +146,16 @@ export function pricingJsonLd() {
       name: 'Kolumn',
       brand: { '@type': 'Organization', name: 'Kolumn' },
       offers: [
-        { '@type': 'Offer', name: 'Free', price: 0, priceCurrency: 'USD' },
+        { '@type': 'Offer', name: 'Free', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
         {
           '@type': 'Offer',
           name: 'Pro',
           price: limits.proMonthlyUsd,
           priceCurrency: 'USD',
+          // Paid billing has not launched. PreOrder keeps a rich result from
+          // presenting "$8" as a price you can pay today, which the visible
+          // page is careful to qualify.
+          availability: 'https://schema.org/PreOrder',
           priceSpecification: [
             { '@type': 'UnitPriceSpecification', price: limits.proMonthlyUsd, priceCurrency: 'USD', billingDuration: 'P1M' },
             { '@type': 'UnitPriceSpecification', price: limits.proYearlyUsd, priceCurrency: 'USD', billingDuration: 'P1Y' },

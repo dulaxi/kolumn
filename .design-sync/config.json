@@ -1,0 +1,43 @@
+{
+  "projectId": "6d373547-3ef7-443b-be22-11d7262e28c6",
+  "shape": "package",
+  "pkg": "kolumn",
+  "globalName": "Kolumn",
+  "buildCmd": "node .design-sync/build-css.mjs",
+  "tsconfig": ".design-sync/tsconfig.stubs.json",
+  "cssEntry": ".design-sync/.cache/tailwind.css",
+  "docsDir": ".design-sync/docs",
+  "readmeHeader": ".design-sync/conventions.md",
+  "extraFonts": [
+    ".design-sync/fonts.css",
+    "node_modules/@phosphor-icons/web/src/regular/style.css",
+    "node_modules/@phosphor-icons/web/src/fill/style.css",
+    "node_modules/@fontsource-variable/inter/index.css",
+    "node_modules/@fontsource/ibm-plex-mono/400.css",
+    "node_modules/@fontsource/ibm-plex-mono/500.css",
+    "node_modules/@fontsource/ibm-plex-mono/600.css"
+  ],
+  "componentSrcMap": {
+    "Avatar": "src/components/ui/Avatar.jsx",
+    "Button": "src/components/ui/Button.jsx",
+    "Input": "src/components/ui/Input.jsx",
+    "Modal": "src/components/ui/Modal.jsx",
+    "Popover": "src/components/ui/Popover.jsx",
+    "Menu": "src/components/ui/Menu.jsx",
+    "Tooltip": "src/components/ui/Tooltip.jsx",
+    "Skeleton": "src/components/ui/Skeleton.jsx",
+    "SegmentedControl": "src/components/ui/SegmentedControl.jsx",
+    "InlineNotice": "src/components/ui/InlineNotice.jsx",
+    "FieldError": "src/components/ui/FieldError.jsx",
+    "Card": "src/components/board/Card.jsx",
+    "ChatMessage": "src/components/chat/ChatMessage.jsx",
+    "ChatInput": "src/components/chat/ChatInput.jsx",
+    "TypingIndicator": "src/components/chat/TypingIndicator.jsx"
+  },
+  "overrides": {
+    "ChatInput": { "cardMode": "column" },
+    "Modal": { "cardMode": "single", "primaryStory": "RenameBoard" },
+    "Tooltip": { "cardMode": "column" }
+  },
+  "provider": { "component": "MemoryRouter" }
+}

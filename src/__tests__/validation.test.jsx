@@ -156,7 +156,7 @@ describe('OnboardingPage — plan step', () => {
     })
     expect(mockNavigate).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /Start for free/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Try Pro free for 7 days/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Get Pro in early access/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Coming soon/i })).toBeInTheDocument()
   })
 
@@ -400,7 +400,7 @@ describe('OnboardingPage — role step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const proCta = await screen.findByRole('button', { name: /Try Pro free for 7 days/i })
+    const proCta = await screen.findByRole('button', { name: /Get Pro in early access/i })
     proCta.click()
 
     await waitFor(() => {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Article, Bug, RssSimple } from '@phosphor-icons/react'
+import { Article, Bug } from '@phosphor-icons/react'
 import SegmentedControl from '../../components/ui/SegmentedControl'
 import ChangelogEntryRow from '../../components/changelog/ChangelogEntryRow'
 import { CHANGELOG_ENTRIES, CHANGELOG_TAGS, changelogMonthGroups } from '../../content/changelog'
@@ -42,10 +42,6 @@ export default function ChangelogPage() {
             </p>
           </div>
           <dl className="font-mono text-xs lg:w-[360px] shrink-0 flex flex-col">
-            <div className="flex items-center justify-between gap-4 py-2.5 border-t border-[var(--border-subtle)]">
-              <dt className="flex items-center gap-2 text-[var(--text-primary)]"><RssSimple size={14} /> Follow</dt>
-              <dd className="text-[var(--text-muted)]">changelog/feed.xml</dd>
-            </div>
             <div className="flex items-center justify-between gap-4 py-2.5 border-t border-[var(--border-subtle)]">
               <dt className="flex items-center gap-2 text-[var(--text-primary)]"><Article size={14} /> Longer write-ups</dt>
               <dd className="text-[var(--text-muted)]">/blog</dd>

@@ -217,7 +217,7 @@ Supabase Edge Function. Everything else is plumbing around it.
 | Frontend — client | `src/lib/aiClient.js` | ~105 | `fetch` to `/functions/v1/chat`; SSE parser; dispatches `onText / onTier / onToolCall / onDone / onError`. Forwards a `mode` parameter. |
 | Frontend — store | `src/store/chatStore.js` | ~450 | Zustand: conversations, messages, tierInfo, per-conversation streaming map. **Persists to Supabase via `src/lib/chatSync.js`** (hydrate post-auth, lazy per-thread message load, write-through on every mutation); localStorage is a bounded boot cache. Used by ChatPage; pill bypasses it. |
 | Frontend — pill agent loop | `src/lib/pillAgentLoop.js` | ~120 | **The pill's agent loop.** `runPillLoop()` runs up to `MAX_ROUNDS` (4) rounds of model → `tool_use` → browser executes → `tool_result` → model reacts, with proper `tool_use`/`tool_result` pairing. **The tool-result loop is closed here.** |
-| Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` exist as no-op placeholders. |
+| Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` are implemented (toolExecutor.js ~1195 and ~1321). |
 
 Not AI despite the names: `src/components/ActionCard.jsx` (presentational only),
 `supabase/functions/check-email/` (signup email validation).
@@ -280,7 +280,7 @@ gated by **(surface × tier)**, not just tier.
 - Daily message limit (currently 20 for free) lives in `tier.ts` and increments via the `increment_chat_usage` RPC. If that RPC errors, the function 500s with no fallback.
 - `classifyModel(message, tier)` exists and returns Haiku in **both** branches — dead code that pretends to route by intent. Decide: actually branch (Sonnet for complex writes, Haiku for reads) or delete the path (T2-#6).
 - **Destructive vs Pro-only drift:** the frontend's destructive-confirmation list (`isDestructive()` in `toolExecutor.js`) and the backend's `PRO_ONLY_TOOLS` list don't match. Free users can't even reach the confirmation UI for deletes (already blocked server-side), but Pro users get an in-chat approval. Pick one source of truth (T3-#10).
-- **Read-only tools are no-op placeholders today** — `search_cards` and `summarize_board` return `{ ok: true, readOnly: true }` and do nothing. They need real implementations before the chat surface ships its read-tools feature.
+- **Read-only tools are implemented** — `search_cards` and `summarize_board` are real (`toolExecutor.js`). Note `filterToolsForMode` in `tier.ts` grants `CHAT_READ_TOOLS` to **every** tier today; the paid gate is deferred. The marketing site states them as available on all plans, so re-gating them means updating `src/content/pricing.js` and `src/content/solutions/_shared.js` in the same change.
 
 ### Rework backlog (ranked — read before changing AI code)
 
@@ -299,7 +299,7 @@ gated by **(surface × tier)**, not just tier.
 10. ✅ **DONE — `[chat] usage` log line per request** (all four token fields + mode/tier/model/continuation). Continuation/history payloads are now validated server-side (caps + tool_use linkage; clients clamp tool_results to 10k chars/block).
 
 **T3 — UX, cleanup, parity:**
-11. **Implement `search_cards` and `summarize_board`** as real read-only tools for the chat surface (currently no-op placeholders).
+11. ✅ **DONE — `search_cards` and `summarize_board` implemented.** Open question is gating, not implementation: they are ungated across tiers (see Tier & gating).
 12. **Verify pill fast-path parity.** QuickAddBar's comma/newline split path bypasses the LLM — make sure it applies the same defaults the LLM path produces.
 13. **Token-budget history** instead of "last 20 messages"; never trim a `tool_use` away from its paired `tool_result`.
 14. **Resolve cards by ID** for cross-card lookups (move, update). Pill writes are already board-pinned, but card titles within a board can still collide.
