@@ -23,6 +23,7 @@
     "@phosphor-icons/web": "^2.1.2",
     "@sentry/react": "^10.47.0",
     "@supabase/supabase-js": "^2.98.0",
+    "compression": "^1.8.1",
     "date-fns": "^4.1.0",
     "motion": "^12.38.0",
     "nanoid": "^5.1.6",

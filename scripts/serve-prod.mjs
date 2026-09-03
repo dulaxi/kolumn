@@ -64,11 +64,27 @@
 //      from inside a destructuring assignment.
 //   8. `directoryListing: false` passed explicitly to serve-handler — this
 //      site has no directories meant to be browsed.
+//
+// Hardening (fix round 3, post-review):
+//   9. `compression` middleware wraps every response — `npx serve dist -s`
+//      piped through it automatically, but this hand-rolled server didn't,
+//      so ~2MB of JS and every prerendered HTML page were shipping
+//      uncompressed. It's an Express-style `(req, res, next)` middleware, so
+//      it composes with the plain `http` server by calling it first and
+//      running the rest of the handler as its `next` callback. It's a real
+//      (non-transitive) dependency — `serve-handler` pulling it in
+//      incidentally is exactly the trap that already bit this file once.
+//  10. Requests to a non-root path with a trailing slash (`/pricing/`) 301
+//      to the slash-free form (`/pricing`) before the file-existence check,
+//      so prerendered pages have exactly one canonical URL instead of two
+//      (the real prerendered file at `/pricing` and an accidental SPA-shell
+//      duplicate at `/pricing/`).
 import { createServer } from 'node:http'
 import { readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import handler from 'serve-handler'
+import compression from 'compression'
 
 const DIST = resolve(join(dirname(fileURLToPath(import.meta.url)), '..', 'dist'))
 const PORT = process.env.PORT || 3000
@@ -82,6 +98,8 @@ try {
     `[serve-prod] could not read ${SERVE_JSON_PATH} — has \`npm run build\` been run? (${err.message})`,
   )
 }
+
+const compress = compression()
 
 function isRealFile(relPath) {
   const absolute = resolve(join(DIST, relPath))
@@ -143,18 +161,41 @@ function sendServerError(res) {
 
 const server = createServer((req, res) => {
   try {
-    const pathname = safeDecodeURIComponent(new URL(req.url, 'http://localhost').pathname)
-    const spaFallback = resolvesToRealFile(pathname) ? [] : [{ source: '**', destination: '/index.html' }]
+    const url = new URL(req.url, 'http://localhost')
 
-    handler(req, res, {
-      public: DIST,
-      cleanUrls: true,
-      directoryListing: false,
-      headers,
-      rewrites: spaFallback,
-    }).catch((err) => {
-      console.error('[serve-prod] handler error', err)
-      sendServerError(res)
+    // Canonicalize `/pricing/` -> `/pricing` (301, query string preserved)
+    // before anything else, so a trailing-slash request never reaches the
+    // file-existence check below and never gets a second, non-canonical 200
+    // for a page that already has one. `/` itself is exempt (it has no
+    // slash-free form).
+    if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+      res.statusCode = 301
+      res.setHeader('Location', url.pathname.slice(0, -1) + url.search)
+      res.end()
+      return
+    }
+
+    const pathname = safeDecodeURIComponent(url.pathname)
+
+    // `compress` is Express-style `(req, res, next)` middleware; calling it
+    // here and running the rest of the handler as its `next` callback is
+    // the whole integration. It — and everything it wraps — still runs
+    // inside this function's try/catch, so a throw anywhere in `next()`
+    // (including inside `compress` itself) is caught below, not left to
+    // escape and crash the process.
+    compress(req, res, () => {
+      const spaFallback = resolvesToRealFile(pathname) ? [] : [{ source: '**', destination: '/index.html' }]
+
+      handler(req, res, {
+        public: DIST,
+        cleanUrls: true,
+        directoryListing: false,
+        headers,
+        rewrites: spaFallback,
+      }).catch((err) => {
+        console.error('[serve-prod] handler error', err)
+        sendServerError(res)
+      })
     })
   } catch (err) {
     console.error('[serve-prod] request error', err)

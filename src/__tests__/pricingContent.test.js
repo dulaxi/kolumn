@@ -42,6 +42,20 @@ describe('PRICING', () => {
   })
 })
 
+describe('UpgradeProPage has no hardcoded prices', () => {
+  test('no literal dollar amount — every price must come from PRICING.limits', () => {
+    // Regression guard: UpgradeProPage.jsx once derived its order summary
+    // from PRICING.limits but hardcoded the period selector's prices as
+    // literal `$8.00` / `$80.00` strings, so changing PRICING.limits alone
+    // silently desynced the two — the selector and the total disagreed on
+    // screen. Read the file as plain text (not by importing/rendering it)
+    // so this catches any hardcoded `$<digits>.00` literal wherever it
+    // appears, not just the two spots this bug happened to hit.
+    const source = readFileSync(resolve(here, '../pages/UpgradeProPage.jsx'), 'utf8')
+    expect(source).not.toMatch(/\$\d+\.00/)
+  })
+})
+
 describe('PLANS derives from PRICING', () => {
   test('same ids, prices and bullets', () => {
     expect(PLANS.map((p) => p.id)).toEqual(PRICING.tiers.map((t) => t.id))

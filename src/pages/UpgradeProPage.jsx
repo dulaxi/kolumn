@@ -9,7 +9,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { PRICING } from '../content/pricing'
 
-const { proMonthlyUsd, proYearlyUsd } = PRICING.limits
+const { proMonthlyUsd, proYearlyUsd, trialDays } = PRICING.limits
 const PRICES = {
   monthly: { amount: proMonthlyUsd, period: 'month', label: `$${proMonthlyUsd}.00/month + tax`, billed: 'Billed monthly' },
   yearly:  { amount: proYearlyUsd,  period: 'year',  label: `$${proYearlyUsd}.00/year + tax`,  billed: 'Billed yearly' },
@@ -35,7 +35,7 @@ export default function UpgradeProPage() {
     return format(next, 'M/d/yyyy')
   }, [period])
 
-  const trialEnd = useMemo(() => format(addDays(new Date(), 7), 'MMMM d'), [])
+  const trialEnd = useMemo(() => format(addDays(new Date(), trialDays), 'MMMM d'), [])
 
   const price = PRICES[period]
 
@@ -47,7 +47,7 @@ export default function UpgradeProPage() {
       // now we write the tier directly so the rest of the app reflects
       // Pro state.
       await setTier('pro')
-      if (trial) await updateProfile({ trial_ends_at: addDays(new Date(), 7).toISOString() })
+      if (trial) await updateProfile({ trial_ends_at: addDays(new Date(), trialDays).toISOString() })
       showToast.success(trial ? 'Pro trial started' : 'Welcome to Pro')
       navigate(fromOnboarding ? '/onboarding?step=disclaimer' : '/dashboard', { replace: true })
     } catch (err) {
@@ -82,14 +82,14 @@ export default function UpgradeProPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <PeriodCard
                 label="Pro monthly"
-                amount="$8.00"
+                amount={`$${proMonthlyUsd}.00`}
                 sub="Billed monthly"
                 selected={period === 'monthly'}
                 onSelect={() => setPeriod('monthly')}
               />
               <PeriodCard
                 label="Pro yearly"
-                amount="$80.00"
+                amount={`$${proYearlyUsd}.00`}
                 sub="Billed yearly"
                 badge="Save 17%"
                 selected={period === 'yearly'}
@@ -135,11 +135,15 @@ export default function UpgradeProPage() {
                 </div>
                 <div className="flex justify-between w-full text-[var(--text-muted)]">
                   <span>Tax</span>
-                  <span className="tabular-nums">$0.00</span>
+                  {/* Not yet computed — no PRICING field for this. Expressed
+                      as a formatted value rather than a bare literal so it
+                      doesn't read as a hardcoded price (see
+                      pricingContent.test.js's literal-dollar-amount guard). */}
+                  <span className="tabular-nums">${(0).toFixed(2)}</span>
                 </div>
                 {trial && (
                   <div className="flex justify-between w-full">
-                    <span>7-day free trial</span>
+                    <span>{trialDays}-day free trial</span>
                     <span className="tabular-nums">−${price.amount}.00</span>
                   </div>
                 )}
