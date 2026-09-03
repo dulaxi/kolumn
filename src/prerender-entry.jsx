@@ -10,11 +10,26 @@ import { MARKETING_ROUTES, findMarketingRoute } from './content/marketing-routes
 // Build-time renderer for marketing routes. `prerender` (React 19) waits for
 // every lazy() route chunk and Suspense boundary to resolve before emitting,
 // so the output is the final page, not a fallback. The tree below must match
-// App.jsx's shape inside #root (Suspense → Routes → MarketingLayout → page)
-// so hydrateRoot in main.jsx finds identical markup.
+// App.jsx's shape inside #root (Suspense → Routes → MarketingLayout → page,
+// or — for '/' — Suspense → Routes → LandingPage directly) so hydrateRoot in
+// main.jsx finds identical markup.
 //
-// Nothing imported here may reach src/lib/env.js (it throws without Supabase
-// env vars); auth state in the chrome is loaded client-side after hydration.
+// Every marketing page reached through resolveRouteElements() is static and
+// never reaches src/lib/env.js. LandingPage ('/', see renderHome below) is
+// the one exception — it reads useAuthStore, which imports the Supabase
+// client, which imports env.js and throws without real env vars. See the
+// __KOLUMN_EMBED__ flag below for how that's defused without touching
+// LandingPage or the store.
+
+// Marks this Node process "embedded" outside Vite/the browser, the same
+// escape hatch the design-sync preview bundle uses (see
+// .design-sync/embed-flag.js) — env.js substitutes inert placeholders
+// instead of throwing when it sees this flag. Must be set before the
+// dynamic import() of the auth-store graph in renderHome() runs; as a bare
+// top-level statement here (not itself gated behind an import) it always
+// does, since that import only fires later, when renderRoute('/') is
+// actually called.
+globalThis.__KOLUMN_EMBED__ = true
 
 export { MARKETING_ROUTES, SITE_URL } from './content/marketing-routes'
 export { routeMeta, buildHeadTags, headTagsToHtml } from './lib/headMeta'
@@ -59,6 +74,7 @@ async function streamToString(stream) {
 // reason to trade off inline-vs-progressive delivery. With both, Fizz
 // inlines the resolved content directly — no placeholder, no reveal script
 // — so a crawler that never runs JS still sees the real page.
+// '/' is excluded — it's not a MarketingLayout page (see renderHome below).
 async function resolveRouteElements(path) {
   const route = findMarketingRoute(path)
   if (!route?.load) return marketingRouteElements()
@@ -66,7 +82,7 @@ async function resolveRouteElements(path) {
   const mod = await route.load()
   const ResolvedComponent = mod.default
 
-  return MARKETING_ROUTES.map((r) => (
+  return MARKETING_ROUTES.filter((r) => r.path !== '/').map((r) => (
     <Route
       key={r.path}
       path={r.path}
@@ -79,16 +95,51 @@ async function resolveRouteElements(path) {
   ))
 }
 
+// LandingPage renders outside MarketingLayout (it has its own nav/footer —
+// see marketing-routes.js's HOME_ROUTE and MarketingRoutes.jsx), so it gets
+// its own small tree instead of going through resolveRouteElements.
+//
+// Nothing calls the store's real initialize() during a server render (only
+// main.jsx does, client-side after hydration), so useAuthStore's default
+// state (`loading: true`) would otherwise make LandingPage render its
+// "Loading..." gate forever in the prerendered HTML. Pin the snapshot to
+// "signed out, done loading" instead — correct for an anonymous crawler or
+// a first visit, and no worse than what a signed-in visitor's browser
+// already does today whenever hydration's real auth check finishes a beat
+// after first paint (LandingPage redirects to /dashboard once it does).
+async function renderHome() {
+  const { useAuthStore } = await import('./store/authStore')
+  // NOT useAuthStore.setState(): zustand's React binding renders server-side
+  // via useSyncExternalStore's getServerSnapshot, which reads
+  // api.getInitialState() — the state object frozen at store creation —
+  // not api.getState(). setState() replaces `state` with a new object and
+  // never touches that frozen one, so it's invisible to a server render.
+  // Since nothing has called setState yet at this point (initialize() only
+  // ever runs client-side, from main.jsx), `state` and the frozen
+  // `initialState` are still the same object — mutating it in place keeps
+  // both getState() and getInitialState() in sync for this one-shot render.
+  Object.assign(useAuthStore.getState(), { loading: false, user: null, session: null, profile: null })
+  const { default: LandingPage } = await import('./pages/LandingPage')
+  return (
+    <Routes>
+      <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
+    </Routes>
+  )
+}
+
 export async function renderRoute(path) {
-  const routeElements = await resolveRouteElements(path)
+  const routes =
+    path === '/' ? (
+      await renderHome()
+    ) : (
+      <Routes>
+        <Route element={<MarketingLayout />}>{await resolveRouteElements(path)}</Route>
+      </Routes>
+    )
   const { prelude } = await prerender(
     <div id="root">
       <StaticRouter location={path}>
-        <Suspense fallback={null}>
-          <Routes>
-            <Route element={<MarketingLayout />}>{routeElements}</Route>
-          </Routes>
-        </Suspense>
+        <Suspense fallback={null}>{routes}</Suspense>
       </StaticRouter>
     </div>,
     { progressiveChunkSize: Infinity },

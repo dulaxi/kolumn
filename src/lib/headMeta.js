@@ -6,6 +6,9 @@
 import { SITE_URL } from '../content/marketing-routes'
 
 export const ROBOTS = 'index, follow, max-image-preview:large'
+// Thin/stub pages (no body yet — see marketing-routes.js `thin`) stay
+// reachable but out of the index: noindex, still follow their links.
+export const ROBOTS_THIN = 'noindex, follow'
 
 export const MANAGED_HEAD_SELECTOR = [
   'title',
@@ -24,7 +27,7 @@ export function routeMeta(route) {
     canonical: `${SITE_URL}${route.path === '/' ? '' : route.path}`,
     ogTitle: route.ogTitle || route.title,
     ogDescription: route.ogDescription || route.description,
-    robots: ROBOTS,
+    robots: route.thin ? ROBOTS_THIN : ROBOTS,
     jsonLd: typeof route.jsonLd === 'function' ? route.jsonLd() : route.jsonLd || [],
   }
 }

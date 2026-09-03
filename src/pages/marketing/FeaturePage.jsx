@@ -67,7 +67,7 @@ function HeroDemo({ demo }) {
   return (
     <div className="max-w-2xl mx-auto rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-6 text-left">
       {isPill ? (
-        <div className="rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-card)] p-3.5">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-3.5">
           <div className="flex items-center gap-2 text-[15px] text-[var(--text-primary)] mb-3">
             <span className="flex-1">{demo.input}</span>
             <span className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]">
@@ -140,7 +140,7 @@ function TryIt({ tabs }) {
         />
       </div>
       <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-8 sm:p-10 max-w-4xl mx-auto">
-        <div className="rounded-[20px] border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 mb-8 font-mono text-[14px] text-[var(--text-primary)] whitespace-pre-line shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035)]">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 mb-8 font-mono text-[14px] text-[var(--text-primary)] whitespace-pre-line shadow-[0_0.25rem_1.25rem_rgba(0,0,0,0.035)]">
           {tab.prompt}
         </div>
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-8">

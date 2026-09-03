@@ -16,14 +16,31 @@ const ICONS = { Sparkle, ChatCircle, Cube, Stack, ArrowsClockwise, MagnifyingGla
 
 function FeatureCard({ feature }) {
   const Icon = ICONS[feature.icon]
+  const body = (
+    <>
+      {Icon && <Icon size={24} weight="regular" className="text-[var(--text-secondary)] mb-4" />}
+      <h3 className="font-heading font-[425] text-lg text-[var(--text-primary)] mb-1.5">{feature.name}</h3>
+      <p className="text-[15px] leading-6 text-[var(--text-secondary)] flex-1">{feature.summary}</p>
+    </>
+  )
+
+  // Every feature is real; not every one has a detail page yet. With no
+  // `to`, render an inert card — same shape, no link and no "Explore"
+  // affordance — instead of pointing at a page that doesn't exist.
+  if (!feature.to) {
+    return (
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 flex flex-col">
+        {body}
+      </div>
+    )
+  }
+
   return (
     <Link
       to={feature.to}
       className="group rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] p-6 flex flex-col hover:border-[var(--text-muted)] transition-colors"
     >
-      {Icon && <Icon size={24} weight="regular" className="text-[var(--text-secondary)] mb-4" />}
-      <h3 className="font-heading font-[425] text-lg text-[var(--text-primary)] mb-1.5">{feature.name}</h3>
-      <p className="text-[15px] leading-6 text-[var(--text-secondary)] flex-1">{feature.summary}</p>
+      {body}
       <span className="mt-4 text-sm font-medium text-[var(--text-primary)] group-hover:underline underline-offset-2">
         Explore →
       </span>

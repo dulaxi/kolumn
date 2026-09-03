@@ -38,13 +38,21 @@ for (const route of MARKETING_ROUTES) {
   // order. Either `dist/pricing/index.html` or `dist/pricing.html` would
   // resolve correctly through it; `.html` is used here because it also
   // matches what a bare `npx serve dist` (no flags) resolves via cleanUrls
-  // without any extra config.
-  const file = join(DIST, `${route.path}.html`)
+  // without any extra config. '/' is the one exception — it must overwrite
+  // dist/index.html itself (the literal file every server/CDN resolves `/`
+  // to), not `dist/.html`.
+  const file = route.path === '/' ? join(DIST, 'index.html') : join(DIST, `${route.path}.html`)
   mkdirSync(dirname(file), { recursive: true })
   writeFileSync(file, html)
   console.log(`[prerender] ${route.path} → ${file} (${html.length} bytes)`)
 }
 
-writeFileSync(join(DIST, 'sitemap.xml'), buildSitemap(SITE_URL, ['/', ...MARKETING_ROUTES.map((r) => r.path)], lastmod))
+// Thin/stub routes (content/marketing-routes.js `thin` — pages whose only
+// content is a "coming soon" placeholder) stay reachable but are left out
+// of the sitemap; their own head tags carry noindex (see headMeta.js).
+const sitemapRoutes = MARKETING_ROUTES.filter((r) => !r.thin)
+writeFileSync(join(DIST, 'sitemap.xml'), buildSitemap(SITE_URL, sitemapRoutes.map((r) => r.path), lastmod))
 writeFileSync(join(DIST, 'robots.txt'), buildRobots(SITE_URL))
-console.log(`[prerender] sitemap.xml (${MARKETING_ROUTES.length + 1} urls), robots.txt`)
+console.log(
+  `[prerender] sitemap.xml (${sitemapRoutes.length} urls, ${MARKETING_ROUTES.length - sitemapRoutes.length} thin routes excluded), robots.txt`,
+)

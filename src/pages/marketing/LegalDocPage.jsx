@@ -67,8 +67,8 @@ export default function LegalDocPage({ doc }) {
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pb-4 mb-8 border-b border-[var(--border-default)]">
         <p className="text-xs font-mono text-[var(--text-muted)]">Last updated {formatDate(lastUpdated)}</p>
-        <a href="/legal" className={`text-xs font-mono text-[var(--text-muted)] ${LINK}`}>
-          All legal documents
+        <a href="/" className={`text-xs font-mono text-[var(--text-muted)] ${LINK}`}>
+          Back to Kolumn
         </a>
       </div>
 

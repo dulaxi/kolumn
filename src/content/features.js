@@ -23,9 +23,11 @@ const { freeMessagesPerDay, proMonthlyUsd, trialDays } = PRICING.limits
 
 // Ordered by how a new user meets them: type into the pill, ask chat a
 // question, then the structure underneath — workspaces, templates, sync,
-// search. Only `pill` and `chat` have a built detail page (FEATURE_PAGES);
-// the other four `to` paths are reserved slugs for pages this hub links
-// forward to.
+// search. Only `pill` and `chat` have a built detail page (FEATURE_PAGES)
+// and a `to` target — the other four are real product capabilities with no
+// page built yet, so they render as non-linked cards on the hub (no `to`).
+// Do not add a `to` for one of the four until its detail page actually
+// exists.
 export const FEATURES = [
   {
     slug: 'pill',
@@ -46,28 +48,24 @@ export const FEATURES = [
     name: 'Workspaces',
     summary: 'Boards live in a team workspace with members and invitations, or stay personal.',
     icon: 'Cube',
-    to: '/features/workspaces',
   },
   {
     slug: 'templates',
     name: 'Templates',
     summary: "Board and card templates so the next board looks like the last one.",
     icon: 'Stack',
-    to: '/features/templates',
   },
   {
     slug: 'sync',
     name: 'Realtime sync',
     summary: 'Move a card and your teammates see it move. No refresh, no "who has the latest."',
     icon: 'ArrowsClockwise',
-    to: '/features/sync',
   },
   {
     slug: 'search',
     name: 'Search and shortcuts',
     summary: 'Cmd+K or / opens search across every board. N starts a new card, Cmd+B tucks the sidebar.',
     icon: 'MagnifyingGlass',
-    to: '/features/search',
   },
 ]
 

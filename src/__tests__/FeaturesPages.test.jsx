@@ -58,7 +58,7 @@ function assertNoUnshippedClaims(container) {
 }
 
 describe('FeaturesPage (hub)', () => {
-  test('renders exactly one h1 and all six features by name, summary, and link', () => {
+  test('renders exactly one h1 and all six features by name and summary; only built pages link', () => {
     const { container } = render(
       <MemoryRouter>
         <FeaturesPage />
@@ -67,9 +67,26 @@ describe('FeaturesPage (hub)', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
     expect(FEATURES).toHaveLength(6)
     for (const feature of FEATURES) {
-      expect(screen.getByRole('heading', { level: 3, name: feature.name })).toBeInTheDocument()
+      const heading = screen.getByRole('heading', { level: 3, name: feature.name })
+      expect(heading).toBeInTheDocument()
       expect(screen.getByText(feature.summary)).toBeInTheDocument()
-      expect(container.querySelector(`a[href="${feature.to}"]`)).not.toBeNull()
+      if (feature.to) {
+        expect(container.querySelector(`a[href="${feature.to}"]`)).not.toBeNull()
+      } else {
+        // No detail page yet — the card must not be a link at all.
+        expect(heading.closest('a')).toBeNull()
+      }
+    }
+  })
+
+  test('does not link to any of the four unbuilt feature pages', () => {
+    render(
+      <MemoryRouter>
+        <FeaturesPage />
+      </MemoryRouter>,
+    )
+    for (const slug of ['workspaces', 'templates', 'sync', 'search']) {
+      expect(screen.queryByRole('link', { name: new RegExp(`^${slug}$`, 'i') })).toBeNull()
     }
   })
 

@@ -20,8 +20,10 @@ import { PRIVACY_CHOICES } from './legal/privacy-choices'
 export const SITE_URL = 'https://kolumn.app'
 
 // Public routes that exist outside this registry and may be linked from the
-// marketing chrome. Anything else must be a MARKETING_ROUTES path.
-export const KNOWN_ROUTES = ['/', '/onboarding', '/terms', '/privacy', '/#sign-in']
+// marketing chrome. Anything else must be a MARKETING_ROUTES path. '/' is
+// registered below (MARKETING_ROUTES) even though App.jsx routes it to
+// LandingPage directly, not through MarketingLayout.
+export const KNOWN_ROUTES = ['/onboarding', '/terms', '/privacy', '/#sign-in']
 
 // ---------------------------------------------------------------------------
 // Route factories. Each returns one MARKETING_ROUTES entry. `props` (when
@@ -92,14 +94,26 @@ function customerStoryRoute(story) {
   }
 }
 
+// 'share-one-board' would otherwise title-collide with the support article
+// at the same title ("Share a single board — Kolumn") — scope this one to
+// its section so the two URLs have distinct <title>s.
+const TUTORIAL_TITLE_OVERRIDES = {
+  'share-one-board': 'Tutorial: Share a single board — Kolumn',
+}
+
 function tutorialRoute(tutorial) {
   return {
     path: `/tutorials/${tutorial.slug}`,
-    title: `${tutorial.title} — Kolumn`,
+    title: TUTORIAL_TITLE_OVERRIDES[tutorial.slug] || `${tutorial.title} — Kolumn`,
     description: tutorial.summary,
     Component: lazy(() => import('../pages/marketing/TutorialPage')),
     load: () => import('../pages/marketing/TutorialPage'),
     props: { slug: tutorial.slug },
+    // No body yet — SupportArticlePage/TutorialPage render a "coming soon"
+    // state instead of an empty page. Reachable, but excluded from the
+    // sitemap and noindexed (see scripts/prerender.mjs / headMeta.js) so
+    // search engines don't index 29 near-empty stub pages.
+    thin: !tutorial.body,
   }
 }
 
@@ -133,13 +147,33 @@ function supportArticleRoute(article) {
     Component: lazy(() => import('../pages/marketing/SupportArticlePage')),
     load: () => import('../pages/marketing/SupportArticlePage'),
     props: { slug: article.slug },
+    // See TUTORIAL_TITLE_OVERRIDES — same "coming soon" thin-content note.
+    thin: !article.body,
   }
 }
 
 // One entry per prerendered marketing page. This list drives App.jsx routes,
 // head meta (title/description/canonical/OG/JSON-LD), the nav dead-link test,
 // scripts/prerender.mjs, sitemap.xml and robots.txt.
+// The homepage. Registered here so it is prerendered and gets its own
+// title/description/canonical like every other route — but it is NOT a
+// MarketingLayout page (LandingPage has its own nav/footer and renders
+// outside MarketingLayout in both App.jsx and src/prerender-entry.jsx).
+// Keep this title/description in sync with the static fallback in
+// index.html (used before this route is applied and as the source template
+// the prerender step overwrites).
+const HOME_ROUTE = {
+  path: '/',
+  title: 'Kolumn — AI-powered kanban for teams',
+  description:
+    'Kolumn is a kanban board with an AI that creates, moves, and updates cards when you type what you need. Free to start, no setup.',
+  ogTitle: 'Kolumn — AI-powered kanban',
+  Component: lazy(() => import('../pages/LandingPage')),
+  load: () => import('../pages/LandingPage'),
+}
+
 export const MARKETING_ROUTES = [
+  HOME_ROUTE,
   {
     path: '/pricing',
     title: PRICING.meta.title,

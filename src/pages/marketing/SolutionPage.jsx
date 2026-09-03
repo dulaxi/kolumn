@@ -231,7 +231,7 @@ export default function SolutionPage({ solution }) {
             <Link to={onboardingHref}>Start with this board</Link>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <Link to="/solutions">Browse all templates</Link>
+            <Link to="/templates">Browse all templates</Link>
           </Button>
         </div>
       </section>

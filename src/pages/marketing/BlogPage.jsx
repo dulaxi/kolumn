@@ -24,10 +24,10 @@ export default function BlogPage() {
   return (
     <>
       <section className={`${SECTION} pt-16 pb-12`}>
-        <h1 className="font-mono text-xs uppercase tracking-wide text-[var(--text-muted)] mb-3">Blog</h1>
-        <p className="font-heading font-[425] text-4xl sm:text-5xl tracking-tight leading-[1.08] max-w-3xl text-[var(--text-primary)]">
+        <p className="font-mono text-xs uppercase tracking-wide text-[var(--text-muted)] mb-3">Blog</p>
+        <h1 className="font-heading font-[425] text-4xl sm:text-5xl tracking-tight leading-[1.08] max-w-3xl text-[var(--text-primary)]">
           Notes from building a kanban that stayed a kanban.
-        </p>
+        </h1>
       </section>
 
       <section className={`${SECTION} pb-20`}>
