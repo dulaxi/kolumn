@@ -5,7 +5,7 @@ import react from 'eslint-plugin-react'
 import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
-  { ignores: ['dist', 'public'] },
+  { ignores: ['dist', 'dist-ssr', 'public'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

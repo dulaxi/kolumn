@@ -44,6 +44,11 @@ describe('injectIntoTemplate', () => {
   test('throws when the root div is missing', () => {
     expect(() => injectIntoTemplate('<html><head></head><body></body></html>', { head: '', body: 'x' })).toThrow(/root/)
   })
+
+  test('throws when the <html lang="en"> tag is missing', () => {
+    const noHtmlTag = template.replace('<html lang="en">', '<html>')
+    expect(() => injectIntoTemplate(noHtmlTag, { head: '', body: 'x' })).toThrow(/html/)
+  })
 })
 
 describe('sitemap and robots', () => {

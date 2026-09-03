@@ -17,8 +17,17 @@ export function injectIntoTemplate(templateHtml, { head, body }) {
   if (!templateHtml.includes(rootTag)) {
     throw new Error('prerender: template has no empty <div id="root"></div> to replace')
   }
+  const htmlTag = '<html lang="en">'
+  if (!templateHtml.includes(htmlTag)) {
+    // Stamping data-prerendered is what tells main.jsx to hydrateRoot
+    // instead of createRoot. If this literal silently stops matching (a
+    // lang change, an attribute reorder), the attribute never gets stamped,
+    // hydration never happens, and nothing fails loudly — so fail loudly
+    // here instead, the same way the missing-root-div check above does.
+    throw new Error('prerender: template has no <html lang="en"> tag to mark as prerendered')
+  }
   return stripManagedHeadTags(templateHtml)
-    .replace('<html lang="en">', '<html lang="en" data-prerendered>')
+    .replace(htmlTag, '<html lang="en" data-prerendered>')
     .replace('</head>', `    ${head}\n  </head>`)
     .replace(rootTag, body)
 }

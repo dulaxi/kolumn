@@ -1,4 +1,4 @@
-import { useEffect, useCallback, lazy, Suspense } from 'react'
+import { useEffect, useCallback, useState, lazy, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
@@ -52,24 +52,19 @@ function UndoListener() {
 }
 
 export default function App() {
+  // Toaster can't exist during SSR (it portals to document.body, which
+  // Node doesn't have) — a prerendered page's tree structurally never
+  // includes it. Gating its first client render behind an effect makes
+  // hydrateRoot's very first pass match that "nothing here" shape exactly;
+  // it mounts one tick later, imperceptibly, since no toast is ever active
+  // this early anyway. Without the gate, hydration for this fiber has
+  // nothing server-rendered to reconcile against and logs an isolated
+  // (but avoidable) `[hydrate] recovered` mismatch for it specifically.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   return (
     <BrowserRouter>
-      {createPortal(
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-          }}
-          // Portal-to-body + explicit z-index above any Modal (default 40 —
-          // see the full app-wide z-index ledger in Modal.jsx).
-          // Modals also portal to body — without ALSO portaling the Toaster,
-          // it would render inside <div id="root"> (z-auto) and any modal
-          // would visually cover it regardless of the local z-index value.
-          containerStyle={{ zIndex: 100 }}
-          containerProps={{ role: 'status', 'aria-live': 'polite' }}
-        />,
-        document.body,
-      )}
       <UndoListener />
 
       <Suspense fallback={<div className="min-h-screen bg-[var(--surface-page)] flex items-center justify-center"><Spinner size={24} /></div>}>
@@ -128,6 +123,37 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+
+      {mounted && createPortal(
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+          }}
+          // Portal-to-body + explicit z-index above any Modal (default 40 —
+          // see the full app-wide z-index ledger in Modal.jsx).
+          // Modals also portal to body — without ALSO portaling the Toaster,
+          // it would render inside <div id="root"> (z-auto) and any modal
+          // would visually cover it regardless of the local z-index value.
+          //
+          // Positioned AFTER the Suspense/Routes tree (not before), and
+          // gated on `mounted` (see above): a portal fiber preceding a
+          // Suspense boundary that a prerendered page's SSR tree doesn't
+          // itself render (Toaster can't run in Node — no document) throws
+          // off hydrateRoot's DOM-matching for everything that follows it
+          // inside #root, even though the portal produces no DOM at this
+          // position. Confirmed empirically while wiring up
+          // marketing-page prerendering (task-12): moving this portal after
+          // the routed content took hydration on /pricing from a full-tree
+          // "[hydrate] recovered" mismatch down to one isolated warning for
+          // this fiber alone; the `mounted` gate above clears that last one
+          // by giving this nothing to hydrate against on the first pass.
+          // Keep it last, and keep the gate.
+          containerStyle={{ zIndex: 100 }}
+          containerProps={{ role: 'status', 'aria-live': 'polite' }}
+        />,
+        document.body,
+      )}
     </BrowserRouter>
   )
 }

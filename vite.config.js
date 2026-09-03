@@ -27,7 +27,7 @@ function vendorChunkOf(id) {
   return null
 }
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     react(),
     tailwindcss(),
@@ -43,13 +43,15 @@ export default defineConfig({
     // 'hidden' emits .map files for Sentry symbolication without adding
     // sourceMappingURL comments to the served bundles.
     sourcemap: 'hidden',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          return vendorChunkOf(id)
+    rollupOptions: isSsrBuild
+      ? { output: { format: 'es', entryFileNames: 'prerender-entry.js', inlineDynamicImports: true } }
+      : {
+          output: {
+            manualChunks(id) {
+              return vendorChunkOf(id)
+            },
+          },
         },
-      },
-    },
     // Vendor chunks keep the per-chunk threshold meaningful; bump just
     // enough so the warning targets *new* bloat, not the chunks we've
     // already isolated.
@@ -64,4 +66,4 @@ export default defineConfig({
     setupFiles: ['./src/__tests__/setup.js'],
     css: false,
   },
-})
+}))

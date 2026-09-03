@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run build:prerender",
+    "build:prerender": "vite build --ssr src/prerender-entry.jsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -49,6 +50,7 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
     "serve": "^14.2.6",
+    "serve-handler": "^6.1.7",
     "tailwindcss": "^4.2.1",
     "vite": "^7.3.1",
     "vitest": "^4.1.1"

@@ -1,5 +1,5 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import '@fontsource-variable/inter'
 import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
@@ -72,8 +72,21 @@ applyMotion(savedSettings?.motion)
 // Initialize auth before rendering
 useAuthStore.getState().initialize()
 
-createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById('root')
+const app = (
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )
+// Prerendered marketing pages ship their markup in #root — hydrate it so the
+// static HTML becomes interactive without a blank-then-paint. Everything else
+// (app shell, landing) mounts fresh.
+if (document.documentElement.hasAttribute('data-prerendered') && rootEl.hasChildNodes()) {
+  hydrateRoot(rootEl, app, {
+    onRecoverableError(error) {
+      console.warn('[hydrate] recovered', error)
+    },
+  })
+} else {
+  createRoot(rootEl).render(app)
+}
