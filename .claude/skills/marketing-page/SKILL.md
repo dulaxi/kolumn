@@ -51,6 +51,14 @@ mapping.
 1. **Content module** — `src/content/<name>.js`. Plain JS data (meta, copy,
    any `jsonLd()` builder), no Supabase. `src/content/pricing.js` is the
    reference: `meta`, page copy, and `pricingJsonLd()` all in one export.
+   Copy `src/content/_TEMPLATE.example.js` as the starting skeleton — it's a
+   short, commented module using the shapes in `src/content/_schema.js`
+   (`pageMeta`, `cta`, `faqEntry`, and the two hero shapes — see that file's
+   header for why there are two and why the 14 existing modules were never
+   unified into one). Those shapes are validated automatically by
+   `src/__tests__/contentSchema.test.js`, which walks every module in
+   `src/content/` by key name (`meta`/`seo`, `cta`-ish keys, `*FAQ*` arrays,
+   `hero`) — nothing to register, just use the same field names.
 2. **Page component** — `src/pages/marketing/<Name>Page.jsx`. Static,
    presentational, no auth/Supabase reads (see the traps below for why).
    `src/pages/marketing/PricingPage.jsx` is the reference: imports its
