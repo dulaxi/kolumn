@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import SupportPage from '../pages/marketing/SupportPage'
@@ -77,12 +77,30 @@ describe('SupportArticlePage', () => {
     expect(screen.getByRole('heading', { level: 2, name: /delete your account/i })).toBeInTheDocument()
   })
 
-  test('a body-less article renders the coming-soon state, not an empty page', () => {
-    renderArticle('what-is-kolumn')
-    const article = findArticle('what-is-kolumn').article
-    expect(article.body).toBeNull()
-    expect(screen.getByRole('heading', { level: 1, name: article.title })).toBeInTheDocument()
+  // Every article now has a markdown body, so this cannot pin a real slug —
+  // writing an article would break the test. The coming-soon path is still
+  // live for any future entry added to support.js before its .md file exists,
+  // so exercise it against a synthetic body-less article instead.
+  test('a body-less article renders the coming-soon state, not an empty page', async () => {
+    vi.resetModules()
+    vi.doMock('../content/support', async () => {
+      const actual = await vi.importActual('../content/support')
+      const stub = { slug: 'zz-unwritten', title: 'An unwritten article', summary: 'Placeholder.', body: null }
+      return {
+        ...actual,
+        findArticle: (slug) => (slug === stub.slug ? { article: stub, category: actual.SUPPORT_CATEGORIES[0] } : actual.findArticle(slug)),
+      }
+    })
+    const { default: Page } = await import('../pages/marketing/SupportArticlePage')
+    render(
+      <MemoryRouter initialEntries={['/support/zz-unwritten']}>
+        <Routes><Route path="/support/:slug" element={<Page />} /></Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('heading', { level: 1, name: 'An unwritten article' })).toBeInTheDocument()
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    vi.doUnmock('../content/support')
+    vi.resetModules()
   })
 
   test('an unknown slug shows a not-found state instead of crashing', () => {

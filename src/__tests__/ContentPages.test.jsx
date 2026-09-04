@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
@@ -75,12 +75,27 @@ describe('TutorialPage (article)', () => {
     expect(screen.getByText(/20 messages a day/i)).toBeInTheDocument()
   })
 
-  test('a tutorial without a body renders a coming-soon state, not an empty page', () => {
-    const tutorial = getTutorial('ask-your-boards-in-chat')
-    expect(tutorial.body).toBeNull()
-    renderRoute('/tutorials/ask-your-boards-in-chat', '/tutorials/:slug', TutorialPage)
-    expect(screen.getByRole('heading', { level: 1, name: /ask your boards a question/i })).toBeInTheDocument()
+  // Every tutorial now has a markdown body, so this cannot pin a real slug —
+  // writing one would break the test. The coming-soon path is still live for
+  // any future entry added to tutorials.js before its .md file exists, so
+  // exercise it against a synthetic body-less tutorial instead.
+  test('a tutorial without a body renders a coming-soon state, not an empty page', async () => {
+    vi.resetModules()
+    vi.doMock('../content/tutorials', async () => {
+      const actual = await vi.importActual('../content/tutorials')
+      const stub = { slug: 'zz-unwritten', title: 'An unwritten tutorial', summary: 'Placeholder.', body: null }
+      return { ...actual, getTutorial: (slug) => (slug === stub.slug ? stub : actual.getTutorial(slug)) }
+    })
+    const { default: Page } = await import('../pages/marketing/TutorialPage')
+    render(
+      <MemoryRouter initialEntries={['/tutorials/zz-unwritten']}>
+        <Routes><Route path="/tutorials/:slug" element={<Page />} /></Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('heading', { level: 1, name: 'An unwritten tutorial' })).toBeInTheDocument()
     expect(screen.getByText(/being written/i)).toBeInTheDocument()
+    vi.doUnmock('../content/tutorials')
+    vi.resetModules()
   })
 
   test('unknown slug shows a not-found state instead of crashing', () => {
