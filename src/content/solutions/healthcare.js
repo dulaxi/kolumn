@@ -45,7 +45,7 @@ export default {
       prompt: `add a card for the new locum's credentialing packet with a checklist: licence copy, DEA, malpractice certificate, references`,
       title: 'Checklists that live on the card',
       body: 'Say the steps; they become a checklist on the card. Progress shows on the board without opening anything.',
-      result: [{ title: `Credentialing packet — new locum`, checklist: { done: 0, total: 4 } }],
+      result: [{ icon: 'Clipboard', title: `Credentialing packet — new locum`, checklist: { done: 0, total: 4 } }],
     },
     {
       tab: 'Shifts',

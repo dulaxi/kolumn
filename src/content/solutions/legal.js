@@ -46,9 +46,9 @@ export default {
       title: 'Intake by pasting',
       body: `A client's email becomes cards. Dates in the text become due dates; the rest becomes a checklist.`,
       result: [
-        { title: 'Response deadline — 21 days', due: '+21d', priority: 'high' },
-        { title: 'Demand letter draft', priority: 'high' },
-        { title: 'Settlement call prep' },
+        { icon: 'Timer', title: 'Response deadline — 21 days', due: '+21d', priority: 'high' },
+        { icon: 'FileText', title: 'Demand letter draft', priority: 'high' },
+        { icon: 'Phone', title: 'Settlement call prep' },
       ],
     },
     {

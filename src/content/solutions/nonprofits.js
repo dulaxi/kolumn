@@ -46,10 +46,10 @@ export default {
       title: 'A grant calendar as cards',
       body: `Paste the funder's timeline. Each milestone becomes a card with its due date, and overdue cards show up in notifications before they're late.`,
       result: [
-        { title: 'LOI — community foundation', due: '+5d' },
-        { title: 'Full proposal', due: '+21d' },
-        { title: 'Site visit', due: '+30d' },
-        { title: 'Final report', due: '+90d' },
+        { icon: 'Envelope', title: 'LOI — community foundation', due: '+5d' },
+        { icon: 'FileText', title: 'Full proposal', due: '+21d' },
+        { icon: 'Buildings', title: 'Site visit', due: '+30d' },
+        { icon: 'ChartBar', title: 'Final report', due: '+90d' },
       ],
     },
     {

@@ -46,9 +46,9 @@ export default {
       title: `Paste, don't transcribe`,
       body: 'Drop meeting notes into the pill. Titles, priorities and due dates land on cards without anyone retyping them. A comma-separated list becomes cards instantly, no AI round-trip.',
       result: [
-        { title: 'Pricing page copy', due: 'fri' },
-        { title: 'Stripe webhook retries', priority: 'high' },
-        { title: 'Investor update draft' },
+        { icon: 'Article', title: 'Pricing page copy', due: 'fri' },
+        { icon: 'Lightning', title: 'Stripe webhook retries', priority: 'high' },
+        { icon: 'FileText', title: 'Investor update draft' },
       ],
     },
     {
@@ -60,8 +60,8 @@ export default {
       title: 'Re-plan in a sentence',
       body: 'When the plan changes, say so. Batch moves and priority changes happen in one line instead of twenty drags.',
       result: [
-        { title: 'Onboarding email sequence', priority: 'medium' },
-        { title: 'Pricing spike investigation', priority: 'high' },
+        { icon: 'Envelope', title: 'Onboarding email sequence', priority: 'medium' },
+        { icon: 'MagnifyingGlass', title: 'Pricing spike investigation', priority: 'high' },
       ],
     },
     {

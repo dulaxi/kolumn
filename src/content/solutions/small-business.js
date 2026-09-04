@@ -46,10 +46,10 @@ export default {
       title: 'Type the list, get the board',
       body: 'Commas and new lines split into cards instantly, without waiting on the AI. Say more and the AI adds dates, owners and priorities.',
       result: [
-        { title: 'Reorder oat milk' },
-        { title: 'Call the sign guy' },
-        { title: 'Fix the booking form' },
-        { title: 'Spring window display' },
+        { icon: 'ShoppingCart', title: 'Reorder oat milk' },
+        { icon: 'Phone', title: 'Call the sign guy' },
+        { icon: 'Wrench', title: 'Fix the booking form' },
+        { icon: 'Image', title: 'Spring window display' },
       ],
     },
     {
@@ -61,8 +61,8 @@ export default {
       title: 'Assign and date in plain words',
       body: 'No dropdowns. Name the person and the day; the cards update.',
       result: [
-        { title: 'Friday deliveries', assignee: 'Sam', due: 'thu' },
-        { title: 'Payroll — Friday', priority: 'high' },
+        { icon: 'Truck', title: 'Friday deliveries', assignee: 'Sam', due: 'thu' },
+        { icon: 'CurrencyDollar', title: 'Payroll — Friday', priority: 'high' },
       ],
     },
     {

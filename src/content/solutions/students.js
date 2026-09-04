@@ -46,9 +46,9 @@ export default {
       title: 'Syllabus in, semester out',
       body: 'Paste the schedule into the pill. Each reading response, lab and exam becomes a card with its date. Do it for every course; search (⌘K) finds anything.',
       result: [
-        { title: 'Reading response 3 — ch. 5', due: 'thu' },
-        { title: 'Midterm study plan', priority: 'medium' },
-        { title: 'Lab report — data section' },
+        { icon: 'Article', title: 'Reading response 3 — ch. 5', due: 'thu' },
+        { icon: 'Brain', title: 'Midterm study plan', priority: 'medium' },
+        { icon: 'ChartBar', title: 'Lab report — data section' },
       ],
     },
     {
@@ -60,8 +60,8 @@ export default {
       title: 'Split the work in one line',
       body: `Share the board with the group, then divide the work by sentence. Everyone sees their card; nobody asks who has the intro.`,
       result: [
-        { title: 'Lit review — source 1', assignee: 'Maya' },
-        { title: 'Lit review — source 2' },
+        { icon: 'MagnifyingGlass', title: 'Lit review — source 1', assignee: 'Maya' },
+        { icon: 'Bookmark', title: 'Lit review — source 2' },
       ],
     },
     {

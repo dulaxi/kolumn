@@ -45,7 +45,7 @@ export default {
       prompt: 'paste this thread — make a card, summarise the issue in the description, priority high, label billing',
       title: 'Paste the thread, get the card',
       body: 'A customer conversation becomes a card with a summary and priority. The thread stays where it was; the work is now visible.',
-      result: [{ title: 'Export fails for large workspaces', priority: 'high', labels: [{ text: 'billing', color: 'yellow' }] }],
+      result: [{ icon: 'Bug', title: 'Export fails for large workspaces', priority: 'high', labels: [{ text: 'billing', color: 'yellow' }] }],
     },
     {
       tab: 'Batch',
@@ -55,7 +55,7 @@ export default {
       prompt: `move everything labeled billing that's older than a week to With engineering and mark it high`,
       title: 'Batch by sentence',
       body: 'Triage in one line instead of one drag per card.',
-      result: [{ title: 'Export fails for large workspaces', priority: 'high' }],
+      result: [{ icon: 'Bug', title: 'Export fails for large workspaces', priority: 'high' }],
     },
     {
       tab: 'Review',

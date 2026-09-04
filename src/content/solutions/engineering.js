@@ -46,9 +46,9 @@ export default {
       title: 'Standup to cards',
       body: 'Paste the notes. Cards with owners appear on the sprint board; nobody transcribes. Comma lists split instantly with no AI call.',
       result: [
-        { title: 'Rate-limit the export endpoint', assignee: 'Priya', priority: 'high' },
-        { title: 'Flaky test: realtime reconnect', assignee: 'Sam' },
-        { title: 'Write runbook for on-call', assignee: 'Lee' },
+        { icon: 'Gauge', title: 'Rate-limit the export endpoint', assignee: 'Priya', priority: 'high' },
+        { icon: 'Bug', title: 'Flaky test: realtime reconnect', assignee: 'Sam' },
+        { icon: 'Article', title: 'Write runbook for on-call', assignee: 'Lee' },
       ],
     },
     {
@@ -59,7 +59,7 @@ export default {
       prompt: 'move everything assigned to Sam to Priya and mark the auth bug high',
       title: 'Bulk moves in plain language',
       body: 'Reassign, reprioritise and move in one line. The board updates for everyone in realtime.',
-      result: [{ title: 'Flaky test: realtime reconnect', assignee: 'Priya', priority: 'high' }],
+      result: [{ icon: 'Bug', title: 'Flaky test: realtime reconnect', assignee: 'Priya', priority: 'high' }],
     },
     {
       tab: 'Find',
