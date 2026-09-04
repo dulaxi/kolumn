@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { addDays, format } from 'date-fns'
 import Button from '../../components/ui/Button'
 import SegmentedControl from '../../components/ui/SegmentedControl'
 import DynamicIcon from '../../components/board/DynamicIcon'
+import CardVisual from '../../components/board/CardVisual'
 import FaqItem from '../../components/marketing/FaqItem'
-import { LABEL_BG, PRIORITY_DOT } from '../../utils/formatting'
 import { SHARED_FAQ, TIER_STRINGS } from '../../content/solutions/_shared'
+
+const noop = () => {}
 
 // One component renders every /solutions/<slug> page (solution-page.md §3).
 // Section order: hero → pains → how Kolumn helps → example board → FAQ →
@@ -16,48 +19,68 @@ import { SHARED_FAQ, TIER_STRINGS } from '../../content/solutions/_shared'
 const SECTION = 'max-w-6xl mx-auto px-6 sm:px-10'
 const H2 = 'font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)]'
 
-// Sentinel due-date labels ('fri', 'thu', '+3d', '+21d', …) — display-only,
-// mirrors the resolveDueDate sentinel idea in seedOnboardingBoard.js without
-// computing a real date for a static marketing card.
-function formatDue(due) {
+// Sentinel due-date labels ('fri', 'thu', '+3d', '+21d', …) — content-authored
+// shorthand so a solutions page doesn't hardcode a real calendar date that
+// goes stale. Resolved to an actual date at render time (relative to "today")
+// so it can flow through the product's own due-date pill (CardVisual →
+// parseDueDate/formatDueDateLabel) instead of a hand-typed label — the same
+// spirit as seedOnboardingBoard.js's resolveDueDate, extended to weekday
+// sentinels.
+const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+function resolveDueSentinel(due) {
+  if (!due) return null
   const relative = /^\+(\d+)d$/.exec(due)
-  if (relative) return `in ${relative[1]}d`
-  return due.charAt(0).toUpperCase() + due.slice(1)
+  if (relative) return format(addDays(new Date(), Number(relative[1])), 'yyyy-MM-dd')
+  const targetDow = WEEKDAYS.indexOf(due.toLowerCase())
+  if (targetDow === -1) return null
+  const today = new Date()
+  let diff = (targetDow - today.getDay() + 7) % 7
+  if (diff === 0) diff = 7 // next occurrence, not "today"
+  return format(addDays(today, diff), 'yyyy-MM-dd')
 }
 
-// Card surfaces keep the product's 16px radius — the coherency-rule
-// exception carved out for kanban card surfaces.
+// A checklist on solution content is a count ({ done, total }), not the
+// product's item array — synthesize placeholder items so CardVisual's real
+// checklist pill (and expand-to-see-items affordance) renders correctly.
+function checklistItemsFromCount(checklist) {
+  if (!checklist) return []
+  return Array.from({ length: checklist.total }, (_, i) => ({
+    text: `Item ${i + 1}`,
+    done: i < checklist.done,
+  }))
+}
+
+// Renders the product's real card face (CardVisual) for a solution page's
+// static example-board content. Content fields (due sentinel, checklist
+// count, single assignee name, plain-string labels) are adapted into the
+// shape CardVisual/the real product expects.
 function BoardCard({ card }) {
-  const hasMeta = card.labels?.length || card.priority || card.due || card.checklist || card.assignee
   return (
-    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] p-3 flex flex-col gap-2 text-left min-w-0">
-      <div className="flex items-center gap-2 min-w-0">
-        {card.icon && <DynamicIcon name={card.icon} className="w-4 h-4 text-[var(--text-muted)] shrink-0" />}
-        <span className="text-sm font-medium text-[var(--text-primary)] leading-snug truncate">{card.title}</span>
-      </div>
-      {hasMeta && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {card.labels?.map((label) => (
-            <span key={label} className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${LABEL_BG.gray}`}>
-              {label}
-            </span>
-          ))}
-          {card.priority && (
-            <span className="flex items-center gap-1 font-mono text-[11px] text-[var(--text-muted)]">
-              <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[card.priority]}`} />
-              {card.priority}
-            </span>
-          )}
-          {card.due && <span className="font-mono text-[11px] text-[var(--text-muted)]">{formatDue(card.due)}</span>}
-          {card.checklist && (
-            <span className="font-mono text-[11px] text-[var(--text-muted)]">
-              {card.checklist.done}/{card.checklist.total}
-            </span>
-          )}
-          {card.assignee && <span className="font-mono text-[11px] text-[var(--text-muted)]">{card.assignee}</span>}
-        </div>
-      )}
-    </div>
+    <CardVisual
+      card={{
+        id: card.title,
+        title: card.title,
+        description: card.description || '',
+        icon: card.icon,
+        priority: card.priority,
+        due_date: resolveDueSentinel(card.due),
+        checklist: checklistItemsFromCount(card.checklist),
+        assignee_name: card.assignee || '',
+        completed: false,
+      }}
+      labels={(card.labels || []).map((text) => ({ text, color: 'gray' }))}
+      profile={null}
+      watchers={[]}
+      font="default"
+      labelStyle="alt"
+      iconStyle="boxed"
+      toggleLabelStyle={noop}
+      toggleIconStyle={noop}
+      onToggleChecklistItem={noop}
+      onClick={noop}
+      onComplete={noop}
+      interactive={false}
+    />
   )
 }
 

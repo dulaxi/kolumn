@@ -1,30 +1,39 @@
-import DynamicIcon from '../board/DynamicIcon'
-import { PRIORITY_DOT } from '../../utils/formatting'
+import CardVisual from '../board/CardVisual'
+
+const noop = () => {}
 
 // Read-only miniature board preview for a template's detail page — spec
-// §D3. Deliberately a small self-contained component rather than a fork of
-// the landing page's demo-card internals (those are module-private inside
-// LandingPage.jsx and out of scope for this page build). Columns get the
-// kanban-card 16px radius exception (see CLAUDE.md → Coherency Rules).
+// §D3. Renders the product's real card face (CardVisual, the presentational
+// half of board/Card.jsx) with static template data instead of a hand-drawn
+// approximation, so a template preview matches the board a user actually
+// gets. Columns get the kanban-card 16px radius exception (see CLAUDE.md →
+// Coherency Rules) — that radius lives inside CardVisual itself.
 function PreviewCard({ card }) {
   return (
-    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-page)] p-3 flex flex-col gap-1.5">
-      <div className="flex items-start gap-2">
-        {card.icon && (
-          <DynamicIcon name={card.icon} className="w-4 h-4 mt-0.5 text-[var(--text-secondary)] shrink-0" />
-        )}
-        <p className="text-[13px] text-[var(--text-primary)] leading-snug">{card.title}</p>
-      </div>
-      <div className="flex items-center gap-1.5 pl-6">
-        <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[card.priority] || PRIORITY_DOT.medium}`} />
-        <span className="text-[11px] font-mono text-[var(--text-muted)] capitalize">{card.priority || 'medium'}</span>
-        {card.checklist?.length > 0 && (
-          <span className="text-[11px] font-mono text-[var(--text-muted)]">
-            · 0/{card.checklist.length}
-          </span>
-        )}
-      </div>
-    </div>
+    <CardVisual
+      card={{
+        id: card.title,
+        title: card.title,
+        description: card.description || '',
+        icon: card.icon,
+        priority: card.priority,
+        due_date: null,
+        checklist: card.checklist || [],
+        completed: false,
+      }}
+      labels={[]}
+      profile={null}
+      watchers={[]}
+      font="default"
+      labelStyle="text"
+      iconStyle="boxed"
+      toggleLabelStyle={noop}
+      toggleIconStyle={noop}
+      onToggleChecklistItem={noop}
+      onClick={noop}
+      onComplete={noop}
+      interactive={false}
+    />
   )
 }
 
