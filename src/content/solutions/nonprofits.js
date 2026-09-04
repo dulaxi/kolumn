@@ -74,18 +74,18 @@ export default {
     columns: [
       {
         title: 'Prospecting',
-        cards: [{ icon: 'ChartBar', title: 'Impact numbers from Q4', labels: ['reporting'] }],
+        cards: [{ icon: 'ChartBar', title: 'Impact numbers from Q4', labels: [{ text: 'reporting', color: 'blue' }], assignee: 'Dana' }],
       },
       {
         title: 'Writing',
         cards: [
-          { icon: 'FileText', title: 'Community foundation LOI', due: '+5d', priority: 'high' },
-          { icon: 'Calculator', title: 'Youth program budget narrative', checklist: { done: 2, total: 4 } },
+          { icon: 'FileText', title: 'Community foundation LOI', due: '+5d', priority: 'high', assignee: 'Dana' },
+          { icon: 'Calculator', title: 'Youth program budget narrative', checklist: { done: 2, total: 4 }, due: '+8d' },
         ],
       },
       {
         title: 'Submitted',
-        cards: [{ icon: 'Heart', title: 'Thank-you letters to donors', assignee: 'Dana' }],
+        cards: [{ icon: 'Heart', title: 'Thank-you letters to donors', assignee: 'Dana', labels: [{ text: 'donors', color: 'pink' }] }],
       },
       { title: 'Awarded', cards: [] },
     ],

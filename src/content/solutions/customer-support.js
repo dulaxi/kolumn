@@ -45,7 +45,7 @@ export default {
       prompt: 'paste this thread — make a card, summarise the issue in the description, priority high, label billing',
       title: 'Paste the thread, get the card',
       body: 'A customer conversation becomes a card with a summary and priority. The thread stays where it was; the work is now visible.',
-      result: [{ title: 'Export fails for large workspaces', priority: 'high', labels: ['billing'] }],
+      result: [{ title: 'Export fails for large workspaces', priority: 'high', labels: [{ text: 'billing', color: 'yellow' }] }],
     },
     {
       tab: 'Batch',
@@ -72,18 +72,18 @@ export default {
     columns: [
       {
         title: 'New',
-        cards: [{ icon: 'Browser', title: 'Login loop on Safari — 3 reports', priority: 'high' }],
+        cards: [{ icon: 'Browser', title: 'Login loop on Safari — 3 reports', priority: 'high', due: '+1d' }],
       },
       {
         title: 'Investigating',
         cards: [
           { icon: 'TextAa', title: 'Refund policy macro rewrite', assignee: 'Jo', checklist: { done: 1, total: 2 } },
-          { icon: 'Handshake', title: 'Enterprise trial follow-up', due: '+2d', labels: ['sales'] },
+          { icon: 'Handshake', title: 'Enterprise trial follow-up', due: '+2d', labels: [{ text: 'sales', color: 'blue' }], assignee: 'Marcus' },
         ],
       },
       {
         title: 'With engineering',
-        cards: [{ icon: 'Export', title: 'Export fails for large workspaces', priority: 'high', labels: ['bug'] }],
+        cards: [{ icon: 'Export', title: 'Export fails for large workspaces', priority: 'high', labels: [{ text: 'bug', color: 'red' }] }],
       },
       { title: 'Resolved', cards: [] },
     ],

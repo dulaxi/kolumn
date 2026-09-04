@@ -80,16 +80,16 @@ export default {
         title: 'To do',
         cards: [
           { icon: 'CurrencyDollar', title: 'Payroll — Friday', due: 'fri', priority: 'high' },
-          { icon: 'Storefront', title: 'Spring window display', checklist: { done: 0, total: 3 }, assignee: 'Sam' },
+          { icon: 'Storefront', title: 'Spring window display', checklist: { done: 0, total: 3 }, assignee: 'Sam', due: '+6d' },
         ],
       },
       {
         title: 'Doing',
-        cards: [{ icon: 'Globe', title: 'Fix the online booking form', priority: 'high' }],
+        cards: [{ icon: 'Globe', title: 'Fix the online booking form', priority: 'high', labels: [{ text: 'bug', color: 'red' }] }],
       },
       {
         title: 'Waiting on',
-        cards: [{ icon: 'Package', title: 'Reorder oat milk', labels: ['supplier'] }],
+        cards: [{ icon: 'Package', title: 'Reorder oat milk', labels: [{ text: 'supplier', color: 'yellow' }], assignee: 'Sam' }],
       },
       { title: 'Done', cards: [] },
     ],

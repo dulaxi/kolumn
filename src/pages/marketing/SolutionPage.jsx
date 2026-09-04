@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { addDays, format } from 'date-fns'
 import Button from '../../components/ui/Button'
 import SegmentedControl from '../../components/ui/SegmentedControl'
 import DynamicIcon from '../../components/board/DynamicIcon'
 import CardVisual from '../../components/board/CardVisual'
 import FaqItem from '../../components/marketing/FaqItem'
 import { SHARED_FAQ, TIER_STRINGS } from '../../content/solutions/_shared'
+import { resolveDueSentinel } from '../../lib/dueSentinel'
 
 const noop = () => {}
 
@@ -18,26 +18,6 @@ const noop = () => {}
 
 const SECTION = 'max-w-6xl mx-auto px-6 sm:px-10'
 const H2 = 'font-heading font-[425] text-3xl tracking-tight text-[var(--text-primary)]'
-
-// Sentinel due-date labels ('fri', 'thu', '+3d', '+21d', …) — content-authored
-// shorthand so a solutions page doesn't hardcode a real calendar date that
-// goes stale. Resolved to an actual date at render time (relative to "today")
-// so it can flow through the product's own due-date pill (CardVisual →
-// parseDueDate/formatDueDateLabel) instead of a hand-typed label — the same
-// spirit as seedOnboardingBoard.js's resolveDueDate, extended to weekday
-// sentinels.
-const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-function resolveDueSentinel(due) {
-  if (!due) return null
-  const relative = /^\+(\d+)d$/.exec(due)
-  if (relative) return format(addDays(new Date(), Number(relative[1])), 'yyyy-MM-dd')
-  const targetDow = WEEKDAYS.indexOf(due.toLowerCase())
-  if (targetDow === -1) return null
-  const today = new Date()
-  let diff = (targetDow - today.getDay() + 7) % 7
-  if (diff === 0) diff = 7 // next occurrence, not "today"
-  return format(addDays(today, diff), 'yyyy-MM-dd')
-}
 
 // A checklist on solution content is a count ({ done, total }), not the
 // product's item array — synthesize placeholder items so CardVisual's real
@@ -52,8 +32,9 @@ function checklistItemsFromCount(checklist) {
 
 // Renders the product's real card face (CardVisual) for a solution page's
 // static example-board content. Content fields (due sentinel, checklist
-// count, single assignee name, plain-string labels) are adapted into the
-// shape CardVisual/the real product expects.
+// count, single assignee name) are adapted into the shape CardVisual/the
+// real product expects; labels are already { text, color } pairs from the
+// real vocabulary (src/utils/formatting.js LABEL_BG), so they pass through.
 function BoardCard({ card }) {
   return (
     <CardVisual
@@ -68,7 +49,7 @@ function BoardCard({ card }) {
         assignee_name: card.assignee || '',
         completed: false,
       }}
-      labels={(card.labels || []).map((text) => ({ text, color: 'gray' }))}
+      labels={card.labels || []}
       profile={null}
       watchers={[]}
       font="default"
@@ -85,20 +66,24 @@ function BoardCard({ card }) {
 }
 
 // Hero right column — the vertical's example board cropped to its first two
-// columns, ~2 cards each (solution-page.md §3.1: "not a doodle").
+// columns, ~2 cards each (solution-page.md §3.1: "not a doodle"). Cards hold
+// the real board column width everywhere on the marketing site (260px,
+// Column.jsx:152 at the sm breakpoint) rather than scaling to fit — see
+// CLAUDE.md-adjacent spec note "one card width everywhere". Two 260px
+// columns plus a gap fit this box's half of the hero at the sm breakpoint
+// and up (no scroll); below that the box is full-width, so it stacks to one
+// column instead of scrolling.
 function HeroBoardPreview({ board }) {
   const cols = board.columns.slice(0, 2)
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 sm:p-5">
-      {/* Scrolls rather than squeezing: a 2-up grid rendered these cards at
-          146px on a phone, roughly 40% of their true in-app width, which wraps
-          titles that would fit on one line in the product. Columns now hold the
-          real board width (Column.jsx:152) and the strip scrolls, which is also
-          what a real board does. */}
-      <div className="flex gap-3 sm:gap-5 overflow-x-auto -mx-1 px-1">
-        {cols.map((col) => (
-          <div key={col.title} className="flex flex-col gap-2 w-[260px] lg:w-[290px] shrink-0 px-0.5">
-            <div className="font-sans text-sm font-semibold text-[var(--text-secondary)] truncate">{col.title}</div>
+      <div className="flex flex-col sm:flex-row gap-5">
+        {cols.map((col, i) => (
+          <div
+            key={col.title}
+            className={`flex-col gap-2 w-[260px] max-w-full shrink-0 ${i === 0 ? 'flex' : 'hidden sm:flex'}`}
+          >
+            <div className="font-sans text-sm font-semibold text-[var(--text-secondary)] truncate px-0.5">{col.title}</div>
             <div className="flex flex-col gap-2">
               {col.cards.slice(0, 2).map((card) => (
                 <BoardCard key={card.title} card={card} />
@@ -142,7 +127,7 @@ function HelpCanvas({ help }) {
           </div>
         )}
         {help.kind === 'pill' && help.result?.length > 0 && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 w-[260px] max-w-full">
             {help.result.map((card) => (
               <BoardCard key={card.title} card={card} />
             ))}
@@ -234,25 +219,27 @@ export default function SolutionPage({ solution }) {
         </div>
       </section>
 
-      {/* Example board */}
-      <section id="board" className={`${SECTION} py-20`}>
+      {/* Example board — widened past SECTION's 72rem to 74rem (1184px) so
+          four real 260px board columns (Column.jsx:152) plus three 16px
+          gaps (1088px) sit inside it with room to spare at the xl breakpoint
+          and up, with no horizontal scroll. Below xl the columns stack
+          vertically instead of scrolling, still at the real 260px width. */}
+      <section id="board" className="max-w-[74rem] mx-auto px-6 sm:px-10 py-20">
         <div className="text-center mb-10">
           <h2 className={`${H2} mb-2`}>{board.name}</h2>
           <p className="text-base text-[var(--text-secondary)]">An example board. Start with it, then make it yours.</p>
         </div>
-        <div className="overflow-x-auto">
-          <div className="flex gap-4 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4">
-            {board.columns.map((col) => (
-              <div key={col.title} className="w-64 sm:w-auto flex flex-col gap-3">
-                <div className="font-sans text-sm font-semibold text-[var(--text-secondary)]">{col.title}</div>
-                <div className="flex flex-col gap-2">
-                  {col.cards.map((card) => (
-                    <BoardCard key={card.title} card={card} />
-                  ))}
-                </div>
+        <div className="flex flex-col gap-8 xl:flex-row xl:gap-4 xl:justify-center">
+          {board.columns.map((col) => (
+            <div key={col.title} className="w-[260px] max-w-full mx-auto xl:mx-0 shrink-0 flex flex-col gap-3">
+              <div className="font-sans text-sm font-semibold text-[var(--text-secondary)]">{col.title}</div>
+              <div className="flex flex-col gap-2">
+                {col.cards.map((card) => (
+                  <BoardCard key={card.title} card={card} />
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
           <Button asChild variant="primary" size="lg">

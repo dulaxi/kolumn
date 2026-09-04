@@ -74,17 +74,17 @@ export default {
       {
         title: 'Intake',
         cards: [
-          { icon: 'Timer', title: 'Response deadline — 21 days', due: '+21d', priority: 'high' },
-          { icon: 'Phone', title: 'Settlement call prep', labels: ['client'] },
+          { icon: 'Timer', title: 'Response deadline — 21 days', due: '+21d', priority: 'high', assignee: 'Ines' },
+          { icon: 'Phone', title: 'Settlement call prep', labels: [{ text: 'client', color: 'purple' }], due: '+2d' },
         ],
       },
       {
         title: 'Drafting',
-        cards: [{ icon: 'FileText', title: 'Demand letter draft', priority: 'high', assignee: 'Ines' }],
+        cards: [{ icon: 'FileText', title: 'Demand letter draft', priority: 'high', assignee: 'Ines', checklist: { done: 1, total: 3 } }],
       },
       {
         title: 'Client review',
-        cards: [{ icon: 'Paperclip', title: 'Collect lease amendments from client', checklist: { done: 1, total: 3 } }],
+        cards: [{ icon: 'Paperclip', title: 'Collect lease amendments from client', checklist: { done: 1, total: 3 }, labels: [{ text: 'client', color: 'purple' }] }],
       },
       { title: 'Filed', cards: [] },
     ],

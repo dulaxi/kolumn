@@ -67,14 +67,14 @@ export const TEMPLATES = [
       {
         title: 'Inbox',
         cards: [
-          { title: 'Everything on your mind — one card each', icon: 'tray', priority: 'medium' },
+          { title: 'Everything on your mind — one card each', icon: 'tray', priority: 'medium', due: '+2d' },
         ],
       },
       {
         title: 'This week',
         cards: [
-          { title: 'The one thing that matters most', icon: 'star', priority: 'high' },
-          { title: 'Book the dentist', icon: 'calendar-blank', priority: 'low' },
+          { title: 'The one thing that matters most', icon: 'star', priority: 'high', due: 'fri' },
+          { title: 'Book the dentist', icon: 'calendar-blank', priority: 'low', due: '+5d', labels: [{ text: 'errand', color: 'gray' }] },
         ],
       },
       { title: 'Next week', cards: [] },
@@ -101,7 +101,7 @@ export const TEMPLATES = [
     columns: [
       {
         title: 'Ideas',
-        cards: [{ title: 'Brainstorm this month’s topics', icon: 'lightbulb', priority: 'medium' }],
+        cards: [{ title: 'Brainstorm this month’s topics', icon: 'lightbulb', priority: 'medium', due: '+3d', assignee: 'Jamie' }],
       },
       {
         title: 'Drafting',
@@ -110,6 +110,7 @@ export const TEMPLATES = [
             title: 'Launch announcement post',
             icon: 'note-pencil',
             priority: 'high',
+            assignee: 'Nora',
             checklist: [
               { text: 'Outline', done: false },
               { text: 'Draft', done: false },
@@ -122,7 +123,7 @@ export const TEMPLATES = [
       { title: 'Scheduled', cards: [] },
       {
         title: 'Published',
-        cards: [{ title: 'Welcome post', icon: 'check-circle', priority: 'low' }],
+        cards: [{ title: 'Welcome post', icon: 'check-circle', priority: 'low', labels: [{ text: 'blog', color: 'blue' }] }],
       },
     ],
   },
@@ -151,6 +152,7 @@ export const TEMPLATES = [
             title: 'Example: Product designer at Acme',
             icon: 'buildings',
             priority: 'medium',
+            due: '+10d',
             description: 'Link the posting, note the deadline, drop the JD in the description.',
           },
         ],
@@ -162,6 +164,7 @@ export const TEMPLATES = [
             title: 'Tailor the résumé per role',
             icon: 'file-text',
             priority: 'high',
+            due: '+3d',
             checklist: [
               { text: 'Summary', done: false },
               { text: 'Top 3 wins', done: false },
@@ -172,7 +175,7 @@ export const TEMPLATES = [
       },
       {
         title: 'Interviewing',
-        cards: [{ title: 'Prep the three stories you’ll tell', icon: 'chat-circle-dots', priority: 'high' }],
+        cards: [{ title: 'Prep the three stories you’ll tell', icon: 'chat-circle-dots', priority: 'high', due: 'thu', labels: [{ text: 'interview', color: 'yellow' }] }],
       },
       { title: 'Offer', cards: [] },
       { title: 'Closed', cards: [] },
@@ -203,18 +206,19 @@ export const TEMPLATES = [
             title: 'Define the sprint goal',
             icon: 'target',
             priority: 'high',
+            assignee: 'Theo',
             checklist: [
               { text: 'Write one sentence', done: false },
               { text: 'Share with the team', done: false },
             ],
           },
-          { title: 'Groom the backlog', icon: 'list-checks', priority: 'medium' },
+          { title: 'Groom the backlog', icon: 'list-checks', priority: 'medium', due: '+2d' },
         ],
       },
       { title: 'To do', cards: [] },
       {
         title: 'In progress',
-        cards: [{ title: 'Your first sprint task goes here', icon: 'circle-dashed', priority: 'medium' }],
+        cards: [{ title: 'Your first sprint task goes here', icon: 'circle-dashed', priority: 'medium', labels: [{ text: 'starter', color: 'green' }] }],
       },
       { title: 'Review', cards: [] },
       { title: 'Done', cards: [] },
@@ -245,12 +249,15 @@ export const TEMPLATES = [
             title: 'Example: login button unresponsive',
             icon: 'bug',
             priority: 'high',
+            due: '+1d',
+            labels: [{ text: 'critical', color: 'red' }],
             description: 'Repro steps, expected vs actual, environment.',
           },
           {
             title: 'Set up severity labels',
             icon: 'tag',
             priority: 'medium',
+            assignee: 'Wes',
             checklist: [{ text: 'critical / major / minor', done: false }],
           },
         ],
@@ -259,7 +266,7 @@ export const TEMPLATES = [
       { title: 'Fixing', cards: [] },
       {
         title: 'Verifying',
-        cards: [{ title: 'Confirm the fix on staging', icon: 'check-square', priority: 'medium' }],
+        cards: [{ title: 'Confirm the fix on staging', icon: 'check-square', priority: 'medium', due: '+2d', assignee: 'Wes' }],
       },
       { title: 'Resolved', cards: [] },
     ],
@@ -284,11 +291,11 @@ export const TEMPLATES = [
     columns: [
       {
         title: 'Ideas',
-        cards: [{ title: 'Pick a date and a budget ceiling', icon: 'calendar-check', priority: 'high' }],
+        cards: [{ title: 'Pick a date and a budget ceiling', icon: 'calendar-check', priority: 'high', due: '+7d' }],
       },
       {
         title: 'Booked',
-        cards: [{ title: 'Venue deposit paid', icon: 'buildings', priority: 'high' }],
+        cards: [{ title: 'Venue deposit paid', icon: 'buildings', priority: 'high', labels: [{ text: 'budget', color: 'yellow' }], assignee: 'Grace' }],
       },
       {
         title: 'In progress',
@@ -297,6 +304,7 @@ export const TEMPLATES = [
             title: 'Guest list',
             icon: 'users',
             priority: 'medium',
+            assignee: 'Liv',
             checklist: [
               { text: 'Draft', done: false },
               { text: 'Send invites', done: false },
@@ -307,7 +315,7 @@ export const TEMPLATES = [
       },
       {
         title: 'Day of',
-        cards: [{ title: 'Run sheet, hour by hour', icon: 'clock', priority: 'high' }],
+        cards: [{ title: 'Run sheet, hour by hour', icon: 'clock', priority: 'high', due: '+14d' }],
       },
       { title: 'Wrapped', cards: [] },
     ],
@@ -336,6 +344,7 @@ export const TEMPLATES = [
             title: 'Laptop, accounts, calendar invites',
             icon: 'laptop',
             priority: 'high',
+            assignee: 'Omar',
             checklist: [
               { text: 'Laptop shipped', done: false },
               { text: 'Email', done: false },
@@ -347,11 +356,11 @@ export const TEMPLATES = [
       },
       {
         title: 'Week one',
-        cards: [{ title: 'Meet the team — one card per intro', icon: 'users', priority: 'medium' }],
+        cards: [{ title: 'Meet the team — one card per intro', icon: 'users', priority: 'medium', due: '+3d' }],
       },
       {
         title: 'First month',
-        cards: [{ title: 'Ship something small', icon: 'rocket-launch', priority: 'medium' }],
+        cards: [{ title: 'Ship something small', icon: 'rocket-launch', priority: 'medium', due: '+25d', labels: [{ text: 'ramp', color: 'blue' }] }],
       },
       { title: 'Done', cards: [] },
     ],
@@ -381,6 +390,8 @@ export const TEMPLATES = [
             title: 'Example: Community Foundation spring round',
             icon: 'bank',
             priority: 'medium',
+            due: '+30d',
+            assignee: 'Dana',
             description: 'Deadline, amount, fit score, contact.',
           },
         ],
@@ -392,6 +403,7 @@ export const TEMPLATES = [
             title: 'Reusable org boilerplate',
             icon: 'file-text',
             priority: 'high',
+            labels: [{ text: 'reporting', color: 'blue' }],
             checklist: [
               { text: 'Mission', done: false },
               { text: 'Budget', done: false },
@@ -404,7 +416,7 @@ export const TEMPLATES = [
       { title: 'Awarded', cards: [] },
       {
         title: 'Reporting',
-        cards: [{ title: 'Q1 impact report', icon: 'chart-bar', priority: 'medium' }],
+        cards: [{ title: 'Q1 impact report', icon: 'chart-bar', priority: 'medium', due: '+10d' }],
       },
     ],
   },
@@ -432,17 +444,18 @@ export const TEMPLATES = [
             title: 'Add each assignment as a card',
             icon: 'plus-circle',
             priority: 'medium',
+            due: '+2d',
             description: 'Set due dates — overdue work turns copper so nothing slips.',
           },
         ],
       },
       {
         title: 'In progress',
-        cards: [{ title: 'Reading: chapters 3–4', icon: 'book-open', priority: 'medium' }],
+        cards: [{ title: 'Reading: chapters 3–4', icon: 'book-open', priority: 'medium', due: 'wed', labels: [{ text: 'reading', color: 'blue' }] }],
       },
       {
         title: 'Submitted',
-        cards: [{ title: 'Essay draft', icon: 'paper-plane-tilt', priority: 'low' }],
+        cards: [{ title: 'Essay draft', icon: 'paper-plane-tilt', priority: 'low', due: '+6d' }],
       },
       { title: 'Graded', cards: [] },
     ],
@@ -472,22 +485,24 @@ export const TEMPLATES = [
             title: 'Example: Northwind website refresh',
             icon: 'briefcase',
             priority: 'medium',
+            due: '+14d',
+            labels: [{ text: 'proposal', color: 'gray' }],
             description: 'Scope, price, decision date.',
           },
         ],
       },
       {
         title: 'Active',
-        cards: [{ title: 'Weekly check-in notes', icon: 'chat-circle-dots', priority: 'medium' }],
+        cards: [{ title: 'Weekly check-in notes', icon: 'chat-circle-dots', priority: 'medium', due: 'mon' }],
       },
       {
         title: 'Waiting on client',
-        cards: [{ title: 'Brand assets', icon: 'image', priority: 'low' }],
+        cards: [{ title: 'Brand assets', icon: 'image', priority: 'low', labels: [{ text: 'client', color: 'purple' }] }],
       },
       { title: 'Delivered', cards: [] },
       {
         title: 'Invoiced',
-        cards: [{ title: 'Kickoff deposit', icon: 'receipt', priority: 'low' }],
+        cards: [{ title: 'Kickoff deposit', icon: 'receipt', priority: 'low', due: '+3d' }],
       },
     ],
   },
@@ -510,11 +525,11 @@ export const TEMPLATES = [
     columns: [
       {
         title: 'Now',
-        cards: [{ title: 'This quarter’s bet', icon: 'flag', priority: 'high' }],
+        cards: [{ title: 'This quarter’s bet', icon: 'flag', priority: 'high', due: '+45d', assignee: 'Alex' }],
       },
       {
         title: 'Next',
-        cards: [{ title: 'Next release candidates', icon: 'stack', priority: 'medium' }],
+        cards: [{ title: 'Next release candidates', icon: 'stack', priority: 'medium', labels: [{ text: 'roadmap', color: 'purple' }] }],
       },
       {
         title: 'Later',
@@ -543,11 +558,12 @@ export const TEMPLATES = [
       {
         title: 'This week',
         cards: [
-          { title: 'Bins out — Tuesday', icon: 'trash', priority: 'medium' },
+          { title: 'Bins out — Tuesday', icon: 'trash', priority: 'medium', due: 'tue', assignee: 'Sam' },
           {
             title: 'Groceries',
             icon: 'shopping-cart',
             priority: 'medium',
+            assignee: 'Chris',
             checklist: [
               { text: 'Fruit', done: false },
               { text: 'Milk', done: false },
@@ -558,7 +574,7 @@ export const TEMPLATES = [
       },
       {
         title: 'Doing',
-        cards: [{ title: 'Fix the leaky tap', icon: 'wrench', priority: 'low' }],
+        cards: [{ title: 'Fix the leaky tap', icon: 'wrench', priority: 'low', due: '+4d' }],
       },
       { title: 'Done', cards: [] },
       {

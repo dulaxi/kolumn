@@ -69,19 +69,19 @@ export default {
       {
         title: 'Requests',
         cards: [
-          { icon: 'UserPlus', title: 'Front-desk onboarding checklist', checklist: { done: 0, total: 6 } },
+          { icon: 'UserPlus', title: 'Front-desk onboarding checklist', checklist: { done: 0, total: 6 }, assignee: 'Rosa' },
           { icon: 'Thermometer', title: 'Vaccine fridge log audit', priority: 'high', due: 'fri' },
         ],
       },
       {
         title: 'In progress',
         cards: [
-          { icon: 'IdentificationCard', title: 'Credentialing packet — new locum', checklist: { done: 2, total: 4 }, assignee: 'Rosa' },
+          { icon: 'IdentificationCard', title: 'Credentialing packet — new locum', checklist: { done: 2, total: 4 }, assignee: 'Rosa', due: '+5d' },
         ],
       },
       {
         title: 'Blocked',
-        cards: [{ icon: 'Wrench', title: 'Autoclave service visit', labels: ['equipment'], due: '+3d' }],
+        cards: [{ icon: 'Wrench', title: 'Autoclave service visit', labels: [{ text: 'equipment', color: 'gray' }], due: '+3d' }],
       },
       { title: 'Done', cards: [] },
     ],

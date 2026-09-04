@@ -77,18 +77,18 @@ export default {
     columns: [
       {
         title: 'Upcoming',
-        cards: [{ icon: 'Brain', title: 'Midterm study plan', priority: 'medium' }],
+        cards: [{ icon: 'Brain', title: 'Midterm study plan', priority: 'medium', due: '+9d' }],
       },
       {
         title: 'This week',
         cards: [
-          { icon: 'BookOpen', title: 'Reading response 3 — ch. 5', due: 'thu' },
+          { icon: 'BookOpen', title: 'Reading response 3 — ch. 5', due: 'thu', labels: [{ text: 'reading', color: 'blue' }] },
           { icon: 'Presentation', title: 'Group presentation slides', checklist: { done: 1, total: 4 }, assignee: 'Maya' },
         ],
       },
       {
         title: 'Submitted',
-        cards: [{ icon: 'Flask', title: 'Lab report — data section', labels: ['lab'] }],
+        cards: [{ icon: 'Flask', title: 'Lab report — data section', labels: [{ text: 'lab', color: 'green' }], priority: 'low' }],
       },
       { title: 'Graded', cards: [] },
     ],

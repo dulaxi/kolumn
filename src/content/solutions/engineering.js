@@ -74,17 +74,17 @@ export default {
   board: {
     name: 'Sprint 14',
     columns: [
-      { title: 'Backlog', cards: [{ icon: 'Cloud', title: 'Migrate avatar uploads to new bucket', checklist: { done: 0, total: 3 } }] },
+      { title: 'Backlog', cards: [{ icon: 'Cloud', title: 'Migrate avatar uploads to new bucket', checklist: { done: 0, total: 3 }, priority: 'medium' }] },
       {
         title: 'In progress',
         cards: [
-          { icon: 'Gauge', title: 'Rate-limit the export endpoint', priority: 'high', assignee: 'Priya' },
-          { icon: 'BookOpen', title: 'Write runbook for on-call', assignee: 'Lee' },
+          { icon: 'Gauge', title: 'Rate-limit the export endpoint', priority: 'high', assignee: 'Priya', due: '+2d' },
+          { icon: 'BookOpen', title: 'Write runbook for on-call', assignee: 'Lee', labels: [{ text: 'docs', color: 'gray' }] },
         ],
       },
       {
         title: 'Code review',
-        cards: [{ icon: 'Bug', title: 'Flaky test: realtime reconnect', labels: ['flaky'], due: '+3d' }],
+        cards: [{ icon: 'Bug', title: 'Flaky test: realtime reconnect', labels: [{ text: 'flaky', color: 'orange' }], due: '+3d', assignee: 'Priya' }],
       },
       { title: 'Done', cards: [] },
     ],

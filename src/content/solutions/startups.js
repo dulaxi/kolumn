@@ -79,18 +79,18 @@ export default {
     columns: [
       {
         title: 'Backlog',
-        cards: [{ icon: 'FileText', title: 'Investor update draft', priority: 'medium' }],
+        cards: [{ icon: 'FileText', title: 'Investor update draft', priority: 'medium', due: '+4d' }],
       },
       {
         title: 'This week',
         cards: [
-          { icon: 'Browser', title: 'Pricing page copy', labels: ['marketing'], due: 'fri' },
-          { icon: 'Lightning', title: 'Stripe webhook retries', priority: 'high', assignee: 'Priya' },
+          { icon: 'Browser', title: 'Pricing page copy', labels: [{ text: 'marketing', color: 'blue' }], due: 'fri' },
+          { icon: 'Lightning', title: 'Stripe webhook retries', priority: 'high', assignee: 'Priya', labels: [{ text: 'bug', color: 'red' }] },
         ],
       },
       {
         title: 'In review',
-        cards: [{ icon: 'Envelope', title: 'Onboarding email sequence', checklist: { done: 3, total: 5 } }],
+        cards: [{ icon: 'Envelope', title: 'Onboarding email sequence', checklist: { done: 3, total: 5 }, assignee: 'Jordan' }],
       },
       { title: 'Shipped', cards: [] },
     ],
