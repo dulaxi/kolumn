@@ -85,7 +85,7 @@ function HeroBoardPreview({ board }) {
         {cols.map((col) => (
           <div
             key={col.title}
-            className="flex flex-col gap-2 w-[260px] lg:w-[290px] max-w-full shrink-0"
+            className="flex flex-col gap-2 w-[290px] max-w-full shrink-0"
           >
             <div className="font-sans text-sm font-semibold text-[var(--text-secondary)] truncate px-0.5">{col.title}</div>
             <div className="flex flex-col gap-2">
@@ -131,7 +131,7 @@ function HelpCanvas({ help }) {
           </div>
         )}
         {help.kind === 'pill' && help.result?.length > 0 && (
-          <div className="flex flex-col gap-2 w-[260px] lg:w-[290px] max-w-full">
+          <div className="flex flex-col gap-2 w-[290px] max-w-full">
             {help.result.map((card) => (
               <BoardCard key={card.title} card={card} />
             ))}
@@ -227,8 +227,9 @@ export default function SolutionPage({ solution }) {
           four real 260px board columns (Column.jsx:152) plus three 16px
           gaps (1088px) sit inside it with room to spare at the xl breakpoint
           and up, with no horizontal scroll. Below xl the columns stack
-          vertically instead of scrolling, at the real column width — which is
-          responsive: 260px from sm, 290px from lg (Column.jsx:152). */}
+          vertically instead of scrolling, at 290px — the app's desktop column
+          width (Column.jsx:152), used at every size here so a card is one
+          size across the whole marketing site. */}
       <section id="board" className="max-w-[90rem] mx-auto px-6 sm:px-10 py-20">
         <div className="text-center mb-10">
           <h2 className={`${H2} mb-2`}>{board.name}</h2>
@@ -236,7 +237,7 @@ export default function SolutionPage({ solution }) {
         </div>
         <div className="flex flex-col gap-8 xl:flex-row xl:gap-4 xl:justify-center">
           {board.columns.map((col) => (
-            <div key={col.title} className="w-[260px] lg:w-[290px] max-w-full mx-auto xl:mx-0 shrink-0 flex flex-col gap-3">
+            <div key={col.title} className="w-[290px] max-w-full mx-auto xl:mx-0 shrink-0 flex flex-col gap-3">
               <div className="font-sans text-sm font-semibold text-[var(--text-secondary)]">{col.title}</div>
               <div className="flex flex-col gap-2">
                 {col.cards.map((card) => (

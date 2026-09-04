@@ -60,7 +60,7 @@ export default function TemplatePreview({ template }) {
               // card-list container) so the card inside renders at its true in-app
               // width rather than a narrower approximation that wraps titles
               // differently. The column title keeps the header's own px-0.5 inset.
-              <div key={col.title} className="w-[260px] lg:w-[290px] shrink-0 flex flex-col gap-2">
+              <div key={col.title} className="w-[290px] shrink-0 flex flex-col gap-2">
                 {/* Not a heading: this is a decorative board-preview label, not part of
                     the page's document outline (avoids a level skip under whatever
                     heading wraps this component). */}
