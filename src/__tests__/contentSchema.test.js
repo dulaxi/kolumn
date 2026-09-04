@@ -45,6 +45,10 @@ import * as legalUsagePolicy from '../content/legal/usage-policy'
 import * as legalResponsibleDisclosure from '../content/legal/responsible-disclosure'
 import * as legalPrivacyChoices from '../content/legal/privacy-choices'
 
+import * as compTrello from '../content/comparisons/trello'
+import * as compAsana from '../content/comparisons/asana'
+import * as compNotion from '../content/comparisons/notion'
+
 const MODULES = [
   ['src/content/about.js', about],
   ['src/content/blog.js', blog],
@@ -72,6 +76,9 @@ const MODULES = [
   ['src/content/legal/usage-policy.js', legalUsagePolicy],
   ['src/content/legal/responsible-disclosure.js', legalResponsibleDisclosure],
   ['src/content/legal/privacy-choices.js', legalPrivacyChoices],
+  ['src/content/comparisons/trello.js', compTrello],
+  ['src/content/comparisons/asana.js', compAsana],
+  ['src/content/comparisons/notion.js', compNotion],
 ]
 
 function isPlainObject(v) {

@@ -3,6 +3,7 @@ import { PRICING, pricingJsonLd } from './pricing'
 import { FEATURES_HUB, FEATURE_PAGES } from './features'
 import { SOLUTIONS_LIST } from './solutions'
 import { TEMPLATES } from './templates'
+import { COMPARISONS_LIST } from './comparisons'
 import { META as CONNECTORS_META, connectorsJsonLd } from './connectors'
 import { CUSTOMER_STORIES } from './customers'
 import { TUTORIALS } from './tutorials'
@@ -80,6 +81,19 @@ function templateRoute(template) {
     Component: lazy(() => import('../pages/marketing/TemplatePage')),
     load: () => import('../pages/marketing/TemplatePage'),
     props: { slug: template.slug },
+  }
+}
+
+function comparisonRoute({ META, COMPARISON }) {
+  return {
+    path: `/compare/${COMPARISON.slug}`,
+    title: META.title,
+    description: META.description,
+    ogTitle: META.ogTitle,
+    ogDescription: META.ogDescription,
+    Component: lazy(() => import('../pages/marketing/ComparisonPage')),
+    load: () => import('../pages/marketing/ComparisonPage'),
+    props: { comparison: COMPARISON },
   }
 }
 
@@ -188,6 +202,17 @@ export const MARKETING_ROUTES = [
     // exposed separately so the browser keeps code-splitting via Component.
     load: () => import('../pages/marketing/PricingPage'),
   },
+
+  // Compare -----------------------------------------------------------------
+  {
+    path: '/compare',
+    title: 'Compare Kolumn — Kolumn',
+    description:
+      'Three honest comparisons — Kolumn vs Trello, Asana, and Notion — with dated sources and a genuine reason to pick the other product.',
+    Component: lazy(() => import('../pages/marketing/ComparisonsPage')),
+    load: () => import('../pages/marketing/ComparisonsPage'),
+  },
+  ...COMPARISONS_LIST.map(comparisonRoute),
 
   // Features ------------------------------------------------------------
   {

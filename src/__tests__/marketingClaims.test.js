@@ -132,6 +132,21 @@ function localSentenceContaining(str, idx) {
 // values (React.lazy objects), which are not meaningful to string-walk and
 // aren't marketing prose anyway (route path/title/description are already
 // covered by the links + meta-length checks elsewhere).
+//
+// Also deliberately excludes src/content/comparisons/*.js: those pages
+// legitimately assert that a NAMED COMPETITOR ships an unshipped-for-Kolumn
+// feature (e.g. "Trello's Enterprise plan includes SSO", "Notion Business
+// adds unlimited guests") — sourced, dated facts about another company, not
+// a claim about Kolumn. The "unshipped features" scan below has no subject
+// awareness (it flags the bare phrase, sentence-scoped only by negation), so
+// registering these modules here would fail on exactly the sourced
+// competitor claims this page type exists to make. Kolumn-side claims in
+// those same files (what Kolumn does NOT have, e.g. "no mobile app yet")
+// are still written negated by hand and are covered instead by: the
+// hardcoded-price check and internal-links check above (both scan
+// CONTENT_FILES, which is a directory walk and already includes
+// comparisons/*.js), and src/__tests__/ComparisonPages.test.jsx, which
+// separately asserts every competitor claim carries a source + date.
 const CONTENT_MODULES = {
   'about.js': AboutMod,
   'blog.js': BlogMod,
@@ -263,26 +278,70 @@ describe('tier limits and gating (source: supabase/functions/chat/tier.ts + tool
 
 // ===========================================================================
 // 2. PRICES — source of truth: PRICING.limits in src/content/pricing.js.
-//    No other content module may contain a literal dollar figure; every
-//    price shown anywhere must be interpolated from PRICING.limits so a
-//    second, independently-editable "$8" can never exist.
+//    No other content module may contain a literal dollar figure for
+//    KOLUMN'S OWN pricing; every Kolumn price shown anywhere must be
+//    interpolated from PRICING.limits so a second, independently-editable
+//    "$8" can never exist.
+//
+//    Exception: the /compare/<slug> pages (src/content/comparisons/*.js)
+//    legitimately cite the COMPETITOR's price — a fact about a company
+//    Kolumn doesn't control, sourced from that vendor's own pricing page
+//    (see each module's `competitorPricing.source`/`.checkedOn` and each
+//    `competitorClaims[].source`/`.checkedOn`), not a second copy of a
+//    Kolumn number. That data is namespaced under two object keys —
+//    `competitorPricing` (the tier/price table) and `competitorClaims` (the
+//    sourced, dated sentences the page's "Sources" section renders, several
+//    of which restate a competitor price in prose) — specifically so it's
+//    structurally distinguishable from ordinary prose. stripNamedBlock below
+//    removes only the text inside those two balanced-brace/bracket blocks
+//    before scanning, so a stray Kolumn price typed anywhere else in the
+//    same file (inside either block or not) still trips the guard. This
+//    narrows the assertion to "no hardcoded KOLUMN price," which is what
+//    the guard was actually protecting — it does not weaken the check for
+//    Kolumn's own numbers, anywhere, including inside a comparisons/*.js
+//    file outside these two keys.
 // ===========================================================================
+
+// Removes exactly the value of `<key>: { ... }` or `<key>: [ ... ]` (matching
+// brace/bracket depth, so nested objects/arrays inside it are handled) from
+// `text`, for every occurrence of `key`. Used to carve the one legitimate
+// "foreign price" block out of a file before the hardcoded-price regex scans
+// it — see the comment above.
+function stripNamedBlock(text, key) {
+  const re = new RegExp(`${key}\\s*:\\s*[[{]`)
+  let result = text
+  for (;;) {
+    const match = re.exec(result)
+    if (!match) return result
+    const openChar = result[match.index + match[0].length - 1]
+    const closeChar = openChar === '[' ? ']' : '}'
+    let depth = 1
+    let i = match.index + match[0].length
+    while (i < result.length && depth > 0) {
+      if (result[i] === openChar) depth += 1
+      else if (result[i] === closeChar) depth -= 1
+      i += 1
+    }
+    result = result.slice(0, match.index) + result.slice(i)
+  }
+}
 
 describe('no content module hardcodes a dollar price literal (source: PRICING.limits in src/content/pricing.js)', () => {
   const priceFiles = CONTENT_FILES.filter((f) => f !== resolve(CONTENT_DIR, 'pricing.js'))
 
   for (const file of priceFiles) {
     test(`${rel(file)} contains no literal "$<digit>"`, () => {
-      const text = readFileSync(file, 'utf8')
+      const raw = readFileSync(file, 'utf8')
       // Raw source text, not the imported/evaluated module: a legitimate
       // `` `$${proMonthlyUsd}/month` `` interpolation must NOT trip this —
       // in source it reads "$${proMonthlyUsd}", where the char after the
       // first "$" is another "$", not a digit, so /\$\d/ correctly leaves
       // it alone. Only an actual literal like '$8' or "$8/month" matches.
+      const text = stripNamedBlock(stripNamedBlock(raw, 'competitorPricing'), 'competitorClaims')
       const matches = [...text.matchAll(/\$\d/g)]
       expect(
         matches.map((m) => m[0]),
-        `${rel(file)} has a hardcoded price literal — every dollar figure must come from PRICING.limits (src/content/pricing.js), not a second typed copy`,
+        `${rel(file)} has a hardcoded price literal — every Kolumn dollar figure must come from PRICING.limits (src/content/pricing.js), not a second typed copy. (Competitor prices inside a "competitorPricing" or "competitorClaims" block are exempt — see the comment above this describe block.)`,
       ).toEqual([])
     })
   }
