@@ -81,10 +81,6 @@ export const COMPARISON = {
       body: 'Asana adds goals, portfolios, dependencies, approvals, and timeline/Gantt planning on top of tasks — real project-management structure Kolumn does not have and is not building toward. If a team needs those, Asana is built for it and Kolumn is not.',
     },
     {
-      title: 'You need more than 2 free collaborators without paying',
-      body: "Asana's free Personal plan caps out at 2 people; a bigger free team needs a paid Asana tier. Kolumn's Free plan has no collaborator cap, so this cuts the other way for larger free teams — worth naming because it is the one place Asana's free tier is more restrictive, not less.",
-    },
-    {
       title: 'You want workflow automation across many tools',
       body: 'AI Studio and unlimited automations/forms (from Starter up) let Asana trigger actions across connected systems. Kolumn has no automation-rule builder and no third-party connections.',
     },

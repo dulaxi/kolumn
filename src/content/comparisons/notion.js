@@ -27,7 +27,7 @@ export const COMPARISON = {
   positioning: {
     kolumn: KOLUMN_POSITIONING,
     competitor:
-      "Notion's own help center defines the core unit as a database — “a collection of pages” that displays as “a list, calendar, chart, and more,” including a board view: “your data isn't limited to a table.” A Notion board is a view configuration on top of a database of pages, and that database in turn lives inside Notion's broader page/block document model — the same content can be a table one moment and a kanban board the next, because the board is a lens, not a separate structure.",
+      "Notion's own help center puts it directly: “databases in Notion are collections of pages” that display as “a list, calendar, chart, and more,” including a board view — “your data isn't limited to a table.” A Notion board is a view configuration on top of a database of pages, and that database in turn lives inside Notion's broader page/block document model — the same content can be a table one moment and a kanban board the next, because the board is a lens, not a separate structure.",
   },
   competitorPricing: {
     source: 'https://www.notion.com/pricing',
@@ -120,7 +120,7 @@ export const COMPARISON = {
       checkedOn: CHECKED_ON,
     },
     {
-      text: "Notion's help center defines a database as \"a collection of pages\" that can be displayed as a table, list, board, calendar, gallery, or timeline — multiple views of one underlying database, not separate structures.",
+      text: "Notion's help center states that \"databases in Notion are collections of pages\" that can be displayed as a table, list, board, calendar, gallery, or timeline — multiple views of one underlying database, not separate structures.",
       source: 'https://www.notion.com/help/intro-to-databases',
       checkedOn: CHECKED_ON,
     },

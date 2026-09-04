@@ -50,6 +50,7 @@ import * as UsagePolicyMod from '../content/legal/usage-policy'
 import * as ResponsibleDisclosureMod from '../content/legal/responsible-disclosure'
 import * as PrivacyChoicesMod from '../content/legal/privacy-choices'
 import * as SolutionsMod from '../content/solutions/index'
+import { COMPARISONS_LIST } from '../content/comparisons'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '../..')
@@ -126,6 +127,60 @@ function localSentenceContaining(str, idx) {
   return str
 }
 
+// Paths within a comparison module's COMPARISON export that are
+// structurally guaranteed to describe the COMPETITOR, not Kolumn — the
+// "their pricing, their claims, the choose-them-instead bodies" carve-out.
+// Everything NOT rooted under one of these paths is a Kolumn-side or
+// neutral field and must obey the same unshipped-feature rules as every
+// other content module (see collectComparisonKolumnStrings below).
+//
+//   - `positioning.competitor` — prose describing the competitor's own
+//     model (Trello's lists, Asana's project views, Notion's databases).
+//   - `competitorPricing` — the competitor's own tier table.
+//   - `competitorClaims` — sourced, dated sentences about the competitor.
+//   - `chooseThemInstead` — genuinely mixes both subjects in one string
+//     (an unnegated true competitor fact — "Trello ships iOS and Android
+//     apps" — paired with an already-negated Kolumn admission — "Kolumn is
+//     a web app with no mobile app yet" — in the same body). Per-sentence
+//     negation scanning would false-positive on the competitor half (this
+//     is the exact "Trello ships iOS and Android apps" case the guard must
+//     NOT trip on), so this field is exempted structurally rather than
+//     scanned; its own honesty (real scenarios, not a strawman) is a
+//     judgment call made at content-review time, not a regex's job.
+const COMPARISON_COMPETITOR_ONLY_PATHS = new Set([
+  'COMPARISON.positioning.competitor',
+  'COMPARISON.competitorPricing',
+  'COMPARISON.competitorClaims',
+  'COMPARISON.chooseThemInstead',
+])
+
+// Walks a comparison module's COMPARISON and META exports (its actual,
+// evaluated string values, in authoring order, same as collectStringsInOrder
+// above) and returns every string NOT rooted under a
+// COMPARISON_COMPETITOR_ONLY_PATHS entry, tagged with its dotted path for
+// readable failure messages. This is the subject-aware replacement for the
+// blanket comparisons/*.js exclusion — see the CONTENT_MODULES comment.
+function collectComparisonKolumnStrings(mod) {
+  const out = []
+  function walk(value, path) {
+    if (COMPARISON_COMPETITOR_ONLY_PATHS.has(path)) return
+    if (typeof value === 'string') {
+      out.push({ str: value, path })
+      return
+    }
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => walk(v, `${path}[${i}]`))
+      return
+    }
+    if (isPlainObject(value)) {
+      for (const k of Object.keys(value)) walk(value[k], `${path}.${k}`)
+    }
+  }
+  walk(mod.COMPARISON, 'COMPARISON')
+  walk(mod.META, 'META')
+  return out
+}
+
 // Every src/content/*.js module, as its evaluated namespace object, keyed
 // by its path relative to src/content/ (for failure messages). Deliberately
 // excludes marketing-routes.js: its route entries carry `Component: lazy(...)`
@@ -133,16 +188,26 @@ function localSentenceContaining(str, idx) {
 // aren't marketing prose anyway (route path/title/description are already
 // covered by the links + meta-length checks elsewhere).
 //
-// Also deliberately excludes src/content/comparisons/*.js: those pages
-// legitimately assert that a NAMED COMPETITOR ships an unshipped-for-Kolumn
-// feature (e.g. "Trello's Enterprise plan includes SSO", "Notion Business
-// adds unlimited guests") — sourced, dated facts about another company, not
-// a claim about Kolumn. The "unshipped features" scan below has no subject
-// awareness (it flags the bare phrase, sentence-scoped only by negation), so
-// registering these modules here would fail on exactly the sourced
-// competitor claims this page type exists to make. Kolumn-side claims in
+// Also deliberately excludes src/content/comparisons/*.js from this plain,
+// subject-blind CONTENT_MODULES map: those pages legitimately assert that a
+// NAMED COMPETITOR ships an unshipped-for-Kolumn feature (e.g. "Trello's
+// Enterprise plan includes SSO", "Notion Business adds unlimited guests") —
+// sourced, dated facts about another company, not a claim about Kolumn.
+// This does NOT mean comparisons/*.js is unchecked, though — a prior version
+// of this file excluded it wholesale, and a planted false claim
+// ("Kolumn now ships a native iOS app and a live Slack integration.") on a
+// field describing Kolumn passed the full suite undetected. Instead, the
+// "unshipped features" describe block below scans comparisons/*.js
+// separately and SUBJECT-AWARE, via collectComparisonKolumnStrings(): it
+// walks each module's actual COMPARISON/META export (structured data, not
+// raw source text) and skips only the paths that are structurally
+// guaranteed to describe the competitor — `positioning.competitor`,
+// `competitorPricing`, `competitorClaims`, `chooseThemInstead` (see
+// COMPARISON_COMPETITOR_ONLY_PATHS) — everything else (positioning.kolumn,
+// differentiators, faq, hero, meta, …) is scanned under the exact same
+// negation-aware rule as every other content module. Kolumn-side claims in
 // those same files (what Kolumn does NOT have, e.g. "no mobile app yet")
-// are still written negated by hand and are covered instead by: the
+// are still written negated by hand and are ALSO covered by: the
 // hardcoded-price check and internal-links check above (both scan
 // CONTENT_FILES, which is a directory walk and already includes
 // comparisons/*.js), and src/__tests__/ComparisonPages.test.jsx, which
@@ -592,6 +657,26 @@ describe('unshipped features are never claimed as live (source: docs/superpowers
         }
       }
       expect(offenders, `unqualified "${label}" claim in src/content/** — this feature is marked not-shipped in _KOLUMN-BRIEF.md: ${offenders.join('; ')}`).toEqual([])
+    })
+
+    test(`no unqualified claim of "${label}" in src/content/comparisons/**'s Kolumn-side fields`, () => {
+      const offenders = []
+      for (const mod of COMPARISONS_LIST) {
+        const strings = collectComparisonKolumnStrings(mod)
+        for (const { str, path } of strings) {
+          for (const m of str.matchAll(re)) {
+            const sentence = localSentenceContaining(str, m.index).trim()
+            if (sentence.endsWith('?')) continue // a question isn't a claim
+            if (!NEGATION_RE.test(sentence)) {
+              offenders.push(`${mod.COMPARISON.slug}.js ${path} (near: "${sentence.replace(/\s+/g, ' ').slice(0, 160)}")`)
+            }
+          }
+        }
+      }
+      expect(
+        offenders,
+        `unqualified "${label}" claim about KOLUMN in src/content/comparisons/** — competitor-only fields (positioning.competitor, competitorPricing, competitorClaims, chooseThemInstead) are exempt, everything else describing Kolumn must obey the same not-shipped rule as every other content module: ${offenders.join('; ')}`,
+      ).toEqual([])
     })
 
     test(`no bare mention of "${label}" hardcoded in a src/pages/marketing/**/*.jsx component`, () => {
