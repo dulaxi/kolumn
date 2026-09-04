@@ -74,18 +74,22 @@ function BoardCard({ card }) {
 // and up (no scroll); below that the box is full-width, so it stacks to one
 // column instead of scrolling.
 function HeroBoardPreview({ board }) {
-  const cols = board.columns.slice(0, 2)
+  // One column, not two. The hero's right half measures ~516px at every
+  // desktop width, and two 260px columns plus the panel padding need ~580 —
+  // the second column was being clipped. A single column keeps the card at
+  // its true in-app width (Column.jsx:152) with nothing cut off or scrolling.
+  const cols = board.columns.slice(0, 1)
   return (
-    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 sm:p-5">
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 sm:p-5 flex justify-center">
       <div className="flex flex-col sm:flex-row gap-5">
-        {cols.map((col, i) => (
+        {cols.map((col) => (
           <div
             key={col.title}
-            className={`flex-col gap-2 w-[260px] max-w-full shrink-0 ${i === 0 ? 'flex' : 'hidden sm:flex'}`}
+            className="flex flex-col gap-2 w-[260px] max-w-full shrink-0"
           >
             <div className="font-sans text-sm font-semibold text-[var(--text-secondary)] truncate px-0.5">{col.title}</div>
             <div className="flex flex-col gap-2">
-              {col.cards.slice(0, 2).map((card) => (
+              {col.cards.slice(0, 3).map((card) => (
                 <BoardCard key={card.title} card={card} />
               ))}
             </div>
