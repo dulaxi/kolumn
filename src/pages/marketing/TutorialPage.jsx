@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { ArrowLeft, Clock, Sparkle, Crown } from '@phosphor-icons/react'
 import Button from '../../components/ui/Button'
 import InlineNotice from '../../components/ui/InlineNotice'
-import Prose from '../../components/marketing/Prose'
 import TutorialCard from '../../components/tutorials/TutorialCard'
 import { getTutorial, relatedTutorials } from '../../content/tutorials'
 
@@ -14,8 +15,65 @@ import { getTutorial, relatedTutorials } from '../../content/tutorials'
 // `tutorial.minutes` (read time) is only set on entries with a real body —
 // a read time on an empty page is a fabricated signal — so the "min" pill
 // only renders when it's present.
-
+//
+// tutorial.body is markdown (src/content/articles/tutorials/<slug>.md via
+// src/lib/content.js), rendered with react-markdown + remark-gfm. The
+// component map below mirrors src/components/marketing/Prose.jsx's type
+// scale exactly, wrapped in the same `flex flex-col gap-5` rhythm, so a
+// migrated tutorial renders identically to its old block-array body.
 const SECTION = 'px-6 sm:px-10 max-w-6xl mx-auto'
+
+const markdownComponents = {
+  h2: ({ children }) => (
+    <h2 className="font-heading font-[425] text-2xl text-[var(--text-primary)] tracking-tight mt-12 mb-4">{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="font-heading font-[425] text-xl text-[var(--text-primary)] tracking-tight mt-8 mb-3">{children}</h3>
+  ),
+  p: ({ children }) => <p className="text-[17px] leading-7 text-[var(--text-primary)]">{children}</p>,
+  ul: ({ children }) => (
+    <ul className="pl-6 flex flex-col gap-2 text-[17px] leading-7 text-[var(--text-primary)] list-disc marker:text-[var(--text-muted)]">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="pl-6 flex flex-col gap-2 text-[17px] leading-7 text-[var(--text-primary)] list-decimal marker:text-[var(--text-muted)]">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => <li>{children}</li>,
+  // Fenced code blocks: match Prose's CodeBlock exactly (plain text inside
+  // the <pre>, no nested styled <code>) rather than nesting the inline
+  // `code` component's chip styling inside it.
+  pre: ({ children }) => {
+    const codeEl = Array.isArray(children) ? children[0] : children
+    const text = codeEl?.props?.children ?? children
+    return (
+      <pre className="font-mono text-[14px] leading-6 text-[var(--text-primary)] bg-[var(--surface-input)] border border-[var(--border-default)] rounded-lg p-4 overflow-x-auto whitespace-pre-wrap">
+        {text}
+      </pre>
+    )
+  },
+  code: ({ children }) => (
+    <code className="font-mono text-[13px] bg-[var(--surface-raised)] px-1.5 py-0.5 rounded-md text-[var(--text-primary)]">
+      {children}
+    </code>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-[var(--border-default)] pl-5 text-[17px] leading-7 text-[var(--text-secondary)] italic">
+      {children}
+    </blockquote>
+  ),
+  strong: ({ children }) => <strong className="text-[var(--text-primary)] font-semibold">{children}</strong>,
+  a: ({ children, href }) => (
+    <a
+      href={href}
+      className="text-[var(--text-primary)] underline underline-offset-[3px] decoration-[var(--color-sand)] hover:decoration-[var(--text-secondary)]"
+    >
+      {children}
+    </a>
+  ),
+}
 
 export default function TutorialPage({ slug: slugProp }) {
   const params = useParams()
@@ -70,7 +128,11 @@ export default function TutorialPage({ slug: slugProp }) {
       <section className={`${SECTION} py-12`}>
         <div className="mx-auto max-w-[640px]">
           {tutorial.body ? (
-            <Prose blocks={tutorial.body} />
+            <div className="flex flex-col gap-5">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {tutorial.body}
+              </ReactMarkdown>
+            </div>
           ) : (
             <InlineNotice variant="info" icon={false}>
               This tutorial is being written. In the meantime, the summary above is accurate — {tutorial.summary}

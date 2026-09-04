@@ -156,7 +156,16 @@ const CONTENT_MODULES = {
 const CONTENT_DIR = resolve(repoRoot, 'src/content')
 const MARKETING_PAGES_DIR = resolve(repoRoot, 'src/pages/marketing')
 
-const CONTENT_FILES = listFiles(CONTENT_DIR, '.js')
+// CONTENT_FILES is every raw content file scanned as text below: the .js
+// data modules AND the .md article bodies under src/content/articles/
+// (src/content/articles/support/<slug>.md, .../tutorials/<slug>.md —
+// loaded at build time by src/lib/content.js, see support.js/tutorials.js).
+// A markdown body is prose exactly like a hand-written .js string — it can
+// carry the same dead link or hardcoded price a .js file could — so every
+// text-scanning check below (prices, internal links, artifacts, the
+// single-contact-email check) must see both. listFiles recurses, so this
+// one CONTENT_DIR walk already picks up the nested articles/ subfolders.
+const CONTENT_FILES = [...listFiles(CONTENT_DIR, '.js'), ...listFiles(CONTENT_DIR, '.md')]
 const MARKETING_PAGE_FILES = listFiles(MARKETING_PAGES_DIR, '.jsx')
 
 // ===========================================================================

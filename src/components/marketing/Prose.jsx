@@ -1,9 +1,16 @@
-// Shared body renderer for the content-block system used by tutorials,
-// blog posts, and customer stories (src/content/{tutorials,blog,customers}.js).
-// Deliberately NOT a markdown pipeline — every article body is a plain JS
-// array of blocks: { type: 'heading' | 'paragraph' | 'list' | 'code', ... }.
-// This keeps content in ordinary data modules (no build-time markdown dep)
+// Shared body renderer for the content-block system used by blog posts and
+// customer stories (src/content/{blog,customers}.js). Deliberately NOT a
+// markdown pipeline — every article body here is a plain JS array of
+// blocks: { type: 'heading' | 'paragraph' | 'list' | 'code', ... }. This
+// keeps content in ordinary data modules (no build-time markdown dep)
 // while the existing prerenderer picks these pages up unchanged.
+//
+// Tutorials moved off this block system to markdown bodies (see
+// src/content/tutorials.js, src/lib/content.js) — TutorialPage.jsx now
+// renders via react-markdown, with its own component map styled to match
+// the type scale below exactly. If blog/customers ever move to markdown
+// too, they should follow that same pattern rather than reintroducing a
+// block system.
 //
 // Block shapes:
 //   { type: 'heading', level: 2 | 3, text }

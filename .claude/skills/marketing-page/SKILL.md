@@ -69,7 +69,7 @@ mapping.
    `MARKETING_ROUTES`: `path`, `title` (≤60 chars), `description` (≤155),
    `Component: lazy(() => import(...))`, and `load: () => import(...)` (the
    *same* factory, unwrapped — prerendering needs the resolved module, see
-   §4 below). Add `ogTitle`/`ogDescription`/`jsonLd` if they differ from
+   §5 below). Add `ogTitle`/`ogDescription`/`jsonLd` if they differ from
    title/description. Set `thin: true` only if the page has no real body yet
    (a "coming soon" stub) — it stays reachable but drops out of the sitemap
    and gets `noindex, follow` (see `src/lib/headMeta.js` `ROBOTS_THIN`). For
@@ -92,7 +92,41 @@ mapping.
    `src/__tests__/marketingClaims.test.js` (the claims guard — see the traps
    section). Don't ship copy that test doesn't cover.
 
-## 3. House rules (enforced, not just style preference)
+## 3. Writing an article body (support articles & tutorials)
+
+Support articles (`src/content/support.js`) and tutorials
+(`src/content/tutorials.js`) mostly exist as title + summary already, with
+`body: null` — 29 of them right now. Writing one is a markdown file, not a
+code change:
+
+1. Add `src/content/articles/support/<slug>.md` or
+   `src/content/articles/tutorials/<slug>.md` — the filename (minus `.md`)
+   must match the entry's `slug` exactly. Frontmatter is a `---`-delimited
+   block with one required key, `title: ...` (a `key: value` line, not real
+   YAML — see the parser in `src/lib/content.js`). Everything after the
+   closing `---` is the body, standard GFM markdown.
+2. Never type a price or limit literally — reference it instead:
+   `{{PRICING.limits.proMonthlyUsd}}` pulls the live number from
+   `src/content/pricing.js` at build time. A literal `$8` fails
+   `marketingClaims.test.js`'s hardcoded-price check, which scans `.md`
+   files under `src/content/articles/` the same as every `.js` content
+   module.
+3. **The body's existence is what promotes the page.** No registry change
+   needed: `getSupportArticleBody`/`getTutorialBody` (`src/lib/content.js`)
+   attach the markdown to the matching entry by slug at import time, and
+   `supportArticleRoute`/`tutorialRoute` in `marketing-routes.js` set
+   `thin: !article.body` — a real body takes the page out of the "coming
+   soon" state, into `sitemap.xml`, and off `noindex`. Malformed
+   frontmatter (no opening/closing `---`, a line that isn't `key: value`,
+   a missing `title`) fails the build loudly, naming the file, instead of
+   silently shipping an empty article.
+4. Metadata stays in JS — the markdown file is body only. `title`,
+   `summary`, category/topic, ordering, `updated`, `related`, `tags` all
+   still live in `support.js`/`tutorials.js`. For a tutorial specifically,
+   also add `minutes` (read time) to its entry once it has a real body —
+   see the fabricated-signal note in that file's header.
+
+## 4. House rules (enforced, not just style preference)
 
 - **Tokens, never hex.** `var(--token)` via Tailwind arbitrary values
   (`bg-[var(--surface-card)]`) — see `src/index.css` for the token list.
@@ -114,7 +148,7 @@ mapping.
   declaratives — see `_KOLUMN-BRIEF.md` §Voice. No mascot name in copy
   (Klay is illustration-only here).
 
-## 4. The traps
+## 5. The traps
 
 Each of these cost real time building this system. Symptom, then rule.
 
@@ -168,7 +202,7 @@ Each of these cost real time building this system. Symptom, then rule.
   not indexed. Don't publish a real URL for a page with nothing on it
   without setting this.
 
-## 5. Verify before calling it done
+## 6. Verify before calling it done
 
 ```bash
 npm run build                       # vite build + vite build --ssr + scripts/prerender.mjs
