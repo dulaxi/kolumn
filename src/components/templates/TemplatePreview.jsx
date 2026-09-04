@@ -40,13 +40,16 @@ function PreviewCard({ card }) {
 export default function TemplatePreview({ template }) {
   return (
     <div className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--surface-page)] p-6 overflow-x-auto">
-      <div className="flex gap-4 min-w-max">
+      <div className="flex gap-3 sm:gap-5 min-w-max">
         {template.columns.map((col) => (
-          <div key={col.title} className="w-[220px] shrink-0 rounded-[10px] bg-[var(--surface-card)] p-3 flex flex-col gap-2">
+          // 290px + px-0.5 mirrors the real board column (Column.jsx:152 at lg),
+          // so the card inside renders at its true in-app width rather than a
+          // narrower approximation that wraps titles differently.
+          <div key={col.title} className="w-[290px] shrink-0 flex flex-col gap-2 px-0.5">
             {/* Not a heading: this is a decorative board-preview label, not part of
                 the page's document outline (avoids a level skip under whatever
                 heading wraps this component). */}
-            <p className="text-[13px] font-medium text-[var(--text-primary)] px-1">{col.title}</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)] px-0.5 pb-1">{col.title}</p>
             {col.cards.length > 0 ? (
               col.cards.map((card) => <PreviewCard key={card.title} card={card} />)
             ) : (

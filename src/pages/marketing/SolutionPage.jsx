@@ -90,9 +90,14 @@ function HeroBoardPreview({ board }) {
   const cols = board.columns.slice(0, 2)
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-4 sm:p-5">
-      <div className="grid grid-cols-2 gap-4">
+      {/* Scrolls rather than squeezing: a 2-up grid rendered these cards at
+          146px on a phone, roughly 40% of their true in-app width, which wraps
+          titles that would fit on one line in the product. Columns now hold the
+          real board width (Column.jsx:152) and the strip scrolls, which is also
+          what a real board does. */}
+      <div className="flex gap-3 sm:gap-5 overflow-x-auto -mx-1 px-1">
         {cols.map((col) => (
-          <div key={col.title} className="flex flex-col gap-2 min-w-0">
+          <div key={col.title} className="flex flex-col gap-2 w-[260px] lg:w-[290px] shrink-0 px-0.5">
             <div className="font-sans text-sm font-semibold text-[var(--text-secondary)] truncate">{col.title}</div>
             <div className="flex flex-col gap-2">
               {col.cards.slice(0, 2).map((card) => (
