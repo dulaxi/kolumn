@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "startups".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'startups',
   name: 'Startups',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: 'Kolumn for startups — an AI kanban for launches',
     description:
-      'Paste standup notes or a Slack thread and get cards with owners and dates. A kanban that keeps up with the pivot. Free to start; Pro is $8/month.',
+      `Paste standup notes or a Slack thread and get cards with owners and dates. A kanban that keeps up with the pivot. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for startups',

@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "nonprofits".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'nonprofits',
   name: 'Nonprofits',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: 'Kolumn for nonprofits — a kanban for grants and programs',
     description:
-      `Paste a funder's timeline and get cards with due dates. One workspace per program, boards volunteers can read in a minute. Free to start; Pro is $8/month.`,
+      `Paste a funder's timeline and get cards with due dates. One workspace per program, boards volunteers can read in a minute. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for nonprofits',
@@ -91,7 +93,7 @@ export default {
   faq: [
     {
       q: 'Is there a nonprofit discount?',
-      a: 'Not yet. Free covers most volunteer boards; Pro is $8 per person per month for the people who run the pill.',
+      a: `Not yet. Free covers most volunteer boards; Pro is $${PRICING.limits.proMonthlyUsd} per person per month for the people who run the pill.`,
     },
   ],
   cta: { heading: 'Start the next grant cycle on a board.' },

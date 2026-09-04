@@ -12,6 +12,8 @@
 // number. See docs/superpowers/specs/marketing/customers.md and
 // _KOLUMN-BRIEF.md before adding a real customer story.
 
+import { PRICING } from './pricing'
+
 export const CUSTOMER_STORIES = [
   {
     slug: 'two-person-studio',
@@ -192,7 +194,7 @@ export const CUSTOMER_STORIES = [
       { type: 'heading', level: 2, text: 'Why Pro' },
       {
         type: 'paragraph',
-        text: 'The write tools. "Move everything in Support older than a week to Shipped if it’s completed" is a sentence, not a ten-minute tidy. At $8 a month it replaced two tools she was paying more for and using less.',
+        text: `The write tools. "Move everything in Support older than a week to Shipped if it’s completed" is a sentence, not a ten-minute tidy. At $${PRICING.limits.proMonthlyUsd} a month it replaced two tools she was paying more for and using less.`,
       },
     ],
   },

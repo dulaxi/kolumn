@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "students".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'students',
   name: 'Students & educators',
@@ -94,7 +96,7 @@ export default {
   faq: [
     {
       q: 'Is there a student plan?',
-      a: `Free is the student plan: boards, sharing and 20 AI messages a day. Pro is $8/month if you want the AI to move and assign cards for you.`,
+      a: `Free is the student plan: boards, sharing and 20 AI messages a day. Pro is $${PRICING.limits.proMonthlyUsd}/month if you want the AI to move and assign cards for you.`,
     },
   ],
   cta: { heading: 'Put the semester on a board before week two.' },

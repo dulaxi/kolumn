@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "healthcare".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'healthcare',
   name: 'Healthcare',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: 'Kolumn for healthcare teams — a kanban for clinic ops',
     description:
-      'Operational work for clinics on one realtime board: checklists, templates for recurring audits, members-only access. Free to start; Pro is $8/month.',
+      `Operational work for clinics on one realtime board: checklists, templates for recurring audits, members-only access. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for healthcare teams',

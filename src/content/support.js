@@ -15,6 +15,7 @@
 // supabase/functions/account/index.ts's /delete-account route.
 
 export { CONTACT_EMAIL as SUPPORT_CONTACT } from './pricing'
+import { PRICING } from './pricing'
 
 export const SUPPORT_META = {
   title: 'Kolumn support',
@@ -46,7 +47,7 @@ The count is tracked per calendar day on the server and starts over once a day. 
 
 - **Keep working without the AI.** Boards, cards, drag-and-drop, and the pill's comma/newline list splitting all keep working — only AI responses pause.
 - **Batch your asks.** One message like "add cards for the three follow-ups from today's call, all due Friday" costs the same as a single word.
-- **Upgrade to Pro.** Pro removes the daily limit and turns on every AI tool in the pill — move, update, complete, and reorganize, not just create. Pro is priced at $8 a month; paid billing hasn't launched yet, so upgrading today doesn't charge a card. Open \`Settings → Billing\` in the app, or see [Upgrade to Pro](/upgrade/pro).
+- **Upgrade to Pro.** Pro removes the daily limit and turns on every AI tool in the pill — move, update, complete, and reorganize, not just create. Pro is priced at $${PRICING.limits.proMonthlyUsd} a month; paid billing hasn't launched yet, so upgrading today doesn't charge a card. Open \`Settings → Billing\` in the app, or see [Upgrade to Pro](/upgrade/pro).
 
 ## If you see a different message
 
@@ -230,7 +231,7 @@ export const SUPPORT_CATEGORIES = [
       {
         slug: 'free-vs-pro',
         title: 'Free vs Pro',
-        summary: '20 AI messages a day and create-only pill actions on Free; every AI tool on Pro at $8/month.',
+        summary: `20 AI messages a day and create-only pill actions on Free; every AI tool on Pro at $${PRICING.limits.proMonthlyUsd}/month.`,
         body: null,
       },
       {

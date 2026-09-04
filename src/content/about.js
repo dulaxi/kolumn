@@ -6,6 +6,8 @@
 //
 // VALUES is shared with /careers (imported there, not duplicated).
 
+import { PRICING } from './pricing'
+
 export const ABOUT_META = {
   title: "About Kolumn — a kanban that stayed a kanban",
   description:
@@ -87,7 +89,7 @@ export const DETAILS = {
   heading: 'Details',
   rows: [
     { label: 'Product', value: 'Kolumn — kanban with an AI layer' },
-    { label: 'Plans', value: 'Free · Pro $8/month' },
+    { label: 'Plans', value: `Free · Pro $${PRICING.limits.proMonthlyUsd}/month` },
     { label: 'Runs on', value: 'React, Supabase (Postgres), Anthropic models' },
   ],
 }

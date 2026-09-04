@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "legal".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'legal',
   name: 'Legal',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: 'Kolumn for legal teams — a kanban for matters',
     description:
-      'Paste a client email and get cards with deadlines. One members-only board per matter, row-level security, export any time. Free to start; Pro is $8/month.',
+      `Paste a client email and get cards with deadlines. One members-only board per matter, row-level security, export any time. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for legal teams',

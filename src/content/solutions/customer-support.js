@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "customer-support".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'customer-support',
   name: 'Customer support',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: 'Kolumn for customer support — a kanban for escalations',
     description:
-      'Paste a customer thread and get a card with a summary and priority. Track escalations and handoffs on one board. Free to start; Pro is $8/month.',
+      `Paste a customer thread and get a card with a summary and priority. Track escalations and handoffs on one board. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for customer support',

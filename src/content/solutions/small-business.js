@@ -1,5 +1,7 @@
 // Copy source: docs/superpowers/specs/marketing/solutions.md § "small-business".
 // Schema: solution-page.md §4.
+import { PRICING } from '../pricing'
+
 export default {
   slug: 'small-business',
   name: 'Small business',
@@ -9,7 +11,7 @@ export default {
   seo: {
     title: `Kolumn for small business — a to-do board that runs itself`,
     description:
-      `Type what's on your mind and get cards with dates and owners. A kanban for shops, studios and services, with no setup. Free to start; Pro is $8/month.`,
+      `Type what's on your mind and get cards with dates and owners. A kanban for shops, studios and services, with no setup. Free to start; Pro is $${PRICING.limits.proMonthlyUsd}/month.`,
   },
   hero: {
     eyebrow: 'Kolumn for small business',
