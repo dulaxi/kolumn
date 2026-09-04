@@ -22,7 +22,16 @@ function NavMenu({ menu }) {
   const [open, setOpen] = useState(false)
   const width = menu.columns.length > 1 ? 'w-[26rem]' : 'w-[14rem]'
   return (
-    <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    // pb-2/-mb-2 extends the hover region down over the 6px gap between the
+    // trigger and the Popover panel without shifting the nav's layout. Without
+    // it, moving the cursor from the button toward the menu crosses dead space
+    // that belongs to neither, firing onMouseLeave and closing the menu before
+    // it can be reached.
+    <div
+      className="relative pb-2 -mb-2"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <Popover
         open={open}
         onOpenChange={setOpen}
