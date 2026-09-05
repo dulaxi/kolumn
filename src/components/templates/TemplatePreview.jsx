@@ -45,7 +45,8 @@ function PreviewCard({ card }) {
 // other card depiction on the marketing site — this one keeps a horizontal
 // scroll rather than shrinking cards to fit (spec: "one card width
 // everywhere", with this as the one deliberate exception). To keep that
-// scroll from reading as a layout cutoff, the right edge fades to
+// scroll from reading as a layout cutoff, the caption below says so —
+// a gradient here washed out the last column instead of hinting at it, so
 // transparent and an explicit "scroll for more columns" hint sits under
 // the strip.
 export default function TemplatePreview({ template }) {
@@ -76,12 +77,6 @@ export default function TemplatePreview({ template }) {
             ))}
           </div>
         </div>
-        {/* Fade hint: the strip always overflows (every template has 4-5
-            columns), so this is unconditional rather than scroll-state-driven. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute top-6 bottom-6 right-0 w-16 rounded-r-xl bg-gradient-to-l from-[var(--surface-page)] to-transparent"
-        />
       </div>
       <p className="mt-2 flex items-center gap-1 font-mono text-[11px] text-[var(--text-muted)]">
         Scroll to see all {template.columns.length} columns
