@@ -21,17 +21,38 @@ into shape.
 1. **Mauve (`m`) belongs to Klay alone.** Props, scenery, and effects NEVER
    use mauve — they use honey/copper/sand/mist/charcoal/cream/lime. This is
    palette reservation: Klay must pop in any scene.
-2. **Klay himself is 4 colors**: olive `o`, lime `l`, mauve `m`, ink `k`.
-   No shading on Klay, no outline.
-3. **Mixed resolution**: Klay lives on the coarse grid (12×11, chunky
-   pixels); props render on the fine grid (24×22, half-size pixels) so
-   they're legible. Never draw Klay at fine resolution.
+2. **Canonically Klay is 6 colors** (`docs/klay-bible.md` §3): leaf mid `o`,
+   leaf light `l`, leaf dark/stem `O`, body front `m`, body side plane `M`,
+   eyes `k`. The body's dark tone is **geometry** — the side plane you see
+   because he is in three-quarter view facing right — while the plant's dark
+   tone is **lighting from the upper left**. They shade in opposite
+   directions on purpose.
+   ⚠️ **The code in `src/components/klay/` has only `o l m k` and is flat.**
+   It predates the bible and is non-canonical. Do not cite it as the rule.
+3. **Mixed resolution**: chunky character, fine props. Canonically Klay is
+   authored on **12×14 and doubled to 24×28** (bible §2); props may be drawn
+   at true 24×28, because a 1px rod reads as a rod while the same rod on the
+   2×2 grid is a staircase. Never draw Klay at fine resolution.
+   ⚠️ **The code uses 12×11 coarse / 24×22 fine.** Non-canonical; see the
+   divergence table at the end of the bible.
 4. **Low frame rate is the charm**: 2–5 frames per animation, 150–600ms per
    frame. Do not smooth, tween, or exceed ~6fps. Motion reads through pose
    changes, not interpolation.
-5. His eyes are knockout-style ink pixels; expressions come from eye rows,
-   blush, sprout posture (it can bend, grow, wilt, fly off), feet, and
-   body shifts (BASE/DOWN/UP1) — not from new anatomy.
+5. **`k` is eyes and nothing else.** Every eye transform stays a one-liner
+   because of it; gear got its own chars (`d` lens, `b`/`B` headphones) so a
+   blink cannot erase it. Expressions come from the eye grammar below, sprout
+   posture, feet and body shifts — never from new anatomy.
+6. **The eye grammar** (bible §4), authored with normal eyes, everything else
+   derived: `blink()` eyeless, **blinks only**, 120–160ms; `droop()` half, for
+   tired or straining; `shut()` = `droop(shock())` for held sleep; `shock()`
+   doubled width, **damage and alarm only**.
+   - A blink is the **eyeless** face, not a dash. A dash held long reads as
+     asleep; only eyeless *short* reads as involuntary.
+   - **Square eyes are not cute.** Never use `shock()` for excitement, effort
+     or a pleasant surprise. Big happy reactions get marks beside the head —
+     the face stays intact.
+   - Any transform that *adds* pixels must grow **outward from the centre of
+     the face**, or the pair drifts off-centre.
 
 ## Palette (hex)
 
@@ -39,8 +60,10 @@ into shape.
 |------|-------|------|
 | `o` | #8BA32E olive | Klay stem |
 | `l` | #C2D64A lime | Klay leaves + rare prop accents |
-| `m` | #A8969E mauve | **Klay pot only** |
-| `k` | #1B1B18 ink | Klay eyes |
+| `m` | #A8969E mauve | **Klay body front, Klay only** |
+| `M` | #8F8088 | **Klay body side plane** (canonical; absent from the code) |
+| `O` | #617023 | **leaf dark / stem** (canonical; absent from the code) |
+| `k` | #1B1B18 ink | **Klay eyes and nothing else** |
 | `w` | #FDFBF7 cream | props |
 | `h` | #D4A843 honey | props |
 | `c` | #C27A4A copper | props |

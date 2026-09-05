@@ -184,7 +184,21 @@ tools wilt` — these are Kolumn workflow scenes with no counterpart in the bibl
 one. They are regenerable in one command (`npm run og`) once it is decided which
 Klay is canonical here.
 
-**Open question for the owner:** port the bible's sprite and its `front`/`mirror`
-facings into this repo, or treat the repo's flat 12×11 Klay as an intentional
-Kolumn variant and correct the bible's scope note instead. Do not silently
-converge them; the repo's 23 unique animations are real work.
+**Resolved 2026-09-04: the bible is truth.** `src/components/klay/` is therefore
+non-canonical and is the thing that must change, not this document.
+
+Porting is blocked on art, not on intent. This file specifies the *rules* —
+grid, palette, eye grammar, facing derivations, timing — but not the pixel data:
+the 12×14 pose strings, the `M` side-plane rows, and the 18 animations live in
+the owner's separate Klay animations JS file, which has not been supplied here.
+That art cannot be reconstructed from the description without inventing it.
+
+Until the sprite lands, do not cite the repo's flat Klay as correct, and expect
+these to need redoing:
+- `src/components/klay/klayAnimations.js` — palette (`M`, `O`), grid, poses.
+- `front()` / `mirror()` — absent entirely; §5 and §6 specify them.
+- The repo's 23 Kolumn-only animations (`blueprint`, `checklist`, `agentic`, …)
+  have no bible counterpart. They need re-authoring against the canonical
+  sprite, or an explicit note in §8 that Kolumn extends the vocabulary.
+- 34 Open Graph images in `public/og/` render the flat sprite. One command
+  (`npm run og`) regenerates them once the sprite is canonical.
