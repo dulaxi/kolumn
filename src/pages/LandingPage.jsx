@@ -1,18 +1,19 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
-import '@fontsource-variable/plus-jakarta-sans'
 
-import { ArrowRight, Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, List, Notepad, Tag, Plus, Target, TrendUp, VideoCamera, Waveform, X } from '@phosphor-icons/react'
+import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, Notepad, Tag, Target, TrendUp, VideoCamera, Waveform } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
-import KolumnLogo from '../components/layout/KolumnLogo'
+import { LABEL_OUTLINE } from '../utils/formatting'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
 import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
-import PlanCard from '../components/PlanCard'
-import { PLANS } from '../data/plans'
+import FaqItem from '../components/marketing/FaqItem'
+import PlanGrid from '../components/marketing/PlanGrid'
+import MarketingNav from '../components/marketing/MarketingNav'
+import MarketingFooter from '../components/marketing/MarketingFooter'
 
 
 // Stats bar removed pre-launch — old values were vanity placeholders
@@ -471,9 +472,10 @@ function DraftNotes({ elapsed }) {
   }
   return (
     <div className="px-6 sm:px-8 pt-5 sm:pt-6 flex flex-col gap-3 select-none">
+      {/* Serif on purpose: this tile imitates a third-party notes app, not Kolumn. */}
       <h3
         className="text-lg sm:text-xl text-[#1B1B18] tracking-tight leading-tight"
-        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 400 }}
+        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 300 }}
       >
         {DRAFT_TITLE}
       </h3>
@@ -503,7 +505,7 @@ function MirrorNotes({ lineOpacities }) {
     <div className="px-6 sm:px-8 pt-5 sm:pt-6 flex flex-col gap-3 select-none">
       <h3
         className="text-lg sm:text-xl text-[#1B1B18] tracking-tight leading-tight"
-        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 400, opacity: lineOpacities[0] }}
+        style={{ fontFamily: 'Sentient, Georgia, serif', fontWeight: 300, opacity: lineOpacities[0] }}
       >
         {DRAFT_TITLE}
       </h3>
@@ -551,8 +553,11 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
             {card.labels?.length > 0 && card.labels.map((label) => (
-              <span key={label.text} className="font-medium text-[var(--text-secondary)] lowercase">
-                /{label.text}
+              <span
+                key={label.text}
+                className={`text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize ${LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray}`}
+              >
+                {label.text}
               </span>
             ))}
           </div>
@@ -574,18 +579,18 @@ function AICard({ card, opacity, sweepProgress, iconMap }) {
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
             {card.dueDate && (
-              <span className="font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]">
-                <CalendarDot size={12} weight="bold" />
+              <span className="font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 text-[var(--text-muted)] border-[var(--text-muted)]/30">
+                <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
                 {card.dueDate}
               </span>
             )}
             {card.checklist && (
-              <span className={`font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${
+              <span className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 ${
                 checklistComplete
-                  ? 'bg-[var(--color-lime-wash)] text-[var(--accent-lime-text)]'
-                  : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                  ? 'text-[var(--color-lime-dark)] border-[var(--color-lime-dark)]/30'
+                  : 'text-[var(--text-muted)] border-[var(--text-muted)]/30'
               }`}>
-                <CheckSquare size={12} weight="bold" />
+                <CheckSquare size={14} weight="regular" className="shrink-0 -mt-px" />
                 {card.checklist.done}/{card.checklist.total}
               </span>
             )}
@@ -604,7 +609,7 @@ function AIGeneratedCards({ cardStates }) {
     <div className="pt-5 px-4 flex justify-center select-none">
       <div className="flex flex-col w-full max-w-[290px]">
         <div className="flex items-baseline gap-2 px-0.5 pb-3">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+          <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
           <span className="text-xs text-[var(--text-muted)]">{AI_CARDS.length}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -752,7 +757,7 @@ function SlackExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{CHAT_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -925,7 +930,7 @@ function TranscriptExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{TRANSCRIPT_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -1038,7 +1043,7 @@ function GmailEmailBody({ elapsed }) {
   return (
     <div className="px-5 sm:px-6 pt-4 sm:pt-5 flex flex-col gap-3 select-none h-full">
       {/* Subject line */}
-      <h3 className="text-[15px] font-normal text-[#202124] leading-tight font-logo">Board deck gaps — need tonight</h3>
+      <h3 className="text-[15px] font-normal text-[#202124] leading-tight">Board deck gaps — need tonight</h3>
       {/* Sender row */}
       <div className="flex items-start gap-2.5 pb-2 border-b border-[#E8E8E8]">
         <span className="w-7 h-7 rounded-full bg-[#1A73E8] shrink-0 flex items-center justify-center text-[11px] font-semibold text-white">S</span>
@@ -1068,7 +1073,7 @@ function GmailExtractedCards({ elapsed }) {
       <div className="pt-5 px-4 flex justify-center select-none">
         <div className="flex flex-col w-full max-w-[290px]">
           <div className="flex items-baseline gap-2 px-0.5 pb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">to do</h3>
+            <h3 className="font-sans text-sm font-semibold text-[var(--text-primary)]">to do</h3>
             <span className="text-xs text-[var(--text-muted)]">{GMAIL_AI_CARDS.length}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -1224,51 +1229,6 @@ function DemoSlider() {
   )
 }
 
-// Accordion item for the FAQ section. All items start collapsed; each
-// owns its own open/closed state so multiple can be expanded at once.
-// Animation uses the CSS Grid 0fr→1fr trick on the content row so the
-// transition runs against the content's natural height — no JS height
-// measurement, no library, just one transition rule.
-function FaqItem({ question, answer, index }) {
-  const [open, setOpen] = useState(false)
-  const panelId = `faq-panel-${index}`
-  const headerId = `faq-header-${index}`
-  return (
-    <div>
-      <button
-        type="button"
-        id={headerId}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-4 py-2.5 text-left group cursor-pointer"
-      >
-        <h3 className="text-lg sm:text-xl font-light text-[var(--text-primary)] tracking-tight leading-snug">
-          {question}
-        </h3>
-        <span
-          aria-hidden="true"
-          className={`shrink-0 w-5 h-5 flex items-center justify-center text-[var(--text-secondary)] transition-transform duration-200 ${open ? 'rotate-45' : ''}`}
-        >
-          <Plus size={18} weight="light" />
-        </span>
-      </button>
-      <div
-        id={panelId}
-        role="region"
-        aria-labelledby={headerId}
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div className="overflow-hidden">
-          <p className="pb-3 pr-10 text-sm text-[var(--text-secondary)] leading-relaxed">
-            {answer}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function GoogleGlyph() {
   return (
     <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
@@ -1415,7 +1375,6 @@ function HeroAuthCard() {
                 className="w-full !text-base !rounded-[0.6rem]"
               >
                 Continue with email
-                <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
           ) : (
@@ -1477,82 +1436,6 @@ function HeroAuthCard() {
   )
 }
 
-function MobileNav() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  return (
-    <nav className="sticky top-0 z-50 bg-[var(--surface-page)]">
-      {/* Desktop nav */}
-      <div className="hidden sm:flex items-center justify-between max-w-[90rem] mx-auto" style={{ width: 'calc(100% - (2 * clamp(2rem, 1.43rem + 2.86vw, 4rem)))' }}>
-        <Link
-          to="/"
-          onClick={() => window.scrollTo(0, 0)}
-          aria-label="Kolumn — home"
-          className="flex items-center hover:opacity-90 transition-opacity"
-        >
-          <KolumnLogo size={26} />
-          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-2 font-logo">Kolumn</span>
-        </Link>
-        <div className="flex items-center gap-3 py-6">
-          <a
-            href="#sign-in"
-            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[0.5px] border-[var(--color-sand)] rounded-lg transition-all duration-200"
-          >
-            Sign in
-          </a>
-          <Link
-            to="/onboarding"
-            className="inline-flex items-center justify-center h-9 px-5 min-w-[5rem] whitespace-nowrap text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg overflow-hidden transition-transform will-change-transform ease-[cubic-bezier(0.165,0.85,0.45,1)] duration-150 hover:scale-y-[1.015] hover:scale-x-[1.005]"
-          >
-            Get started
-          </Link>
-        </div>
-      </div>
-
-      {/* Mobile nav */}
-      <div className="flex sm:hidden items-center justify-between px-5 py-4">
-        <Link
-          to="/"
-          onClick={() => {
-            window.scrollTo(0, 0)
-            setMenuOpen(false)
-          }}
-          aria-label="Kolumn — home"
-          className="flex items-center hover:opacity-90 transition-opacity"
-        >
-          <KolumnLogo size={26} />
-          <span className="text-[28px] font-[500] text-[var(--text-primary)] tracking-tight leading-none ml-1.5 font-logo">Kolumn</span>
-        </Link>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--color-cream-dark)] transition-colors"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {menuOpen ? <X className="w-5 h-5" /> : <List className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile dropdown */}
-      {menuOpen && (
-        <div className="sm:hidden border-t border-[var(--color-cream-dark)] bg-[var(--surface-page)] px-5 pb-4 pt-3 flex flex-col gap-2 animate-dropdown">
-          <a
-            href="#sign-in"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center h-10 text-[15px] font-normal text-[var(--text-secondary)] border border-[var(--color-sand)] rounded-lg transition-colors hover:text-[var(--text-primary)]"
-          >
-            Sign in
-          </a>
-          <Link
-            to="/onboarding"
-            className="flex items-center justify-center h-10 text-[15px] font-normal bg-[var(--text-primary)] text-white rounded-lg"
-          >
-            Get started
-          </Link>
-        </div>
-      )}
-    </nav>
-  )
-}
-
 /*
  * Hero container — three nested layers matching the Anthropic Cowork-style
  * pattern (outer flex → middle card with shadow → inner bordered tile that
@@ -1597,10 +1480,11 @@ function ScaledHero() {
 
   return (
     <div
-      /* max-w 684 = 720 × 0.95 — shrinks the hero 5% on both axes while
-         keeping the 720/830 design aspect-ratio. The inner scale math
-         picks up automatically (scale = min(1, 684/720) = 0.95). */
-      className="relative w-full max-w-[684px] flex items-center justify-center"
+      /* Capped at 560px so the tile shares the hero evenly with the copy
+         column inside the 1152px page container; the 720/830 design
+         aspect-ratio is kept and the inner scale math picks the cap up
+         automatically (scale = min(1, width / 720)). */
+      className="relative w-full max-w-[560px] flex items-center justify-center"
       style={{ aspectRatio: `${HERO_DESIGN_WIDTH} / ${HERO_DESIGN_HEIGHT}` }}
     >
       {/* Layer 2 — outer card (frame + shadow). Cream bg is barely visible
@@ -1659,20 +1543,22 @@ export default function LandingPage() {
     <div className={`landing-font min-h-screen bg-[var(--surface-page)] transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
 
       {/* ─── Nav ─── */}
-      <MobileNav />
+      <MarketingNav />
 
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
-        <div className="px-6 sm:px-10 pb-8 max-w-[90rem] mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_720px] gap-4">
+        {/* pt-3: the animation tile would otherwise sit mathematically flush
+            with the sticky nav's bottom edge (zero clearance), and device-px
+            rounding at some zooms/DPRs paints the nav over its top rows. */}
+        <div className="px-6 sm:px-10 pt-3 pb-20 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             {/* Left — Copy (center-aligned) */}
-            <div className="flex w-full min-h-[85vh] items-center">
+            <div className="flex w-full items-center pt-12 pb-4 lg:py-0">
             <div className="text-center flex flex-col items-center w-full">
-              <h1 className="text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl font-light text-[#1B1B18] tracking-tight leading-[1.08] mb-5">
-                Kanban,<br />
-                <span className="text-[#8BA32E] font-heading">restored</span>.
+              <h1 className="font-heading font-normal text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl text-[var(--text-primary)] tracking-tight leading-[1.08] mb-5">
+                A board that listens.
               </h1>
-              <p className="text-base sm:text-lg text-[#5C5C57] max-w-lg mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-lg mb-8 leading-relaxed">
                 The kanban you talk to.
               </p>
               <HeroAuthCard />
@@ -1684,9 +1570,9 @@ export default function LandingPage() {
                 size and CSS-scales it to fit any container width — so it stays
                 visible on phones/tablets without cards getting cut on the
                 edges. font-sans is set inside ScaledHero to escape the page's
-                landing-font (Plus Jakarta Sans) and restore the app sans
+                landing-font base (now Inter too) and keep the app sans
                 (Inter). */}
-            <div className="flex justify-center items-center w-full mt-8 xl:mt-0">
+            <div className="flex justify-center items-center w-full">
               <ScaledHero />
             </div>
           </div>
@@ -1697,14 +1583,13 @@ export default function LandingPage() {
           top of this file). Re-add once we have real numbers worth quoting. */}
 
       {/* ─── AI Demo Slider (Notes + Slack + Teams + Gmail) ─── */}
-      <section className="px-6 sm:px-10 py-14 max-w-6xl mx-auto">
+      <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto">
         {/* Heading + intro centered */}
-        <div className="text-center mb-8 max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-light text-[#1B1B18] tracking-tight mb-3">
-            Notes in,{' '}
-            <span className="text-[#8BA32E] font-heading">Kanban out</span>
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight mb-3">
+            Notes in, Kanban out
           </h2>
-          <p className="text-sm text-[#5C5C57] leading-relaxed">
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Type how you think. Kolumn reads notes, threads, and emails — then drops
             structured tasks on the board.
           </p>
@@ -1717,30 +1602,28 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Pricing ─── */}
+      {/* Wider than the page column on purpose: three 384px cards need
+          1184px to breathe at 16px detail text. */}
       <section className="px-6 sm:px-10 py-20 max-w-[90rem] mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-light text-[var(--text-primary)] tracking-tight mb-2">
-            Compare <span className="font-heading">plans</span>
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight mb-3">
+            Compare plans
           </h2>
-          <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Free for solo and small teams. Pro when you want unlimited AI.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 justify-items-center max-w-[74rem] mx-auto">
-          {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} mode="landing" className="w-full max-w-sm" />
-          ))}
-        </div>
+        <PlanGrid />
       </section>
 
       {/* ─── FAQ ─── */}
-      <section className="px-6 sm:px-10 py-20 max-w-3xl mx-auto">
+      <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-light text-[var(--text-primary)] tracking-tight mb-2">
-            Frequently asked <span className="font-heading">questions</span>
+          <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight">
+            Frequently asked questions
           </h2>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 max-w-2xl mx-auto">
           {FAQ.map((item, i) => (
             <FaqItem key={item.q} question={item.q} answer={item.a} index={i} />
           ))}
@@ -1748,22 +1631,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="px-6 sm:px-10 pb-8 pt-4 max-w-5xl mx-auto">
-        <div className="border-t border-[var(--color-sand)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <KolumnLogo size={13} />
-            <span className="font-bold font-logo">Kolumn</span>
-            <span className="text-[var(--text-muted)] mx-1">&middot;</span>
-            <span>Built for teams that ship.</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
-            <a href="mailto:hello@kolumn.app" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
-            <a href="#sign-in" className="hover:text-[var(--text-secondary)] transition-colors">Sign in</a>
-            <Link to="/onboarding" className="hover:text-[var(--text-secondary)] transition-colors">Sign up</Link>
-          </div>
-        </div>
-        <p className="text-center text-xs text-[var(--text-faint)] mt-4">&copy; {new Date().getFullYear()} Kolumn. All rights reserved.</p>
-      </footer>
+      <MarketingFooter tone="light" />
     </div>
   )
 }

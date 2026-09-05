@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import PixelKlay from '../klay/PixelKlay'
-import KolumnLogo from '../layout/KolumnLogo'
+import KolumnLockup from '../layout/KolumnLockup'
 import Button from './Button'
 
 /**
@@ -36,12 +36,7 @@ export default function NotFoundState({
       {/* Standalone pages (the 404) render outside the app chrome, so the
           logo has to come along — in-app states already sit under it. */}
       {logo && (
-        <span className="flex items-center gap-2 mb-8">
-          <KolumnLogo size={21} />
-          <span className="text-[20px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
-            Kolumn
-          </span>
-        </span>
+        <KolumnLockup text={20} className="mb-8" />
       )}
 
       <PixelKlay animation="look" scale={klayScale} label="Klay looking around" />

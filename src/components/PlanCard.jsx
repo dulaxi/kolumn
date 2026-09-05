@@ -27,6 +27,9 @@ export default function PlanCard({
 }) {
   const TopIcon = plan.topIcon
   const isPicker = mode === 'picker'
+  // Landing runs the marketing type scale (16px details); the in-app picker
+  // stays at the product's 14px body size.
+  const detail = isPicker ? 'text-sm' : 'text-base'
 
   const wrapperClasses = [
     'relative rounded-xl p-7 flex flex-col text-left',
@@ -52,40 +55,44 @@ export default function PlanCard({
 
   return (
     <div className={wrapperClasses}>
+      {plan.badge && (
+        <span className="absolute top-4 right-4 font-mono text-[11px] uppercase tracking-[0.06em] px-2 py-1 rounded-md bg-[var(--accent-lime-wash)] text-[var(--accent-lime-text)]">
+          {plan.badge}
+        </span>
+      )}
       {TopIcon && (
         <div className="mb-5">
           <TopIcon size={56} weight="duotone" className={plan.topIconClass} />
         </div>
       )}
 
-      <h3
-        className="text-3xl font-normal tracking-tight text-[var(--text-primary)] font-logo"
-        // Inline: .landing-font h3 (Sentient serif) outranks the font-logo
-        // utility on the landing page; the card title should be Clash
-        // Grotesk on every surface.
-        style={{ fontFamily: 'var(--font-logo)' }}
-      >
+      <h3 className="text-3xl font-normal tracking-tight text-[var(--text-primary)] font-logo">
         {plan.name}
       </h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-6">{plan.tagline}</p>
+      <p className={`${detail} text-[var(--text-secondary)] mb-6`}>{plan.tagline}</p>
 
-      <div className="flex items-baseline gap-1.5 mb-6">
+      <div className="flex items-baseline gap-1.5 mb-2">
         <span className="text-4xl font-normal text-[var(--text-primary)] font-logo">
           {plan.price}
         </span>
-        <span className="text-sm text-[var(--text-muted)]">/ {plan.period}</span>
+        {plan.period && <span className={`${detail} text-[var(--text-muted)]`}>/ {plan.period}</span>}
       </div>
+      {plan.caption ? (
+        <p className="text-sm text-[var(--text-muted)] mb-6">{plan.caption}</p>
+      ) : (
+        <div className="mb-4" />
+      )}
 
       {plan.inheritsFrom && (
-        <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+        <p className={`${detail} font-semibold text-[var(--text-primary)] mb-2`}>
           Everything in {plan.inheritsFrom}, plus:
         </p>
       )}
 
-      <ul className="space-y-2.5 text-sm text-[var(--text-secondary)] mb-8">
+      <ul className={`space-y-2.5 ${detail} text-[var(--text-secondary)] mb-8`}>
         {plan.bullets.map((bullet) => (
           <li key={bullet} className="flex items-start gap-2">
-            <Check size={14} weight="bold" className="mt-1 text-[var(--color-logo)] shrink-0" />
+            <Check size={isPicker ? 14 : 16} weight="bold" className="mt-1 text-[var(--color-logo)] shrink-0" />
             <span>{bullet}</span>
           </li>
         ))}
@@ -95,8 +102,8 @@ export default function PlanCard({
         <button
           type="button"
           onClick={() => onSelect?.(plan.id)}
-          disabled={disabled || loading}
-          aria-label={plan.cta}
+          disabled={disabled || loading || plan.comingSoon}
+          aria-label={plan.comingSoon ? 'Coming soon' : plan.cta}
           aria-busy={loading || undefined}
           className={ctaBaseClasses}
           style={loading ? { opacity: 1 } : undefined}
@@ -106,6 +113,8 @@ export default function PlanCard({
               <span className="sr-only">Setting up</span>
               <LetterWave text="Setting up" />
             </>
+          ) : plan.comingSoon ? (
+            'Coming soon'
           ) : (
             <>
               {plan.cta}
@@ -113,8 +122,13 @@ export default function PlanCard({
             </>
           )}
         </button>
+      ) : plan.ctaTo?.startsWith('mailto:') ? (
+        <a href={plan.ctaTo} className={ctaBaseClasses}>
+          {plan.cta}
+          <ArrowRight className="w-4 h-4" />
+        </a>
       ) : (
-        <Link to="/onboarding" className={ctaBaseClasses}>
+        <Link to={plan.ctaTo || '/onboarding'} className={ctaBaseClasses}>
           {plan.cta}
           <ArrowRight className="w-4 h-4" />
         </Link>

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from '../../store/settingsStore'
 import Skeleton from '../ui/Skeleton'
 import KolumnLogo from './KolumnLogo'
+import KolumnLockup from './KolumnLockup'
 import BoardSkeleton from '../board/BoardSkeleton'
 import PixelKlay from '../klay/PixelKlay'
 import ThinkingWave from '../ui/ThinkingWave'
@@ -53,7 +54,7 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
         >
           {/* Same geometry as Sidebar.jsx's collapsed logo row: h-12, centered */}
           <div className="flex h-12 items-center justify-center px-1">
-            <KolumnLogo size={17} />
+            <KolumnLogo size={18} />
           </div>
           <div className="flex flex-col items-center gap-4 pt-2">
             <Skeleton variant="circle" width={20} height={20} />
@@ -71,11 +72,8 @@ export default function RouteLoadingShell({ klayDelayMs = 600, pathname: pathnam
           className="hidden md:flex w-[287px] shrink-0 flex-col gap-3.5 border-r border-[var(--border-default)] bg-[var(--surface-sidebar)] px-2 py-2"
         >
           {/* Same logo row as Sidebar.jsx expanded: h-16, mark 30 + wordmark */}
-          <div className="flex h-16 items-center gap-2 px-2">
-            <KolumnLogo size={21} />
-            <span className="text-[23px] font-[500] text-[var(--text-primary)] tracking-tight leading-none font-logo">
-              Kolumn
-            </span>
+          <div className="flex h-16 items-center px-2">
+            <KolumnLockup text={23} />
           </div>
           <div className="flex flex-col gap-3.5 px-2">
             <Skeleton variant="line" width={128} />

@@ -1,6 +1,3 @@
-/* Google Sans Text (--font-pill) is now loaded non-blocking from index.html
-   (media=print swap) instead of this render-blocking @import, which delayed
-   first paint on every route — including the pill-less landing page. */
 @import "tailwindcss";
 
 @theme {
@@ -8,14 +5,12 @@
   --font-heading: 'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', SFMono-Regular, Menlo, monospace;
   --font-logo: 'Clash Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-pill: 'Google Sans Text', 'Google Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* Phosphor palette */
   --color-cream: #F2EDE8;
   --color-cream-dark: #E8E2DB;
   --color-sand: #E0DBD5;
   --color-ink: #1B1B18;
-  --color-charcoal: #5C5C57;
   --color-stone: #8E8E89;
   --color-mist: #C4BFB8;
   --color-lime: #C2D64A;
@@ -23,7 +18,6 @@
   --color-lime-wash: #EEF2D6;
   --color-logo: #8BA32E;
   --color-copper: #C27A4A;
-  --color-copper-dark: #A86434;
   --color-copper-wash: #F2D9C7;
   --color-red: #B53333;
   --color-red-dark: #9C2929;
@@ -31,8 +25,6 @@
   --color-honey-wash: #F5EDCF;
   --color-walnut: #8B7355;
   --color-bark: #7A5C44;
-  --color-bark-dark: #6B4D38;
-  --color-bark-wash: #F0E0D2;
   --color-olive: #A8BA32;
   --color-mauve: #A8969E;
   --color-mauve-wash: #E8DDE2;
@@ -53,7 +45,6 @@
      the card's *current* icon (current-state semantics, mauve family),
      at wash strength so it stays legible at grid-cell size. */
 
-  --animate-fadeIn: fadeIn 1s ease forwards;
   /* Motion tokens — single source of truth for animation durations.
      JS deferred-unmount timers mirror these in src/constants/motion.js
      (CSS vars aren't synchronously readable pre-mount); keep in sync. */
@@ -84,8 +75,10 @@
   --surface-card: #FFFFFF;
   --surface-sidebar: #FAF8F6;
   --surface-raised: #F2EDE8;
+  /* One step lighter than --surface-page, same warmth (R-B = 4), so a
+     surface can lift off the page without going neutral white. */
+  --surface-lifted: #FDFBF9;
   --surface-hover: #E8E2DB;
-  --surface-input: #FFFFFF;
 
   --border-default: #E0DBD5;
   --border-subtle: #E8E2DB;
@@ -110,6 +103,11 @@
   --btn-primary-bg: #1B1B18;
   --btn-primary-text: #FFFFFF;
   --btn-primary-hover: #333333;
+  /* Theme-stable light-on-ink text for dark marketing sections (footer).
+     Defined once; the dark block intentionally does not override them. */
+  --text-on-ink: #F2EDE8;
+  --text-on-ink-muted: #A8A5A0;
+  --border-on-ink: #33322F;
 
   --label-red-bg: #F9ECEC;    --label-red-text: #B53333;
   --notice-error-text: #A86434;  /* copper-dark: AA-safe on copper-wash + card */
@@ -171,8 +169,8 @@
   --surface-card: #262624;
   --surface-sidebar: #212120;
   --surface-raised: #2E2E2B;
+  --surface-lifted: #232321;
   --surface-hover: #3A3937;
-  --surface-input: #2E2E2B;
 
   --border-default: #454340;   /* was #3A3937 — bumped so borders survive on hover rows where surface flips to #3A3937 */
   --border-subtle: #332F2D;
@@ -241,7 +239,6 @@
   --color-lime-wash: #2A3520;
   --color-copper-wash: #3A2A20;
   --color-honey-wash: #3A3520;
-  --color-bark-wash: #352820;
   --color-mauve-wash: #3A3040;
   --color-mauve-cream: #2E2832;
   --color-mint-wash: #1F3030;
@@ -249,7 +246,6 @@
   /* Bark — used as the calendar "today" pill bg.
      Lighter caramel on dark so the pill actually reads. */
   --color-bark: #C49878;
-  --color-bark-dark: #A87E5C;
 
   /* Mauve / walnut — for use as accent text/icons on dark */
   --color-mauve: #C4A0B8;
@@ -433,15 +429,12 @@
   animation: slideInRight 0.2s ease-out;
 }
 
-/* Landing page fonts */
+/* Landing page fonts — same voice as the app: Inter body, Clash Grotesk
+   display headings via the font-heading utility (hero at 300, section and
+   card titles at 425 like in-app page titles). The Sentient serif override
+   was removed 2026-09-01 in the landing/product parity pass. */
 .landing-font {
-  font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
-.landing-font h1,
-.landing-font h2,
-.landing-font h3,
-.landing-font .font-heading {
-  font-family: 'Sentient', Georgia, serif;
+  font-family: var(--font-sans);
 }
 
 /* Typing cursor blink (used in DraftNotes typing animation on landing) */

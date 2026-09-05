@@ -50,7 +50,7 @@ function ColumnInput({ value, onChange, fallback, ariaLabel }) {
   )
 }
 
-export default function CreateBoardModal({ onClose, workspaceId = null }) {
+export default function CreateBoardModal({ onClose, onCreated, workspaceId = null }) {
   const addBoard = useBoardStore((s) => s.addBoard)
 
   const [name, setName] = useState('')
@@ -80,11 +80,14 @@ export default function CreateBoardModal({ onClose, workspaceId = null }) {
     setCreating(true)
     try {
       const id = await addBoard(trimmedName, icon, trimmedColumns, workspaceId)
-      if (id) onClose()
+      if (id) {
+        onCreated?.(id)
+        onClose()
+      }
     } finally {
       setCreating(false)
     }
-  }, [name, columns, icon, creating, addBoard, onClose, workspaceId])
+  }, [name, columns, icon, creating, addBoard, onClose, onCreated, workspaceId])
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault()

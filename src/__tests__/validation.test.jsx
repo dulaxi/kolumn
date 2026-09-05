@@ -155,9 +155,9 @@ describe('OnboardingPage — plan step', () => {
       expect(screen.getByRole('heading', { name: /Choose your plan/i })).toBeInTheDocument()
     })
     expect(mockNavigate).not.toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: /Use Kolumn for free/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Try Pro plan/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Get in touch/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Start for free/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Get Pro in early access/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Coming soon/i })).toBeInTheDocument()
   })
 
   test('Free plan CTA: shows the Pro trial upsell without writing tier or navigating', async () => {
@@ -170,7 +170,7 @@ describe('OnboardingPage — plan step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
 
     // Lands on the upsell step — no nav yet, no tier write.
@@ -189,7 +189,7 @@ describe('OnboardingPage — plan step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
 
     const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
@@ -211,7 +211,7 @@ describe('OnboardingPage — plan step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
 
     const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
@@ -238,7 +238,7 @@ describe('OnboardingPage — name step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
     const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
     skipCta.click()
@@ -283,7 +283,7 @@ describe('OnboardingPage — role step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
     const skipCta = await screen.findByRole('button', { name: /^Skip$/i })
     skipCta.click()
@@ -378,7 +378,7 @@ describe('OnboardingPage — role step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const freeCta = await screen.findByRole('button', { name: /Use Kolumn for free/i })
+    const freeCta = await screen.findByRole('button', { name: /Start for free/i })
     freeCta.click()
 
     const trialCta = await screen.findByRole('button', { name: /Get Pro free for 1 week/i })
@@ -400,7 +400,7 @@ describe('OnboardingPage — role step', () => {
     await userEvent.type(screen.getByPlaceholderText('Type your password again'), 'password123')
     screen.getByRole('button', { name: /create account/i }).click()
 
-    const proCta = await screen.findByRole('button', { name: /Try Pro plan/i })
+    const proCta = await screen.findByRole('button', { name: /Get Pro in early access/i })
     proCta.click()
 
     await waitFor(() => {

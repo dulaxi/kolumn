@@ -3,49 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Kolumn — Project Management</title>
-    <meta name="description" content="A modern Kanban project management dashboard. Organize tasks, collaborate with your team, and ship faster." />
+    <title>Kolumn — AI-powered kanban for teams</title>
+    <meta name="description" content="Kolumn is a kanban board with an AI that creates, moves, and updates cards when you type what you need. Free to start, no setup." />
     <meta name="theme-color" content="#F2EDE8" />
 
-    <!-- Fonts: Clash Grotesk (wordmark) + Sentient (headings) are self-hosted
-         in public/fonts/ — @font-face rules live in src/fonts.css. Preload the
-         two above-the-fold weights so first paint doesn't swap. -->
+    <!-- Fonts: Clash Grotesk (wordmark + headings) is self-hosted in
+         public/fonts/ — @font-face rules live in src/fonts.css. Preload it so
+         the above-the-fold wordmark doesn't swap on first paint. -->
     <link rel="preload" href="/fonts/clash-grotesk-variable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/sentient-400.woff2" as="font" type="font/woff2" crossorigin />
-
-    <!-- Pill font (--font-pill, in-app badges only) is injected from the app
-         bundle in main.jsx — NOT a <link media="print" onload> swap here, because
-         the production CSP (serve.json) has no 'unsafe-inline' in script-src and
-         would block the inline onload. Preconnect warms the connection so the
-         JS-injected fetch is quick; the load itself stays off the render path. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Kolumn — Project Management" />
-    <meta property="og:description" content="A modern Kanban project management dashboard. Organize tasks, collaborate with your team, and ship faster." />
+    <meta property="og:title" content="Kolumn — AI-powered kanban for teams" />
+    <meta property="og:description" content="Kolumn is a kanban board with an AI that creates, moves, and updates cards when you type what you need. Free to start, no setup." />
     <meta property="og:site_name" content="Kolumn" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Kolumn — Project Management" />
-    <meta name="twitter:description" content="A modern Kanban project management dashboard. Organize tasks, collaborate with your team, and ship faster." />
+    <meta name="twitter:title" content="Kolumn — AI-powered kanban for teams" />
+    <meta name="twitter:description" content="Kolumn is a kanban board with an AI that creates, moves, and updates cards when you type what you need. Free to start, no setup." />
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 3 3' shape-rendering='crispEdges'><rect x='1' width='1' height='1' fill='%23C2D64A'/><rect y='1' width='3' height='1' fill='%23C2D64A'/><rect x='1' y='2' width='1' height='1' fill='%238BA32E'/></svg>" />
+    <!-- Safari ignores SVG favicons in several contexts and hard-falls-back to
+         /favicon.ico — ship transparent PNG/ICO so every browser gets the bare
+         sprout. apple-touch-icon keeps a cream tile: iOS puts black behind
+         transparent home-screen icons. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Kolumn" />
-    <!-- Phosphor web font — powers DynamicIcon's `ph ph-<name>` classes for
-         DB-stored icon names. Two weights are used: regular, and fill (the
-         active/selected board icon in the sidebar — SidebarBoardItem sets
-         weight={active ? 'fill' : 'regular'}). The genuinely-unused light/bold
-         weights were dropped 2026-07-27 (the React icon components render their
-         own SVG and don't need this font at all). -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+    <!-- Phosphor icon font (DynamicIcon's "ph" + "ph-ICONNAME" classes) is
+         self-hosted via the @phosphor-icons/web npm package, imported in
+         main.jsx — the former jsDelivr <link>s here made icons invisible on
+         cold caches whenever the CDN was slow. -->
   </head>
   <body style="background-color:#F2EDE8;margin:0">
     <div id="root"></div>

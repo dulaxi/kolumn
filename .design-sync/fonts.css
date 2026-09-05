@@ -1,0 +1,27 @@
+/* Design-sync copy of src/fonts.css with paths relative to this file, so the
+ * converter's @font-face parser can locate and copy the woff2s from
+ * public/fonts/. Keep in step with src/fonts.css. */
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('../public/fonts/sentient-300.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('../public/fonts/sentient-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Clash Grotesk';
+  src: url('../public/fonts/clash-grotesk-variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}

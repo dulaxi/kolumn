@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "zod": [".design-sync/stubs/zod.js"],
+      "@supabase/supabase-js": [".design-sync/stubs/supabase.js"],
+      "@sentry/react": [".design-sync/stubs/sentry.js"]
+    }
+  }
+}

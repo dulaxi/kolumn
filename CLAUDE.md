@@ -56,12 +56,13 @@ Bias: prefer extending an existing pattern over inventing a new one.
 ## Commands
 
 ```bash
-npm run dev          # Vite dev server (port 5173)
-npm run build        # Production build
-npm run preview      # Preview production build (port 4173)
-npm run lint         # ESLint
-npm run test         # Vitest, single run
-npm run test:watch   # Vitest, watch mode
+npm run dev               # Vite dev server (port 5173)
+npm run build             # Production build (runs client build + build:prerender)
+npm run build:prerender   # SSR bundle + dist/<route>/index.html + sitemap.xml + robots.txt
+npm run preview           # Preview production build (port 4173)
+npm run lint              # ESLint
+npm run test              # Vitest, single run
+npm run test:watch        # Vitest, watch mode
 ```
 
 ## Tech stack
@@ -103,7 +104,7 @@ src/
 │   ├── boardSharingStore.js        # Per-board members + invitations
 │   ├── workspacesStore.js          # Multi-tenant workspaces + members + invitations
 │   ├── chatStore.js                # AI chat threads + messages + tool calls
-│   ├── noteStore.js                # Private notes — ⚠️ unwired from UI (see "Removed pages")
+│   ├── noteStore.js                # Private notes — no UI; kept because toolExecutor + notes table use it
 │   ├── notificationStore.js        # In-app notifications
 │   ├── templateStore.js            # Board/card templates
 │   ├── settingsStore.js            # Local-only: sidebar, theme ('system'|'light'|'dark'), font
@@ -112,7 +113,7 @@ src/
 │   ├── ui/                         # Design-system primitives — see Design System → Primitives
 │   │   ├── Avatar.jsx              # Initials avatar, hash-derived color, 4 sizes
 │   │   ├── Button.jsx              # 4 variants × 6 sizes, loading + asChild support
-│   │   ├── Input.jsx + Textarea.jsx # Bordered fields, leading-icon + error states
+│   │   ├── Input.jsx               # Bordered field, leading-icon + error states
 │   │   ├── Modal.jsx               # Portal, focus trap, body scroll lock, stacked-modal aware
 │   │   ├── Popover.jsx             # Anchored overlay with click-outside + escape
 │   │   ├── Menu.jsx                # Popover + Item/Divider/Label sub-components
@@ -125,12 +126,14 @@ src/
 │   ├── layout/                     # AppLayout, Sidebar, Header, OfflineBanner
 │   ├── board/                      # Board, columns, cards, detail panel, modals
 │   ├── settings/                   # Settings modal: shell (SettingsModal) + panes (General = Profile + Preferences, Account = sessions/sign-out/danger zone, Privacy = data protection + export, Billing = plan) + SettingsRedirect
+│   ├── marketing/                   # Public marketing shell: MarketingLayout (nav/footer/head meta), FaqItem, PlanGrid, CompareTable
 │   ├── ActionCard.jsx              # AI-suggested action card
 │   ├── SearchDialog.jsx            # ⌘K search
 │   ├── ErrorBoundary.jsx + InlineErrorBoundary.jsx
 │   └── ...
 ├── pages/
 │   ├── LandingPage.jsx             # Marketing / public landing
+│   ├── marketing/PricingPage.jsx    # /pricing — prerendered; content from src/content/pricing.js
 │   ├── OnboardingPage.jsx          # 7-step signup flow (terms → details → plan → upsell → disclaimer → name → role)
 │   ├── ForgotPasswordPage / UpdatePasswordPage / PlanPickerPage / UpgradeProPage
 │   ├── DashboardPage.jsx
@@ -138,12 +141,13 @@ src/
 │   ├── ChatPage.jsx + ChatListPage.jsx
 │   ├── WorkspacePage.jsx
 │   ├── NotFoundPage.jsx
-│   └── CalendarPage.jsx + NotesPage.jsx  # ⚠️ unwired — see "Removed pages" note
 ├── utils/
 │   ├── formatting.js               # LABEL_BG, PRIORITY_DOT, AVATAR_COLORS class strings
 │   ├── toast.js                    # showToast.{success|error|delete|...} helpers
 │   ├── logger.js                   # Sentry wrapper
 │   └── ...
+├── content/                        # Plain-data content: marketing-routes.js (registry → routes, head meta, sitemap), marketing-nav.js, pricing.js
+├── prerender-entry.jsx             # SSR entry used by scripts/prerender.mjs (react-dom/static)
 └── __tests__/                      # Vitest specs
 
 supabase/
@@ -160,20 +164,14 @@ supabase/
     └── account/                    # Sessions list/revoke + delete-account, used by settings' Account pane
 ```
 
-### Removed pages (intentional, do not re-wire)
+### Removed pages (deleted 2026-08-05)
 
-`CalendarPage.jsx`, `NotesPage.jsx`, and `noteStore.js` are unused from
-the dashboard UI. They were removed deliberately to sharpen the product
-focus to "AI-powered kanban" — every PM tool has notes/calendar; trying
-to compete there meant being a worse Notion / worse Google Calendar.
-
-The page files, store, and Supabase `notes` table are left in place so a
-future revival is a one-line route restoration. Do **not** re-add Notes
-to the sidebar or routes without explicit user confirmation.
-
-If a calendar comes back, the right shape is a **board view toggle**
-(month/week grid of cards with `due_date`) alongside the column view —
-not a top-level Calendar nav item.
+Calendar and Notes were cut to sharpen the product to "AI-powered kanban";
+their page files were deleted in the 2026-08-05 repo cleanup (git history
+has them). The Supabase `notes` table and `noteStore.js` remain because
+toolExecutor still writes notes. If a calendar ever returns, the right
+shape is a **board view toggle** (month/week grid of cards with
+`due_date`) alongside the column view — not a top-level Calendar page.
 
 ## AI Workflow (paused — backlog preserved)
 
@@ -219,7 +217,7 @@ Supabase Edge Function. Everything else is plumbing around it.
 | Frontend — client | `src/lib/aiClient.js` | ~105 | `fetch` to `/functions/v1/chat`; SSE parser; dispatches `onText / onTier / onToolCall / onDone / onError`. Forwards a `mode` parameter. |
 | Frontend — store | `src/store/chatStore.js` | ~450 | Zustand: conversations, messages, tierInfo, per-conversation streaming map. **Persists to Supabase via `src/lib/chatSync.js`** (hydrate post-auth, lazy per-thread message load, write-through on every mutation); localStorage is a bounded boot cache. Used by ChatPage; pill bypasses it. |
 | Frontend — pill agent loop | `src/lib/pillAgentLoop.js` | ~120 | **The pill's agent loop.** `runPillLoop()` runs up to `MAX_ROUNDS` (4) rounds of model → `tool_use` → browser executes → `tool_result` → model reacts, with proper `tool_use`/`tool_result` pairing. **The tool-result loop is closed here.** |
-| Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` exist as no-op placeholders. |
+| Frontend — tool executor | `src/lib/toolExecutor.js` | ~1190 | Fuzzy title→ID resolver, calls boardStore/noteStore. Has a **4-second polling loop** waiting for backend to confirm temp IDs. `search_cards` and `summarize_board` are implemented (toolExecutor.js ~1195 and ~1321). |
 
 Not AI despite the names: `src/components/ActionCard.jsx` (presentational only),
 `supabase/functions/check-email/` (signup email validation).
@@ -282,11 +280,9 @@ gated by **(surface × tier)**, not just tier.
 - Daily message limit (currently 20 for free) lives in `tier.ts` and increments via the `increment_chat_usage` RPC. If that RPC errors, the function 500s with no fallback.
 - `classifyModel(message, tier)` exists and returns Haiku in **both** branches — dead code that pretends to route by intent. Decide: actually branch (Sonnet for complex writes, Haiku for reads) or delete the path (T2-#6).
 - **Destructive vs Pro-only drift:** the frontend's destructive-confirmation list (`isDestructive()` in `toolExecutor.js`) and the backend's `PRO_ONLY_TOOLS` list don't match. Free users can't even reach the confirmation UI for deletes (already blocked server-side), but Pro users get an in-chat approval. Pick one source of truth (T3-#10).
-- **Read-only tools are no-op placeholders today** — `search_cards` and `summarize_board` return `{ ok: true, readOnly: true }` and do nothing. They need real implementations before the chat surface ships its read-tools feature.
+- **Read-only tools are implemented** — `search_cards` and `summarize_board` are real (`toolExecutor.js`). Note `filterToolsForMode` in `tier.ts` grants `CHAT_READ_TOOLS` to **every** tier today; the paid gate is deferred. The marketing site states them as available on all plans, so re-gating them means updating `src/content/pricing.js` and `src/content/solutions/_shared.js` in the same change.
 
 ### Rework backlog (ranked — read before changing AI code)
-
-Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 
 **T1 — architecture & correctness:**
 1. **Implement the `mode` parameter** end-to-end (`aiClient.js` → `index.ts` → `tier.ts`). Backend computes effective tool list from `(mode × tier)`. Without this, the pill/chat split is policy, not enforcement.
@@ -303,7 +299,7 @@ Full details: `docs/superpowers/specs/2026-05-13-ai-workflow-rework-backlog.md`.
 10. ✅ **DONE — `[chat] usage` log line per request** (all four token fields + mode/tier/model/continuation). Continuation/history payloads are now validated server-side (caps + tool_use linkage; clients clamp tool_results to 10k chars/block).
 
 **T3 — UX, cleanup, parity:**
-11. **Implement `search_cards` and `summarize_board`** as real read-only tools for the chat surface (currently no-op placeholders).
+11. ✅ **DONE — `search_cards` and `summarize_board` implemented.** Open question is gating, not implementation: they are ungated across tiers (see Tier & gating).
 12. **Verify pill fast-path parity.** QuickAddBar's comma/newline split path bypasses the LLM — make sure it applies the same defaults the LLM path produces.
 13. **Token-budget history** instead of "last 20 messages"; never trim a `tool_use` away from its paired `tool_result`.
 14. **Resolve cards by ID** for cross-card lookups (move, update). Pill writes are already board-pinned, but card titles within a board can still collide.
@@ -367,8 +363,7 @@ Tailwind arbitrary values: `bg-[var(--surface-card)]`.
 | `--font-logo`    | Clash Grotesk         | "Kolumn" wordmark + pre-auth display (300) |
 | `--font-heading` | Clash Grotesk         | Page titles (weight 425)           |
 | `--font-mono`    | IBM Plex Mono         | Code, IDs, paths                   |
-| `--font-pill`    | Google Sans Text      | Pill labels (PRO, BETA, NEW)       |
-| `.landing-font`  | Plus Jakarta Sans     | Landing page only (scoped class) (+ .landing-font .font-heading → Sentient) |
+| `.landing-font`  | Inter Variable        | Landing page scope — same voice as the app; no serif override (Sentient dropped 2026-09-01, Google Sans pill font dropped 2026-08-05) |
 
 ### Primitives
 
@@ -383,7 +378,6 @@ rules they encoded live on in this file and the components themselves.)
 | `Avatar`   | `name`, `size` (xs/sm/md/lg), `ring`. Hash-derived color.         |
 | `Button`   | `variant` (primary/secondary/ghost/destructive — no lime accent, see Coherency Rules), `size` (sm/md/lg + icon-{sm,md,lg}), `loading`, `loadingText`, `asChild` (Slot pattern). Defaults to `type="button"`. |
 | `Input`    | `error`, `leadingIcon`, `wrapperClassName`. 1px ink focus border. |
-| `Textarea` | `error`, `rows`. Same focus + error states as `Input`.            |
 | `Modal`    | `open`, `onClose`, `contentClassName`. Portal, focus trap, body scroll lock, stacked-modal aware (only topmost responds to Escape). Suppresses stale `:focus-visible` on trigger after mouse-driven close. |
 | `Popover`  | `open`, `onOpenChange`, `placement` (bottom-start/bottom-end/top-start/top-end), `panel`, `closeOnEscape`, `closeOnOutsideClick`. |
 | `Menu`     | Wraps `Popover`. Sub-components: `Menu.Item` (with `icon`, `shortcut`, `destructive`, `selected`, `checkbox`), `Menu.Divider`, `Menu.Label`. |
@@ -397,7 +391,7 @@ rules they encoded live on in this file and the components themselves.)
 
 - `src/utils/formatting.js` — `LABEL_BG`, `LABEL_BG_QUIET`, `PRIORITY_DOT`, `AVATAR_COLORS` exported as Tailwind class strings (not components). Use these instead of hand-coding label/priority colors.
 - `src/utils/toast.js` — `showToast.{success|error|delete|archive|restore|info|warn|overdue}`. Powered by `react-hot-toast`. Configured globally as `<Toaster position="top-center">` in `App.jsx`. Style: 420px fixed width, 1px ink border, 10px radius, IBM Plex Mono / SF Mono 12px, Phosphor icon + message + dismiss button. Hue = meaning: lime (success/restore), copper (error = failure), red (delete = destructive receipt, carries Undo), honey (warn/overdue/offline = warning/time). Saturated fills are theme-stable with the ink border in both themes; only the two pale fills (`info`, `archive`) theme via `--toast-*` tokens, including the brighter `--toast-pale-border` they need on a dark page. **Never roll your own toast — always import this helper.** `showToast.offline(msg)` returns a persistent (duration ∞) honey toast with a pulse dot for connectivity state; pair with `showToast.dismiss(id)`. Solid toast fills are reserved for transient/floating messages — persistent inline errors use `InlineNotice` (wash) or `FieldError` (micro). Decision records: docs/design-mockups/error-style-decisions{,-3}.html (R2 mockup pruned 2026-07-24; its outcome is captured in the Buttons coherency rule below).
-- `src/hooks/useClickOutside.js`, `src/hooks/useKeyboardShortcuts.js`, `src/hooks/useAppData.js`, `src/hooks/useBoardDnd.js` — extracted hooks. Prefer these over reinventing.
+- `src/hooks/useKeyboardShortcuts.js`, `src/hooks/useAppData.js`, `src/hooks/useBoardDnd.js` — extracted hooks. Prefer these over reinventing.
 
 ## Coherency Rules
 
@@ -501,6 +495,7 @@ full schema — treat it as the source of truth.
 - **UI changes**: open the dev server in a browser and exercise the feature, including edge cases. Don't claim "done" without seeing it run.
 - **Edge-function changes**: deploy with `supabase functions deploy chat` (or use the Supabase MCP `deploy_edge_function`) and tail logs with `supabase functions logs chat` while exercising the chat in a browser. Type-checking with `deno check supabase/functions/chat/index.ts` catches most edge-function bugs before deploy.
 - **Anthropic API questions** (caching semantics, model IDs, tool-use protocol, extended thinking, batch): use the `claude-api` skill to fetch current docs. Don't go by memory — the API surface changes.
+- **Marketing pages.** Every public marketing route is an entry in `src/content/marketing-routes.js` (path, title, description, JSON-LD, lazy component). The registry drives routing, head tags, the nav dead-link test, the sitemap and prerendering. Nav/footer links live in `src/content/marketing-nav.js` and may only point at registered routes. Pricing numbers live only in `src/content/pricing.js`; `tier.ts`'s free limit is pinned to it by test. Production uses `node scripts/serve-prod.mjs` (not `serve -s`) because `-s` prepends an unconditional rewrite that bypasses file-existence checks, making prerendered pages unreachable; `serve-prod.mjs` uses the same `serve-handler` library (so security headers from `public/serve.json` still apply) but only applies the SPA fallback for paths with no real file. `npm run build` runs three phases: client build, an SSR build of `src/prerender-entry.jsx` into `dist-ssr/`, and `scripts/prerender.mjs` which writes static HTML per route plus `sitemap.xml` and `robots.txt`. The prerender pipeline must keep two constraints: the server-side render resolves each route's module directly via a `load` factory while the browser keeps `lazy()` for code-splitting, and it passes `progressiveChunkSize: Infinity` so page content inlines directly instead of deferring to segments. Nothing in the prerender import graph may touch `src/lib/env.js` (it throws without Supabase env vars during the Node build phase), which is why `src/components/marketing/useMarketingUser.js` reads the auth store through a dynamic `import()` inside an effect rather than a static import.
 
 ## Environment setup
 

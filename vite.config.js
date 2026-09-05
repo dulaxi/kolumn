@@ -27,22 +27,31 @@ function vendorChunkOf(id) {
   return null
 }
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     react(),
     tailwindcss(),
   ],
+  server: {
+    // Bind IPv4 loopback explicitly. Left to the default ('localhost'),
+    // Node resolves ::1 first on macOS and Vite listens on IPv6 only —
+    // Safari then tries 127.0.0.1 (per /etc/hosts order), gets refused,
+    // and reports it can't connect. Chrome masks this via Happy Eyeballs.
+    host: '127.0.0.1',
+  },
   build: {
     // 'hidden' emits .map files for Sentry symbolication without adding
     // sourceMappingURL comments to the served bundles.
     sourcemap: 'hidden',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          return vendorChunkOf(id)
+    rollupOptions: isSsrBuild
+      ? { output: { format: 'es', entryFileNames: 'prerender-entry.js', inlineDynamicImports: true } }
+      : {
+          output: {
+            manualChunks(id) {
+              return vendorChunkOf(id)
+            },
+          },
         },
-      },
-    },
     // Vendor chunks keep the per-chunk threshold meaningful; bump just
     // enough so the warning targets *new* bloat, not the chunks we've
     // already isolated.
@@ -57,4 +66,4 @@ export default defineConfig({
     setupFiles: ['./src/__tests__/setup.js'],
     css: false,
   },
-})
+}))

@@ -67,10 +67,7 @@ export default function DashboardPage() {
     sendMessage(convId, text)
   }
 
-  const handleNewBoard = () => {
-    navigate('/boards')
-    triggerCreateBoard()
-  }
+  const handleNewBoard = () => triggerCreateBoard()
 
   const handleCreateFromTemplate = async (template) => {
     const newBoardId = await addBoard(template.name, null, template.columns)

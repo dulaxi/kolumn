@@ -1,9 +1,17 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import '@fontsource-variable/inter'
 import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
 import '@fontsource/ibm-plex-mono/600.css'
+// Phosphor icon font — powers DynamicIcon's "ph" + "ph-ICONNAME" classes for
+// DB-stored icon names (regular + fill weights; fill = active sidebar board).
+// Self-hosted via the npm package for the same reason as the Fontshare faces
+// in fonts.css: the old jsDelivr <link>s left icons invisible on cold caches
+// whenever the CDN was slow. Vite bundles the CSS and serves the woff2 from
+// our own origin as hashed, immutable-cacheable assets.
+import '@phosphor-icons/web/regular'
+import '@phosphor-icons/web/fill'
 import './fonts.css'
 import './index.css'
 import App from './App.jsx'
@@ -13,18 +21,6 @@ import { applyMotion } from './utils/motion'
 import * as Sentry from '@sentry/react'
 import { env } from './lib/env'
 import { initAnalytics } from './lib/analytics'
-
-// Pill font (--font-pill) — injected from the bundle rather than a <link>
-// media-swap in index.html, whose inline onload is blocked by our CSP (no
-// 'unsafe-inline' in script-src). Injecting from here is CSP-safe (script runs
-// from 'self') and non-render-blocking (a dynamically-inserted stylesheet
-// doesn't hold up first paint). style-src/font-src already allow Google Fonts.
-{
-  const pillFont = document.createElement('link')
-  pillFont.rel = 'stylesheet'
-  pillFont.href = 'https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap'
-  document.head.appendChild(pillFont)
-}
 
 // Initialize Sentry (no-op if DSN not configured)
 if (env.sentryDsn) {
@@ -76,8 +72,21 @@ applyMotion(savedSettings?.motion)
 // Initialize auth before rendering
 useAuthStore.getState().initialize()
 
-createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById('root')
+const app = (
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )
+// Prerendered marketing pages ship their markup in #root — hydrate it so the
+// static HTML becomes interactive without a blank-then-paint. Everything else
+// (app shell, landing) mounts fresh.
+if (document.documentElement.hasAttribute('data-prerendered') && rootEl.hasChildNodes()) {
+  hydrateRoot(rootEl, app, {
+    onRecoverableError(error) {
+      console.warn('[hydrate] recovered', error)
+    },
+  })
+} else {
+  createRoot(rootEl).render(app)
+}

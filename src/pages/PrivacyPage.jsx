@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>3. Processors</h2>
-        <p>Your data is handled by the infrastructure we run on: Supabase (database, auth — encrypted in transit and at rest), Anthropic (processes the messages and board context you send to the assistant), Sentry (error reports), and PostHog (product analytics).</p>
+        <p>Your data is handled by the infrastructure we run on: Supabase (database, auth — encrypted in transit), Anthropic (processes the messages and board context you send to the assistant), Sentry (error reports), and PostHog (product analytics).</p>
       </section>
       <section>
         <h2>4. AI requests</h2>
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>7. Changes and contact</h2>
-        <p>Material changes to this policy will be announced in-app or by email. Questions: support@kolumn.app.</p>
+        <p>Material changes to this policy will be announced in-app or by email. Questions: hello@kolumn.app.</p>
       </section>
     </LegalPage>
   )
