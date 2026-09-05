@@ -5,11 +5,14 @@ import { CONTACT_EMAIL } from '../../content/pricing'
 // src/content/legal/*.js. Layout proportions per
 // docs/superpowers/specs/marketing/legal-template.md: a 640px reading
 // measure, Inter body text, Clash Grotesk headings (font-[425], no size
-// skip beyond h1 → h2), and a draft notice above the fold since none of
-// these documents have been reviewed by counsel yet.
+// skip beyond h1 → h2), and a draft notice above the fold for documents
+// that have not been reviewed by counsel yet.
 //
-// `doc` shape: { title, lastUpdated, sections: [{ heading, body }] } where
-// `body` is an array of paragraph strings and/or `{ list: [...] }` groups.
+// `doc` shape: { title, lastUpdated, sections: [{ heading, body }], draft }
+// where `body` is an array of paragraph strings and/or `{ list: [...] }`
+// groups, and `draft` (default true) controls the "pending legal review"
+// notice — set `draft: false` for a document that is already published and
+// not a draft outline (terms.js, privacy.js).
 //
 // MarketingLayout supplies the surrounding nav/<main>/footer and head tags —
 // this component renders only the document itself.
@@ -56,7 +59,7 @@ function SectionBody({ body }) {
 }
 
 export default function LegalDocPage({ doc }) {
-  const { title, lastUpdated, sections } = doc
+  const { title, lastUpdated, sections, draft = true } = doc
   const ids = sections.map((s) => slugify(s.heading))
 
   return (
@@ -72,10 +75,12 @@ export default function LegalDocPage({ doc }) {
         </a>
       </div>
 
-      <InlineNotice variant="warn" className="mb-10">
-        Draft pending legal review. This document describes Kolumn&rsquo;s current practices in plain
-        language. It has not yet been reviewed by counsel and is not a final legal agreement.
-      </InlineNotice>
+      {draft && (
+        <InlineNotice variant="warn" className="mb-10">
+          Draft pending legal review. This document describes Kolumn&rsquo;s current practices in plain
+          language. It has not yet been reviewed by counsel and is not a final legal agreement.
+        </InlineNotice>
+      )}
 
       <nav aria-label="Table of contents" className="mb-10">
         <p className="font-mono text-xs uppercase tracking-wide text-[var(--text-muted)] mb-2">Contents</p>

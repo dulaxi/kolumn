@@ -49,6 +49,8 @@ import * as MarketingNavMod from '../content/marketing-nav'
 import * as UsagePolicyMod from '../content/legal/usage-policy'
 import * as ResponsibleDisclosureMod from '../content/legal/responsible-disclosure'
 import * as PrivacyChoicesMod from '../content/legal/privacy-choices'
+import * as TermsMod from '../content/legal/terms'
+import * as PrivacyMod from '../content/legal/privacy'
 import * as SolutionsMod from '../content/solutions/index'
 import { COMPARISONS_LIST } from '../content/comparisons'
 
@@ -230,6 +232,8 @@ const CONTENT_MODULES = {
   'legal/usage-policy.js': UsagePolicyMod,
   'legal/responsible-disclosure.js': ResponsibleDisclosureMod,
   'legal/privacy-choices.js': PrivacyChoicesMod,
+  'legal/terms.js': TermsMod,
+  'legal/privacy.js': PrivacyMod,
   'solutions/index.js': SolutionsMod,
 }
 
@@ -587,8 +591,8 @@ describe('cross-page agreement', () => {
     ).toEqual([])
 
     const filesToCheck = [
-      'src/pages/PrivacyPage.jsx',
-      'src/pages/TermsPage.jsx',
+      'src/content/legal/privacy.js',
+      'src/content/legal/terms.js',
       ...MARKETING_PAGE_FILES.map(rel),
     ]
     const offenders = []

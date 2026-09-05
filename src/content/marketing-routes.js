@@ -16,6 +16,8 @@ import { SECURITY_META } from './security'
 import { USAGE_POLICY } from './legal/usage-policy'
 import { RESPONSIBLE_DISCLOSURE } from './legal/responsible-disclosure'
 import { PRIVACY_CHOICES } from './legal/privacy-choices'
+import { TERMS } from './legal/terms'
+import { PRIVACY } from './legal/privacy'
 
 // Canonical origin for canonical/OG URLs and the sitemap. No trailing slash.
 export const SITE_URL = 'https://kolumn.app'
@@ -24,7 +26,7 @@ export const SITE_URL = 'https://kolumn.app'
 // marketing chrome. Anything else must be a MARKETING_ROUTES path. '/' is
 // registered below (MARKETING_ROUTES) even though App.jsx routes it to
 // LandingPage directly, not through MarketingLayout.
-export const KNOWN_ROUTES = ['/onboarding', '/terms', '/privacy', '/#sign-in']
+export const KNOWN_ROUTES = ['/onboarding', '/#sign-in']
 
 // ---------------------------------------------------------------------------
 // Route factories. Each returns one MARKETING_ROUTES entry. `props` (when
@@ -344,6 +346,18 @@ export const MARKETING_ROUTES = [
   },
 
   // Legal -------------------------------------------------------------------
+  // /terms and /privacy predate this registry and were left on the old
+  // src/pages/{Terms,Privacy}Page.jsx shell — migrated onto the shared
+  // legal template with their URLs unchanged (they're linked from
+  // onboarding, the landing auth card, settings, and marketing-nav.js).
+  legalRoute('/terms', {
+    ...TERMS,
+    description: 'The terms that govern your use of Kolumn — accounts, your content, acceptable use, AI features, and plans and billing.',
+  }),
+  legalRoute('/privacy', {
+    ...PRIVACY,
+    description: 'What Kolumn collects, how it is used, which processors touch it, and the controls you have — export, delete, and revoke sessions.',
+  }),
   legalRoute('/legal/usage-policy', {
     ...USAGE_POLICY,
     description:
