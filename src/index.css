@@ -75,6 +75,9 @@
   --surface-card: #FFFFFF;
   --surface-sidebar: #FAF8F6;
   --surface-raised: #F2EDE8;
+  /* One step lighter than --surface-page, same warmth (R-B = 4), so a
+     surface can lift off the page without going neutral white. */
+  --surface-lifted: #FDFBF9;
   --surface-hover: #E8E2DB;
 
   --border-default: #E0DBD5;
@@ -166,6 +169,7 @@
   --surface-card: #262624;
   --surface-sidebar: #212120;
   --surface-raised: #2E2E2B;
+  --surface-lifted: #232321;
   --surface-hover: #3A3937;
 
   --border-default: #454340;   /* was #3A3937 — bumped so borders survive on hover rows where surface flips to #3A3937 */

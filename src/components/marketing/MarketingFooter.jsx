@@ -11,7 +11,8 @@ import { CONTACT_EMAIL, FOOTER_GROUPS, FOOTER_TAGLINE } from '../../content/mark
 // light-only).
 //
 // `tone` prop (2026-09): the landing page ("/") only gets a `'light'`
-// footer — a white (--surface-card) region on the cream page, separated by
+// footer — a lifted cream region (--surface-lifted, one step lighter than
+// the page and the same warmth) on the cream page, separated by
 // a --border-default hairline since white-on-cream reads too close in
 // value without one. Every other marketing page keeps the default `'ink'`
 // tone untouched. --text-muted fails 4.5:1 on white (~3.2:1) so the light
@@ -27,7 +28,7 @@ const TONES = {
     wordClassName: 'text-[var(--text-on-ink)]',
   },
   light: {
-    bg: 'bg-[var(--surface-card)]',
+    bg: 'bg-[var(--surface-lifted)]',
     text: 'text-[var(--text-primary)]',
     muted: 'text-[var(--text-secondary)]',
     decoration: 'decoration-[var(--text-muted)]',
