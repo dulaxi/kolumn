@@ -56,3 +56,29 @@ export function ogSlugForPath(path) {
 export function ogHeadlineForTitle(title) {
   return title.replace(/ — Kolumn$/, '')
 }
+
+// An index page's title is often just its section name, so layout A would show
+// the eyebrow "BLOG" above a headline reading "Blog" — correct, and useless to
+// anyone deciding whether to click. When the headline adds nothing to the
+// eyebrow, promote the page's description to the headline instead.
+export function ogHeadlineForRoute(route, eyebrow) {
+  const headline = ogHeadlineForTitle(route.title)
+  if (headline.trim().toLowerCase() !== String(eyebrow).trim().toLowerCase()) return headline
+  const sentence = String(route.description || '').split(/(?<=\.)\s/)[0]
+  return sentence || headline
+}
+
+// Layout B shows a real card. Give each page its own so the home page, pricing
+// and features don't share an identical picture when all three are shared.
+// Keyed by route path; anything unlisted falls back to the first entry.
+export const OG_CARDS = {
+  '/': { title: 'Redo the pricing page', icon: 'Browser', label: 'Marketing', checklist: [1, 3] },
+  '/pricing': { title: 'Compare the plans with the team', icon: 'CreditCard', label: 'Admin', checklist: [2, 3] },
+  '/features': { title: 'Draft the launch announcement', icon: 'Megaphone', label: 'Marketing', checklist: [0, 2] },
+  '/features/pill': { title: 'Add three cards from standup', icon: 'Lightning', label: 'Product', checklist: [0, 3] },
+  '/features/chat': { title: 'What is left before Friday?', icon: 'ChatsCircle', label: 'Product', checklist: [1, 2] },
+}
+
+export function ogCardForPath(path) {
+  return OG_CARDS[path] || OG_CARDS['/']
+}

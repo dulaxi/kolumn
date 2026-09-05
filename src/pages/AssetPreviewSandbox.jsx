@@ -82,16 +82,25 @@ function OgTitle({ eyebrow = 'Pricing', title = 'Free for as long as you like' }
 }
 
 // B — shows the product. A real card on a real board fragment.
-function OgProduct({ title = 'A board that listens', subhead = 'The kanban you talk to.' }) {
+function OgProduct({
+  title = 'A board that listens',
+  subhead = 'The kanban you talk to.',
+  card: cardTitle = 'Redo the pricing page',
+  cardIcon = 'Browser',
+  cardLabel = 'Marketing',
+  cardCheck = '1/3',
+}) {
   const size = fitFontSize(title, [
     [20, 62],
     [32, 54],
     [45, 46],
     [Infinity, 40],
   ])
+  const [doneN, totalN] = cardCheck.split('/').map(Number)
   const card = {
-    id: 'og', title: 'Redo the pricing page', icon: 'Browser',
-    priority: 'high', due_date: null, checklist: [{ done: true }, { done: false }, { done: false }],
+    id: 'og', title: cardTitle, icon: cardIcon,
+    priority: 'high', due_date: null,
+    checklist: Array.from({ length: totalN || 3 }, (_, i) => ({ done: i < (doneN || 0) })),
     completed: false, labels: [], description: '',
   }
   return (
@@ -109,7 +118,7 @@ function OgProduct({ title = 'A board that listens', subhead = 'The kanban you t
       <div className="w-[380px] shrink-0 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
         <p className="mb-3 text-[15px] font-semibold text-[var(--text-secondary)]">This week</p>
         <div className="scale-[1.15] origin-top-left w-[290px]">
-          <CardVisual card={card} interactive={false} labels={[{ text: 'Marketing', color: 'blue' }]} />
+          <CardVisual card={card} interactive={false} labels={[{ text: cardLabel, color: 'blue' }]} />
         </div>
       </div>
     </div>
@@ -202,6 +211,9 @@ export default function AssetPreviewSandbox() {
     if (params.has('eyebrow')) props.eyebrow = params.get('eyebrow')
     if (params.has('title')) props.title = params.get('title')
     if (params.has('subhead')) props.subhead = params.get('subhead')
+    for (const k of ['card', 'cardIcon', 'cardLabel', 'cardCheck']) {
+      if (params.has(k)) props[k] = params.get(k)
+    }
     return (
       <div data-og-card className="landing-font relative overflow-hidden" style={{ width: 1200, height: 630 }}>
         <Layout {...props} />

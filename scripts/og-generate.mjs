@@ -25,7 +25,7 @@ import { spawn } from 'node:child_process'
 import { mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ogLayoutForPath, ogSectionForPath, ogSlugForPath, ogHeadlineForTitle } from '../src/lib/ogMeta.js'
+import { ogLayoutForPath, ogSectionForPath, ogSlugForPath, ogHeadlineForRoute, ogCardForPath } from '../src/lib/ogMeta.js'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const OUT_DIR = join(ROOT, 'public', 'og')
@@ -85,10 +85,19 @@ async function main() {
   let count = 0
   for (const route of routes) {
     const layout = ogLayoutForPath(route.path)
-    const title = ogHeadlineForTitle(route.title)
+    const eyebrow = ogSectionForPath(route.path)
+    const title = ogHeadlineForRoute(route, eyebrow)
     const params = new URLSearchParams({ layout, title })
-    if (layout === 'A' || layout === 'C') params.set('eyebrow', ogSectionForPath(route.path))
-    if (layout === 'B') params.set('subhead', route.description)
+    if (layout === 'A' || layout === 'C') params.set('eyebrow', eyebrow)
+    if (layout === 'B') {
+      params.set('subhead', route.description)
+      // each B page gets its own card, so shares of / and /pricing differ
+      const c = ogCardForPath(route.path)
+      params.set('card', c.title)
+      params.set('cardIcon', c.icon)
+      params.set('cardLabel', c.label)
+      params.set('cardCheck', c.checklist.join('/'))
+    }
 
     const url = `${BASE_URL}/sandbox/asset-preview?${params.toString()}`
     await page.goto(url, { waitUntil: 'networkidle' })
