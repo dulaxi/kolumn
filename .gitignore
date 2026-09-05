@@ -16,6 +16,8 @@ dist-ssr
 *.png
 # ...but never swallow real app assets tracked under public/ (favicons, etc.)
 !public/*.png
+# ...or the generated Open Graph share images (scripts/og-generate.mjs).
+!public/og/*.png
 *.jpeg
 
 # MCP config (contains PAT)

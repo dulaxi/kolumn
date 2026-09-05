@@ -4,6 +4,7 @@
 // navigation (applyHeadMeta). Keep this file free of React and browser-only
 // globals at module scope — it runs in Node during the build.
 import { SITE_URL } from '../content/marketing-routes'
+import { ogSlugForPath } from './ogMeta'
 
 export const ROBOTS = 'index, follow, max-image-preview:large'
 // Thin/stub pages (no body yet — see marketing-routes.js `thin`) stay
@@ -27,6 +28,7 @@ export function routeMeta(route) {
     canonical: `${SITE_URL}${route.path === '/' ? '' : route.path}`,
     ogTitle: route.ogTitle || route.title,
     ogDescription: route.ogDescription || route.description,
+    ogImage: `${SITE_URL}/og/${ogSlugForPath(route.path)}.png`,
     robots: route.thin ? ROBOTS_THIN : ROBOTS,
     jsonLd: typeof route.jsonLd === 'function' ? route.jsonLd() : route.jsonLd || [],
   }
@@ -43,7 +45,11 @@ export function buildHeadTags(meta) {
     { tag: 'meta', attrs: { property: 'og:title', content: meta.ogTitle } },
     { tag: 'meta', attrs: { property: 'og:description', content: meta.ogDescription } },
     { tag: 'meta', attrs: { property: 'og:url', content: meta.canonical } },
-    { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary' } },
+    { tag: 'meta', attrs: { property: 'og:image', content: meta.ogImage } },
+    { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+    { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+    { tag: 'meta', attrs: { property: 'og:image:alt', content: meta.title } },
+    { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
     { tag: 'meta', attrs: { name: 'twitter:title', content: meta.ogTitle } },
     { tag: 'meta', attrs: { name: 'twitter:description', content: meta.ogDescription } },
   ]
