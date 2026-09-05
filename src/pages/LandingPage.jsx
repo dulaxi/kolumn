@@ -1631,7 +1631,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <MarketingFooter />
+      <MarketingFooter tone="light" />
     </div>
   )
 }
