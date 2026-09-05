@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Spinner from './components/ui/Spinner'
 import MarketingLayout from './components/marketing/MarketingLayout'
 import { marketingRouteElements } from './components/marketing/MarketingRoutes'
+import ScrollToTop from './components/marketing/ScrollToTop'
 
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -65,6 +66,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <UndoListener />
 
       <Suspense fallback={<div className="min-h-screen bg-[var(--surface-page)] flex items-center justify-center"><Spinner size={24} /></div>}>
