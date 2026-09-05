@@ -1,12 +1,18 @@
 ---
 name: klay
-description: Use when creating, editing, or animating Klay — Kolumn's pixel mascot (the walking sprout pot) — including new animations, expressions, poses, props, or wiring Klay into app UI. Covers the sprite format, palette rules, and authoring workflow.
+description: Use when creating, editing, or animating Klay — Kolumn's pixel mascot — including new animations, expressions, poses, props, or wiring Klay into app UI. Covers the sprite format, palette rules, and authoring workflow. Character source of truth is docs/klay-bible.md.
 ---
 
 # Klay — Kolumn's pixel mascot
 
-Klay is a pixel-art **walking sprout pot**: mauve pot, ink eyes, olive stem,
-lime leaves, tiny mauve feet. Named Klay (Kolumn + clay, the Clawd naming
+> **Character source of truth is `docs/klay-bible.md`.** Read it before any
+> character work. It describes Klay as a squat mossy rock creature in
+> three-quarter view with a side plane, three facings and an 18-animation
+> vocabulary. **The sprite in this repo is a different, flatter variant** —
+> 12×11, no side plane, no facings, 28 Kolumn-specific animations. That
+> divergence is documented at the end of the bible and is unresolved. This
+> file describes what is actually in `src/components/klay/`; where the two
+> disagree, the bible wins on character and this file wins on the code. Named Klay (Kolumn + clay, the Clawd naming
 recipe). He is the product metaphor made visible: something small, growing
 into shape.
 
