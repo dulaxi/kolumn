@@ -8,6 +8,7 @@
     "build": "vite build && npm run build:prerender",
     "build:prerender": "vite build --ssr src/prerender-entry.jsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
+    "og": "node scripts/og-generate.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -51,6 +52,7 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
+    "playwright-core": "^1.63.0",
     "serve": "^14.2.6",
     "tailwindcss": "^4.2.1",
     "vite": "^7.3.1",

@@ -14,7 +14,7 @@
 //     AccountSection.jsx (Delete account) + account/index.ts POST
 //     /delete-account (409 owned_shared_resources when boards/workspaces
 //     are still shared with others).
-//   - No training on content: src/pages/PrivacyPage.jsx §2.
+//   - No training on content: src/content/legal/privacy.js §2.
 //   - CSP/headers: public/serve.json.
 //   - Server-side auth: supabase/functions/account/index.ts and
 //     supabase/functions/chat/index.ts both call auth.getUser() against the
@@ -92,7 +92,7 @@ export const CONTROLS = {
       title: 'The AI and your content',
       body: "The AI sees the boards you've asked it to work on and nothing else — the same rows your account can read, sent to the model for that request. We don't use your content to train models. The pill can change one board at a time; chat can only read. Deletes and other destructive actions ask first and can be undone.",
       inApp: 'Settings → Privacy → "Your content is yours".',
-      code: 'src/pages/PrivacyPage.jsx §2; supabase/functions/chat/context.ts (user-scoped client); supabase/functions/chat/tier.ts (mode × tier) tool gating; src/lib/toolExecutor.js isDestructive(); UndoListener in App.jsx',
+      code: 'src/content/legal/privacy.js §2; supabase/functions/chat/context.ts (user-scoped client); supabase/functions/chat/tier.ts (mode × tier) tool gating; src/lib/toolExecutor.js isDestructive(); UndoListener in App.jsx',
     },
     {
       id: 'in-transit',
