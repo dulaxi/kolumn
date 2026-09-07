@@ -76,26 +76,33 @@ export default function ProfileSection() {
         </div>
       </SettingsRow>
       <SettingsRow title="Full name" htmlFor="settings-full-name">
-        <Input
-          id="settings-full-name"
-          key={profile?.display_name || ''}
-          defaultValue={profile?.display_name || ''}
-          placeholder="Your name…"
-          wrapperClassName="w-56"
-          error={!!nameError}
-          aria-invalid={!!nameError}
-          onChange={() => { if (nameError) setNameError('') }}
-          onBlur={(e) => {
-            const next = e.target.value.trim()
-            if (!next) {
-              e.target.value = profile?.display_name || ''
-              setNameError('Your name cannot be empty.')
-              return
-            }
-            if (next !== profile?.display_name) updateName(next)
-          }}
-        />
-        <FieldError>{nameError}</FieldError>
+        {/* SettingsRow lays its control area out as a horizontal flex row, so
+            the input and the error have to be stacked inside a wrapper of
+            their own — as direct children they sat side by side, with the
+            message beside the field instead of beneath it. The wrapper takes
+            the input's width so the message aligns to the field's left edge
+            rather than the row's. */}
+        <div className="w-56">
+          <Input
+            id="settings-full-name"
+            key={profile?.display_name || ''}
+            defaultValue={profile?.display_name || ''}
+            placeholder="Your name…"
+            error={!!nameError}
+            aria-invalid={!!nameError}
+            onChange={() => { if (nameError) setNameError('') }}
+            onBlur={(e) => {
+              const next = e.target.value.trim()
+              if (!next) {
+                e.target.value = profile?.display_name || ''
+                setNameError('Your name cannot be empty.')
+                return
+              }
+              if (next !== profile?.display_name) updateName(next)
+            }}
+          />
+          <FieldError>{nameError}</FieldError>
+        </div>
       </SettingsRow>
       <SettingsRow
         title="Display name"

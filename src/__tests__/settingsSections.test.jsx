@@ -122,6 +122,26 @@ describe('ProfileSection', () => {
     expect(useAuthStore.getState().updateProfile).not.toHaveBeenCalled()
   })
 
+  // SettingsRow lays its control area out as a horizontal flex row, so an
+  // error rendered as a direct sibling of the input sits BESIDE the field
+  // rather than under it. Both have to live in a stacking wrapper of their own.
+  test('the name error sits under the field, not beside it', async () => {
+    render(<ProfileSection />)
+    const input = screen.getByLabelText('Full name')
+    await userEvent.clear(input)
+    await userEvent.tab()
+
+    const alert = screen.getByRole('alert')
+    const controlColumn = input.closest('.flex.shrink-0')
+    expect(controlColumn).not.toBeNull()
+    // Same wrapper as the input …
+    expect(alert.parentElement.contains(input)).toBe(true)
+    // … and that wrapper is not the horizontal row itself.
+    expect(alert.parentElement).not.toBe(controlColumn)
+    // Order matters too: under means after.
+    expect(input.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   // A failure on a row with no single field to blame still uses the toast.
   test('a failed colour change still uses the shared toast', async () => {
     useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })
