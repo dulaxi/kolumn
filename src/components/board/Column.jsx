@@ -11,6 +11,7 @@ import GhostCard from './GhostCard'
 import { interleaveGhosts, resolveGhostIndex } from '../../lib/moveGhosts'
 import { filterCards } from '../../utils/cardFilters'
 import { showToast } from '../../utils/toast'
+import InlineNotice from '../ui/InlineNotice'
 import ConfirmModal from './ConfirmModal'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -94,6 +95,14 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
   const allCardIds = useMemo(() => columnCards.map((c) => c.id), [columnCards])
   const wipLimit = column.wip_limit
   const overWip = wipLimit && columnCards.length > wipLimit
+  // Set when an add is refused for hitting the limit. Deliberately NOT shown
+  // whenever the column happens to be full — the header already reads "3/3",
+  // and being at the limit is the point of setting one, not a fault. What was
+  // invisible is the refusal: a toast announced it once at the top of the
+  // screen and vanished, so the next attempt failed for no visible reason.
+  // Clears itself as soon as the count drops back under the limit.
+  const [wipRefused, setWipRefused] = useState(false)
+  const showWipNotice = wipRefused && wipLimit && columnCards.length >= wipLimit
 
   useEffect(() => {
     if (isRenaming && renameRef.current) {
@@ -106,9 +115,10 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
     if (creating) return
     // Enforce WIP limit
     if (wipLimit && columnCards.length >= wipLimit) {
-      showToast.warn(`Column is at its WIP limit (${wipLimit})`)
+      setWipRefused(true)
       return
     }
+    setWipRefused(false)
     setCreating(true)
     // No auto-assignment on create — leave assignees empty so users
     // explicitly choose. Templates can still seed labels/checklist/etc.
@@ -253,6 +263,16 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
           </Menu>
         </div>
       </div>
+
+      {showWipNotice && (
+        <InlineNotice
+          variant="warn"
+          className="mb-2"
+          onDismiss={() => setWipRefused(false)}
+        >
+          At its limit of {wipLimit}. Move something on before adding more.
+        </InlineNotice>
+      )}
 
       {/* Cards list */}
       <div

@@ -6,6 +6,7 @@ import { showToast } from '../../utils/toast'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
 import Input from '../ui/Input'
+import FieldError from '../ui/FieldError'
 import SettingsSection from './SettingsSection'
 import SettingsRow from './SettingsRow'
 
@@ -13,6 +14,7 @@ export default function ProfileSection() {
   const profile = useAuthStore((s) => s.profile)
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [nameError, setNameError] = useState('')
 
   const update = async (updates) => {
     try {
@@ -20,6 +22,22 @@ export default function ProfileSection() {
       showToast.success('Profile updated')
     } catch {
       showToast.error("Couldn't update profile")
+    }
+  }
+
+  // The name row reports through the field rather than the shared toast.
+  // Clearing the field used to snap the old name back with no explanation —
+  // the one moment a person most needs telling why — and a failed save floated
+  // away in a toast, by which time your eye has left the box that caused it.
+  // The other rows (avatar, colour, nickname) keep the toast: they have no
+  // single field to blame, and empty is valid for the nickname.
+  const updateName = async (next) => {
+    setNameError('')
+    try {
+      await updateProfile({ display_name: next })
+      showToast.success('Profile updated')
+    } catch {
+      setNameError("Couldn't save that. Try again.")
     }
   }
 
@@ -64,15 +82,20 @@ export default function ProfileSection() {
           defaultValue={profile?.display_name || ''}
           placeholder="Your name…"
           wrapperClassName="w-56"
+          error={!!nameError}
+          aria-invalid={!!nameError}
+          onChange={() => { if (nameError) setNameError('') }}
           onBlur={(e) => {
             const next = e.target.value.trim()
             if (!next) {
               e.target.value = profile?.display_name || ''
+              setNameError('Your name cannot be empty.')
               return
             }
-            if (next !== profile?.display_name) update({ display_name: next })
+            if (next !== profile?.display_name) updateName(next)
           }}
         />
+        <FieldError>{nameError}</FieldError>
       </SettingsRow>
       <SettingsRow
         title="Display name"

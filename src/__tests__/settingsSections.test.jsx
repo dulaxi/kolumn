@@ -93,7 +93,11 @@ describe('ProfileSection', () => {
     )
   })
 
-  test('failed profile update shows an error toast, not a success toast', async () => {
+  // The name row reports through the field, not the shared toast: a toast is
+  // transient and by the time you read it your eye has left the box that
+  // caused it. The other rows keep the toast — they have no single field to
+  // blame. This test used to assert the toast here; it now asserts the field.
+  test('a failed name save reports on the field, not in a toast', async () => {
     useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })
     render(<ProfileSection />)
     const input = screen.getByLabelText('Full name')
@@ -101,8 +105,30 @@ describe('ProfileSection', () => {
     await userEvent.type(input, 'Abdullah')
     await userEvent.tab()
     await waitFor(() => {
+      expect(screen.getByText("Couldn't save that. Try again.")).toBeInTheDocument()
+    })
+    expect(input).toHaveAttribute('aria-invalid', 'true')
+    expect(showToast.success).not.toHaveBeenCalled()
+    expect(showToast.error).not.toHaveBeenCalled()
+  })
+
+  // Clearing the field used to snap the old name back with no explanation.
+  test('clearing the name explains the revert instead of silently undoing it', async () => {
+    render(<ProfileSection />)
+    const input = screen.getByLabelText('Full name')
+    await userEvent.clear(input)
+    await userEvent.tab()
+    expect(screen.getByText('Your name cannot be empty.')).toBeInTheDocument()
+    expect(useAuthStore.getState().updateProfile).not.toHaveBeenCalled()
+  })
+
+  // A failure on a row with no single field to blame still uses the toast.
+  test('a failed colour change still uses the shared toast', async () => {
+    useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })
+    render(<ProfileSection />)
+    await userEvent.click(screen.getAllByRole('button', { name: /^Profile color/ })[0])
+    await waitFor(() => {
       expect(showToast.error).toHaveBeenCalledWith("Couldn't update profile")
     })
-    expect(showToast.success).not.toHaveBeenCalled()
   })
 })

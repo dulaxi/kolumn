@@ -1583,6 +1583,13 @@ export default function LandingPage() {
       {/* ─── Nav ─── */}
       <MarketingNav />
 
+      {/* Every other marketing page gets its <main> from MarketingLayout. The
+          landing page is a registry route that renders OUTSIDE that layout —
+          the same structural gap that once left its tab title stale — so
+          without this it was the one page on the site with no landmark for
+          "skip to content" to reach. */}
+      <main>
+
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
         {/* pt-3: the animation tile would otherwise sit mathematically flush
@@ -1696,6 +1703,8 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      </main>
 
       {/* ─── Footer ─── */}
       <MarketingFooter tone="light" />
