@@ -54,10 +54,12 @@ export default function DeleteAccountModal({ open, onClose, onDeleted }) {
       ariaLabel="Delete account"
       zIndex={60}
     >
-      <div className="w-full max-w-md mx-4 rounded-xl border border-[var(--label-red-text)] bg-[var(--surface-card)] p-5">
+      {/* Same surface as ConfirmModal and every other modal: red is carried by
+          the warning glyph and the confirm button, not by the panel itself. */}
+      <div className="w-full max-w-md mx-4 rounded-xl border-0.5 border-[var(--border-default)] shadow-[var(--shadow-raised)] bg-[var(--surface-page)] p-5">
         <div className="mb-2 flex items-center gap-2">
           <Warning className="h-4 w-4 text-[var(--label-red-text)]" />
-          <h3 className="text-sm font-semibold text-[var(--label-red-text)]">Delete account</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Delete account</h3>
         </div>
         <p className="mb-4 text-sm text-[var(--text-secondary)]">
           This permanently deletes your account, boards, cards, and workspaces.
