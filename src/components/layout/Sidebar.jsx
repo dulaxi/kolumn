@@ -195,6 +195,7 @@ export default function Sidebar() {
   const itemPropsFor = (board, { editable, deletable, leavable = false }) => ({
     board,
     active: isBoardsActive && activeBoardId === board.id,
+    pinned: favoriteBoards.includes(board.id),
     editable,
     deletable,
     leavable,

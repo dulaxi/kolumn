@@ -1,4 +1,4 @@
-import { SignOut, Trash } from '@phosphor-icons/react'
+import { SignOut, Trash, PushPin } from '@phosphor-icons/react'
 import DynamicIcon from '../board/DynamicIcon'
 import IconPicker from '../board/IconPicker'
 import Tooltip from '../ui/Tooltip'
@@ -13,6 +13,7 @@ import Tooltip from '../ui/Tooltip'
 export default function SidebarBoardItem({
   board,
   active,
+  pinned = false,
   editable = false,
   deletable = false,
   leavable = false,
@@ -100,6 +101,18 @@ export default function SidebarBoardItem({
           </span>
         )}
       </span>
+
+      {/* Pinned is a status, not an action, so it stays visible rather than
+          appearing on hover like the delete and leave controls beside it. */}
+      {pinned && (
+        <Tooltip content="Pinned to the top">
+          <PushPin
+            weight="fill"
+            aria-label="Pinned"
+            className="w-3.5 h-3.5 shrink-0 text-[var(--text-muted)]"
+          />
+        </Tooltip>
+      )}
 
       {deletable && (
         <span className="flex items-center gap-0.5 shrink-0">

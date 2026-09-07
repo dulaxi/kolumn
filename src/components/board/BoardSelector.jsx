@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, CaretRight, ClockCounterClockwise, DotsThreeVertical, Funnel, PushPin, Tag, X } from '@phosphor-icons/react'
+import { Archive, CaretRight, ClockCounterClockwise, DotsThreeVertical, Funnel, PencilSimple, PushPin, Tag, Trash, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -338,17 +338,24 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               portal
               panel={
                 <>
-                  <Menu.Item onSelect={() => { setBoardMenuOpen(false); setShowDetails(true) }}>
+                  <Menu.Item
+                    icon={<PencilSimple className="w-4 h-4" />}
+                    onSelect={() => { setBoardMenuOpen(false); setShowDetails(true) }}
+                  >
                     Edit details
                   </Menu.Item>
                   <Menu.Item
                     icon={<PushPin className="w-4 h-4" weight={isPinned ? 'fill' : 'regular'} />}
                     onSelect={() => { setBoardMenuOpen(false); toggleFavorite(activeBoardId) }}
                   >
-                    {isPinned ? 'Unpin from top' : 'Pin to top'}
+                    {isPinned ? 'Unpin board' : 'Pin board'}
                   </Menu.Item>
                   <Menu.Divider />
-                  <Menu.Item destructive onSelect={() => { setBoardMenuOpen(false); setConfirmDeleteBoard(true) }}>
+                  <Menu.Item
+                    destructive
+                    icon={<Trash className="w-4 h-4" />}
+                    onSelect={() => { setBoardMenuOpen(false); setConfirmDeleteBoard(true) }}
+                  >
                     Delete board
                   </Menu.Item>
                 </>
