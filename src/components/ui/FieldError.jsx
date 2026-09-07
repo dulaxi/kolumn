@@ -11,10 +11,16 @@ export default function FieldError({ children, className = '', ...rest }) {
   return (
     <p
       role="alert"
-      className={`flex items-center gap-1.5 font-mono text-[11px] text-[var(--notice-error-text)] mt-1.5 ${className}`}
+      // items-start, not items-center: a message long enough to wrap (which
+      // real validation copy usually is — "Enter a valid email address, like
+      // you@example.com.") would otherwise centre the icon against the whole
+      // block, floating it into the gutter between the two lines instead of
+      // sitting beside the first one. mt-px optically centres the 13px icon
+      // on the 11px line it belongs to.
+      className={`flex items-start gap-1.5 font-mono text-[11px] text-[var(--notice-error-text)] mt-1.5 ${className}`}
       {...rest}
     >
-      <WarningCircle size={13} className="shrink-0" />
+      <WarningCircle size={13} className="shrink-0 mt-px" />
       <span>{children}</span>
     </p>
   )

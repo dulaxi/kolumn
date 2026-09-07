@@ -8,12 +8,15 @@ import { LABEL_OUTLINE } from '../utils/formatting'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
+import FieldError from '../components/ui/FieldError'
+import { isValidEmail, EMAIL_INVALID_MESSAGE } from '../utils/validation'
 import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
 import FaqItem from '../components/marketing/FaqItem'
 import PlanGrid from '../components/marketing/PlanGrid'
 import MarketingNav from '../components/marketing/MarketingNav'
 import MarketingFooter from '../components/marketing/MarketingFooter'
+import UseCaseShowcase from '../components/marketing/UseCaseShowcase'
 
 
 // Stats bar removed pre-launch — old values were vanity placeholders
@@ -33,10 +36,21 @@ import MarketingFooter from '../components/marketing/MarketingFooter'
 // Plan definitions live in src/data/plans.js — shared with the
 // signup plan-picker step. Edits there propagate to both surfaces.
 
+// The homepage FAQ is where jargon finally gets taught — deliberately at the
+// bottom, for readers who want the term, after the page has already explained
+// itself in plain words. "What is a kanban board?" leads because it is both
+// the question a stranger is left holding and a real search query.
+//
+// The old first entry explained Kolumn by reference to Trello, which does not
+// help anyone who has never used Trello either. It now stands on its own.
 const FAQ = [
   {
+    q: 'What is a kanban board?',
+    a: 'A way of seeing work instead of listing it. Every task is a card. Cards sit in columns that stand for stages — usually something like To do, Doing, Done — and you drag a card to the next column as it moves along. That is the whole idea. It started on factory floors in the 1950s and stuck around because a wall of cards tells you at a glance what is stuck, what is nearly finished, and what nobody has picked up. Kolumn is that, with an AI that writes and moves the cards when you ask it to.',
+  },
+  {
     q: 'What should I use Kolumn for?',
-    a: 'Anything you used to keep in a notes app, a shared sheet, or a Trello board you abandoned. Personal projects, side hustles, team workstreams, content calendars, recurring chores — anything that benefits from "cards in columns" but where you do not want to set up a workflow tool first. The AI runs the busywork; you stay in the kanban.',
+    a: 'Anything you currently keep in a notes app, a group chat, or your head. Moving house, a dissertation, client work, a wedding, this sprint, next quarter — personal projects, side hustles, team workstreams, content calendars, recurring chores. If it is a list of things that need doing, it fits. The point is that there is nothing to set up first: no workflow to design, no custom fields to define. You make a board and start typing.',
   },
   {
     q: 'How is Kolumn different from Asana, Trello, or Notion?',
@@ -1243,6 +1257,12 @@ function GoogleGlyph() {
 function HeroAuthCard() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Two tiers, deliberately not one state. `emailError` is about the field —
+  // it renders under the input with the input itself bordered red. `error` is
+  // about the form as a whole (OAuth failed, sign-in rejected) and stays a
+  // card-level notice. Collapsing them would put "Sign in failed" under the
+  // email box, blaming a field that may be perfectly fine.
+  const [emailError, setEmailError] = useState('')
   const [error, setError] = useState('')
   const [checking, setChecking] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -1294,6 +1314,14 @@ function HeroAuthCard() {
   const handleEmailContinue = async (e) => {
     e.preventDefault()
     if (!email) return
+    // Validate before the round-trip. Without this the browser's own native
+    // tooltip handles a malformed address — a grey system bubble in a font we
+    // don't control that disappears on the next keystroke.
+    if (!isValidEmail(email)) {
+      setEmailError(EMAIL_INVALID_MESSAGE)
+      return
+    }
+    setEmailError('')
     setError('')
     setChecking(true)
     try {
@@ -1353,20 +1381,30 @@ function HeroAuthCard() {
           </div>
 
           {mode === 'email' ? (
-            <form onSubmit={handleEmailContinue} className="space-y-3">
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={checking}
-                className={`!h-11 !rounded-[0.6rem] !text-base transition-shadow duration-300 ${
-                  highlighted
-                    ? 'ring-2 ring-[var(--color-olive)] ring-offset-2 ring-offset-[var(--surface-card)]'
-                    : ''
-                }`}
-              />
+            <form onSubmit={handleEmailContinue} noValidate className="space-y-3">
+              {/* noValidate: `type="email"` + `required` makes the browser
+                  refuse to submit and show its own native tooltip, so our
+                  validation never runs and the styled FieldError never
+                  appears. The type attribute stays for the mobile keyboard;
+                  the checking is ours. */}
+              <div>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError('') }}
+                  placeholder="Enter your email"
+                  required
+                  disabled={checking}
+                  error={!!emailError}
+                  aria-invalid={!!emailError}
+                  className={`!h-11 !rounded-[0.6rem] !text-base transition-shadow duration-300 ${
+                    highlighted
+                      ? 'ring-2 ring-[var(--color-olive)] ring-offset-2 ring-offset-[var(--surface-card)]'
+                      : ''
+                  }`}
+                />
+                <FieldError>{emailError}</FieldError>
+              </div>
               <Button
                 type="submit"
                 size="lg"
@@ -1545,6 +1583,13 @@ export default function LandingPage() {
       {/* ─── Nav ─── */}
       <MarketingNav />
 
+      {/* Every other marketing page gets its <main> from MarketingLayout. The
+          landing page is a registry route that renders OUTSIDE that layout —
+          the same structural gap that once left its tab title stale — so
+          without this it was the one page on the site with no landmark for
+          "skip to content" to reach. */}
+      <main>
+
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden">
         {/* pt-3: the animation tile would otherwise sit mathematically flush
@@ -1555,11 +1600,33 @@ export default function LandingPage() {
             {/* Left — Copy (center-aligned) */}
             <div className="flex w-full items-center pt-12 pb-4 lg:py-0">
             <div className="text-center flex flex-col items-center w-full">
-              <h1 className="font-heading font-normal text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl text-[var(--text-primary)] tracking-tight leading-[1.08] mb-5">
-                A board that listens.
+              {/* Written for a first-time visitor who has never used a
+                  project tool. The previous hero ("A board that listens." /
+                  "The kanban you talk to.") named the category twice without
+                  ever defining it, so a stranger had to decode the animation
+                  to learn what the nouns meant. The h1 now states the action
+                  and the sub-line teaches cards-and-columns, so the word
+                  "kanban" never appears above the fold — it is defined once,
+                  in the FAQ, for readers who want the term.
+                  LandingPageChrome.test.jsx pins that rule, not the wording.
+
+                  Two constraints on any rewrite of these two lines:
+
+                  - No leading pronoun. "Tell it what needs doing" reads fine
+                    beside the animation, but the h1 also travels alone into
+                    search results and share cards, where "it" points at
+                    nothing.
+                  - Keep the h1 around 20 characters. The type scale here is
+                    the original hero's; a longer line forces it down a step
+                    and the hero loses its visual weight. */}
+              <h1 className="font-heading font-normal text-balance text-5xl sm:text-6xl lg:text-[3.5rem] xl:text-6xl text-[var(--text-primary)] tracking-tight leading-[1.08] mb-5">
+                Say what needs doing.
               </h1>
-              <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-lg mb-8 leading-relaxed">
-                The kanban you talk to.
+              {/* text-balance on both lines, and a non-breaking space inside
+                  "To do" — without it the phone breaks the column name in
+                  half ("... columns — To / do, Doing, Done."). */}
+              <p className="text-balance text-base sm:text-lg text-[var(--text-secondary)] max-w-lg mb-8 leading-relaxed">
+                Kolumn turns it into cards in columns — To&nbsp;do, Doing, Done.
               </p>
               <HeroAuthCard />
             </div>
@@ -1582,12 +1649,19 @@ export default function LandingPage() {
       {/* Stats Bar — removed pre-launch (see `stats` removal note near the
           top of this file). Re-add once we have real numbers worth quoting. */}
 
+      {/* ─── "Is this for me?" ───
+          The hero answers what Kolumn IS; this answers whether it applies to
+          you, which was previously only addressed by FAQ item 1 at the very
+          bottom of the page. Content and interaction live in the component;
+          the examples double as internal links to real template pages. */}
+      <UseCaseShowcase />
+
       {/* ─── AI Demo Slider (Notes + Slack + Teams + Gmail) ─── */}
-      <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto">
+      <section className="px-6 sm:px-10 pt-8 pb-20 max-w-6xl mx-auto">
         {/* Heading + intro centered */}
         <div className="text-center mb-12 max-w-2xl mx-auto">
           <h2 className="font-heading font-[425] text-3xl text-[var(--text-primary)] tracking-tight mb-3">
-            Notes in, Kanban out
+            Notes in, tasks out
           </h2>
           <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Type how you think. Kolumn reads notes, threads, and emails — then drops
@@ -1629,6 +1703,8 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      </main>
 
       {/* ─── Footer ─── */}
       <MarketingFooter tone="light" />

@@ -50,6 +50,20 @@ export default function CardVisual({
   // parent for the buttons inside. Card.jsx never passes this, so the
   // app's DOM is untouched.
   interactive = true,
+  // Opt-in, marketing-only (same reason `interactive` exists): renders the
+  // due-date chip from a literal string instead of a real date.
+  //
+  // A static marketing board cannot carry a real `due_date`. Every date
+  // helper here is relative to now, so a hardcoded date renders copper and
+  // "overdue" a few months after it ships, and a date computed at render
+  // time differs between the build-time prerender and the browser, which is
+  // a hydration mismatch. The chip is part of an illustration, so it gets
+  // illustration text — evergreen ("Fri", "Next Tue"), never an absolute
+  // date. The landing page's AI demo already treats due dates this way.
+  //
+  // Styled with the no-urgency branch of dueDateOutlineClass, because
+  // without a real date there is no urgency to claim.
+  dueDateLabel,
 }) {
   const { title, description, priority, due_date: dueDate, checklist, completed, icon } = card
   // Multi-assignee: prefer new `assignees` array; fall back to legacy single name
@@ -206,15 +220,15 @@ export default function CardVisual({
       )}
 
       {/* Bottom metadata row */}
-      {(dueDateObj || hasChecklist || hasAssignee || watchers.length > 0) && (
+      {(dueDateObj || dueDateLabel || hasChecklist || hasAssignee || watchers.length > 0) && (
         <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-2">
-            {dueDateObj && (
+            {(dueDateObj || dueDateLabel) && (
               <span
                 className={`font-medium flex items-center gap-1 rounded-full text-xs leading-[1.4] border-[0.5px] py-px px-1.5 ${dueDateOutlineClass(dueDateObj)}`}
               >
                 <CalendarDot size={14} weight="regular" className="shrink-0 -mt-px" />
-                {formatDueDateLabel(dueDateObj)}
+                {dueDateObj ? formatDueDateLabel(dueDateObj) : dueDateLabel}
               </span>
             )}
 

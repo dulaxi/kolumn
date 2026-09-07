@@ -5,7 +5,12 @@ import react from 'eslint-plugin-react'
 import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
-  { ignores: ['dist', 'dist-ssr', 'public'] },
+  // ds-bundle is generated output for design-sync: a bundled payload plus a
+  // minified UMD copy of React. Linting it produced 358 no-undef errors
+  // (React, checkDCE, __REACT_DEVTOOLS_GLOBAL_HOOK__) — all but two of the
+  // errors the project reported, none of them real, which made `npm run lint`
+  // useless as a gate. It is build output; it is not source.
+  { ignores: ['dist', 'dist-ssr', 'public', 'ds-bundle'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

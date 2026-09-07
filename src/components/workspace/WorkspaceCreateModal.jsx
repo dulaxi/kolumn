@@ -6,6 +6,7 @@ import { WORKSPACE_COLORS } from '../../constants/colors'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
+import FieldError from '../ui/FieldError'
 
 /**
  * WorkspaceCreateModal — name + color picker.
@@ -24,6 +25,7 @@ export default function WorkspaceCreateModal({ open, onClose, onCreated }) {
   const [description, setDescription] = useState('')
   const [color, setColor] = useState(WORKSPACE_COLORS[0].name)
   const [submitting, setSubmitting] = useState(false)
+  const [nameError, setNameError] = useState('')
   const nameRef = useRef(null)
 
   useEffect(() => {
@@ -31,21 +33,36 @@ export default function WorkspaceCreateModal({ open, onClose, onCreated }) {
       setName('')
       setDescription('')
       setColor(WORKSPACE_COLORS[0].name)
+      setNameError('')
       setSubmitting(false)
     }
   }, [open])
 
   const canSubmit = name.trim().length > 0 && !submitting
 
+  // Two failure modes lived here before, both from the missing try/catch.
+  // A throw skipped setSubmitting(false) entirely, so the button kept its
+  // spinner and the modal sat open with no message and no way to retry. And a
+  // falsy id — a save that failed quietly — skipped onCreated but still ran
+  // onClose(), closing the modal as though a workspace had been created, so
+  // you went looking for one that was never made. finally covers the first;
+  // treating a missing id as a failure covers the second.
   const handleSubmit = async (e) => {
     e?.preventDefault?.()
     if (!canSubmit) return
+    setNameError('')
     setSubmitting(true)
-    // Store color name in the `icon` field (overloaded — see colors.js).
-    const id = await createWorkspace(name.trim(), color)
-    setSubmitting(false)
-    if (id && onCreated) onCreated(id)
-    onClose()
+    try {
+      // Store color name in the `icon` field (overloaded — see colors.js).
+      const id = await createWorkspace(name.trim(), color)
+      if (!id) throw new Error('createWorkspace returned no id')
+      onCreated?.(id)
+      onClose()
+    } catch {
+      setNameError("Couldn't create that workspace. Try again.")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -87,10 +104,13 @@ export default function WorkspaceCreateModal({ open, onClose, onCreated }) {
             id="ws-name"
             ref={nameRef}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value); if (nameError) setNameError('') }}
             placeholder="Enter a name for your workspace"
             maxLength={64}
+            error={!!nameError}
+            aria-invalid={!!nameError}
           />
+          <FieldError>{nameError}</FieldError>
         </div>
 
         {/* Description — auto-growing textarea via grid trick.
