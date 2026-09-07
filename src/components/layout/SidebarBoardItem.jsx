@@ -102,36 +102,33 @@ export default function SidebarBoardItem({
         )}
       </span>
 
-      {/* Pin and delete share one slot rather than sitting side by side: the
-          pin shows the board's status at rest, and hovering swaps it for the
-          action you came to perform. Absolutely positioned inside a fixed box
-          so the swap costs no layout — two icons in the flow would reserve
-          width for both and shift the name every time you moved the mouse.
+      {/* One trailing slot, one icon. A pinned board shows its pin and nothing
+          else — deleting it means unpinning first, which is a reasonable
+          speed bump on a board you deliberately marked as important.
 
-          The pin is a status, so it is visible at rest and hidden on hover.
-          The trash is an action, so it is the other way round. */}
+          Centred by flex rather than absolute positioning: Tooltip wraps its
+          child in a span of its own, so `absolute inset-0` on the icon
+          positions against THAT wrapper rather than this slot, and the pin
+          lands off-centre. */}
       {(pinned || deletable) && (
-        <span data-row-actions className="relative w-5 h-5 shrink-0">
-          {pinned && (
+        <span data-row-actions className="flex items-center justify-center w-5 h-5 shrink-0">
+          {pinned ? (
             <Tooltip content="Pinned to the top">
               <PushPin
                 weight="fill"
                 aria-label="Pinned"
-                className={`absolute inset-0 m-auto w-3.5 h-3.5 text-[var(--text-muted)] transition-opacity ${
-                  deletable ? 'group-hover:opacity-0' : ''
-                }`}
+                className="w-3.5 h-3.5 text-[var(--text-muted)]"
               />
             </Tooltip>
-          )}
-          {deletable && (
+          ) : deletable ? (
             <Trash
               role="button"
               aria-label={`Delete board ${board.name}`}
               weight="light"
-              className="absolute inset-0 w-5 h-5 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 transition-opacity"
+              className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={(e) => { e.stopPropagation(); onDelete?.(board.id) }}
             />
-          )}
+          ) : null}
         </span>
       )}
 

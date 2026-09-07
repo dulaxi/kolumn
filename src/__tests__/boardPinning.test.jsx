@@ -38,42 +38,36 @@ describe('pinned boards in the sidebar', () => {
   // to be told apart by word boundary, not by toContain.
   const hiddenAtRest = (el) => /(^|\s)opacity-0(\s|$)/.test(classOf(el))
 
-  test('the pin is visible at rest and gives way on hover', () => {
+  test('a pinned board shows its pin and no delete control', () => {
+    renderItem({ pinned: true, deletable: true })
+    expect(screen.getByLabelText('Pinned')).toBeInTheDocument()
+    // Pin wins outright — deleting a pinned board means unpinning it first.
+    expect(screen.queryByLabelText('Delete board Launch plan')).toBeNull()
+  })
+
+  test('the pin is visible at rest, never hover-gated', () => {
     renderItem({ pinned: true, deletable: true })
     const pin = screen.getByLabelText('Pinned')
     expect(hiddenAtRest(pin)).toBe(false)
-    expect(classOf(pin)).toContain('group-hover:opacity-0')
+    expect(classOf(pin)).not.toContain('group-hover:opacity-0')
   })
 
-  test('the trash is hidden at rest and takes the pin\'s place on hover', () => {
-    renderItem({ pinned: true, deletable: true })
+  test('an unpinned board keeps its hover delete', () => {
+    renderItem({ pinned: false, deletable: true })
     const trash = screen.getByLabelText('Delete board Launch plan')
     expect(hiddenAtRest(trash)).toBe(true)
     expect(classOf(trash)).toContain('group-hover:opacity-100')
   })
 
-  test('they share one slot, so hovering does not shift the row', () => {
+  test('the icon is centred by the slot, not positioned against a wrapper', () => {
     renderItem({ pinned: true, deletable: true })
-    const pin = screen.getByLabelText('Pinned')
-    const trash = screen.getByLabelText('Delete board Launch plan')
-    // Same positioned ancestor, both taken out of flow — two icons in the flow
-    // would reserve width for both and move the board name on every hover.
-    // Not the same *parent*: Tooltip wraps the pin in a span of its own.
-    // Matched on the slot's own attribute rather than a class: Tooltip wraps
-    // the pin in a span that is itself `relative`, so closest('.relative')
-    // stops there instead of reaching the shared slot.
-    const slot = pin.closest('[data-row-actions]')
+    const slot = screen.getByLabelText('Pinned').closest('[data-row-actions]')
     expect(slot).not.toBeNull()
-    expect(trash.closest('[data-row-actions]')).toBe(slot)
-    expect(classOf(pin)).toContain('absolute')
-    expect(classOf(trash)).toContain('absolute')
-  })
-
-  test('a pin with nothing to swap to stays put', () => {
-    renderItem({ pinned: true, deletable: false })
-    const pin = screen.getByLabelText('Pinned')
-    expect(hiddenAtRest(pin)).toBe(false)
-    expect(classOf(pin)).not.toContain('group-hover:opacity-0')
+    // Absolute positioning here lands against Tooltip's own relative wrapper
+    // rather than this slot, which is what put the pin off-centre.
+    expect(classOf(screen.getByLabelText('Pinned'))).not.toContain('absolute')
+    expect(slot.className).toContain('items-center')
+    expect(slot.className).toContain('justify-center')
   })
 })
 
