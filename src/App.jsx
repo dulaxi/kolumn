@@ -34,7 +34,7 @@ const OnboardingBoardSandbox = lazy(() => import('./pages/OnboardingBoardSandbox
 const BoardSkeletonSandbox = lazy(() => import('./pages/BoardSkeletonSandbox'))
 const LogoAlignSandbox = lazy(() => import('./pages/LogoAlignSandbox'))
 const AssetPreviewSandbox = lazy(() => import('./pages/AssetPreviewSandbox'))
-const ConfirmModalSandbox = lazy(() => import('./pages/ConfirmModalSandbox'))
+const OverlaysSandbox = lazy(() => import('./pages/OverlaysSandbox'))
 
 function UndoListener() {
   const handleClick = useCallback((e) => {
@@ -87,7 +87,7 @@ export default function App() {
             <Route path="/sandbox/asset-preview" element={<ErrorBoundary><AssetPreviewSandbox /></ErrorBoundary>} />
           )}
           {import.meta.env.DEV && (
-            <Route path="/sandbox/confirm-modal" element={<ErrorBoundary><ConfirmModalSandbox /></ErrorBoundary>} />
+            <Route path="/sandbox/overlays" element={<ErrorBoundary><OverlaysSandbox /></ErrorBoundary>} />
           )}
           {import.meta.env.DEV && (
             <Route path="/sandbox/upgrade-pro" element={<ErrorBoundary><UpgradeProPage /></ErrorBoundary>} />
