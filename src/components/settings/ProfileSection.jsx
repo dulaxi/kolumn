@@ -79,9 +79,13 @@ export default function ProfileSection() {
         {/* SettingsRow lays its control area out as a horizontal flex row, so
             the input and the error have to be stacked inside a wrapper of
             their own — as direct children they sat side by side, with the
-            message beside the field instead of beneath it. The wrapper takes
-            the input's width so the message aligns to the field's left edge
-            rather than the row's. */}
+            message beside the field instead of beneath it.
+
+            The wrapper is also what actually sets the width. Input only honours
+            wrapperClassName when it renders a wrapper, which it does only for a
+            leadingIcon; without one it returns a bare w-full input and the prop
+            is silently dropped. Both rows below therefore size from a real
+            wrapper, and they must stay the same width as each other. */}
         <div className="w-56">
           <Input
             id="settings-full-name"
@@ -109,12 +113,12 @@ export default function ProfileSection() {
         description="What the dashboard greeting calls you."
         htmlFor="settings-nickname"
       >
+        <div className="w-56">
         <Input
           id="settings-nickname"
           key={`nick-${profile?.nickname || ''}`}
           defaultValue={profile?.nickname || ''}
           placeholder="First name…"
-          wrapperClassName="w-56"
           onBlur={(e) => {
             // Empty is valid here — clearing falls back to the first word
             // of the full name in the greeting.
@@ -122,6 +126,7 @@ export default function ProfileSection() {
             if (next !== (profile?.nickname || '')) update({ nickname: next })
           }}
         />
+        </div>
       </SettingsRow>
       <SettingsRow title="Color" description="Avatar background color.">
         <div className="flex max-w-64 flex-wrap justify-end gap-2">

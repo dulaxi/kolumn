@@ -142,6 +142,18 @@ describe('ProfileSection', () => {
     expect(input.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  // These two rows sit one above the other, so a width difference reads as a
+  // mistake. They used to rely on Input's wrapperClassName, which is silently
+  // dropped when there is no leadingIcon — so neither was actually being sized
+  // and they only matched by accident.
+  test('the name and display-name fields are the same width', () => {
+    render(<ProfileSection />)
+    const full = screen.getByLabelText('Full name').closest('div')
+    const nick = screen.getByLabelText('Display name').closest('div')
+    expect(full.className).toBe(nick.className)
+    expect(full.className).toContain('w-56')
+  })
+
   // A failure on a row with no single field to blame still uses the toast.
   test('a failed colour change still uses the shared toast', async () => {
     useAuthStore.setState({ updateProfile: vi.fn().mockRejectedValue(new Error('nope')) })

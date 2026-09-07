@@ -28,6 +28,11 @@ const Input = forwardRef(function Input(
     className,
   )
 
+  // Note: wrapperClassName only applies in the leadingIcon branch below —
+  // without an icon there is no wrapper to put it on and the prop is silently
+  // dropped. That has bitten a caller trying to size a field with it. If you
+  // need a width, put it on the input via className, or wrap the field
+  // yourself at the call site.
   if (leadingIcon) {
     return (
       <div className={mergeClassNames('relative', wrapperClassName)}>
