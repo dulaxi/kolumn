@@ -6,6 +6,7 @@ import { useBoardStore } from '../store/boardStore'
 import ConfirmModal from '../components/board/ConfirmModal'
 import IconPicker from '../components/board/IconPicker'
 import CreateBoardModal from '../components/board/CreateBoardModal'
+import BoardDetailsModal from '../components/board/BoardDetailsModal'
 import LabelManagerModal from '../components/board/LabelManagerModal'
 import BoardShareModal from '../components/board/BoardShareModal'
 import BoardActivityModal from '../components/board/BoardActivityModal'
@@ -194,6 +195,15 @@ const OVERLAYS = [
         label: 'New workspace',
         where: 'workspace/WorkspaceCreateModal.jsx',
         render: (close) => <WorkspaceCreateModal open onClose={close} onCreated={close} />,
+      },
+      {
+        id: 'board-details',
+        label: 'Board details',
+        where: 'board/BoardDetailsModal.jsx',
+        note: "Opened from the board toolbar's ⋮. Name and icon — boards have no description column.",
+        render: (close) => (
+          <BoardDetailsModal board={useBoardStore.getState().boards[BOARD_ID]} onClose={close} />
+        ),
       },
       {
         id: 'labels',

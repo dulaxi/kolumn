@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, CaretRight, ClockCounterClockwise, Funnel, Tag, X } from '@phosphor-icons/react'
+import { Archive, CaretRight, ClockCounterClockwise, DotsThreeVertical, Funnel, PushPin, Tag, X } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -11,12 +11,25 @@ import ArchivedCardsPanel from './ArchivedCardsPanel'
 import GhostToggle from './GhostToggle'
 import BoardActivityModal from './BoardActivityModal'
 import Tooltip from '../ui/Tooltip'
+import Menu from '../ui/Menu'
+import ConfirmModal from './ConfirmModal'
+import { useSettingsStore } from '../../store/settingsStore'
 import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
+const BoardDetailsModal = lazy(() => import('./BoardDetailsModal'))
 
 export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, onManageLabels }) {
   const [showShareModal, setShowShareModal] = useState(false)
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
+  const [confirmDeleteBoard, setConfirmDeleteBoard] = useState(false)
+
+  const deleteBoard = useBoardStore((s) => s.deleteBoard)
+  // Read the array, not isFavorite(): a selector returning a function gives a
+  // new reference every render. See selectors.js on referential stability.
+  const favoriteBoards = useSettingsStore((s) => s.favoriteBoards)
+  const toggleFavorite = useSettingsStore((s) => s.toggleFavorite)
   const [showFilters, setShowFilters] = useState(false)
   const [showActivity, setShowActivity] = useState(false)
   // Collapsible tool cluster (Labels / Sort / Filter / Archived) — hidden by
@@ -48,6 +61,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
 
   const boards = useBoardStore((s) => s.boards)
   const activeBoardId = useBoardStore((s) => s.activeBoardId)
+  const isPinned = favoriteBoards.includes(activeBoardId)
   const cards = useBoardStore((s) => s.cards)
   const columns = useBoardStore((s) => s.columns)
   const storeLabels = useBoardStore((s) => s.labels)
@@ -309,6 +323,48 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             </button>
           )}
 
+          {/* Board actions. Owner-only: a member has nothing to rename and
+              nothing to delete, so showing them a menu of things they cannot
+              do is worse than not showing the menu.
+
+              The divider groups by consequence rather than by kind — editing
+              and pinning are both undoable, deleting is not. That is the same
+              ordering every other menu in the app uses, destructive last. */}
+          {isRealBoard && isOwner && (
+            <Menu
+              open={boardMenuOpen}
+              onOpenChange={setBoardMenuOpen}
+              placement="bottom-end"
+              portal
+              panel={
+                <>
+                  <Menu.Item onSelect={() => { setBoardMenuOpen(false); setShowDetails(true) }}>
+                    Edit details
+                  </Menu.Item>
+                  <Menu.Item
+                    icon={<PushPin className="w-4 h-4" weight={isPinned ? 'fill' : 'regular'} />}
+                    onSelect={() => { setBoardMenuOpen(false); toggleFavorite(activeBoardId) }}
+                  >
+                    {isPinned ? 'Unpin from top' : 'Pin to top'}
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item destructive onSelect={() => { setBoardMenuOpen(false); setConfirmDeleteBoard(true) }}>
+                    Delete board
+                  </Menu.Item>
+                </>
+              }
+            >
+              <button
+                type="button"
+                onClick={() => setBoardMenuOpen((v) => !v)}
+                aria-label="Board actions"
+                className={`${TOOLBAR_ICON_BTN} flex items-center justify-center`}
+              >
+                <DotsThreeVertical className="w-4 h-4" />
+              </button>
+            </Menu>
+          )}
+
         </div>
 
         {showArchived && (
@@ -329,6 +385,21 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             onClose={() => setShowShareModal(false)}
           />
         </Suspense>
+      )}
+
+      {showDetails && activeBoard && (
+        <Suspense fallback={null}>
+          <BoardDetailsModal board={activeBoard} onClose={() => setShowDetails(false)} />
+        </Suspense>
+      )}
+
+      {confirmDeleteBoard && activeBoard && (
+        <ConfirmModal
+          title="Delete board"
+          message="This will permanently delete the board and all its tasks."
+          onConfirm={() => { deleteBoard(activeBoardId); setConfirmDeleteBoard(false) }}
+          onCancel={() => setConfirmDeleteBoard(false)}
+        />
       )}
 
       {showActivity && isRealBoard && (

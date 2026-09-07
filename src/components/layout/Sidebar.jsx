@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 
 import { useSettingsStore } from '../../store/settingsStore'
 import { useBoardStore } from '../../store/boardStore'
@@ -141,9 +141,24 @@ export default function Sidebar() {
   const toggleBoardsCollapsed = useSettingsStore((s) => s.toggleBoardsCollapsed)
   const sharedBoardsCollapsed = useSettingsStore((s) => s.sharedBoardsCollapsed)
   const toggleSharedBoardsCollapsed = useSettingsStore((s) => s.toggleSharedBoardsCollapsed)
-  const personalBoards = Object.values(allBoards).filter(
-    (b) => b.owner_id === user?.id && !b.workspace_id,
-  )
+  // Pinned boards sort to the top of their own section, alphabetical within
+  // each group. favoriteBoards has existed in settingsStore since before this —
+  // it persisted, but nothing read it, so pinning had no effect anywhere.
+  //
+  // It is local-only, like the sidebar's collapse state: a pin is per-device
+  // and does not follow you to another browser. That is the trade for it
+  // needing no schema change.
+  const favoriteBoards = useSettingsStore((s) => s.favoriteBoards)
+  const byPinnedThenName = useCallback((a, b) => {
+    const pa = favoriteBoards.includes(a.id)
+    const pb = favoriteBoards.includes(b.id)
+    if (pa !== pb) return pa ? -1 : 1
+    return a.name.localeCompare(b.name)
+  }, [favoriteBoards])
+
+  const personalBoards = useMemo(() => Object.values(allBoards)
+    .filter((b) => b.owner_id === user?.id && !b.workspace_id)
+    .sort(byPinnedThenName), [allBoards, user?.id, byPinnedThenName])
   // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
   const isAll = activeWorkspaceId === null
   const isPersonal = activeWorkspaceId === 'personal'
