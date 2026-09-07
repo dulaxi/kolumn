@@ -6,9 +6,15 @@ import KolumnLogo from '../components/layout/KolumnLogo'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
+import FieldError from '../components/ui/FieldError'
+import { isValidEmail, EMAIL_INVALID_MESSAGE } from '../utils/validation'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
+  // Field-scoped: a malformed address is about the input. `error` stays for
+  // form-scoped failures — rate limiting, network, anything the API returns
+  // that isn't the address being wrong.
+  const [emailError, setEmailError] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -17,6 +23,11 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setEmailError('')
+    if (!isValidEmail(email)) {
+      setEmailError(EMAIL_INVALID_MESSAGE)
+      return
+    }
     setLoading(true)
     try {
       await resetPassword(email)
@@ -56,7 +67,10 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl p-6 shadow-sm space-y-4">
+            {/* noValidate on the form above: type="email" + required makes
+                the browser block submit and show its native tooltip, so our
+                check never runs and FieldError never renders. */}
             {error && (
               <InlineNotice variant="error">{error}</InlineNotice>
             )}
@@ -66,11 +80,14 @@ export default function ForgotPasswordPage() {
               <Input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError('') }}
                 required
                 autoFocus
+                error={!!emailError}
+                aria-invalid={!!emailError}
                 placeholder="you@example.com"
               />
+              <FieldError>{emailError}</FieldError>
             </div>
 
             <Button

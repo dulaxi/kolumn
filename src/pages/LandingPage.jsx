@@ -8,6 +8,8 @@ import { LABEL_OUTLINE } from '../utils/formatting'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
+import FieldError from '../components/ui/FieldError'
+import { isValidEmail, EMAIL_INVALID_MESSAGE } from '../utils/validation'
 import { useAuthStore } from '../store/authStore'
 import { HeroAnimation } from './LandingBoardSandbox'
 import FaqItem from '../components/marketing/FaqItem'
@@ -1255,6 +1257,12 @@ function GoogleGlyph() {
 function HeroAuthCard() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Two tiers, deliberately not one state. `emailError` is about the field —
+  // it renders under the input with the input itself bordered red. `error` is
+  // about the form as a whole (OAuth failed, sign-in rejected) and stays a
+  // card-level notice. Collapsing them would put "Sign in failed" under the
+  // email box, blaming a field that may be perfectly fine.
+  const [emailError, setEmailError] = useState('')
   const [error, setError] = useState('')
   const [checking, setChecking] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -1306,6 +1314,14 @@ function HeroAuthCard() {
   const handleEmailContinue = async (e) => {
     e.preventDefault()
     if (!email) return
+    // Validate before the round-trip. Without this the browser's own native
+    // tooltip handles a malformed address — a grey system bubble in a font we
+    // don't control that disappears on the next keystroke.
+    if (!isValidEmail(email)) {
+      setEmailError(EMAIL_INVALID_MESSAGE)
+      return
+    }
+    setEmailError('')
     setError('')
     setChecking(true)
     try {
@@ -1365,20 +1381,30 @@ function HeroAuthCard() {
           </div>
 
           {mode === 'email' ? (
-            <form onSubmit={handleEmailContinue} className="space-y-3">
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={checking}
-                className={`!h-11 !rounded-[0.6rem] !text-base transition-shadow duration-300 ${
-                  highlighted
-                    ? 'ring-2 ring-[var(--color-olive)] ring-offset-2 ring-offset-[var(--surface-card)]'
-                    : ''
-                }`}
-              />
+            <form onSubmit={handleEmailContinue} noValidate className="space-y-3">
+              {/* noValidate: `type="email"` + `required` makes the browser
+                  refuse to submit and show its own native tooltip, so our
+                  validation never runs and the styled FieldError never
+                  appears. The type attribute stays for the mobile keyboard;
+                  the checking is ours. */}
+              <div>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError('') }}
+                  placeholder="Enter your email"
+                  required
+                  disabled={checking}
+                  error={!!emailError}
+                  aria-invalid={!!emailError}
+                  className={`!h-11 !rounded-[0.6rem] !text-base transition-shadow duration-300 ${
+                    highlighted
+                      ? 'ring-2 ring-[var(--color-olive)] ring-offset-2 ring-offset-[var(--surface-card)]'
+                      : ''
+                  }`}
+                />
+                <FieldError>{emailError}</FieldError>
+              </div>
               <Button
                 type="submit"
                 size="lg"

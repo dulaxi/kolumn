@@ -6,10 +6,17 @@ import KolumnLogo from '../components/layout/KolumnLogo'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import InlineNotice from '../components/ui/InlineNotice'
+import FieldError from '../components/ui/FieldError'
+import { PASSWORD_MIN_LENGTH, PASSWORD_TOO_SHORT_MESSAGE, PASSWORD_MISMATCH_MESSAGE } from '../utils/validation'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  // Field-scoped, rendered under the input they belong to. `error` below
+  // stays for form-scoped failures (the API rejecting the update), which
+  // aren't about either field in particular.
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmError, setConfirmError] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const updatePassword = useAuthStore((s) => s.updatePassword)
@@ -18,13 +25,18 @@ export default function UpdatePasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setPasswordError('')
+    setConfirmError('')
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    // Both of these are about one field each, so they belong under that
+    // field rather than in a banner above the form that makes you work out
+    // which box it means.
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setPasswordError(PASSWORD_TOO_SHORT_MESSAGE)
       return
     }
     if (password !== confirm) {
-      setError('Passwords do not match')
+      setConfirmError(PASSWORD_MISMATCH_MESSAGE)
       return
     }
 
@@ -58,11 +70,14 @@ export default function UpdatePasswordPage() {
             <Input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); if (passwordError) setPasswordError('') }}
               required
               autoFocus
-              placeholder="At least 6 characters"
+              error={!!passwordError}
+              aria-invalid={!!passwordError}
+              placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
             />
+            <FieldError>{passwordError}</FieldError>
           </div>
 
           <div>
@@ -70,10 +85,13 @@ export default function UpdatePasswordPage() {
             <Input
               type="password"
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              onChange={(e) => { setConfirm(e.target.value); if (confirmError) setConfirmError('') }}
               required
+              error={!!confirmError}
+              aria-invalid={!!confirmError}
               placeholder="Repeat your password"
             />
+            <FieldError>{confirmError}</FieldError>
           </div>
 
           <Button
