@@ -48,11 +48,16 @@ function MenuItem({
       )}
       {...rest}
     >
+      {/* The icon matches its label's colour rather than sitting a shade
+          behind it. It was --color-stone, which read as muted next to ink text
+          and made every menu item look half-disabled. The trailing `shortcut`
+          below keeps stone deliberately: a keyboard hint IS secondary to the
+          action, whereas the icon is just the action again, in glyph form. */}
       {leadingIcon && (
         <span
           className={mergeClassNames(
             'shrink-0 flex items-center justify-center',
-            destructive ? 'text-[var(--label-red-text)]' : 'text-[var(--color-stone)]',
+            destructive ? 'text-[var(--label-red-text)]' : 'text-[var(--text-primary)]',
           )}
           style={{ width: 16, height: 16 }}
         >
