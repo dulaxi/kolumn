@@ -53,6 +53,8 @@
   --dur-modal-in: 200ms;     /* modal panel + backdrop enter */
   --dur-modal-out: 150ms;    /* modal panel + backdrop exit */
   --dur-editor-in: 120ms;    /* InlineCardEditor entrance */
+  --dur-fade-through-out: 90ms;   /* fade-through: outgoing panel leaves */
+  --dur-fade-through-in: 210ms;   /* fade-through: incoming panel arrives */
   --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);  /* decelerating (modal enter) */
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);      /* accelerating (modal exit) */
 }
@@ -412,6 +414,49 @@
 /* InlineCardEditor entrance — mount-only fade + 4px rise. Opacity and
    transform only; the editor's own size must never animate (see the
    "No transition-all" note in InlineCardEditor.jsx). */
+/* The use-case board's height floor. Two values because the layout changes at
+   the sm breakpoint (stacked -> side by side); both are derived from the
+   content in UseCaseShowcase.jsx and handed over as custom properties, since
+   an inline style can't carry a media query. */
+.usecase-board-row {
+  min-height: var(--board-min-stacked);
+}
+@media (min-width: 640px) {
+  .usecase-board-row {
+    min-height: var(--board-min);
+  }
+}
+
+/* Fade through — Material's pattern for swapping content that has no strong
+   relationship to what it replaces (here: six unrelated use cases on the
+   landing page's board). Deliberately NOT a cross-fade: the outgoing panel
+   leaves completely before the incoming one arrives, because overlapping the
+   two shows both at half opacity and reads as double vision.
+
+   The incoming panel also scales up from 92%, which is what separates this
+   from a plain fade — it gives the arrival some weight without moving the
+   layout. Durations are the spec's 90/210; the easings are the tokens this
+   file already defines (accelerate out, decelerate in).
+
+   Earlier attempts here animated only an ENTRANCE, with no exit at all, so
+   the outgoing board vanished on the same frame the incoming one appeared.
+   Changing which entrance was used could never fix that; the missing half
+   was the exit. */
+@keyframes fadeThroughOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.animate-fade-through-out {
+  animation: fadeThroughOut var(--dur-fade-through-out) var(--ease-exit) forwards;
+}
+@keyframes fadeThroughIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-through-in {
+  animation: fadeThroughIn var(--dur-fade-through-in) var(--ease-enter);
+}
+
 @keyframes riseIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -419,6 +464,7 @@
 .animate-rise-in {
   animation: riseIn var(--dur-editor-in) ease-out;
 }
+
 
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(2rem); }
@@ -475,6 +521,7 @@
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
+
 
 /* AI Quick Add pill bounce animations */
 @keyframes pill-bounce-in {
@@ -568,6 +615,7 @@
   :root:not([data-motion="full"]) :is(
     .animate-dropdown, .animate-dropdown-out, .animate-ghost-in,
     .ghost-slot, .animate-slide-in-right, .animate-rise-in,
+    .animate-fade-through-out, .animate-fade-through-in,
     .toast-pulse-dot, .audio-bar, .btn-wave > span, .typing-wave > span,
     .ai-skeleton-block, [class*="pill-bounce"],
     [data-modal-backdrop][data-animated],
@@ -579,6 +627,7 @@
 :root[data-motion="reduced"] :is(
   .animate-dropdown, .animate-dropdown-out, .animate-ghost-in,
   .ghost-slot, .animate-slide-in-right, .animate-rise-in,
+  .animate-fade-through-out, .animate-fade-through-in,
   .toast-pulse-dot, .audio-bar, .btn-wave > span, .typing-wave > span,
   .ai-skeleton-block, [class*="pill-bounce"],
   [data-modal-backdrop][data-animated],

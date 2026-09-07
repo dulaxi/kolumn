@@ -180,9 +180,13 @@ function supportArticleRoute(article) {
 // the prerender step overwrites).
 const HOME_ROUTE = {
   path: '/',
+  // The title keeps "kanban" because it is the keyword worth ranking for.
+  // The description does not, because it is the sentence a human actually
+  // reads under the link — and the homepage is where people who have never
+  // heard the word arrive. Same split as the page itself.
   title: 'Kolumn — AI-powered kanban for teams',
   description:
-    'Kolumn is a kanban board with an AI that creates, moves, and updates cards when you type what you need. Free to start, no setup.',
+    'Kolumn turns what you type into tasks on a board: cards in columns you drag from To do to Done. Free to start, nothing to set up.',
   ogTitle: 'Kolumn — AI-powered kanban',
   Component: lazy(() => import('../pages/LandingPage')),
   load: () => import('../pages/LandingPage'),
