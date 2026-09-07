@@ -71,7 +71,7 @@ export default function BoardDetailsModal({ board, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="shrink-0 flex items-center justify-center p-1 -m-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="shrink-0 flex items-center justify-center p-1 -m-1 rounded text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

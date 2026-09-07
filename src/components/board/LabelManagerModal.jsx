@@ -266,7 +266,7 @@ export default function LabelManagerModal({ open, onClose, boardId, onFilterByLa
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="shrink-0 p-1 -m-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="shrink-0 p-1 -m-1 rounded text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

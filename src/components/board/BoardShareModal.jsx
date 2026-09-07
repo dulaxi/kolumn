@@ -179,7 +179,7 @@ export default function BoardShareModal({ board, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="h-8 w-8 shrink-0 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors -mx-2"
+            className="h-8 w-8 shrink-0 rounded-md flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors -mx-2"
           >
             <X className="w-5 h-5" />
           </button>
