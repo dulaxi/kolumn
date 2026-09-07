@@ -15,6 +15,16 @@ export const TOOLBAR_BTN = `flex items-center gap-1.5 h-8 px-3 text-sm font-medi
 export const TOOLBAR_ICON_BTN = `relative flex items-center justify-center h-8 w-8 ${SHAPE}`
 export const TOOLBAR_BTN_FILL =
   'bg-[var(--surface-raised)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
+// Ghost icon button — sits on the toolbar's own background with no fill and no
+// shadow, and picks up the same hover fill the filled buttons use. For icon
+// controls that sit beside a filled button without competing with it (the
+// board actions ⋮ next to Share). Complete on its own: do NOT pair it with
+// TOOLBAR_BTN_FILL, and note it deliberately does not use SHAPE, whose shadow
+// is what makes an unfilled button look like it is floating on nothing.
+export const TOOLBAR_ICON_BTN_GHOST =
+  'relative flex items-center justify-center h-8 w-8 rounded-lg transition-colors duration-75 ' +
+  'cursor-pointer active:scale-[0.995] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
+
 // Primary (ink/black) fill — same shape as TOOLBAR_BTN, inverted colours. For
 // the New chat / New build CTAs so they share the toolbar button behaviour.
 export const TOOLBAR_BTN_FILL_PRIMARY =

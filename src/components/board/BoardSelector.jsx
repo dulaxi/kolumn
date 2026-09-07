@@ -14,7 +14,7 @@ import Tooltip from '../ui/Tooltip'
 import Menu from '../ui/Menu'
 import ConfirmModal from './ConfirmModal'
 import { useSettingsStore } from '../../store/settingsStore'
-import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
+import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_ICON_BTN_GHOST, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
 
 const BoardShareModal = lazy(() => import('./BoardShareModal'))
 const BoardDetailsModal = lazy(() => import('./BoardDetailsModal'))
@@ -358,7 +358,7 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 type="button"
                 onClick={() => setBoardMenuOpen((v) => !v)}
                 aria-label="Board actions"
-                className={`${TOOLBAR_ICON_BTN} flex items-center justify-center`}
+                className={TOOLBAR_ICON_BTN_GHOST}
               >
                 <DotsThreeVertical className="w-4 h-4" />
               </button>
