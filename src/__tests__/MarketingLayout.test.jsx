@@ -29,14 +29,14 @@ describe('MarketingLayout', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Pricing' })).toBeInTheDocument()
   })
 
-  test('applies the route head meta and pins light theme', async () => {
-    document.head.innerHTML = '<title>Kolumn — Project Management</title><meta name="description" content="old">'
+  // Head tags used to be this layout's job, which silently skipped the landing
+  // page because it renders outside the layout. That moved to the router-level
+  // HeadMeta component; its coverage lives in HeadMeta.test.jsx. What remains
+  // this layout's own responsibility is pinning the theme.
+  test('pins the light theme even when arriving from the dark app shell', async () => {
     document.documentElement.setAttribute('data-theme', 'dark')
     renderAt('/pricing')
     await screen.findByRole('heading', { level: 1, name: 'Pricing' })
-    expect(document.title).toBe('Pricing — Kolumn')
-    expect(document.querySelectorAll('title')).toHaveLength(1)
-    expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://kolumn.app/pricing')
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
   })
 })

@@ -1,9 +1,7 @@
 import { Suspense, useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import MarketingNav from './MarketingNav'
 import MarketingFooter from './MarketingFooter'
-import { findMarketingRoute } from '../../content/marketing-routes'
-import { applyHeadMeta, routeMeta } from '../../lib/headMeta'
 import { applyTheme } from '../../utils/theme'
 
 // Layout route for every prerendered marketing page. Owns the chrome, the
@@ -23,16 +21,9 @@ import { applyTheme } from '../../utils/theme'
 // direct render probe (see task-8-report.md); the MarketingLayout tests
 // would go blank on mount without this boundary.
 export default function MarketingLayout() {
-  const { pathname } = useLocation()
-
   useEffect(() => {
     applyTheme('light')
   }, [])
-
-  useEffect(() => {
-    const route = findMarketingRoute(pathname)
-    if (route) applyHeadMeta(document, routeMeta(route))
-  }, [pathname])
 
   return (
     <div className="landing-font min-h-screen bg-[var(--surface-page)] flex flex-col">
