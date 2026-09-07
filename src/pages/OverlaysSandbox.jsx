@@ -70,6 +70,25 @@ function seedBoard() {
         assignee_refs: [],
       },
     },
+    // Labels are what the label manager manages, so the fixture needs some —
+    // its empty state says nothing about how the surface actually behaves.
+    // One archived, one unused, and a couple in heavy use, so the counts and
+    // the "show archived" toggle both have something to show.
+    labels: {
+      l1: { id: 'l1', board_id: BOARD_ID, text: 'frontend', color: 'blue', archived_at: null },
+      l2: { id: 'l2', board_id: BOARD_ID, text: 'backend', color: 'red', archived_at: null },
+      l3: { id: 'l3', board_id: BOARD_ID, text: 'design', color: 'pink', archived_at: null },
+      l4: { id: 'l4', board_id: BOARD_ID, text: 'needs review', color: 'yellow', archived_at: null },
+      l5: { id: 'l5', board_id: BOARD_ID, text: 'q3-planning', color: 'gray', archived_at: '2026-08-01T00:00:00Z' },
+    },
+    // Sets, not arrays: that is what the real store holds, and a fixture that
+    // differs in shape can make a component look fine here and break in the app.
+    cardLabels: {
+      [CARD_ID]: new Set(['l1', 'l3']),
+      'sandbox-card-2': new Set(['l1']),
+      'sandbox-card-3': new Set(['l1', 'l2']),
+      'sandbox-card-4': new Set(['l2']),
+    },
     activeBoardId: BOARD_ID,
     loading: false,
   })
@@ -180,7 +199,14 @@ const OVERLAYS = [
         id: 'labels',
         label: 'Manage labels',
         where: 'board/LabelManagerModal.jsx',
-        render: (close) => <LabelManagerModal open onClose={close} boardId={BOARD_ID} />,
+        render: (close) => (
+          <LabelManagerModal
+            open
+            onClose={close}
+            boardId={BOARD_ID}
+            onFilterByLabel={(t) => console.info('[sandbox] would filter board by label:', t)}
+          />
+        ),
       },
       {
         id: 'icon-picker',

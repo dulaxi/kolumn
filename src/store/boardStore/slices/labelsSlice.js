@@ -136,6 +136,34 @@ export const createLabelsSlice = (set, get) => ({
     }))
   },
 
+  // Hard delete, as distinct from archive. card_labels.label_id carries
+  // ON DELETE CASCADE, so the row going means the label leaves every card it
+  // was on — no orphaned join rows and no RPC needed, just a table delete.
+  //
+  // Optimistic, with a snapshot restore on failure: the manager's list and
+  // every card's chips both read from this state, so a delete that silently
+  // failed server-side would leave the UI claiming the label is gone.
+  deleteLabel: async (labelId) => {
+    const before = { labels: get().labels, cardLabels: get().cardLabels }
+    set((s) => {
+      const labels = { ...s.labels }
+      delete labels[labelId]
+      const cardLabels = {}
+      for (const cardId in s.cardLabels) {
+        const next = new Set(s.cardLabels[cardId])
+        next.delete(labelId)
+        cardLabels[cardId] = next
+      }
+      return { labels, cardLabels }
+    })
+    const { error } = await supabase.from('labels').delete().eq('id', labelId)
+    if (error) {
+      logError('Failed to delete label:', error)
+      showToast.error("Couldn't delete the label — try again")
+      set(before)
+    }
+  },
+
   unarchiveLabel: async (labelId) => {
     const { error } = await supabase
       .from('labels').update({ archived_at: null }).eq('id', labelId)

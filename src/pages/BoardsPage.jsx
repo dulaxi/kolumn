@@ -155,6 +155,9 @@ export default function BoardsPage() {
 
       {labelManagerOpen && activeBoardId && activeBoardId !== '__all__' && (
         <LabelManagerModal
+          // Clicking "3 cards" in the manager filters the board to that label
+          // and closes — the count used to be a dead end.
+          onFilterByLabel={(text) => setFilters((f) => ({ ...f, label: [text] }))}
           open={labelManagerOpen}
           onClose={() => setLabelManagerOpen(false)}
           boardId={activeBoardId}
