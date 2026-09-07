@@ -117,7 +117,11 @@ export default function SidebarBoardItem({
               <PushPin
                 weight="fill"
                 aria-label="Pinned"
-                className="w-3.5 h-3.5 text-[var(--text-muted)]"
+                // Ink, not muted. The pin is a state the board is in, and a
+                // greyed state marker reads as disabled — the row's muted grey
+                // is for the hover-revealed actions beside it (trash, leave),
+                // which are quiet until you reach for them.
+                className="w-3.5 h-3.5 text-[var(--text-primary)]"
               />
             </Tooltip>
           ) : deletable ? (

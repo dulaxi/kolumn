@@ -237,7 +237,7 @@ export default function LabelManagerModal({ open, onClose, boardId, onFilterByLa
             type="button"
             onClick={() => setMenu(l.id, !menuOpen[l.id])}
             aria-label={`Options for ${l.text}`}
-            className="shrink-0 flex items-center justify-center p-1 -mr-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="shrink-0 flex items-center justify-center p-1 -mr-1 rounded text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <DotsThreeVertical className="w-4 h-4" />
           </button>
