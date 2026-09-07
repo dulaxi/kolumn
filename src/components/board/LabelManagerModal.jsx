@@ -33,7 +33,7 @@ import { LABEL_OUTLINE } from '../../utils/formatting'
 function LabelPill({ label }) {
   return (
     <span
-      className={`text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize truncate ${
+      className={`inline-flex items-center text-xs font-medium leading-[1.4] py-px px-1.5 border-[0.5px] rounded-md capitalize truncate ${
         LABEL_OUTLINE[label.color] || LABEL_OUTLINE.gray
       }`}
     >
@@ -158,7 +158,7 @@ export default function LabelManagerModal({ open, onClose, boardId, onFilterByLa
             type="button"
             onClick={() => setColor(l.id, !colorOpen[l.id])}
             aria-label={`Change colour of ${l.text}`}
-            className={`w-4 h-4 rounded shrink-0 transition hover:opacity-75 ${COLOR_DOT_CLASSES[l.color] || ''}`}
+            className={`block w-4 h-4 rounded shrink-0 transition hover:opacity-75 ${COLOR_DOT_CLASSES[l.color] || ''}`}
           />
         </Menu>
 
@@ -177,7 +177,12 @@ export default function LabelManagerModal({ open, onClose, boardId, onFilterByLa
             wrapperClassName="flex-1"
           />
         ) : (
-          <div className="flex-1 min-w-0">
+          // flex + items-center, so the pill is centred on the row rather than
+          // sitting on a text baseline. Measured before the fix: the pill sat
+          // 1px below the row's centre and the swatch 2.5px above it — 3.5px
+          // apart, which reads as a wonky row. The swatch needs `block` for the
+          // same reason: an inline-level button reserves descender space.
+          <div className="flex-1 min-w-0 flex items-center">
             <LabelPill label={l} />
           </div>
         )}
@@ -232,7 +237,7 @@ export default function LabelManagerModal({ open, onClose, boardId, onFilterByLa
             type="button"
             onClick={() => setMenu(l.id, !menuOpen[l.id])}
             aria-label={`Options for ${l.text}`}
-            className="shrink-0 p-1 -mr-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="shrink-0 flex items-center justify-center p-1 -mr-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <DotsThreeVertical className="w-4 h-4" />
           </button>
