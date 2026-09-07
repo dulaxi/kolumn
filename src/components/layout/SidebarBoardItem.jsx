@@ -102,27 +102,36 @@ export default function SidebarBoardItem({
         )}
       </span>
 
-      {/* Pinned is a status, not an action, so it stays visible rather than
-          appearing on hover like the delete and leave controls beside it. */}
-      {pinned && (
-        <Tooltip content="Pinned to the top">
-          <PushPin
-            weight="fill"
-            aria-label="Pinned"
-            className="w-3.5 h-3.5 shrink-0 text-[var(--text-muted)]"
-          />
-        </Tooltip>
-      )}
+      {/* Pin and delete share one slot rather than sitting side by side: the
+          pin shows the board's status at rest, and hovering swaps it for the
+          action you came to perform. Absolutely positioned inside a fixed box
+          so the swap costs no layout — two icons in the flow would reserve
+          width for both and shift the name every time you moved the mouse.
 
-      {deletable && (
-        <span className="flex items-center gap-0.5 shrink-0">
-          <Trash
-            role="button"
-            aria-label={`Delete board ${board.name}`}
-            weight="light"
-            className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 shrink-0"
-            onClick={(e) => { e.stopPropagation(); onDelete?.(board.id) }}
-          />
+          The pin is a status, so it is visible at rest and hidden on hover.
+          The trash is an action, so it is the other way round. */}
+      {(pinned || deletable) && (
+        <span data-row-actions className="relative w-5 h-5 shrink-0">
+          {pinned && (
+            <Tooltip content="Pinned to the top">
+              <PushPin
+                weight="fill"
+                aria-label="Pinned"
+                className={`absolute inset-0 m-auto w-3.5 h-3.5 text-[var(--text-muted)] transition-opacity ${
+                  deletable ? 'group-hover:opacity-0' : ''
+                }`}
+              />
+            </Tooltip>
+          )}
+          {deletable && (
+            <Trash
+              role="button"
+              aria-label={`Delete board ${board.name}`}
+              weight="light"
+              className="absolute inset-0 w-5 h-5 text-[var(--text-muted)] hover:text-[var(--label-red-text)] opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => { e.stopPropagation(); onDelete?.(board.id) }}
+            />
+          )}
         </span>
       )}
 

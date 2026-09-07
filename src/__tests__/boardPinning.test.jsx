@@ -30,15 +30,50 @@ describe('pinned boards in the sidebar', () => {
     expect(screen.queryByLabelText('Pinned')).toBeNull()
   })
 
-  test('the marker is visible at rest, not only on hover', () => {
-    renderItem({ pinned: true })
-    // Delete and leave sit beside it and are opacity-0 until the row is
-    // hovered. Pinned is a status rather than an action, so it must not be.
-    // getAttribute('class'), not .className: on an SVG element className is an
-    // SVGAnimatedString object, so toContain() against it passes vacuously —
-    // this assertion did not catch a deliberately hover-hidden pin until it
-    // read the attribute instead.
-    expect(screen.getByLabelText('Pinned').getAttribute('class')).not.toContain('opacity-0')
+  // getAttribute('class'), not .className: on an SVG element className is an
+  // SVGAnimatedString object, so toContain() against it passes vacuously.
+  const classOf = (el) => el.getAttribute('class') || ''
+  // A bare opacity-0 hides the element at rest. group-hover:opacity-0 hides it
+  // only while hovered, and merely CONTAINS the same substring — so these have
+  // to be told apart by word boundary, not by toContain.
+  const hiddenAtRest = (el) => /(^|\s)opacity-0(\s|$)/.test(classOf(el))
+
+  test('the pin is visible at rest and gives way on hover', () => {
+    renderItem({ pinned: true, deletable: true })
+    const pin = screen.getByLabelText('Pinned')
+    expect(hiddenAtRest(pin)).toBe(false)
+    expect(classOf(pin)).toContain('group-hover:opacity-0')
+  })
+
+  test('the trash is hidden at rest and takes the pin\'s place on hover', () => {
+    renderItem({ pinned: true, deletable: true })
+    const trash = screen.getByLabelText('Delete board Launch plan')
+    expect(hiddenAtRest(trash)).toBe(true)
+    expect(classOf(trash)).toContain('group-hover:opacity-100')
+  })
+
+  test('they share one slot, so hovering does not shift the row', () => {
+    renderItem({ pinned: true, deletable: true })
+    const pin = screen.getByLabelText('Pinned')
+    const trash = screen.getByLabelText('Delete board Launch plan')
+    // Same positioned ancestor, both taken out of flow — two icons in the flow
+    // would reserve width for both and move the board name on every hover.
+    // Not the same *parent*: Tooltip wraps the pin in a span of its own.
+    // Matched on the slot's own attribute rather than a class: Tooltip wraps
+    // the pin in a span that is itself `relative`, so closest('.relative')
+    // stops there instead of reaching the shared slot.
+    const slot = pin.closest('[data-row-actions]')
+    expect(slot).not.toBeNull()
+    expect(trash.closest('[data-row-actions]')).toBe(slot)
+    expect(classOf(pin)).toContain('absolute')
+    expect(classOf(trash)).toContain('absolute')
+  })
+
+  test('a pin with nothing to swap to stays put', () => {
+    renderItem({ pinned: true, deletable: false })
+    const pin = screen.getByLabelText('Pinned')
+    expect(hiddenAtRest(pin)).toBe(false)
+    expect(classOf(pin)).not.toContain('group-hover:opacity-0')
   })
 })
 
