@@ -277,7 +277,18 @@ export default function Column({ column, boardId, onCardClick, onCreateCard, onC
       {/* Cards list */}
       <div
         ref={setDroppableRef}
-        className="flex-1 overflow-y-auto subtle-scrollbar [scrollbar-gutter:stable] pb-2 space-y-2 min-h-[80px]"
+        /* -mr-2 pr-2: the scroll container reaches 8px past the column's
+           right edge and pads its content back by the same 8px, so the cards
+           keep the column's full width while the scrollbar rides in the
+           overhang — out in the gap between columns rather than on top of a
+           card. Same trick BoardActivityModal uses (-mx-2 px-2).
+
+           This is what scrollbar-gutter alone could not do: macOS overlay
+           scrollbars take no layout space, so there is no gutter to reserve
+           and the bar simply floats over whatever is beneath it. The gutter
+           stays for classic scrollbars on Windows and Linux, where it stops
+           the list shifting sideways the moment it becomes scrollable. */
+        className="flex-1 overflow-y-auto subtle-scrollbar [scrollbar-gutter:stable] -mr-2 pr-2 pb-2 space-y-2 min-h-[80px]"
       >
         <SortableContext
           items={allCardIds}
