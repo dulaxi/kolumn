@@ -60,6 +60,16 @@ describe('telemetry cannot be blocked into a blank page', () => {
 
   test('a telemetry SDK that fails to load does not throw', async () => {
     vi.resetModules()
+    // Without keys, initObservability() skips both import() calls and this
+    // test would pass even with the .catch() handlers deleted. Force the
+    // configured path so the rejections are actually raised.
+    vi.doMock('../lib/env', () => ({
+      env: {
+        sentryDsn: 'https://k@o.ingest.sentry.io/1',
+        posthogKey: 'phc_x',
+        posthogHost: 'https://x',
+      },
+    }))
     vi.doMock('posthog-js', () => {
       throw new Error('blocked by client')
     })
