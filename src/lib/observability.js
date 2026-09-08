@@ -23,6 +23,13 @@ let sentry = null
 // is quietly refusing it — land here rather than being lost outright.
 const pending = []
 
+// The queue is only unbounded in the case this whole module exists for: an
+// SDK that never arrives because a content blocker refused it. Nothing is
+// ever replayed then, so the cap protects memory on a long-lived tab rather
+// than preserving fidelity. A slow-but-successful load flushes long before
+// 50 events accumulate.
+const MAX_PENDING = 50
+
 /**
  * Hold a telemetry call whose SDK has not loaded yet.
  *
@@ -32,7 +39,11 @@ const pending = []
  * an SDK arrives, and is never replayed at all if none ever does.
  */
 function defer(run) {
-  // TODO(human)
+  // Keep the OLDEST entries and refuse new ones once full. If an SDK does
+  // land late, the events worth having are the early ones — sign-in
+  // identity and the first error — not the hundredth interaction.
+  if (pending.length >= MAX_PENDING) return
+  pending.push(run)
 }
 
 function flushPending() {

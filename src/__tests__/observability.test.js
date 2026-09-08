@@ -89,4 +89,68 @@ describe('telemetry cannot be blocked into a blank page', () => {
     expect(() => obs.captureMessage('hello', 'warning')).not.toThrow()
     expect(() => obs.setUser({ id: 'user-1' })).not.toThrow()
   })
+
+  test('calls made before the SDK lands are replayed once it arrives', async () => {
+    vi.resetModules()
+    vi.doMock('../lib/env', () => ({
+      env: { sentryDsn: null, posthogKey: 'phc_x', posthogHost: 'https://x' },
+    }))
+    const captured = []
+    let resolveSdk
+    const sdk = new Promise((r) => {
+      resolveSdk = r
+    })
+    vi.doMock('posthog-js', () => sdk)
+
+    const obs = await import('../lib/observability')
+    obs.initObservability()
+
+    // Fired while the SDK is still in flight — must not be lost.
+    obs.capture('early_event', { n: 1 })
+
+    resolveSdk({
+      default: {
+        init() {},
+        capture: (event, props) => captured.push([event, props]),
+        identify() {},
+        reset() {},
+      },
+    })
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(captured).toEqual([['early_event', { n: 1 }]])
+  })
+
+  test('the pending queue is capped so a blocked SDK cannot grow it forever', async () => {
+    vi.resetModules()
+    vi.doMock('../lib/env', () => ({
+      env: { sentryDsn: null, posthogKey: 'phc_x', posthogHost: 'https://x' },
+    }))
+    let resolveSdk
+    const sdk = new Promise((r) => {
+      resolveSdk = r
+    })
+    vi.doMock('posthog-js', () => sdk)
+
+    const obs = await import('../lib/observability')
+    obs.initObservability()
+
+    // Simulates a blocked SDK: thousands of events with nothing to flush to.
+    for (let i = 0; i < 5000; i++) obs.capture('spam', { i })
+
+    const captured = []
+    resolveSdk({
+      default: {
+        init() {},
+        capture: (event, props) => captured.push(props.i),
+        identify() {},
+        reset() {},
+      },
+    })
+    await new Promise((r) => setTimeout(r, 0))
+
+    // Bounded, and the retained events are the earliest ones.
+    expect(captured.length).toBeLessThanOrEqual(50)
+    expect(captured[0]).toBe(0)
+  })
 })
