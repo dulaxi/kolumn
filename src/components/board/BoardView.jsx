@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { selectBoardColumns } from '../../store/selectors'
+import { boardScrollEdges, edgeMask } from './boardEdgeMask'
 import { Plus, X } from '@phosphor-icons/react'
 import { DndContext, DragOverlay } from '@dnd-kit/core'
 import { useBoardStore } from '../../store/boardStore'
@@ -25,6 +26,28 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
   const cardsLoading = useBoardStore((s) => !!s._loadingBoardCards?.has(boardId))
   const columnSelector = useMemo(() => selectBoardColumns(boardId), [boardId])
   const boardColumns = useBoardStore(columnSelector)
+
+  // Which edges have more board beyond them. Recomputed on scroll and on
+  // resize, because a window wide enough to show every column has no overflow
+  // and must not fade at all. See boardEdgeMask.js for the mask itself.
+  const scrollRef = useRef(null)
+  const [edges, setEdges] = useState({ start: false, end: false })
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return undefined
+    const update = () => setEdges(boardScrollEdges(el))
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', update)
+      ro.disconnect()
+    }
+  }, [boardColumns.length])
+
+  const boardMask = edgeMask(edges)
   const addColumn = useBoardStore((s) => s.addColumn)
   const completeCard = useBoardStore((s) => s.completeCard)
 
@@ -101,7 +124,21 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
           </span>
         </div>
       )}
-      <div data-board-scroll className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain">
+      {/* The board is masked, not veiled: content genuinely fades to
+          transparent at an edge it can still scroll past, so the page shows
+          through it. A gradient overlay in the page colour would wash the last
+          column instead of dissolving it — that is the vignette the marketing
+          template previews got rid of.
+
+          Only the edges with more content beyond them fade. Scroll to the far
+          right and the right fade lifts, so the final column is never dimmed
+          for no reason. */}
+      <div
+        ref={scrollRef}
+        data-board-scroll
+        style={{ maskImage: boardMask, WebkitMaskImage: boardMask }}
+        className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain"
+      >
         {boardColumns.map((column) => (
           <Column
             key={column.id}
