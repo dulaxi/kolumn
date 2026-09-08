@@ -8,9 +8,13 @@ import tailwindcss from '@tailwindcss/vite'
 const VENDOR_CHUNKS = {
   react: ['react', 'react-dom', 'react-router-dom'],
   supabase: ['@supabase/supabase-js'],
-  sentry: ['@sentry/react'],
-  // posthog-js is loaded via a dynamic import() in src/lib/analytics.js — a
-  // manualChunks entry here would fight the dynamic split and drop the code
+  // Chunk NAMES become filenames in the URL, so they must not contain words
+  // ad-block filter lists match ("sentry", "analytics", "tracking", …). A
+  // blocked chunk that is a static entry dependency blanks the whole app.
+  // Guarded by src/__tests__/observability.test.js.
+  obs: ['@sentry/react'],
+  // posthog-js is loaded via a dynamic import() in src/lib/observability.js —
+  // a manualChunks entry here would fight the dynamic split and drop the code
   // from the build. Vite auto-emits it as its own lazy async chunk.
   phosphor: ['@phosphor-icons/react'],
   motion: ['motion'],

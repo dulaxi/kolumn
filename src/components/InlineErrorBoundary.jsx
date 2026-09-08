@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { logError } from '../utils/logger'
 import { ArrowsClockwise, WarningCircle } from '@phosphor-icons/react'
-import * as Sentry from '@sentry/react'
+import { captureException } from '../lib/observability'
 import InlineNotice from './ui/InlineNotice'
 
 /**
@@ -24,7 +24,7 @@ export default class InlineErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     logError(`InlineErrorBoundary [${this.props.name}]:`, error, errorInfo)
-    Sentry.captureException(error, { extra: { component: this.props.name, componentStack: errorInfo?.componentStack } })
+    captureException(error, { extra: { component: this.props.name, componentStack: errorInfo?.componentStack } })
   }
 
   handleRetry = () => {

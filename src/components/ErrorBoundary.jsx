@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { logError } from '../utils/logger'
 import { ArrowsClockwise, Warning } from '@phosphor-icons/react'
-import * as Sentry from '@sentry/react'
+import { captureException } from '../lib/observability'
 import Button from './ui/Button'
 
 export default class ErrorBoundary extends Component {
@@ -16,7 +16,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     logError('ErrorBoundary caught:', error, errorInfo)
-    Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } })
+    captureException(error, { extra: { componentStack: errorInfo?.componentStack } })
   }
 
   handleReset = () => {

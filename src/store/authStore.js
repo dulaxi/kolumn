@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { logError } from '../utils/logger'
-import * as Sentry from '@sentry/react'
-import { identifyUser, resetUser, capture } from '../lib/analytics'
+import { identifyUser, resetUser, capture, setUser } from '../lib/observability'
 import { emitStoreEvent } from './storeEvents'
 import { isNewAccount } from '../constants/onboarding'
 
@@ -122,7 +121,7 @@ export const useAuthStore = create((set, get) => ({
       throw err
     }
     set({ user: data.session.user, session: data.session })
-    if (data.user) Sentry.setUser({ id: data.user.id, email })
+    if (data.user) setUser({ id: data.user.id, email })
     if (data.user) identifyUser(data.user.id, { email, display_name: displayName })
     capture('user_signed_up')
     return data
@@ -135,7 +134,7 @@ export const useAuthStore = create((set, get) => ({
     })
     if (error) throw error
     set({ user: data.session.user, session: data.session })
-    if (data.session?.user) Sentry.setUser({ id: data.session.user.id, email })
+    if (data.session?.user) setUser({ id: data.session.user.id, email })
     if (data.session?.user) identifyUser(data.session.user.id, { email })
     capture('user_signed_in')
     return data
@@ -184,7 +183,7 @@ export const useAuthStore = create((set, get) => ({
   // Shared local cleanup for every way of leaving the account.
   _resetLocalState: () => {
     set({ user: null, session: null, profile: null })
-    Sentry.setUser(null)
+    setUser(null)
     resetUser()
     // Tenant-scoped stores reset their own state via the event bus.
     emitStoreEvent('session:reset')

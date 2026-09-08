@@ -1,4 +1,4 @@
-import { capture } from '../../../lib/analytics'
+import { capture } from '../../../lib/observability'
 import { showToast } from '../../../utils/toast'
 import { supabase } from '../../../lib/supabase'
 import { useAuthStore } from '../../authStore'

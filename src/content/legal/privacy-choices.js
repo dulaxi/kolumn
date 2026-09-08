@@ -3,13 +3,13 @@
 //
 // Accuracy constraint (see CLAUDE.md task notes): this page must describe
 // only controls that actually exist today. PostHog initializes
-// unconditionally with no opt-out (src/lib/analytics.js, called
+// unconditionally with no opt-out (src/lib/observability.js, called
 // unconditionally from src/main.jsx) and Sentry has no opt-out either. This
 // file states plainly what is collected, that no working opt-out exists yet,
 // and lists the missing controls as open items — it does not present a
 // toggle or control that would not actually do anything.
 //
-// Grounded in: src/lib/analytics.js (PostHog init, no opt-out path),
+// Grounded in: src/lib/observability.js (PostHog init, no opt-out path),
 // src/main.jsx (Sentry init, sampleRate 1.0, no opt-out path),
 // src/lib/supabase.js (auth session storage), src/store/settingsStore.js
 // (persisted local preferences: theme, sidebar, font, motion),

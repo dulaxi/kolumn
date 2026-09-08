@@ -1,4 +1,4 @@
-import { capture } from '../../../lib/analytics'
+import { capture } from '../../../lib/observability'
 import { format } from 'date-fns'
 import { nanoid } from 'nanoid'
 import { showToast } from '../../../utils/toast'

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { capture } from '../../lib/analytics'
+import { capture } from '../../lib/observability'
 import { Envelope, SignOut, Trash, UserPlus, X } from '@phosphor-icons/react'
 import { showToast } from '../../utils/toast'
 import { supabase } from '../../lib/supabase'

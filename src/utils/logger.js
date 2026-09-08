@@ -12,7 +12,7 @@
 // Pass an Error object as one of the args when you have one — the captured
 // Sentry event will use it as the canonical exception.
 
-import * as Sentry from '@sentry/react'
+import { captureException, captureMessage } from '../lib/observability'
 
 // Supabase's PostgrestError is a plain object, not an Error instance —
 // String(err) yields "[object Object]" and the DB message is lost.
@@ -33,14 +33,14 @@ export const logError = import.meta.env.DEV
   : (...args) => {
       const err = findError(args)
       if (err) {
-        Sentry.captureException(err, { extra: { args } })
+        captureException(err, { extra: { args } })
       } else {
-        Sentry.captureMessage(formatLogArgs(args), { level: 'error', extra: { args } })
+        captureMessage(formatLogArgs(args), 'error', { extra: { args } })
       }
     }
 
 export const logWarn = import.meta.env.DEV
   ? (...args) => console.warn(...args)
   : (...args) => {
-      Sentry.captureMessage(formatLogArgs(args), { level: 'warning' })
+      captureMessage(formatLogArgs(args), 'warning')
     }

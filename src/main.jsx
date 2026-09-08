@@ -18,21 +18,14 @@ import App from './App.jsx'
 import { useAuthStore } from './store/authStore'
 import { applyTheme, pickBootTheme } from './utils/theme'
 import { applyMotion } from './utils/motion'
-import * as Sentry from '@sentry/react'
-import { env } from './lib/env'
-import { initAnalytics } from './lib/analytics'
+import { initObservability } from './lib/observability'
 
-// Initialize Sentry (no-op if DSN not configured)
-if (env.sentryDsn) {
-  Sentry.init({
-    dsn: env.sentryDsn,
-    environment: import.meta.env.MODE,
-    sampleRate: 1.0,
-  })
-}
-
-// Initialize product analytics (no-op if keys not configured)
-initAnalytics()
+// Error reporting + product analytics. Both vendor SDKs load lazily inside
+// the facade and swallow their own failures, so a content blocker refusing
+// them costs telemetry and nothing else. Never import a telemetry SDK
+// statically here: ES modules fail atomically, so one blocked request would
+// stop this file executing and leave the user a blank page.
+initObservability()
 
 // Global error handlers — catch unhandled errors and rejections
 window.addEventListener('error', (event) => {
