@@ -55,26 +55,33 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, men
           {collapsed ? 'Show' : 'Hide'}
         </span>
 
-        {/* left placement keeps the bubble inside the sidebar — the nav's
-            overflow-y-auto clips anything that crosses its right edge */}
-        {onPlusClick && (
-          <Tooltip content={plusTitle} placement="left">
-            <button
-              type="button"
-              aria-label={plusTitle}
-              onClick={(e) => { e.stopPropagation(); onPlusClick() }}
-              className={SECTION_ICON_BTN}
-            >
-              {/* 16px, not 20: a 20px glyph outweighed the 12px heading it
-                  sits beside. */}
-              <Plus className="w-4 h-4" weight="light" />
-            </button>
-          </Tooltip>
-        )}
+        {/* Both slots are reserved in every heading, even when a section has
+            nothing to put in them. Only the Boards section has a menu, and
+            without a placeholder its plus would sit one slot left of every
+            other section's plus — the pluses would not line up down the
+            sidebar. Empty slots are invisible; a broken column is not. */}
+        <span className="w-5 h-5 flex items-center justify-center shrink-0">
+          {/* left placement keeps the bubble inside the sidebar — the nav's
+              overflow-y-auto clips anything that crosses its right edge */}
+          {onPlusClick && (
+            <Tooltip content={plusTitle} placement="left">
+              <button
+                type="button"
+                aria-label={plusTitle}
+                onClick={(e) => { e.stopPropagation(); onPlusClick() }}
+                className={SECTION_ICON_BTN}
+              >
+                {/* 16px, not 20: a 20px glyph outweighed the 12px heading it
+                    sits beside. */}
+                <Plus className="w-4 h-4" weight="light" />
+              </button>
+            </Tooltip>
+          )}
+        </span>
         {/* Supplied by the caller so this heading stays presentational — it has
             no idea what the menu contains. The click guard on the group stops
             opening it from also collapsing the section. */}
-        {menu}
+        <span className="w-5 h-5 flex items-center justify-center shrink-0">{menu}</span>
       </span>
     </div>
   )
