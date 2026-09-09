@@ -9,9 +9,11 @@
 // right fade lifts, so the final column is never dimmed for no reason; a board
 // narrow enough to fit entirely has no fade at all.
 
-// A little wider than the column gap, so the fade reads as the board
-// continuing rather than a shadow sitting in the gutter.
-export const FADE_WIDTH = '56px'
+// Roughly the column gap. 56px was the first attempt and it was too much: the
+// ramp reached a fifth of the way across a 290px card, so the last column read
+// as dimmed rather than as running off the edge. A fade only has to suggest
+// there is more; it should not consume the thing it is fading.
+export const FADE_WIDTH = '24px'
 
 // 1px of slack: scrollLeft is fractional at some zoom levels and device pixel
 // ratios, so a strict comparison never quite reaches the maximum and leaves
