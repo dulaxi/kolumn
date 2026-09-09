@@ -47,19 +47,23 @@ describe('edgeMask', () => {
     expect(edgeMask({ start: false, end: false })).toBeUndefined()
   })
 
-  test('fades only the side that has more board behind it', () => {
+  test('fades the right edge when there is more board that way', () => {
     expect(edgeMask({ start: false, end: true })).toBe(
       `linear-gradient(to right, black calc(100% - ${FADE_WIDTH}), transparent 100%)`,
     )
-    expect(edgeMask({ start: true, end: false })).toBe(
-      `linear-gradient(to right, transparent 0, black ${FADE_WIDTH})`,
-    )
   })
 
-  test('fades both sides mid-scroll', () => {
-    const mask = edgeMask({ start: true, end: true })
-    expect(mask).toContain(`transparent 0, black ${FADE_WIDTH}`)
-    expect(mask).toContain(`black calc(100% - ${FADE_WIDTH}), transparent 100%`)
+  // The left edge meets the sidebar rather than the void, so a clean cut there
+  // reads as content passing under the panel. A fade would also only ever mean
+  // "what you already scrolled past", and would leave the boundary crisp at
+  // rest but soft after scrolling.
+  test('never fades the left edge, however far you have scrolled', () => {
+    expect(edgeMask({ start: true, end: false })).toBeUndefined()
+    const midScroll = edgeMask({ start: true, end: true })
+    expect(midScroll).toBe(
+      `linear-gradient(to right, black calc(100% - ${FADE_WIDTH}), transparent 100%)`,
+    )
+    expect(midScroll).not.toContain(`transparent 0`)
   })
 
   test('fades to transparent, never to a colour', () => {
