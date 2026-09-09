@@ -202,8 +202,19 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 'max-width 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out 80ms',
             }}
           >
-          {/* Ghost — first of the four tools (moved here from BoardsPage
-              so it collapses with the rest of the cluster) */}
+          {/* Share leads the cluster — it is the one people reach for most, so
+              it sits first once the tools are open. Moved off the top row so
+              that row carries only what you need without opening anything. */}
+          <button
+            type="button"
+            onClick={() => setShowShareModal(true)}
+            className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
+          >
+            {isOwner ? 'Share' : 'Members'}
+          </button>
+
+          {/* Ghost — moved here from BoardsPage so it collapses with the rest
+              of the cluster */}
           <GhostToggle boardId={activeBoardId} />
           <Tooltip content="Activity">
             <button
@@ -335,15 +346,6 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
             </div>
           )}
 
-          {isRealBoard && (
-            <button
-              type="button"
-              onClick={() => setShowShareModal(true)}
-              className={`${import.meta.env.DEV ? '' : 'ml-auto '}${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
-            >
-              {isOwner ? 'Share' : 'Members'}
-            </button>
-          )}
 
           {/* Board actions. Owner-only: a member has nothing to rename and
               nothing to delete, so showing them a menu of things they cannot
