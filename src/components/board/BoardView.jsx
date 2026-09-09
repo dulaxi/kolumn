@@ -137,17 +137,22 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         ref={scrollRef}
         data-board-scroll
         style={{ maskImage: boardMask, WebkitMaskImage: boardMask }}
-        /* Full-bleed to the right. <main> pads the page by 16/32px, and the
-           strip used to stop at that padding — so a column was sliced 32px
-           short of the screen with a band of dead space beyond it, which read
-           as a broken card rather than as more board.
+        /* Full-bleed on BOTH sides. <main> pads the page by 16/32px, and the
+           strip used to stop at that padding — so a column was sliced short of
+           the screen with a band of dead space beyond it, which reads as a
+           broken card rather than as more board. The same thing happened
+           against the sidebar once you scrolled right.
 
-           The negative margin cancels that padding so columns scroll right up
-           to the edge; the matching right padding lives INSIDE the scroller,
-           so when you reach the end the last column sits the same distance
-           from the edge as the first does from the left. Left padding is left
-           alone: the first column should stay aligned with the page title. */
-        className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain -mr-4 sm:-mr-8 pr-4 sm:pr-8"
+           The negative margin cancels the page padding so columns run edge to
+           edge, and the identical padding INSIDE the scroller keeps the
+           resting layout unchanged: the first column still lines up with the
+           page title, and the last one sits the same distance from the right
+           when you reach the end.
+
+           scroll-padding matches that inner padding so a snapped column on
+           mobile lands beside the title rather than under the padding — the
+           previous scroll-pl-0 was correct only while the padding was 0. */
+        className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none overscroll-x-contain -mx-4 sm:-mx-8 px-4 sm:px-8 scroll-pl-4 sm:scroll-pl-8"
       >
         {boardColumns.map((column) => (
           <Column
