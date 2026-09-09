@@ -336,7 +336,13 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 // every button beside it. Overridden here rather than in the
                 // component: the marketing pages and Settings use it on plain
                 // page backgrounds where the darker track is right.
-                className="!bg-[var(--surface-raised)]"
+                // !h-9 and the fill are both overrides for this row only.
+                // The track ships at h-8, which insets its selected pill to
+                // 28px — 4px shorter than every button beside it, since the
+                // pill is what reads as "the button". At 36px the pill lands
+                // at exactly 32 and matches them; the track is then the
+                // tallest thing in the row by 4px, which is the trade.
+                className="!h-9 !bg-[var(--surface-raised)]"
                 ariaLabel="View mode (placeholder)"
                 options={[
                   { value: 'board', icon: <Kanban className="w-4 h-4" />, ariaLabel: 'Board' },
