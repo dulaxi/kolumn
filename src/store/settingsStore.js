@@ -23,6 +23,8 @@ export const useSettingsStore = create(
       font: 'mona-sans',
       mobileMenuOpen: false,
       favoriteBoards: [],
+      boardSort: 'name',   // 'name' | 'created'
+      boardShow: 'all',    // 'all' | 'pinned'
       collapsedSpaces: {}, // { [workspaceId]: true } — persists workspace collapse state
       boardsCollapsed: false,
       sharedBoardsCollapsed: false,
@@ -92,6 +94,13 @@ export const useSettingsStore = create(
         return { ghostBoards: next }
       }),
       isGhostArmed: (boardId) => !!get().ghostBoards[boardId],
+
+      // Sidebar board list: how it is ordered, and whether it is filtered.
+      // Local like the rest of this store — a per-device view preference, not
+      // data. 'created' reads the created_at the boards query already selects;
+      // nothing here needs a schema change.
+      setBoardSort: (boardSort) => set({ boardSort }),
+      setBoardShow: (boardShow) => set({ boardShow }),
     }),
     {
       name: 'kolumn-settings',

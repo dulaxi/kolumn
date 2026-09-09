@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { useSettingsStore } from '../../store/settingsStore'
 import { useBoardStore } from '../../store/boardStore'
@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { Plus } from '@phosphor-icons/react'
+import { Plus, Faders } from '@phosphor-icons/react'
 import ConfirmModal from '../board/ConfirmModal'
 import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
@@ -18,8 +18,10 @@ import Tooltip from '../ui/Tooltip'
 import KolumnLogo from './KolumnLogo'
 import KolumnLockup from './KolumnLockup'
 import { triggerCreateBoard } from '../../utils/createBoardEvent'
+import Menu from '../ui/Menu'
+import { arrangeBoards } from './boardListOrder'
 
-function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
+function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, menu }) {
   // No Tooltip on the row itself: the hover-revealed "Show/Hide" text IS the
   // affordance, and a row-level tooltip would nest around the plus button's
   // tooltip (double bubble, mis-anchored over the full row width).
@@ -41,10 +43,15 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
           fixed strings ("Boards", "Shared with me") that never reach the fade;
           the third passes a workspace name, which can be any length. */}
       <span className="text-xs text-[var(--text-muted)] flex-1 min-w-0 fade-out-right">{label}</span>
-      <span className="flex items-center gap-2 shrink-0">
+      <span className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
         <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
           {collapsed ? 'Show' : 'Hide'}
         </span>
+        {/* Supplied by the caller so this heading stays presentational — it has
+            no idea what the menu contains. Sits before the plus, which is the
+            section's primary action and stays rightmost. The click guard above
+            stops opening the menu from also collapsing the section. */}
+        {menu}
         {/* left placement keeps the bubble inside the sidebar — the nav's
             overflow-y-auto clips anything that crosses its right edge */}
         {onPlusClick && (
@@ -148,24 +155,66 @@ export default function Sidebar() {
   const toggleBoardsCollapsed = useSettingsStore((s) => s.toggleBoardsCollapsed)
   const sharedBoardsCollapsed = useSettingsStore((s) => s.sharedBoardsCollapsed)
   const toggleSharedBoardsCollapsed = useSettingsStore((s) => s.toggleSharedBoardsCollapsed)
-  // Pinned boards sort to the top of their own section, alphabetical within
-  // each group. favoriteBoards has existed in settingsStore since before this —
-  // it persisted, but nothing read it, so pinning had no effect anywhere.
-  //
-  // It is local-only, like the sidebar's collapse state: a pin is per-device
-  // and does not follow you to another browser. That is the trade for it
-  // needing no schema change.
+  // Pinned boards sort to the top of their own section — see boardListOrder.js
+  // for the rules. favoriteBoards has lived in settingsStore since long before
+  // anything read it, and it is local: a pin is per-device and does not follow
+  // you to another browser. That is the trade for needing no schema change.
   const favoriteBoards = useSettingsStore((s) => s.favoriteBoards)
-  const byPinnedThenName = useCallback((a, b) => {
-    const pa = favoriteBoards.includes(a.id)
-    const pb = favoriteBoards.includes(b.id)
-    if (pa !== pb) return pa ? -1 : 1
-    return a.name.localeCompare(b.name)
-  }, [favoriteBoards])
 
-  const personalBoards = useMemo(() => Object.values(allBoards)
-    .filter((b) => b.owner_id === user?.id && !b.workspace_id)
-    .sort(byPinnedThenName), [allBoards, user?.id, byPinnedThenName])
+  const boardSort = useSettingsStore((s) => s.boardSort)
+  const boardShow = useSettingsStore((s) => s.boardShow)
+  const setBoardSort = useSettingsStore((s) => s.setBoardSort)
+  const setBoardShow = useSettingsStore((s) => s.setBoardShow)
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false)
+
+  const personalBoards = useMemo(
+    () => arrangeBoards(
+      Object.values(allBoards).filter((b) => b.owner_id === user?.id && !b.workspace_id),
+      { sort: boardSort, show: boardShow, pinned: favoriteBoards },
+    ),
+    [allBoards, user?.id, boardSort, boardShow, favoriteBoards],
+  )
+
+  // Only the rows this menu actually backs. "Last activity" and archiving are
+  // deliberately absent: board activity is fetched per board on demand, and
+  // boards have no archived state at all — both need data work before they can
+  // be more than decoration.
+  const boardListMenu = (
+    <Menu
+      open={boardMenuOpen}
+      onOpenChange={setBoardMenuOpen}
+      placement="bottom-end"
+      portal
+      panel={
+        <>
+          <Menu.Label>Sort by</Menu.Label>
+          <Menu.Item selected={boardSort === 'name'} onSelect={() => { setBoardSort('name'); setBoardMenuOpen(false) }}>
+            Name
+          </Menu.Item>
+          <Menu.Item selected={boardSort === 'created'} onSelect={() => { setBoardSort('created'); setBoardMenuOpen(false) }}>
+            Recently created
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Label>Show</Menu.Label>
+          <Menu.Item selected={boardShow === 'all'} onSelect={() => { setBoardShow('all'); setBoardMenuOpen(false) }}>
+            All boards
+          </Menu.Item>
+          <Menu.Item selected={boardShow === 'pinned'} onSelect={() => { setBoardShow('pinned'); setBoardMenuOpen(false) }}>
+            Pinned only
+          </Menu.Item>
+        </>
+      }
+    >
+      <button
+        type="button"
+        aria-label="Sort and filter boards"
+        onClick={() => setBoardMenuOpen((v) => !v)}
+        className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors flex items-center justify-center"
+      >
+        <Faders className="w-4 h-4" weight="light" />
+      </button>
+    </Menu>
+  )
   // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
   const isAll = activeWorkspaceId === null
   const isPersonal = activeWorkspaceId === 'personal'
@@ -269,6 +318,7 @@ export default function Sidebar() {
             <div className="flex flex-col pt-4">
               <SectionHeader
                 label="Boards"
+                menu={boardListMenu}
                 collapsed={boardsCollapsed}
                 onToggle={toggleBoardsCollapsed}
                 onPlusClick={() => { triggerCreateBoard(); closeMobileMenu() }}
