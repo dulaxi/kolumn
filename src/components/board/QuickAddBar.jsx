@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Check, Plus, Sparkle, Waveform, X } from '@phosphor-icons/react'
+import { ArrowUp, Check, PencilRuler, Plus, Waveform, X } from '@phosphor-icons/react'
 
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
@@ -143,7 +143,10 @@ export default function QuickAddBar({ boardId, hidden = false }) {
             onClick={() => setExpanded(true)}
             className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
           >
-            <Sparkle size={20} weight="fill" className="text-[var(--accent-sparkle)]" />
+            {/* PencilRuler, not Sparkle: the pill drafts and lays work out
+                rather than conjuring it, and a sparkle beside the Waveform
+                voice control read as generic "AI" twice over. */}
+            <PencilRuler size={20} weight="regular" className="text-[var(--accent-sparkle)]" />
           </button>
           <div className="w-px h-5 bg-[var(--border-default)]" />
           <button

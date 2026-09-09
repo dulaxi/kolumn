@@ -1,7 +1,7 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 
-import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, Notepad, Tag, Target, TrendUp, VideoCamera, Waveform } from '@phosphor-icons/react'
+import { Browser, CalendarDot, CaretLeft, CaretRight, ChartPie, ChatsCircle, CheckCircle, CheckSquare, ClipboardText, CreditCard, Envelope, FileText, Megaphone, Microphone, Lightning, Notepad, Tag, Target, TrendUp, VideoCamera, Blueprint } from '@phosphor-icons/react'
 
 import Avatar from '../components/ui/Avatar'
 import { LABEL_OUTLINE } from '../utils/formatting'
@@ -983,7 +983,7 @@ function TranscriptDemo({ active = true }) {
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 p-4 md:p-8">
           {/* Cream panel bg (#FAF8F6) — matches Notes/Email so the four
               demos read as a coherent set. Distinctness for transcript
-              comes from layout (paragraph speaker turns), Waveform icon,
+              comes from layout (paragraph speaker turns), its tab icon,
               live REC indicator, and blinking caret — not bg color. */}
           <div
             className="flex-1 rounded-lg overflow-hidden flex flex-col bg-[#FAF8F6] border border-[#E0DBD5] aspect-[4/3] md:aspect-[4/4.5]"
@@ -1169,7 +1169,7 @@ const SLIDES = [
   { label: 'Notes', Icon: Notepad, color: null },
   { label: 'Email', Icon: Envelope, color: null },
   { label: 'Chat', Icon: ChatsCircle, color: null },
-  { label: 'Transcript', Icon: Waveform, color: null },
+  { label: 'Transcript', Icon: Blueprint, color: null },
 ]
 
 function DemoSlider() {
