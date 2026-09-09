@@ -1,5 +1,5 @@
 import Menu from '../../ui/Menu'
-import FilterPill from './FilterPill'
+import FilterPill from '../../ui/FilterPill'
 import { LABEL_OUTLINE } from '../../../utils/formatting'
 
 export default function LabelFilter({ filters, setFilters, labels }) {

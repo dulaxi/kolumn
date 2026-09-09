@@ -19,6 +19,7 @@ import KolumnLogo from './KolumnLogo'
 import KolumnLockup from './KolumnLockup'
 import { triggerCreateBoard } from '../../utils/createBoardEvent'
 import Menu from '../ui/Menu'
+import FilterPill from '../ui/FilterPill'
 import { arrangeBoards } from './boardListOrder'
 
 function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, menu }) {
@@ -165,7 +166,6 @@ export default function Sidebar() {
   const boardShow = useSettingsStore((s) => s.boardShow)
   const setBoardSort = useSettingsStore((s) => s.setBoardSort)
   const setBoardShow = useSettingsStore((s) => s.setBoardShow)
-  const [boardMenuOpen, setBoardMenuOpen] = useState(false)
 
   const personalBoards = useMemo(
     () => arrangeBoards(
@@ -175,45 +175,38 @@ export default function Sidebar() {
     [allBoards, user?.id, boardSort, boardShow, favoriteBoards],
   )
 
-  // Only the rows this menu actually backs. "Last activity" and archiving are
-  // deliberately absent: board activity is fetched per board on demand, and
-  // boards have no archived state at all — both need data work before they can
-  // be more than decoration.
+  // Built on FilterPill, the same trigger the board toolbar's Priority /
+  // Assignee / Label / Due / Sort menus use. `compact` gives it the sidebar's
+  // quiet 16px glyph instead of the toolbar's filled pill; everything else —
+  // open state, panel, minimum width — comes from the shared component rather
+  // than being wired again here.
+  //
+  // Only the rows the data actually backs. "Type", "Status" and "Last
+  // activity" are absent: boards have no type and no archived state, and board
+  // activity is fetched per board on demand rather than for the list.
   const boardListMenu = (
-    <Menu
-      open={boardMenuOpen}
-      onOpenChange={setBoardMenuOpen}
-      placement="bottom-end"
-      portal
-      panel={
-        <>
-          <Menu.Label>Sort by</Menu.Label>
-          <Menu.Item selected={boardSort === 'name'} onSelect={() => { setBoardSort('name'); setBoardMenuOpen(false) }}>
-            Name
-          </Menu.Item>
-          <Menu.Item selected={boardSort === 'created'} onSelect={() => { setBoardSort('created'); setBoardMenuOpen(false) }}>
-            Recently created
-          </Menu.Item>
-          <Menu.Divider />
-          <Menu.Label>Show</Menu.Label>
-          <Menu.Item selected={boardShow === 'all'} onSelect={() => { setBoardShow('all'); setBoardMenuOpen(false) }}>
-            All boards
-          </Menu.Item>
-          <Menu.Item selected={boardShow === 'pinned'} onSelect={() => { setBoardShow('pinned'); setBoardMenuOpen(false) }}>
-            Pinned only
-          </Menu.Item>
-        </>
-      }
+    <FilterPill
+      compact
+      icon={<Faders className="w-4 h-4" weight="light" />}
+      tooltip="Sort and filter boards"
+      active={boardSort !== 'name' || boardShow !== 'all'}
     >
-      <button
-        type="button"
-        aria-label="Sort and filter boards"
-        onClick={() => setBoardMenuOpen((v) => !v)}
-        className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors flex items-center justify-center"
-      >
-        <Faders className="w-4 h-4" weight="light" />
-      </button>
-    </Menu>
+      <Menu.Label>Sort by</Menu.Label>
+      <Menu.Item selected={boardSort === 'name'} onSelect={() => setBoardSort('name')}>
+        Name
+      </Menu.Item>
+      <Menu.Item selected={boardSort === 'created'} onSelect={() => setBoardSort('created')}>
+        Recently created
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Label>Show</Menu.Label>
+      <Menu.Item selected={boardShow === 'all'} onSelect={() => setBoardShow('all')}>
+        All boards
+      </Menu.Item>
+      <Menu.Item selected={boardShow === 'pinned'} onSelect={() => setBoardShow('pinned')}>
+        Pinned only
+      </Menu.Item>
+    </FilterPill>
   )
   // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
   const isAll = activeWorkspaceId === null

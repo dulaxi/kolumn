@@ -1,5 +1,5 @@
 import Menu from '../../ui/Menu'
-import FilterPill from './FilterPill'
+import FilterPill from '../../ui/FilterPill'
 import Avatar from '../../ui/Avatar'
 
 export default function AssigneeFilter({ filters, setFilters, assignees }) {

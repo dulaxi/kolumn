@@ -1,5 +1,5 @@
 import Menu from '../../ui/Menu'
-import FilterPill from './FilterPill'
+import FilterPill from '../../ui/FilterPill'
 import { PRIORITY_OPTIONS } from '../../../constants/colors'
 
 export default function PriorityFilter({ filters, setFilters }) {

@@ -1,6 +1,6 @@
 import { ArrowsDownUp } from '@phosphor-icons/react'
 import Menu from '../../ui/Menu'
-import FilterPill from './FilterPill'
+import FilterPill from '../../ui/FilterPill'
 
 const SORT_OPTIONS = [
   { value: 'manual', label: 'Manual' },

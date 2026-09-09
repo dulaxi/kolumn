@@ -1,5 +1,5 @@
 import Menu from '../../ui/Menu'
-import FilterPill from './FilterPill'
+import FilterPill from '../../ui/FilterPill'
 
 const DUE_OPTIONS = [
   { value: 'overdue', label: 'Overdue' },
