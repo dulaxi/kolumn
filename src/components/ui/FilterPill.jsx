@@ -29,9 +29,13 @@ export default function FilterPill({
   // which is why the five filters that predate this never needed it.
   portal = false,
   placement = 'bottom-end',
+  // Lets a caller react to the panel closing — a menu that drills into a
+  // sub-list needs to reset back to its top level, or it reopens mid-drill.
+  onOpenChange,
   children,
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const setOpen = (next) => { setIsOpen(next); onOpenChange?.(next) }
 
   const fill = active ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
 
@@ -39,7 +43,7 @@ export default function FilterPill({
     <button
       type="button"
       aria-label={tooltip || label}
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={() => setOpen(!isOpen)}
       className={`p-0.5 rounded flex items-center justify-center transition-colors ${
         active
           ? 'text-[var(--text-primary)] bg-[var(--surface-raised)]'
@@ -52,7 +56,7 @@ export default function FilterPill({
     <button
       type="button"
       aria-label={tooltip || label}
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={() => setOpen(!isOpen)}
       className={`${TOOLBAR_ICON_BTN} ${fill}`}
     >
       {icon}
@@ -60,7 +64,7 @@ export default function FilterPill({
   ) : (
     <button
       type="button"
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={() => setOpen(!isOpen)}
       className={`${TOOLBAR_BTN} ${fill}`}
     >
       {label}
@@ -71,7 +75,7 @@ export default function FilterPill({
   return (
     <Popover
       open={isOpen}
-      onOpenChange={setIsOpen}
+      onOpenChange={setOpen}
       // bottom-end by default: it anchors the dropdown to the trigger's RIGHT
       // edge so the panel grows leftward into the viewport. The board toolbar
       // sits on the right of the page, where bottom-start clipped dropdowns

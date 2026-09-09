@@ -1,4 +1,4 @@
-import { Check } from '@phosphor-icons/react'
+import { Check, CaretRight } from '@phosphor-icons/react'
 import Popover from './Popover'
 
 function mergeClassNames(...parts) {
@@ -8,6 +8,13 @@ function mergeClassNames(...parts) {
 function MenuItem({
   icon,
   shortcut,
+  // `value` shows the row's current setting on the right; `chevron` marks the
+  // row as opening a further list. Together they make the settings-row shape —
+  // "Sort by ......... Name ›" — as opposed to the checklist shape, where each
+  // row IS an option and `selected` ticks the chosen one. A menu should pick
+  // one shape: rows that lead somewhere, or rows that choose something.
+  value,
+  chevron = false,
   destructive = false,
   selected = false,
   checkbox = false,
@@ -65,6 +72,10 @@ function MenuItem({
         </span>
       )}
       <span className="flex-1 truncate">{children}</span>
+      {value && (
+        <span className="shrink-0 text-[var(--text-muted)] truncate max-w-[9rem]">{value}</span>
+      )}
+      {chevron && <CaretRight className="w-3.5 h-3.5 shrink-0 text-[var(--text-muted)]" />}
       {/* Single-select checkmark trails the label */}
       {selected && !checkbox && (
         <Check className="w-4 h-4 text-[var(--color-lime-dark)] shrink-0" weight="bold" />

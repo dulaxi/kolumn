@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { Plus, Faders } from '@phosphor-icons/react'
+import { Plus, Faders, CaretLeft } from '@phosphor-icons/react'
 import ConfirmModal from '../board/ConfirmModal'
 import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
@@ -175,15 +175,16 @@ export default function Sidebar() {
     [allBoards, user?.id, boardSort, boardShow, favoriteBoards],
   )
 
-  // Built on FilterPill, the same trigger the board toolbar's Priority /
-  // Assignee / Label / Due / Sort menus use. `compact` gives it the sidebar's
-  // quiet 16px glyph instead of the toolbar's filled pill; everything else —
-  // open state, panel, minimum width — comes from the shared component rather
-  // than being wired again here.
-  //
-  // Only the rows the data actually backs. "Type", "Status" and "Last
-  // activity" are absent: boards have no type and no archived state, and board
-  // activity is fetched per board on demand rather than for the list.
+  // Two levels, like the reference: the top panel is a list of settings
+  // showing their current value, and picking one drills into its options.
+  // Kolumn's Menu has no true submenus, so the panel swaps its contents in
+  // place and offers a way back — which reads the same and costs no new
+  // overlay machinery.
+  const [menuPane, setMenuPane] = useState(null)
+
+  const SORT_LABELS = { name: 'Name', created: 'Recently created' }
+  const SHOW_LABELS = { all: 'All boards', pinned: 'Pinned only' }
+
   const boardListMenu = (
     <FilterPill
       compact
@@ -193,22 +194,55 @@ export default function Sidebar() {
       icon={<Faders className="w-4 h-4" weight="light" />}
       tooltip="Sort and filter boards"
       active={boardSort !== 'name' || boardShow !== 'all'}
+      // Reset to the top level on close, or reopening lands mid-drill.
+      onOpenChange={(open) => { if (!open) setMenuPane(null) }}
     >
-      <Menu.Label>Sort by</Menu.Label>
-      <Menu.Item selected={boardSort === 'name'} onSelect={() => setBoardSort('name')}>
-        Name
-      </Menu.Item>
-      <Menu.Item selected={boardSort === 'created'} onSelect={() => setBoardSort('created')}>
-        Recently created
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Label>Show</Menu.Label>
-      <Menu.Item selected={boardShow === 'all'} onSelect={() => setBoardShow('all')}>
-        All boards
-      </Menu.Item>
-      <Menu.Item selected={boardShow === 'pinned'} onSelect={() => setBoardShow('pinned')}>
-        Pinned only
-      </Menu.Item>
+      {menuPane === null && (
+        <>
+          <Menu.Item value={SORT_LABELS[boardSort]} chevron onSelect={() => setMenuPane('sort')}>
+            Sort by
+          </Menu.Item>
+          <Menu.Item value={SHOW_LABELS[boardShow]} chevron onSelect={() => setMenuPane('show')}>
+            Show
+          </Menu.Item>
+        </>
+      )}
+
+      {menuPane === 'sort' && (
+        <>
+          <Menu.Item icon={<CaretLeft className="w-3.5 h-3.5" />} onSelect={() => setMenuPane(null)}>
+            Sort by
+          </Menu.Item>
+          <Menu.Divider />
+          {Object.entries(SORT_LABELS).map(([value, label]) => (
+            <Menu.Item
+              key={value}
+              selected={boardSort === value}
+              onSelect={() => { setBoardSort(value); setMenuPane(null) }}
+            >
+              {label}
+            </Menu.Item>
+          ))}
+        </>
+      )}
+
+      {menuPane === 'show' && (
+        <>
+          <Menu.Item icon={<CaretLeft className="w-3.5 h-3.5" />} onSelect={() => setMenuPane(null)}>
+            Show
+          </Menu.Item>
+          <Menu.Divider />
+          {Object.entries(SHOW_LABELS).map(([value, label]) => (
+            <Menu.Item
+              key={value}
+              selected={boardShow === value}
+              onSelect={() => { setBoardShow(value); setMenuPane(null) }}
+            >
+              {label}
+            </Menu.Item>
+          ))}
+        </>
+      )}
     </FilterPill>
   )
   // null = All (every section), 'personal' = Personal + Shared only, uuid = that workspace only.
