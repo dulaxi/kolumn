@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useIsDesktop, useMediaQuery } from '../../hooks/useMediaQuery'
 import { useBoardSharingStore } from '../../store/boardSharingStore'
 import { useWorkspacesStore } from '../../store/workspacesStore'
-import { Plus, Faders, CaretLeft } from '@phosphor-icons/react'
+import { Plus, SlidersHorizontal, CaretLeft } from '@phosphor-icons/react'
 import ConfirmModal from '../board/ConfirmModal'
 import SidebarNav from './SidebarNav'
 import SidebarBoardItem from './SidebarBoardItem'
@@ -191,7 +191,7 @@ export default function Sidebar() {
       // portal, like the board's ⋮: the sidebar nav is overflow-y-auto and
       // would otherwise clip this panel at its right edge.
       portal
-      icon={<Faders className="w-4 h-4" weight="light" />}
+      icon={<SlidersHorizontal className="w-4 h-4" weight="light" />}
       tooltip="Sort and filter boards"
       active={boardSort !== 'name' || boardShow !== 'all'}
       // Reset to the top level on close, or reopening lands mid-drill.
