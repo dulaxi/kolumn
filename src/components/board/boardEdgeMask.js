@@ -9,11 +9,12 @@
 // right fade lifts, so the final column is never dimmed for no reason; a board
 // narrow enough to fit entirely has no fade at all.
 
-// Roughly the column gap. 56px was the first attempt and it was too much: the
-// ramp reached a fifth of the way across a 290px card, so the last column read
-// as dimmed rather than as running off the edge. A fade only has to suggest
-// there is more; it should not consume the thing it is fading.
-export const FADE_WIDTH = '24px'
+// Tuned down twice: 56px, then 24px, now 16px. Width is the only lever a
+// linear mask has — a shorter ramp is both less spread AND less dimming, since
+// any given pixel of card sits further along the gradient and so stays more
+// opaque. At 16px the fade is about a twentieth of a 290px card: enough to
+// round off the edge and say there is more, not enough to read as a haze.
+export const FADE_WIDTH = '16px'
 
 // 1px of slack: scrollLeft is fractional at some zoom levels and device pixel
 // ratios, so a strict comparison never quite reaches the maximum and leaves
