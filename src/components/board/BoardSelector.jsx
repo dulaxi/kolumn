@@ -202,17 +202,6 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
                 'max-width 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out 80ms',
             }}
           >
-          {/* Share leads the cluster — it is the one people reach for most, so
-              it sits first once the tools are open. Moved off the top row so
-              that row carries only what you need without opening anything. */}
-          <button
-            type="button"
-            onClick={() => setShowShareModal(true)}
-            className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
-          >
-            {isOwner ? 'Share' : 'Members'}
-          </button>
-
           {/* Ghost — moved here from BoardsPage so it collapses with the rest
               of the cluster */}
           <GhostToggle boardId={activeBoardId} />
@@ -326,15 +315,28 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
               Archived ({displayArchivedCount})
             </button>
           )}
+
+          {/* Share closes the cluster — last in, rightmost on screen. Owner:
+              full Share modal (invite + remove). Non-owner member: read-only
+              Members modal. Same modal; isOwner drives the difference. */}
+          <button
+            type="button"
+            onClick={() => setShowShareModal(true)}
+            className={`${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
+          >
+            {isOwner ? 'Share' : 'Members'}
+          </button>
           </div>
           )}
 
-          {/* Share sits at the far right of the toolbar, text-only. Owner: full
-              Share modal (invite + remove). Non-owner member: read-only Members
-              modal. Same modal; isOwner drives the difference. */}
           {isRealBoard && import.meta.env.DEV && (
             <div className="ml-auto">
               <SegmentedControl
+                // The track defaults to --surface-hover, a shade darker than
+                // every button beside it. Overridden here rather than in the
+                // component: the marketing pages and Settings use it on plain
+                // page backgrounds where the darker track is right.
+                className="!bg-[var(--surface-raised)]"
                 ariaLabel="View mode (placeholder)"
                 options={[
                   { value: 'board', icon: <Kanban className="w-4 h-4" />, ariaLabel: 'Board' },
