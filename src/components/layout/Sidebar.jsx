@@ -55,7 +55,9 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
               onClick={(e) => { e.stopPropagation(); onPlusClick() }}
               className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
             >
-              <Plus className="w-5 h-5" weight="light" />
+              {/* 16px, not 20: a 20px glyph outweighed the 12px heading it
+                  sits beside. */}
+              <Plus className="w-4 h-4" weight="light" />
             </button>
           </Tooltip>
         )}
