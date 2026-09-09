@@ -304,10 +304,19 @@
    and only text that actually overflows dissolves. No JS, no measuring.
 
    An ellipsis announces "there is more" with a glyph that costs three
-   characters of the name; the fade says the same thing with none. */
+   characters of the name; the fade says the same thing with none.
+
+   Transparency, not blur — the ramp is on the alpha channel. A true blur would
+   need the text duplicated, blurred and cross-faded in a second layer, which
+   smears at label sizes and costs a paint for every row.
+
+   16px, down from an initial 24px. Length is the only strength control here,
+   and 24 was reaching far enough in to dim a name that actually FIT: text
+   ending inside the ramp is faded even when nothing is cut off. At 16 the
+   fade lands past where a fitting name ends and only bites what overflows. */
 .fade-out-right {
-  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
-  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
 }
 
 .subtle-scrollbar {
