@@ -146,7 +146,7 @@ export default function QuickAddBar({ boardId, hidden = false }) {
             {/* PencilRuler, not Sparkle: the pill drafts and lays work out
                 rather than conjuring it, and a sparkle beside the Waveform
                 voice control read as generic "AI" twice over. */}
-            <PencilRuler size={20} weight="regular" className="text-[var(--accent-sparkle)]" />
+            <PencilRuler size={20} weight="regular" className="text-[var(--text-primary)]" />
           </button>
           <div className="w-px h-5 bg-[var(--border-default)]" />
           <button
