@@ -53,7 +53,7 @@ export default function SidebarBoardItem({
       {/* min-w-0 (not truncate) — the name span truncates itself; an
           overflow clip here would crop the icon's Tooltip bubble to the
           width of icon + name (short names = clipped tooltip). */}
-      <span className="flex items-center gap-3 min-w-0">
+      <span className="flex items-center gap-3 min-w-0 flex-1">
         {editable ? (
           <Tooltip content="Change icon" placement="right">
             <button
@@ -89,15 +89,25 @@ export default function SidebarBoardItem({
             className="flex-1 text-sm bg-[var(--surface-card)] border border-[var(--border-default)] rounded px-1.5 py-0.5 focus:outline-none focus:border-[var(--text-primary)] min-w-0"
           />
         ) : (
-          <span
-            onDoubleClick={(e) => {
-              if (!editable) return
-              e.stopPropagation()
-              onStartRename?.(board)
-            }}
-            className="truncate"
-          >
-            {board.name}
+          /* The mask goes on this wrapper, not on the text. The wrapper is
+             flex-1 so it always spans the free space, which means a short name
+             never reaches the fade — only a name long enough to overflow
+             dissolves. Masking the text itself would fade every name, since a
+             short one's box IS its text.
+
+             The inner span stays content-sized so double-click-to-rename
+             targets the name rather than the empty space beside it. */
+          <span className="flex-1 min-w-0 overflow-hidden fade-out-right">
+            <span
+              onDoubleClick={(e) => {
+                if (!editable) return
+                e.stopPropagation()
+                onStartRename?.(board)
+              }}
+              className="whitespace-nowrap"
+            >
+              {board.name}
+            </span>
           </span>
         )}
       </span>

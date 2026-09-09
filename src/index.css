@@ -298,6 +298,18 @@
    already redefined for dark above. */
 
 /* Subtle scrollbar — nearly invisible, fades in slightly on hover */
+/* Long text dissolves at its right edge instead of ending in an ellipsis.
+   Put it on the CLIPPING box, not the text: the mask fades the last 24px of
+   that box, so a short string — which never reaches the fade — is untouched,
+   and only text that actually overflows dissolves. No JS, no measuring.
+
+   An ellipsis announces "there is more" with a glyph that costs three
+   characters of the name; the fade says the same thing with none. */
+.fade-out-right {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+}
+
 .subtle-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
