@@ -72,6 +72,12 @@ export default function FilterPill({
 
   return (
     <Popover
+      // Popover's anchor is a block div. A block box containing an
+      // inline-level trigger builds a line box with descender space — measured
+      // 24px around a 20px button — which pushes the trigger 2px above
+      // anything beside it. inline-flex removes the baseline entirely and
+      // shrink-wraps the trigger.
+      className="inline-flex"
       open={isOpen}
       onOpenChange={setOpen}
       // bottom-end by default: it anchors the dropdown to the trigger's RIGHT
