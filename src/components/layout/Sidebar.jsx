@@ -35,7 +35,12 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle }) {
       }}
       className="flex w-full items-center justify-between gap-2 px-2 mb-px group/sec cursor-pointer select-none"
     >
-      <span className="text-xs text-[var(--text-muted)] truncate">{label}</span>
+      {/* flex-1 so the label can grow into the free space and therefore
+          overflow: on a shrink-wrapped box the fade would land on the text and
+          dim even short labels. Two of this component's three call sites pass
+          fixed strings ("Boards", "Shared with me") that never reach the fade;
+          the third passes a workspace name, which can be any length. */}
+      <span className="text-xs text-[var(--text-muted)] flex-1 min-w-0 fade-out-right">{label}</span>
       <span className="flex items-center gap-2 shrink-0">
         <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
           {collapsed ? 'Show' : 'Hide'}
