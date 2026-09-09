@@ -18,6 +18,12 @@ import Tooltip from '../ui/Tooltip'
 import KolumnLogo from './KolumnLogo'
 import KolumnLockup from './KolumnLockup'
 import { triggerCreateBoard } from '../../utils/createBoardEvent'
+
+// Both icon buttons in a section heading — the plus and the sort/filter menu —
+// share this exactly. One string, so they cannot drift apart.
+const SECTION_ICON_BTN =
+  'p-0.5 rounded flex items-center justify-center text-[var(--text-muted)] ' +
+  'hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors'
 import Menu from '../ui/Menu'
 import FilterPill from '../ui/FilterPill'
 import { arrangeBoards } from './boardListOrder'
@@ -48,11 +54,7 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, men
         <span className="text-xs text-[var(--text-faint)] opacity-0 group-hover/sec:opacity-75 transition-opacity">
           {collapsed ? 'Show' : 'Hide'}
         </span>
-        {/* Supplied by the caller so this heading stays presentational — it has
-            no idea what the menu contains. Sits before the plus, which is the
-            section's primary action and stays rightmost. The click guard above
-            stops opening the menu from also collapsing the section. */}
-        {menu}
+
         {/* left placement keeps the bubble inside the sidebar — the nav's
             overflow-y-auto clips anything that crosses its right edge */}
         {onPlusClick && (
@@ -61,7 +63,7 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, men
               type="button"
               aria-label={plusTitle}
               onClick={(e) => { e.stopPropagation(); onPlusClick() }}
-              className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
+              className={SECTION_ICON_BTN}
             >
               {/* 16px, not 20: a 20px glyph outweighed the 12px heading it
                   sits beside. */}
@@ -69,6 +71,10 @@ function SectionHeader({ label, collapsed, onToggle, onPlusClick, plusTitle, men
             </button>
           </Tooltip>
         )}
+        {/* Supplied by the caller so this heading stays presentational — it has
+            no idea what the menu contains. The click guard on the group stops
+            opening it from also collapsing the section. */}
+        {menu}
       </span>
     </div>
   )
@@ -187,7 +193,7 @@ export default function Sidebar() {
 
   const boardListMenu = (
     <FilterPill
-      compact
+      triggerClassName={`${SECTION_ICON_BTN}${boardSort !== 'name' || boardShow !== 'all' ? ' text-[var(--text-primary)]' : ''}`}
       // portal, like the board's ⋮: the sidebar nav is overflow-y-auto and
       // would otherwise clip this panel at its right edge.
       portal

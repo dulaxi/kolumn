@@ -13,16 +13,18 @@ import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants
 // exactly the plumbing anyone reaching for a dropdown would otherwise hand-roll
 // and get subtly different.
 //
-// `compact` swaps the toolbar's filled 32px pill for a small ghost icon button.
-// The board toolbar is a row of filled controls, so a pill belongs there; the
-// sidebar's section heading is a row of quiet 16px glyphs, and a filled pill
-// beside them would shout.
+// `triggerClassName` overrides the trigger's styling entirely, for callers
+// whose surface has its own button vocabulary — the sidebar's section heading
+// is a row of quiet 16px glyphs, where the toolbar's filled pill would shout.
 export default function FilterPill({
   label,
   icon,
   tooltip,
   active,
-  compact = false,
+  // Exact classes for the trigger, when a caller needs it to match controls it
+  // already owns. Given verbatim rather than through a variant flag, so the
+  // caller's own button and this one can share one string and cannot drift.
+  triggerClassName,
   // Forwarded to Popover. A panel inside a scroll container — the sidebar's
   // nav is overflow-y-auto — is clipped at that container's edge unless it
   // renders in a body-level portal. The board toolbar has no such ancestor,
@@ -39,16 +41,12 @@ export default function FilterPill({
 
   const fill = active ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
 
-  const button = compact ? (
+  const button = triggerClassName ? (
     <button
       type="button"
       aria-label={tooltip || label}
       onClick={() => setOpen(!isOpen)}
-      className={`p-0.5 rounded flex items-center justify-center transition-colors ${
-        active
-          ? 'text-[var(--text-primary)] bg-[var(--surface-raised)]'
-          : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)]'
-      }`}
+      className={triggerClassName}
     >
       {icon}
     </button>
