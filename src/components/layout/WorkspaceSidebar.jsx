@@ -109,7 +109,7 @@ export default function WorkspaceSidebar() {
               <span className="flex size-5 items-center justify-center">
                 <Cube weight="fill" className="w-4 h-4" style={{ color: resolveWorkspaceColor(ws) }} />
               </span>
-              <span className="truncate text-left flex-1">{ws.name}</span>
+              <span className="text-left flex-1 min-w-0 fade-out-right">{ws.name}</span>
             </button>
           )
         })}
@@ -144,14 +144,14 @@ export default function WorkspaceSidebar() {
                     <div
                       className="flex items-center justify-between w-full h-8 py-1.5 px-4 rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors group"
                     >
-                      <span className="flex items-center gap-3 truncate">
+                      <span className="flex items-center gap-3 min-w-0 flex-1">
                         <span className="flex items-center justify-center shrink-0" style={{ width: 16, height: 16 }}>
                           <DynamicIcon
                             name={boardIcon || 'cards-three'}
                             className="w-4 h-4 text-[var(--text-muted)]"
                           />
                         </span>
-                        <span className="truncate">{boardName}</span>
+                        <span className="flex-1 min-w-0 fade-out-right">{boardName}</span>
                       </span>
                       <span className="flex items-center gap-0.5 shrink-0">
                         <Tooltip content="Accept" placement="top">

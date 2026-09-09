@@ -50,9 +50,9 @@ export default function SidebarBoardItem({
           : 'text-[var(--text-primary)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-raised)]'
       }`}
     >
-      {/* min-w-0 (not truncate) — the name span truncates itself; an
-          overflow clip here would crop the icon's Tooltip bubble to the
-          width of icon + name (short names = clipped tooltip). */}
+      {/* min-w-0 (not an overflow clip) — the name fades itself; clipping here
+          would crop the icon's Tooltip bubble to the width of icon + name
+          (short names = clipped tooltip). */}
       <span className="flex items-center gap-3 min-w-0 flex-1">
         {editable ? (
           <Tooltip content="Change icon" placement="right">
@@ -97,14 +97,13 @@ export default function SidebarBoardItem({
 
              The inner span stays content-sized so double-click-to-rename
              targets the name rather than the empty space beside it. */
-          <span className="flex-1 min-w-0 overflow-hidden fade-out-right">
+          <span className="flex-1 min-w-0 fade-out-right">
             <span
               onDoubleClick={(e) => {
                 if (!editable) return
                 e.stopPropagation()
                 onStartRename?.(board)
               }}
-              className="whitespace-nowrap"
             >
               {board.name}
             </span>

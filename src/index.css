@@ -313,8 +313,16 @@
    16px, down from an initial 24px. Length is the only strength control here,
    and 24 was reaching far enough in to dim a name that actually FIT: text
    ending inside the ramp is faded even when nothing is cut off. At 16 the
-   fade lands past where a fitting name ends and only bites what overflows. */
+   fade lands past where a fitting name ends and only bites what overflows.
+
+   Carries overflow and nowrap itself so it is a straight swap for Tailwind's
+   `truncate`, minus the ellipsis. One requirement at the call site: the
+   element must be able to grow wider than its text (flex-1 + min-w-0, or a
+   block that fills). On a box shrink-wrapped to its own text the ramp lands ON
+   the text and every label fades, short ones included. */
 .fade-out-right {
+  overflow: hidden;
+  white-space: nowrap;
   -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
   mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
 }
