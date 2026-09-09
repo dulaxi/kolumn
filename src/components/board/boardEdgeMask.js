@@ -9,12 +9,15 @@
 // right fade lifts, so the final column is never dimmed for no reason; a board
 // narrow enough to fit entirely has no fade at all.
 
-// Tuned down twice: 56px, then 24px, now 16px. Width is the only lever a
-// linear mask has — a shorter ramp is both less spread AND less dimming, since
-// any given pixel of card sits further along the gradient and so stays more
-// opaque. At 16px the fade is about a twentieth of a 290px card: enough to
-// round off the edge and say there is more, not enough to read as a haze.
-export const FADE_WIDTH = '16px'
+// Width is the only lever a linear mask has: a shorter ramp is both less
+// spread AND less dimming, since any given pixel sits further along the
+// gradient and stays more opaque.
+//
+// It went 56 → 24 → 16 while the strip still stopped short of the screen —
+// the fade was landing on a column already sliced by the page padding, so any
+// width read as too much. With the strip full-bleed there is real board under
+// the fade and it can afford to be wider again.
+export const FADE_WIDTH = '32px'
 
 // 1px of slack: scrollLeft is fractional at some zoom levels and device pixel
 // ratios, so a strict comparison never quite reaches the maximum and leaves

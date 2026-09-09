@@ -137,7 +137,17 @@ export default function BoardView({ boardId, onCardClick, onCreateCard, inlineCa
         ref={scrollRef}
         data-board-scroll
         style={{ maskImage: boardMask, WebkitMaskImage: boardMask }}
-        className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain"
+        /* Full-bleed to the right. <main> pads the page by 16/32px, and the
+           strip used to stop at that padding — so a column was sliced 32px
+           short of the screen with a band of dead space beyond it, which read
+           as a broken card rather than as more board.
+
+           The negative margin cancels that padding so columns scroll right up
+           to the edge; the matching right padding lives INSIDE the scroller,
+           so when you reach the end the last column sits the same distance
+           from the edge as the first does from the left. Left padding is left
+           alone: the first column should stay aligned with the page title. */
+        className="flex gap-3 sm:gap-5 overflow-x-auto h-full snap-x snap-mandatory sm:snap-none scroll-pl-0 overscroll-x-contain -mr-4 sm:-mr-8 pr-4 sm:pr-8"
       >
         {boardColumns.map((column) => (
           <Column
