@@ -17,7 +17,7 @@
 // the fade was landing on a column already sliced by the page padding, so any
 // width read as too much. With the strip full-bleed there is real board under
 // the fade and it can afford to be wider again.
-export const FADE_WIDTH = '32px'
+export const FADE_WIDTH = '48px'
 
 // 1px of slack: scrollLeft is fractional at some zoom levels and device pixel
 // ratios, so a strict comparison never quite reaches the maximum and leaves
