@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Check, PencilRuler, Plus, Waveform, X } from '@phosphor-icons/react'
+import { ArrowUp, Blueprint, Check, PencilRuler, Plus, X } from '@phosphor-icons/react'
 
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
@@ -144,8 +144,8 @@ export default function QuickAddBar({ boardId, hidden = false }) {
             className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
           >
             {/* PencilRuler, not Sparkle: the pill drafts and lays work out
-                rather than conjuring it, and a sparkle beside the Waveform
-                voice control read as generic "AI" twice over. */}
+                rather than conjuring it. Pairs with the Blueprint beside it —
+                draw the plan, then read it back. */}
             <PencilRuler size={20} weight="regular" className="text-[var(--text-primary)]" />
           </button>
           <div className="w-px h-5 bg-[var(--border-default)]" />
@@ -154,7 +154,7 @@ export default function QuickAddBar({ boardId, hidden = false }) {
             aria-label="Voice input"
             className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
           >
-            <Waveform size={20} weight="regular" className="text-[var(--text-secondary)]" />
+            <Blueprint size={20} weight="regular" className="text-[var(--text-secondary)]" />
           </button>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function QuickAddBar({ boardId, hidden = false }) {
               </Button>
             ) : (
               <Button variant="ghost" size="icon-sm" aria-label="Voice mode">
-                <Waveform size={20} weight="regular" />
+                <Blueprint size={20} weight="regular" />
               </Button>
             )}
           </div>
