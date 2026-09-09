@@ -187,6 +187,9 @@ export default function Sidebar() {
   const boardListMenu = (
     <FilterPill
       compact
+      // portal, like the board's ⋮: the sidebar nav is overflow-y-auto and
+      // would otherwise clip this panel at its right edge.
+      portal
       icon={<Faders className="w-4 h-4" weight="light" />}
       tooltip="Sort and filter boards"
       active={boardSort !== 'name' || boardShow !== 'all'}

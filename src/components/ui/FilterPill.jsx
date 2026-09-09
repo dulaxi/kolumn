@@ -17,7 +17,20 @@ import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_BTN_FILL } from '../../constants
 // The board toolbar is a row of filled controls, so a pill belongs there; the
 // sidebar's section heading is a row of quiet 16px glyphs, and a filled pill
 // beside them would shout.
-export default function FilterPill({ label, icon, tooltip, active, compact = false, children }) {
+export default function FilterPill({
+  label,
+  icon,
+  tooltip,
+  active,
+  compact = false,
+  // Forwarded to Popover. A panel inside a scroll container — the sidebar's
+  // nav is overflow-y-auto — is clipped at that container's edge unless it
+  // renders in a body-level portal. The board toolbar has no such ancestor,
+  // which is why the five filters that predate this never needed it.
+  portal = false,
+  placement = 'bottom-end',
+  children,
+}) {
   const [isOpen, setIsOpen] = useState(false)
 
   const fill = active ? 'bg-[var(--color-mauve-cream)] text-[var(--text-primary)]' : TOOLBAR_BTN_FILL
@@ -59,11 +72,12 @@ export default function FilterPill({ label, icon, tooltip, active, compact = fal
     <Popover
       open={isOpen}
       onOpenChange={setIsOpen}
-      // bottom-end anchors the dropdown to the trigger's RIGHT edge so
-      // the panel grows leftward into the viewport. The board toolbar
-      // sits on the right side of the page, so bottom-start was making
-      // dropdowns clip off the window's right edge.
-      placement="bottom-end"
+      // bottom-end by default: it anchors the dropdown to the trigger's RIGHT
+      // edge so the panel grows leftward into the viewport. The board toolbar
+      // sits on the right of the page, where bottom-start clipped dropdowns
+      // off the window edge.
+      placement={placement}
+      portal={portal}
       panel={children}
       panelClassName="min-w-[160px]"
     >
