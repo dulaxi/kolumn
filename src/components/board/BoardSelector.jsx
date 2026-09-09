@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
-import { Archive, CaretRight, ClockCounterClockwise, DotsThreeVertical, Funnel, PencilSimple, PushPin, Tag, Trash, X } from '@phosphor-icons/react'
+import { Archive, CaretRight, ClockCounterClockwise, DotsThreeVertical, Funnel, PencilSimple, PushPin, Tag, Trash, X, Kanban, Rows } from '@phosphor-icons/react'
 import { useBoardStore } from '../../store/boardStore'
 import { useAuthStore } from '../../store/authStore'
 import PriorityFilter from './filters/PriorityFilter'
@@ -12,6 +12,7 @@ import GhostToggle from './GhostToggle'
 import BoardActivityModal from './BoardActivityModal'
 import Tooltip from '../ui/Tooltip'
 import Menu from '../ui/Menu'
+import SegmentedControl from '../ui/SegmentedControl'
 import ConfirmModal from './ConfirmModal'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TOOLBAR_BTN, TOOLBAR_ICON_BTN, TOOLBAR_ICON_BTN_GHOST, TOOLBAR_BTN_FILL } from '../../constants/buttonStyles'
@@ -24,6 +25,13 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
   const [boardMenuOpen, setBoardMenuOpen] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [confirmDeleteBoard, setConfirmDeleteBoard] = useState(false)
+
+  // PLACEHOLDER — layout only, no behaviour yet. Dev-gated deliberately: a
+  // control that does nothing is worse than no control for someone using the
+  // app, and this exists so the styling can be judged in place. Delete the
+  // import.meta.env.DEV guard on the render below when the two states are
+  // decided; the options array is where they go.
+  const [viewMode, setViewMode] = useState('board')
 
   const deleteBoard = useBoardStore((s) => s.deleteBoard)
   // Read the array, not isFavorite(): a selector returning a function gives a
@@ -313,11 +321,25 @@ export default function BoardSelector({ filters, setFilters, sortBy, setSortBy, 
           {/* Share sits at the far right of the toolbar, text-only. Owner: full
               Share modal (invite + remove). Non-owner member: read-only Members
               modal. Same modal; isOwner drives the difference. */}
+          {isRealBoard && import.meta.env.DEV && (
+            <div className="ml-auto">
+              <SegmentedControl
+                ariaLabel="View mode (placeholder)"
+                options={[
+                  { value: 'board', icon: <Kanban className="w-4 h-4" />, ariaLabel: 'Board' },
+                  { value: 'alt', icon: <Rows className="w-4 h-4" />, ariaLabel: 'Alternate' },
+                ]}
+                value={viewMode}
+                onChange={setViewMode}
+              />
+            </div>
+          )}
+
           {isRealBoard && (
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className={`ml-auto ${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
+              className={`${import.meta.env.DEV ? '' : 'ml-auto '}${TOOLBAR_BTN} ${TOOLBAR_BTN_FILL}`}
             >
               {isOwner ? 'Share' : 'Members'}
             </button>
